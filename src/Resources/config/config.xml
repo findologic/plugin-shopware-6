@@ -5,14 +5,13 @@
     <card>
         <title>Configuration</title>
         <title lang="de-DE">Konfiguration</title>
-        <title lang="en-GB">Konfiguration</title>
-        <input-field type="text">
-            <name>Shopkey</name>
+        <input-field>
+            <name>shopkey</name>
             <label>Shopkey</label>
             <label lang="de-DE">Shopkey</label>
         </input-field>
         <input-field type="bool">
-            <name>Active</name>
+            <name>active</name>
             <label>Active</label>
             <label lang="de-DE">Aktiv</label>
         </input-field>
