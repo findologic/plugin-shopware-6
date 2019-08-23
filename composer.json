@@ -12,7 +12,7 @@
     "shopware/core": "*"
   },
   "extra": {
-    "shopware-plugin-class": "FINDOLOGIC\\FinSearchUnified\\FinSearchUnified",
+    "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
     "plugin-icon": "src/Resources/config/plugin.png",
     "copyright": "(c) by FINDOLOGIC GmbH",
     "label": {
@@ -30,7 +30,7 @@
   },
   "autoload": {
     "psr-4": {
-      "FINDOLOGIC\\FinSearchUnified\\": "src/"
+      "FINDOLOGIC\\FinSearch\\": "src/"
     }
   }
 }
