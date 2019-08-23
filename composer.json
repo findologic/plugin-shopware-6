@@ -1,0 +1,36 @@
+{
+  "name": "findologic/plugin-shopware-6-unified",
+  "description": "FINDOLOGIC plugin for Shopware 6 e-commerce system",
+  "version": "v0.1.0",
+  "type": "shopware-platform-plugin",
+  "authors": [
+    {
+      "name": "FINDOLOGIC GmbH"
+    }
+  ],
+  "require": {
+    "shopware/core": "*"
+  },
+  "extra": {
+    "shopware-plugin-class": "FINDOLOGIC\\FinSearchUnified\\FinSearchUnified",
+    "plugin-icon": "src/Resources/config/plugin.png",
+    "copyright": "(c) by FINDOLOGIC GmbH",
+    "label": {
+      "de-DE": "FINDOLOGIC Suche & Navigation",
+      "en-GB": "FINDOLOGIC Search & Navigation"
+    },
+    "description": {
+      "de-DE": "FINDOLOGIC Plugin für das Shopware 6 E-Commerce System",
+      "en-GB": "FINDOLOGIC plugin for Shopware 6 e-commerce system"
+    },
+    "supportLink": {
+      "de-DE": "https://support.findologic.com/hc/de/requests/new",
+      "en-GB": "https://support.findologic.com/hc/en/requests/new"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "FINDOLOGIC\\FinSearchUnified\\": "src/"
+    }
+  }
+}
