@@ -40,13 +40,6 @@ before_script:
 script:
   - composer test
 
-jobs:
-  include:
-    - stage: lint
-      before_install: skip
-      before_script: skip
-      script: composer lint
-    - stage: "Shopware 6"
-      php: "7.3"
-      env:
-        - SHOPWARE_VERSION="v6.0.0+ea1.1"
+addons:
+  hosts:
+    - mysql
