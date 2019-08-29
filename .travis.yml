@@ -29,7 +29,8 @@ before_script:
   - git clone https://github.com/shopware/development.git ${SHOPWARE_DIR}
   - cd ${SHOPWARE_DIR}
   - git checkout tags/${SHOPWARE_VERSION}
-  - mv ${TRAVIS_BUILD_DIR}/.psh.yaml.dist ${SHOPWARE_DIR}/.psh.yaml.dist
+  - mysql -u root -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app'"
+  - mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'app'@'localhost';"
   - ./psh.phar init
   - mv ${TRAVIS_BUILD_DIR} ${PLUGIN_DIR}/${PLUGIN_NAME}
   - php bin/console plugin:install --activate ${PLUGIN_NAME}
