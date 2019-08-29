@@ -26,7 +26,7 @@ install:
   - composer install
 
 before_script:
-  - git clone https://github.com/shopware/shopware.git ${SHOPWARE_DIR}
+  - git clone https://github.com/shopware/development.git ${SHOPWARE_DIR}
   - cd ${SHOPWARE_DIR}
   - git checkout tags/${SHOPWARE_VERSION}
   - ./psh.phar init
