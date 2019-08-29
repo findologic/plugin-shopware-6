@@ -1,0 +1,50 @@
+language: php
+
+php:
+  - "7.2"
+  - "7.3"
+
+stages:
+  - lint
+
+services:
+  - mysql
+
+env:
+  matrix:
+    - SHOPWARE_VERSION="v6.0.0+ea1.1"
+  global:
+    - PLUGIN_NAME=FinSearch
+    - SHOPWARE_DIR=${HOME}/shopware
+    - PLUGIN_DIR=${HOME}/custom/plugins
+
+cache:
+  directories:
+    - ${HOME}/.composer/cache/files
+
+install:
+  - composer install
+
+before_script:
+  - git clone https://github.com/shopware/shopware.git ${SHOPWARE_DIR}
+  - cd ${SHOPWARE_DIR}
+  - git checkout tags/${SHOPWARE_VERSION}
+  - ./psh.phar init
+  - mv ${TRAVIS_BUILD_DIR} ${PLUGIN_DIR}/${PLUGIN_NAME}
+  - php bin/console plugin:install --activate ${PLUGIN_NAME}
+  - composer dump-autoload -d custom/plugins/FinSearch
+  - ./psh.phar init-test-databases
+
+script:
+  - composer test
+
+jobs:
+  include:
+    - stage: lint
+      before_install: skip
+      before_script: skip
+      script: composer lint
+    - stage: "Shopware 6"
+      php: "7.3"
+      env:
+        - SHOPWARE_VERSION="v6.0.0+ea1.1"
