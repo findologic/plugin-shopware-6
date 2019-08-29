@@ -16,7 +16,7 @@ env:
   global:
     - PLUGIN_NAME=FinSearch
     - SHOPWARE_DIR=${HOME}/shopware
-    - PLUGIN_DIR=${HOME}/custom/plugins
+    - PLUGIN_DIR=${HOME}/shopware/custom/plugins
 
 cache:
   directories:
