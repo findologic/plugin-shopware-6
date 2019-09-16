@@ -36,7 +36,6 @@
             <helpText lang="de-DE">Damit die Direct Integration einwandfrei funktioniert, muss sie Zugriff auf den
                 Hauptcontainer des Shops haben.
             </helpText>
-            <required>true</required>
         </input-field>
         <input-field>
             <name>navigationResultContainer</name>
@@ -48,7 +47,6 @@
             <helpText lang="de-DE">Damit die Direct Integration einwandfrei funktioniert, muss sie Zugriff auf den
                 Hauptcontainer des Shops haben.
             </helpText>
-            <required>true</required>
         </input-field>
         <input-field>
             <name>integrationType</name>
@@ -58,7 +56,6 @@
             <helpText lang="de-DE">Die aktuell verwendete Integrationsart. Entweder Direct Integration oder API.
             </helpText>
             <disabled>true</disabled>
-            <required>true</required>
         </input-field>
     </card>
 </config>
