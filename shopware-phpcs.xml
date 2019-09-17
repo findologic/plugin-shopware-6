@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<ruleset name="Shopware Plugin">
+
+    <!--
+       The name attribute of the ruleset tag is displayed
+       when running PHP_CodeSniffer with the -v command line
+       argument. The description tag below is not displayed anywhere
+       except in this file, so it can contain information for
+       developers who may change this file in the future.
+    -->
+    <description>Internal Coding Standards for Shopware Plugins</description>
+
+    <!--
+       You can hard-code ignore patterns directly into your
+       custom standard so you don't have to specify the
+       patterns on the command line.
+    -->
+    <exclude-pattern>*/*.twig</exclude-pattern>
+    <exclude-pattern>*/*.js</exclude-pattern>
+    <exclude-pattern>*/*.css</exclude-pattern>
+    <exclude-pattern>*/*.xml</exclude-pattern>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+
+    <!--
+       You can hard-code command line values into your custom standard.
+       Note that this does not work for the command line values:
+       -v[v][v], -l, -d, -sniffs and -standard
+       The following tags are equivalent to the command line arguments:
+       -p
+    -->
+    <arg name="colors" />
+    <arg value="p" />
+
+    <!--
+       Include all sniffs in the PEAR standard. Note that the
+       path to the standard does not have to be specified as the
+       PEAR standard exists inside the PHP_CodeSniffer install
+       directory.
+    -->
+    <rule ref="PSR2">
+        <exclude name="Squiz.Classes.ValidClassName" />
+        <exclude name="PSR1.Classes.ClassDeclaration" />
+    </rule>
+</ruleset>
