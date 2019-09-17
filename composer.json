@@ -12,9 +12,6 @@
     "shopware/core": "*",
     "shopware/storefront": "*"
   },
-  "require-dev": {
-    "squizlabs/php_codesniffer": "3.*"
-  },
   "extra": {
     "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
     "plugin-icon": "src/Resources/config/plugin.png",
@@ -36,9 +33,5 @@
     "psr-4": {
       "FINDOLOGIC\\FinSearch\\": "src/"
     }
-  },
-  "scripts": {
-    "lint": "phpcs --standard=shopware-phpcs.xml ./src",
-    "fix": "phpcbf --standard=shopware-phpcs.xml ./src"
   }
 }
