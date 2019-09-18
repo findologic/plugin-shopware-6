@@ -11,19 +11,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FrontendSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var SystemConfigService
-     */
+    /** @var SystemConfigService */
     private $systemConfigService;
 
-    /**
-     * @var Config
-     */
+    /** @var Config */
     private $config;
 
-    /**
-     * @param SystemConfigService $systemConfigService
-     */
     public function __construct(SystemConfigService $systemConfigService)
     {
         $this->systemConfigService = $systemConfigService;

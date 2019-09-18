@@ -28,9 +28,6 @@ class Config extends Struct
     /** @var string */
     private $integrationType;
 
-    /**
-     * @param $systemConfigService
-     */
     public function __construct(SystemConfigService $systemConfigService)
     {
         $this->shopkey = $systemConfigService->get('FinSearch.config.shopkey');
@@ -44,49 +41,31 @@ class Config extends Struct
         $this->systemConfigService = $systemConfigService;
     }
 
-    /**
-     * @return string
-     */
     public function getShopkey(): string
     {
         return $this->shopkey;
     }
 
-    /**
-     * @return bool
-     */
     public function isActive(): bool
     {
         return $this->active;
     }
 
-    /**
-     * @return bool
-     */
     public function isActiveOnCategoryPages(): bool
     {
         return $this->activeOnCategoryPages;
     }
 
-    /**
-     * @return string
-     */
     public function getSearchResultContainer(): string
     {
         return $this->searchResultContainer;
     }
 
-    /**
-     * @return string
-     */
     public function getNavigationResultContainer(): string
     {
         return $this->navigationResultContainer;
     }
 
-    /**
-     * @return string
-     */
     public function getIntegrationType(): string
     {
         return $this->integrationType;

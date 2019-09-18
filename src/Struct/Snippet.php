@@ -6,34 +6,24 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class Snippet extends Struct
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $searchResultContainer;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $navigationResultContainer;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $userGroupHash;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $hashedShopkey;
 
-    /**
-     * @param string $shopkey
-     * @param string $searchResultContainer
-     * @param string $navigationResultContainer
-     * @param string $userGroupHash
-     */
-    public function __construct($shopkey, $searchResultContainer, $navigationResultContainer, $userGroupHash)
-    {
+    public function __construct(
+        string $shopkey,
+        string $searchResultContainer,
+        string $navigationResultContainer,
+        string $userGroupHash
+    ) {
         $this->hashedShopkey = md5(strtoupper($shopkey));
         $this->searchResultContainer = $searchResultContainer;
         $this->navigationResultContainer = $navigationResultContainer;

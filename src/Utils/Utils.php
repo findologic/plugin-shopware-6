@@ -4,13 +4,7 @@ namespace FINDOLOGIC\FinSearch\Utils;
 
 class Utils
 {
-    /**
-     * @param string $shopkey
-     * @param string $customerGroupId
-     *
-     * @return string
-     */
-    public static function calculateUserGroupHash($shopkey, $customerGroupId)
+    public static function calculateUserGroupHash(string $shopkey, string $customerGroupId): string
     {
         return base64_encode($shopkey ^ $customerGroupId);
     }
