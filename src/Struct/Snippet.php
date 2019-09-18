@@ -29,4 +29,24 @@ class Snippet extends Struct
         $this->navigationResultContainer = $navigationResultContainer;
         $this->userGroupHash = $userGroupHash;
     }
+
+    public function getSearchResultContainer(): string
+    {
+        return $this->searchResultContainer;
+    }
+
+    public function getNavigationResultContainer(): string
+    {
+        return $this->navigationResultContainer;
+    }
+
+    public function getUserGroupHash(): string
+    {
+        return $this->userGroupHash;
+    }
+
+    public function getHashedShopkey(): string
+    {
+        return $this->hashedShopkey;
+    }
 }

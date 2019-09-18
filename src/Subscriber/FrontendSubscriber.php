@@ -23,14 +23,17 @@ class FrontendSubscriber implements EventSubscriberInterface
         $this->config = new Config($this->systemConfigService);
     }
 
-    public static function getSubscribedEvents()
+    /**
+     * @return string[]
+     */
+    public static function getSubscribedEvents(): array
     {
         return [
             HeaderPageletLoadedEvent::class => 'onHeaderLoaded'
         ];
     }
 
-    public function onHeaderLoaded(HeaderPageletLoadedEvent $event)
+    public function onHeaderLoaded(HeaderPageletLoadedEvent $event): void
     {
         // This will store the plugin config for usage in our templates
         $event->getPagelet()->addExtension('flConfig', $this->config);
