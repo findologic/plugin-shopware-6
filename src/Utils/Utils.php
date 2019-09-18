@@ -6,12 +6,12 @@ class Utils
 {
     /**
      * @param string $shopkey
-     * @param string $userGroupId
+     * @param string $customerGroupId
      *
      * @return string
      */
-    public static function calculateUserGroupHash($shopkey, $userGroupId)
+    public static function calculateUserGroupHash($shopkey, $customerGroupId)
     {
-        return base64_encode($shopkey ^ $userGroupId);
+        return base64_encode($shopkey ^ $customerGroupId);
     }
 }

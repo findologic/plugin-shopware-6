@@ -7,43 +7,29 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class Config extends Struct
 {
-    /**
-     * @var SystemConfigService
-     */
+    /** @var SystemConfigService */
     private $systemConfigService;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $shopkey;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $active;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $activeOnCategoryPages;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $searchResultContainer;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $navigationResultContainer;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $integrationType;
 
     /**
-     * @param SystemConfigService $systemConfigService
+     * @param $systemConfigService
      */
     public function __construct(SystemConfigService $systemConfigService)
     {
