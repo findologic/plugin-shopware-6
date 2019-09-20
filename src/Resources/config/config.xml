@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
+    xsi:noNamespaceSchemaLocation="../../../../../../platform/src/Core/System/SystemConfig/Schema/config.xsd">
 
     <card>
         <title>Configuration</title>
@@ -9,11 +9,53 @@
             <name>shopkey</name>
             <label>Shopkey</label>
             <label lang="de-DE">Shopkey</label>
+            <helpText>FINDOLOGIC shopkey</helpText>
+            <required>true</required>
         </input-field>
         <input-field type="bool">
             <name>active</name>
             <label>Active</label>
             <label lang="de-DE">Aktiv</label>
+            <helpText>Activate the FINDOLOGIC search provider.</helpText>
+            <helpText lang="de-DE">Aktiviert die FINDOLOGIC Suche.</helpText>
+        </input-field>
+        <input-field type="bool">
+            <name>activeOnCategoryPages</name>
+            <label>Active on category pages</label>
+            <label lang="de-DE">Aktiv auf Kategorieseiten</label>
+            <helpText>Activate the FINDOLOGIC search provider for category pages.</helpText>
+            <helpText lang="de-DE">Aktiviert die FINDOLOGIC Suche für Kategorieseiten.</helpText>
+        </input-field>
+        <input-field>
+            <name>searchResultContainer</name>
+            <label>CSS class for main container (e.g. 'fl-result')</label>
+            <label lang="de-DE">CSS-Klasse für Hauptcontainer (z.B. 'fl-result')</label>
+            <helpText>To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main
+                container of the shop.
+            </helpText>
+            <helpText lang="de-DE">Damit die Direct Integration einwandfrei funktioniert, muss sie Zugriff auf den
+                Hauptcontainer des Shops haben.
+            </helpText>
+        </input-field>
+        <input-field>
+            <name>navigationResultContainer</name>
+            <label>CSS class for main container (e.g. 'fl-navigation-result')</label>
+            <label lang="de-DE">CSS-Klasse für Hauptcontainer (z.B. 'fl-navigation-result')</label>
+            <helpText>To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main
+                container of the shop.
+            </helpText>
+            <helpText lang="de-DE">Damit die Direct Integration einwandfrei funktioniert, muss sie Zugriff auf den
+                Hauptcontainer des Shops haben.
+            </helpText>
+        </input-field>
+        <input-field>
+            <name>integrationType</name>
+            <label>Integration (read-only)</label>
+            <label lang="de-DE">Integration (schreibgeschützt)</label>
+            <helpText>Currently used integration type. Either one of Direct Integration or API.</helpText>
+            <helpText lang="de-DE">Die aktuell verwendete Integrationsart. Entweder Direct Integration oder API.
+            </helpText>
+            <disabled>true</disabled>
         </input-field>
     </card>
 </config>

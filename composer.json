@@ -9,7 +9,8 @@
     }
   ],
   "require": {
-    "shopware/core": "*"
+    "shopware/core": "*",
+    "shopware/storefront": "*"
   },
   "extra": {
     "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
