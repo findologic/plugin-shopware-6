@@ -24,7 +24,7 @@ class Snippet extends Struct
         string $navigationResultContainer,
         string $userGroupHash
     ) {
-        $this->hashedShopkey = md5(strtoupper($shopkey));
+        $this->hashedShopkey = strtoupper(md5($shopkey));
         $this->searchResultContainer = $searchResultContainer;
         $this->navigationResultContainer = $navigationResultContainer;
         $this->userGroupHash = $userGroupHash;
