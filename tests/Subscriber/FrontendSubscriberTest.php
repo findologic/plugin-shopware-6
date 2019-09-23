@@ -23,22 +23,22 @@ class FrontendSubscriberTest extends TestCase
         $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $configServiceMock->expects($this->once())->method('get')
+        $configServiceMock->expects($this->at(0))->method('get')
             ->with('FinSearch.config.shopkey')
             ->willReturn($shopkey);
-        $configServiceMock->expects($this->once())->method('get')
+        $configServiceMock->expects($this->at(1))->method('get')
             ->with('FinSearch.config.active')
             ->willReturn(true);
-        $configServiceMock->expects($this->once())->method('get')
+        $configServiceMock->expects($this->at(2))->method('get')
             ->with('FinSearch.config.activeOnCategoryPages')
             ->willReturn(true);
-        $configServiceMock->expects($this->once())->method('get')
+        $configServiceMock->expects($this->at(3))->method('get')
             ->with('FinSearch.config.searchResultContainer')
             ->willReturn('fl-result');
-        $configServiceMock->expects($this->once())->method('get')
+        $configServiceMock->expects($this->at(4))->method('get')
             ->with('FinSearch.config.navigationResultContainer')
             ->willReturn('fl-navigation-result');
-        $configServiceMock->expects($this->once())->method('get')
+        $configServiceMock->expects($this->at(5))->method('get')
             ->with('FinSearch.config.integrationType')
             ->willReturn('Direct Integration');
 
@@ -51,20 +51,40 @@ class FrontendSubscriberTest extends TestCase
 
         $headerPageletMock->expects($this->at(0))
             ->method('addExtension')
-            ->with($this->callback(
-                function (string $name, Config $config) use ($shopkey) {
-                    $this->assertEquals('flConfig', $name);
-                    $this->assertSame($shopkey, $config->getShopkey());
-                }
-            ));
+            ->with(
+                $this->callback(
+                    function (string $name) {
+                        $this->assertEquals('flConfig', $name);
+
+                        return true;
+                    }
+                ),
+                $this->callback(
+                    function (Config $config) use ($shopkey) {
+                        $this->assertSame($shopkey, $config->getShopkey());
+
+                        return true;
+                    }
+                )
+            );
         $headerPageletMock->expects($this->at(1))
             ->method('addExtension')
-            ->with($this->callback(
-                function (string $name, Snippet $snippet) use ($shopkey) {
-                    $this->assertEquals('flSnippet', $name);
-                    $this->assertSame(strtoupper(md5($shopkey)), $snippet->getHashedShopkey());
-                }
-            ));
+            ->with(
+                $this->callback(
+                    function (string $name) {
+                        $this->assertEquals('flSnippet', $name);
+
+                        return true;
+                    }
+                ),
+                $this->callback(
+                    function (Snippet $snippet) use ($shopkey) {
+                        $this->assertSame(strtoupper(md5($shopkey)), $snippet->getHashedShopkey());
+
+                        return true;
+                    }
+                )
+            );
 
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
             ->disableOriginalConstructor()
@@ -78,7 +98,7 @@ class FrontendSubscriberTest extends TestCase
             ->method('getCurrentCustomerGroup')
             ->willReturn($customerGroupEntityMock);
 
-        $headerPageletLoadedEventMock->expects($this->once())->method('getPagelet')->willReturn($headerPageletMock);
+        $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')->willReturn($headerPageletMock);
         $headerPageletLoadedEventMock->expects($this->once())
             ->method('getSalesChannelContext')
             ->willReturn($salesChannelContextMock);
