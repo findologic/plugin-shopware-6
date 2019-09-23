@@ -38,10 +38,10 @@ before_script:
   - composer dump-autoload -d custom/plugins/FinSearch
   - ./psh.phar init-test-databases
   - cd ${PLUGIN_DIR}/${PLUGIN_NAME}
-  - composer update
+  - chmod a+x bin/phpunit.sh
 
 script:
-  - composer test
+  - bin/phpunit.sh
 
 addons:
   hosts:
