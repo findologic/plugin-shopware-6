@@ -27,7 +27,8 @@ class FrontendSubscriberTest extends TestCase
             ->with('FinSearch.config.shopkey')
             ->willReturn($shopkey);
         $configServiceMock->expects($this->once())->method('get')
-            ->with('FinSearch.config.active')->willReturn(true);
+            ->with('FinSearch.config.active')
+            ->willReturn(true);
         $configServiceMock->expects($this->once())->method('get')
             ->with('FinSearch.config.activeOnCategoryPages')
             ->willReturn(true);

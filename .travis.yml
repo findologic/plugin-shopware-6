@@ -38,6 +38,7 @@ before_script:
   - composer dump-autoload -d custom/plugins/FinSearch
   - ./psh.phar init-test-databases
   - cd ${PLUGIN_DIR}/${PLUGIN_NAME}
+  - composer update
 
 script:
   - composer test
