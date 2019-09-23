@@ -10,7 +10,10 @@ class UtilsTest extends TestCase
 {
     use IntegrationTestBehaviour;
 
-    public function shopkeyAndCustomerGroupIdProvider()
+    /**
+     * @return string[]
+     */
+    public function shopkeyAndCustomerGroupIdProvider(): array
     {
         return [
             'With Shopkey 8D6CA2E49FB7CD09889CC0E2929F86B0' => ['8D6CA2E49FB7CD09889CC0E2929F86B0', '1', 'CQ=='],
@@ -26,7 +29,7 @@ class UtilsTest extends TestCase
      * @param string $customerGroupId
      * @param string $expectedHash
      */
-    public function testCustomerGroupHash(string $shopkey, string $customerGroupId, string $expectedHash)
+    public function testCustomerGroupHash(string $shopkey, string $customerGroupId, string $expectedHash): void
     {
         $this->assertSame($expectedHash, Utils::calculateUserGroupHash($shopkey, $customerGroupId));
     }
