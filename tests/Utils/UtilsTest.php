@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearchTests\Utils;
+namespace FINDOLOGIC\FinSearch\Tests\Utils;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;

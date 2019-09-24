@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearchTests\Subscriber;
+namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;

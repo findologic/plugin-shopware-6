@@ -35,13 +35,12 @@ before_script:
   - mkdir ${PLUGIN_DIR}/${PLUGIN_NAME}
   - mv ${TRAVIS_BUILD_DIR}/* ${PLUGIN_DIR}/${PLUGIN_NAME}
   - php bin/console plugin:install --activate ${PLUGIN_NAME}
+  - composer dump-autoload -d custom/plugins/FinSearch
   - ./psh.phar init-test-databases
   - cd ${PLUGIN_DIR}/${PLUGIN_NAME}
-  - composer update
-  - chmod a+x bin/phpunit.sh
 
 script:
-  - bin/phpunit.sh
+  - composer test
 
 addons:
   hosts:
