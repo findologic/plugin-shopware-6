@@ -24,10 +24,6 @@ class UtilsTest extends TestCase
 
     /**
      * @dataProvider shopkeyAndCustomerGroupIdProvider
-     *
-     * @param string $shopkey
-     * @param string $customerGroupId
-     * @param string $expectedHash
      */
     public function testCustomerGroupHash(string $shopkey, string $customerGroupId, string $expectedHash): void
     {
