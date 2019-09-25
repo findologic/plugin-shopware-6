@@ -39,8 +39,8 @@ class FrontendSubscriber implements EventSubscriberInterface
         $event->getPagelet()->addExtension('flConfig', $this->config);
         if ($this->config->isActive()) {
             $shopkey = $this->config->getShopkey();
-            $userGroupId = $event->getSalesChannelContext()->getCurrentCustomerGroup()->getId();
-            $userGroupHash = Utils::calculateUserGroupHash($shopkey, $userGroupId);
+            $customerGroupId = $event->getSalesChannelContext()->getCurrentCustomerGroup()->getId();
+            $userGroupHash = Utils::calculateUserGroupHash($shopkey, $customerGroupId);
             $snippet = new Snippet(
                 $shopkey,
                 $this->config->getSearchResultContainer(),

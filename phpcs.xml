@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<ruleset
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/squizlabs/PHP_CodeSniffer/3.4.1/phpcs.xsd"
+        name="FINDOLOGIC"
+>
+    <file>src</file>
+    <file>tests</file>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>tests/TestBootstrap.php</exclude-pattern>
+
+
+    <arg name="colors"/>
+    <arg value="p"/>
+
+    <arg name="report-full"/>
+
+    <!--
+       You can hard-code custom php.ini settings into your custom standard.
+       The following tag sets the memory limit to 128M.
+    -->
+    <ini name="memory_limit" value="128M"/>
+
+    <!--
+       Include all sniffs in the PSR2 standard. Note that the
+       path to the standard does not have to be specified as the
+       PSR2 standard exists inside the PHP_CodeSniffer install
+       directory.
+    -->
+    <rule ref="PSR2"/>
+    <rule ref="PSR12"/>
+
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+</ruleset>
