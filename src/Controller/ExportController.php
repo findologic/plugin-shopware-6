@@ -43,8 +43,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
-     * @throws InconsistentCriteriaIdsException
-     * @throws UnknownShopkeyException
      */
     public function export(Request $request, SalesChannelContext $context): Response
     {
@@ -65,30 +63,41 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $shopkeyViolations = $validator->validate($shopkey, [
             new NotBlank(),
             new Assert\Regex([
-                'pattern' => '/^[A-F0-9]{32}$/',
-                'message' => 'Required argument "shopkey" {{ value }} was not given, or does not match the shopkey schema'
+                'pattern' => '/^[A-F0-9]{32}$/'
             ])
         ]);
 
         if (count($shopkeyViolations) > 0) {
-            throw new InvalidArgumentException($shopkeyViolations->get(0)->getMessage());
+            throw new InvalidArgumentException(
+                sprintf('Required argument "shopkey" was not given, or does not match the shopkey schema %s', $shopkey)
+            );
         }
 
-        $startCountValidation = [
+        $startViolations = $validator->validate($start, [
             new Assert\Type([
                 'type' => 'integer',
-                'message' => 'The start value {{ value }} is not a valid {{ type }}.',
+                'message' => 'The value {{ value }} is not a valid {{ type }}.',
             ]),
-            new Assert\GreaterThanOrEqual(['value' => 0])
-        ];
-
-        $startViolations = $validator->validate($start, $startCountValidation);
+            new Assert\GreaterThanOrEqual([
+                'value' => 0,
+                'message' => 'The value {{ value }} is not greater than or equal to zero.'
+            ])
+        ]);
         if (count($startViolations) > 0) {
             throw new InvalidArgumentException($startViolations->get(0)->getMessage());
         }
 
-        $countViolations = $validator->validate($count, $startCountValidation);
-        if (count($shopkeyViolations) > 0) {
+        $countViolations = $validator->validate($count, [
+            new Assert\Type([
+                'type' => 'integer',
+                'message' => 'The value {{ value }} is not a valid {{ type }}.',
+            ]),
+            new Assert\GreaterThan([
+                'value' => 0,
+                'message' => 'The value {{ value }} is not greater than zero.'
+            ])
+        ]);
+        if (count($countViolations) > 0) {
             throw new InvalidArgumentException($countViolations->get(0)->getMessage());
         }
     }
