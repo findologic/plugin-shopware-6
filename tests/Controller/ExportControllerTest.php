@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
@@ -6,10 +8,12 @@ use FINDOLOGIC\FinSearch\Controller\ExportController;
 use InvalidArgumentException;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SystemConfig\SystemConfigCollection;
+use Shopware\Core\System\SystemConfig\SystemConfigEntity;
 use Symfony\Component\HttpFoundation\Request;
 
 class ExportControllerTest extends TestCase
@@ -31,34 +35,45 @@ class ExportControllerTest extends TestCase
 
     /**
      * @dataProvider invalidArgumentProvider
+     * @dataProvider validArgumentProvider
      */
-    public function testExport(string $shopkey, $start, $count)
+    public function testExport(string $shopkey, $start, $count, bool $checkResponse = false)
     {
-        $this->expectException(InvalidArgumentException::class);
+        if (!$checkResponse) {
+            $this->expectException(InvalidArgumentException::class);
+        }
 
-        $entityRepositoryMock = $this->getMockBuilder(EntityRepository::class)
+        $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $entitySearchResultMock = $this->getMockBuilder(EntitySearchResult::class)
-            ->disableOriginalConstructor()
-            ->getMock();
 
-        $entityRepositoryMock->method('search')->willReturn($entitySearchResultMock);
+        $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
+        $systemConfigEntity->method('getConfigurationKey')->willReturn($shopkey);
+        $systemConfigEntity->method('getSalesChannelId')->willReturn(null);
+
+        $configs = new SystemConfigCollection([$systemConfigEntity]);
+
+        $systemConfigRepositoryMock->method('search')->willReturn($configs);
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
             ->disableOriginalConstructor()
             ->getMock();
         $salesChannelContextMock->method('getToken')->willReturn('token');
 
         $request = new Request(['shopkey' => $shopkey, 'start' => $start, 'count' => $count]);
-        // $this->getContainer()->set('system_config.repository', $entityRepositoryMock);
 
-        $this->exportController->setContainer($this->getContainer());
-        $this->exportController->export($request, $salesChannelContextMock);
+        $containerMock = $this->getMockBuilder(ContainerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $containerMock->method('get')->willReturn($systemConfigRepositoryMock);
+
+        $this->exportController->setContainer($containerMock);
+        $response = $this->exportController->export($request, $salesChannelContextMock);
+
+        if ($checkResponse) {
+            $this->assertEquals(200, $response->getStatusCode());
+        }
     }
 
-    /**
-     * @return mixed[]
-     */
     public function invalidArgumentProvider(): array
     {
         return [
@@ -88,6 +103,24 @@ class ExportControllerTest extends TestCase
                 'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
                 'start' => -1,
                 'count' => 20
+            ],
+        ];
+    }
+
+    public function validArgumentProvider(): array
+    {
+        return [
+            'Well formed shopkey provided' => [
+                'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
+                'start' => 1,
+                'count' => 20,
+                'response' => true
+            ],
+            '"start" parameter is zero with well formed shopkey' => [
+                'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
+                'start' => 0,
+                'count' => 20,
+                'response' => true
             ],
         ];
     }

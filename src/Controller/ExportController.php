@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
@@ -112,7 +114,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $systemConfigEntities = $systemConfigRepository->search(
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
             $currentContext->getContext()
-        );
+        )->getEntities();
 
         foreach ($systemConfigEntities as $systemConfigEntity) {
             if ($systemConfigEntity->getConfigurationKey() === $shopkey) {
