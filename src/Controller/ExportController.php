@@ -117,7 +117,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
         );
 
         foreach ($systemConfigEntities as $systemConfigEntity) {
-            if ($systemConfigEntity->getConfigurationKey() === $shopkey) {
+            if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
                 if ($systemConfigEntity->getSalesChannelId() === null) {
                     return $currentContext;
                 }

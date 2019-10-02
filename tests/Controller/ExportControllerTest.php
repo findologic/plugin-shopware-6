@@ -52,7 +52,7 @@ class ExportControllerTest extends TestCase
             ->getMock();
 
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->method('getConfigurationKey')->willReturn($shopkey);
+        $systemConfigEntity->method('getConfigurationValue')->willReturn($shopkey);
         $systemConfigEntity->method('getSalesChannelId')->willReturn(null);
 
         $entities = new SystemConfigCollection([$systemConfigEntity]);
@@ -91,7 +91,7 @@ class ExportControllerTest extends TestCase
             ->getMock();
 
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->method('getConfigurationKey')->willReturn($unknownShopkey);
+        $systemConfigEntity->method('getConfigurationValue')->willReturn($unknownShopkey);
 
         $entities = new SystemConfigCollection([$systemConfigEntity]);
         $configs = new EntitySearchResult(1, $entities, null, new Criteria(), Context::createDefaultContext());
