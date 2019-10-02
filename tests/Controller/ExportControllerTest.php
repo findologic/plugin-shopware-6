@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
 use FINDOLOGIC\FinSearch\Controller\ExportController;
+use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use InvalidArgumentException;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigCollection;
@@ -51,7 +55,8 @@ class ExportControllerTest extends TestCase
         $systemConfigEntity->method('getConfigurationKey')->willReturn($shopkey);
         $systemConfigEntity->method('getSalesChannelId')->willReturn(null);
 
-        $configs = new SystemConfigCollection([$systemConfigEntity]);
+        $entities = new SystemConfigCollection([$systemConfigEntity]);
+        $configs = new EntitySearchResult(1, $entities, null, new Criteria(), Context::createDefaultContext());
 
         $systemConfigRepositoryMock->method('search')->willReturn($configs);
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
@@ -72,6 +77,39 @@ class ExportControllerTest extends TestCase
         if ($checkResponse) {
             $this->assertEquals(200, $response->getStatusCode());
         }
+    }
+
+    public function testUnknownShopkeyExport(): void
+    {
+        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
+        $unknownShopkey = '80AB18D4BE2654E782441CCCCCCCCCCC';
+
+        $this->expectException(UnknownShopkeyException::class);
+
+        $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
+        $systemConfigEntity->method('getConfigurationKey')->willReturn($unknownShopkey);
+
+        $entities = new SystemConfigCollection([$systemConfigEntity]);
+        $configs = new EntitySearchResult(1, $entities, null, new Criteria(), Context::createDefaultContext());
+
+        $systemConfigRepositoryMock->method('search')->willReturn($configs);
+        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $request = new Request(['shopkey' => $shopkey]);
+
+        $containerMock = $this->getMockBuilder(ContainerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $containerMock->method('get')->willReturn($systemConfigRepositoryMock);
+
+        $this->exportController->setContainer($containerMock);
+        $this->exportController->export($request, $salesChannelContextMock);
     }
 
     public function invalidArgumentProvider(): array
