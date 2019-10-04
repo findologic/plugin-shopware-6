@@ -118,8 +118,13 @@ class ExportControllerTest extends TestCase
      * @dataProvider invalidArgumentProvider
      * @dataProvider validArgumentProvider
      */
-    public function testExport(string $shopkey, $start, $count, ?string $exceptionMessage, bool $response = false)
-    {
+    public function testExportWithDifferentArguments(
+        string $shopkey,
+        $start,
+        $count,
+        ?string $exceptionMessage,
+        bool $response = false
+    ): void {
         if (!$response) {
             $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage($exceptionMessage);
@@ -130,10 +135,12 @@ class ExportControllerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $invokeCount = $response ? $this->atLeastOnce() : $this->never();
+
         /** @var SystemConfigEntity|MockObject $systemConfigEntity */
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->method('getConfigurationValue')->willReturn($shopkey);
-        $systemConfigEntity->method('getSalesChannelId')->willReturn(null);
+        $systemConfigEntity->expects($invokeCount)->method('getConfigurationValue')->willReturn($shopkey);
+        $systemConfigEntity->expects($invokeCount)->method('getSalesChannelId')->willReturn(null);
 
         /** @var SystemConfigCollection $entities */
         $entities = new SystemConfigCollection([$systemConfigEntity]);
@@ -141,7 +148,7 @@ class ExportControllerTest extends TestCase
         /** @var EntitySearchResult $configs */
         $configs = new EntitySearchResult(1, $entities, null, new Criteria(), Context::createDefaultContext());
 
-        $systemConfigRepositoryMock->method('search')->willReturn($configs);
+        $systemConfigRepositoryMock->expects($invokeCount)->method('search')->willReturn($configs);
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
@@ -220,7 +227,7 @@ class ExportControllerTest extends TestCase
         $this->assertEquals(200, $result->getStatusCode());
     }
 
-    public function testUnknownShopkeyExport(): void
+    public function testExportWithUnknownShopkey(): void
     {
         $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
         $unknownShopkey = '80AB18D4BE2654E782441CCCCCCCCCCC';
@@ -236,6 +243,7 @@ class ExportControllerTest extends TestCase
         /** @var SystemConfigEntity|MockObject $systemConfigEntity */
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
         $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($shopkey);
+        $systemConfigEntity->expects($this->never())->method('getSalesChannelId')->willReturn($shopkey);
 
         /** @var SystemConfigCollection $entities */
         $entities = new SystemConfigCollection([$systemConfigEntity]);
