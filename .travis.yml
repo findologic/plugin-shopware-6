@@ -34,10 +34,10 @@ before_script:
   - ./psh.phar init
   - mkdir ${PLUGIN_DIR}/${PLUGIN_NAME}
   - mv ${TRAVIS_BUILD_DIR}/* ${PLUGIN_DIR}/${PLUGIN_NAME}
-  - php bin/console plugin:install --activate ${PLUGIN_NAME}
-  - composer dump-autoload -d custom/plugins/FinSearch
   - ./psh.phar init-test-databases
+  - php bin/console plugin:install --activate ${PLUGIN_NAME} --clearCache
   - cd ${PLUGIN_DIR}/${PLUGIN_NAME}
+  - composer update
 
 script:
   - composer test
