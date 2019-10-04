@@ -26,8 +26,9 @@ use Symfony\Component\Validator\Validation;
 
 class ExportController extends AbstractController implements EventSubscriberInterface
 {
-    private const DEFAULT_START_PARAM = 0;
-    private const DEFAULT_COUNT_PARAM = 20;
+    private const
+        DEFAULT_START_PARAM = 0,
+        DEFAULT_COUNT_PARAM = 20;
 
     /** @var LoggerInterface */
     protected $logger;
@@ -68,21 +69,23 @@ class ExportController extends AbstractController implements EventSubscriberInte
                 'pattern' => '/^[A-F0-9]{32}$/'
             ])
         ]);
-
         if (count($shopkeyViolations) > 0) {
             throw new InvalidArgumentException(
-                sprintf('Required argument "shopkey" was not given, or does not match the shopkey schema %s', $shopkey)
+                sprintf(
+                    'Required argument "shopkey" was not given, or does not match the shopkey schema "%s"',
+                    $shopkey
+                )
             );
         }
 
         $startViolations = $validator->validate($start, [
             new Assert\Type([
                 'type' => 'integer',
-                'message' => 'The value {{ value }} is not a valid {{ type }}.',
+                'message' => 'The value {{ value }} is not a valid {{ type }}',
             ]),
             new Assert\GreaterThanOrEqual([
                 'value' => 0,
-                'message' => 'The value {{ value }} is not greater than or equal to zero.'
+                'message' => 'The value {{ value }} is not greater than or equal to zero'
             ])
         ]);
         if (count($startViolations) > 0) {
@@ -92,11 +95,11 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $countViolations = $validator->validate($count, [
             new Assert\Type([
                 'type' => 'integer',
-                'message' => 'The value {{ value }} is not a valid {{ type }}.',
+                'message' => 'The value {{ value }} is not a valid {{ type }}',
             ]),
             new Assert\GreaterThan([
                 'value' => 0,
-                'message' => 'The value {{ value }} is not greater than zero.'
+                'message' => 'The value {{ value }} is not greater than zero'
             ])
         ]);
         if (count($countViolations) > 0) {
@@ -118,6 +121,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
         foreach ($systemConfigEntities as $systemConfigEntity) {
             if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
+                // If there is no sales channel assigned, we will return the current context
                 if ($systemConfigEntity->getSalesChannelId() === null) {
                     return $currentContext;
                 }
