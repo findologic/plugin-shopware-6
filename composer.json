@@ -10,7 +10,8 @@
   ],
   "require": {
     "shopware/core": "dev-master",
-    "shopware/storefront": "dev-master"
+    "shopware/storefront": "dev-master",
+    "findologic/libflexport": "^2.4"
   },
   "extra": {
     "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",

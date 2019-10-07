@@ -13,8 +13,9 @@
             <tag name="kernel.event_subscriber" />
             <tag name="monolog.logger" channel="file" />
             <call method="setContainer">
-                <argument type="service" id="service_container"/>
+                <argument type="service" id="service_container" />
             </call>
+            <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
         </service>
     </services>
 </container>

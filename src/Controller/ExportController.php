@@ -8,13 +8,17 @@ use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Tax\TaxDetector;
+use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
+use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,9 +37,13 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /** @var LoggerInterface */
     protected $logger;
 
-    public function __construct(LoggerInterface $logger)
+    /** @var Router */
+    private $router;
+
+    public function __construct(LoggerInterface $logger, Router $router)
     {
         $this->logger = $logger;
+        $this->router = $router;
     }
 
     public static function getSubscribedEvents(): array
@@ -146,5 +154,49 @@ class ExportController extends AbstractController implements EventSubscriberInte
         }
 
         throw new UnknownShopkeyException(sprintf('Given shopkey "%s" is not assigned to any shop', $shopkey));
+    }
+
+    public function queryProducts(
+        SalesChannelContext $salesChannelContext,
+        ?int $offset = null,
+        ?int $limit = null
+    ): EntitySearchResult {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('parent.id', null));
+        $criteria->addFilter(new ProductAvailableFilter(
+                $salesChannelContext->getSalesChannel()->getId(),
+                ProductVisibilityDefinition::VISIBILITY_SEARCH)
+        );
+        $criteria->addAssociation('categories');
+        $criteria->addAssociation('children');
+
+        if ($offset !== null) {
+            $criteria->setOffset($offset);
+        }
+        if ($limit !== null) {
+            $criteria->setLimit($limit);
+        }
+
+        return $this->container->get('product.repository')->search($criteria, $salesChannelContext->getContext());
+    }
+
+    public function getTotalProductCount(SalesChannelContext $salesChannelContext): int
+    {
+        return $this->queryProducts($salesChannelContext)->getEntities()->count();
+    }
+
+    public function getProductsFromShop(
+        SalesChannelContext $salesChannelContext,
+        ?int $start,
+        ?int $count
+    ): EntitySearchResult {
+        if ($start === null) {
+            $start = self::DEFAULT_START_PARAM;
+        }
+        if ($count === null) {
+            $count = self::DEFAULT_COUNT_PARAM;
+        }
+
+        return $this->queryProducts($salesChannelContext, $start, $count);
     }
 }
