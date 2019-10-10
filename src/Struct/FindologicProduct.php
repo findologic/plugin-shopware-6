@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
@@ -175,14 +176,16 @@ class FindologicProduct extends Struct
             foreach ($this->customerGroups as $customerGroup) {
                 $price = new Price();
                 if ($customerGroup->getDisplayGross()) {
-                    $price->setValue($item->getGross(),
+                    $price->setValue(
+                        $item->getGross(),
                         Utils::calculateUserGroupHash(
                             $this->shopkey,
                             $customerGroup->getId()
                         )
                     );
                 } else {
-                    $price->setValue($item->getNet(),
+                    $price->setValue(
+                        $item->getNet(),
                         Utils::calculateUserGroupHash(
                             $this->shopkey,
                             $customerGroup->getId()

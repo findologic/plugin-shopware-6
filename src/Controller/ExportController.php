@@ -84,7 +84,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
         /** @var ProductEntity $productEntity */
         foreach ($productEntities as $productEntity) {
             try {
-                $xmlProduct = new XmlProduct($productEntity,
+                $xmlProduct = new XmlProduct(
+                    $productEntity,
                     $this->router,
                     $salesChannelContext->getContext(),
                     $this->container,
@@ -94,28 +95,38 @@ class ExportController extends AbstractController implements EventSubscriberInte
                 $items[] = $xmlProduct->getXmlItem();
             } catch (AccessEmptyPropertyException $e) {
                 $this->logger->warning(
-                    sprintf('Product with id %s was not exported because the property does not exist',
-                        $productEntity->getId())
+                    sprintf(
+                        'Product with id %s was not exported because the property does not exist',
+                        $productEntity->getId()
+                    )
                 );
             } catch (ProductHasNoAttributesException $e) {
                 $this->logger->warning(
-                    sprintf('Product with id %s was not exported because it has no attributes',
-                        $productEntity->getId())
+                    sprintf(
+                        'Product with id %s was not exported because it has no attributes',
+                        $productEntity->getId()
+                    )
                 );
             } catch (ProductHasNoNameException $e) {
                 $this->logger->warning(
-                    sprintf('Product with id %s was not exported because it has no name set',
-                        $productEntity->getId())
+                    sprintf(
+                        'Product with id %s was not exported because it has no name set',
+                        $productEntity->getId()
+                    )
                 );
             } catch (ProductHasNoPricesException $e) {
                 $this->logger->warning(
-                    sprintf('Product with id %s was not exported because it has no price associated to it',
-                        $productEntity->getId())
+                    sprintf(
+                        'Product with id %s was not exported because it has no price associated to it',
+                        $productEntity->getId()
+                    )
                 );
             } catch (ProductHasNoCategoriesException $e) {
                 $this->logger->warning(
-                    sprintf('Product with id %s was not exported because it has no categories assigned',
-                        $productEntity->getId())
+                    sprintf(
+                        'Product with id %s was not exported because it has no categories assigned',
+                        $productEntity->getId()
+                    )
                 );
             }
         }
@@ -233,9 +244,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('parent.id', null));
         $criteria->addFilter(new ProductAvailableFilter(
-                $salesChannelContext->getSalesChannel()->getId(),
-                ProductVisibilityDefinition::VISIBILITY_SEARCH)
-        );
+            $salesChannelContext->getSalesChannel()->getId(),
+            ProductVisibilityDefinition::VISIBILITY_SEARCH
+        ));
         $criteria->addAssociation('categories');
         $criteria->addAssociation('children');
 
