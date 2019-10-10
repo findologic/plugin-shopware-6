@@ -7,7 +7,6 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <tag name="kernel.event_subscriber" />
         </service>
-
         <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
             <argument type="service" id="logger" />
             <tag name="kernel.event_subscriber" />
@@ -17,5 +16,8 @@
             </call>
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
         </service>
+        <service class="FINDOLOGIC\FinSearch\Export\FindologicProductFactory"
+            id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory" public="true"
+        />
     </services>
 </container>

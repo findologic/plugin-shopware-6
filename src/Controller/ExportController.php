@@ -4,11 +4,19 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
+use FINDOLOGIC\Export\Exporter;
+use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
+use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Tax\TaxDetector;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -18,6 +26,7 @@ use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SystemConfig\SystemConfigEntity;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -58,17 +67,76 @@ class ExportController extends AbstractController implements EventSubscriberInte
     public function export(Request $request, SalesChannelContext $context): Response
     {
         $this->validateParams($request);
+
         $shopkey = $request->get('shopkey');
+        $start = (int)$request->get('start', self::DEFAULT_START_PARAM);
+        $count = (int)$request->get('count', self::DEFAULT_COUNT_PARAM);
+
         $salesChannelContext = $this->getSalesChannelContext($shopkey, $context);
 
-        return new Response();
+        $totalProductsCount = $this->getTotalProductCount($salesChannelContext);
+        $productEntities = $this->getProductsFromShop($salesChannelContext, $start, $count);
+        $customerGroups = $this->container->get('customer_group.repository')
+            ->search(new Criteria(), $salesChannelContext->getContext())->getElements();
+
+        $items = [];
+
+        /** @var ProductEntity $productEntity */
+        foreach ($productEntities as $productEntity) {
+            try {
+                $xmlProduct = new XmlProduct($productEntity,
+                    $this->router,
+                    $salesChannelContext->getContext(),
+                    $this->container,
+                    $shopkey,
+                    $customerGroups
+                );
+                $items[] = $xmlProduct->getXmlItem();
+            } catch (AccessEmptyPropertyException $e) {
+                $this->logger->warning(
+                    sprintf('Product with id %s was not exported because the property does not exist',
+                        $productEntity->getId())
+                );
+            } catch (ProductHasNoAttributesException $e) {
+                $this->logger->warning(
+                    sprintf('Product with id %s was not exported because it has no attributes',
+                        $productEntity->getId())
+                );
+            } catch (ProductHasNoNameException $e) {
+                $this->logger->warning(
+                    sprintf('Product with id %s was not exported because it has no name set',
+                        $productEntity->getId())
+                );
+            } catch (ProductHasNoPricesException $e) {
+                $this->logger->warning(
+                    sprintf('Product with id %s was not exported because it has no price associated to it',
+                        $productEntity->getId())
+                );
+            } catch (ProductHasNoCategoriesException $e) {
+                $this->logger->warning(
+                    sprintf('Product with id %s was not exported because it has no categories assigned',
+                        $productEntity->getId())
+                );
+            }
+        }
+
+        $xmlExporter = Exporter::create(Exporter::TYPE_XML);
+
+        $response = $xmlExporter->serializeItems(
+            $items,
+            $start,
+            $count,
+            $totalProductsCount
+        );
+
+        return new Response($response, 200, ['Content-Type' => 'text/xml']);
     }
 
     private function validateParams(Request $request): void
     {
         $shopkey = $request->get('shopkey');
-        $start = $request->get('start', self::DEFAULT_START_PARAM);
-        $count = $request->get('count', self::DEFAULT_COUNT_PARAM);
+        $start = (int)$request->get('start', self::DEFAULT_START_PARAM);
+        $count = (int)$request->get('count', self::DEFAULT_COUNT_PARAM);
 
         $validator = Validation::createValidator();
         $shopkeyViolations = $validator->validate($shopkey, [
@@ -116,8 +184,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
     }
 
     /**
-     * @throws UnknownShopkeyException
      * @throws InconsistentCriteriaIdsException
+     * @throws UnknownShopkeyException
      */
     private function getSalesChannelContext(string $shopkey, SalesChannelContext $currentContext): SalesChannelContext
     {
@@ -127,6 +195,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $currentContext->getContext()
         );
 
+        /** @var SystemConfigEntity $systemConfigEntity */
         foreach ($systemConfigEntities as $systemConfigEntity) {
             if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
                 // If there is no sales channel assigned, we will return the current context

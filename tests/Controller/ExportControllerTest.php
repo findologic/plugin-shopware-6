@@ -16,7 +16,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
@@ -37,7 +36,7 @@ class ExportControllerTest extends TestCase
         parent::setUp();
 
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
-        $this->exportController = new ExportController($this->loggerMock);
+        $this->exportController = new ExportController($this->loggerMock, $this->getContainer()->get('router'));
     }
 
     public function invalidArgumentProvider(): array
@@ -61,12 +60,6 @@ class ExportControllerTest extends TestCase
                     'ABCD01815'
                 )
             ],
-            '"count" parameter is some string' => [
-                'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
-                'start' => 1,
-                'count' => 'some string',
-                'exceptionMessage' => 'The value "some string" is not a valid integer'
-            ],
             '"count" parameter is zero' => [
                 'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
                 'start' => 1,
@@ -78,12 +71,6 @@ class ExportControllerTest extends TestCase
                 'start' => 1,
                 'count' => -1,
                 'exceptionMessage' => 'The value -1 is not greater than zero'
-            ],
-            '"start" parameter is some string' => [
-                'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
-                'start' => 'some string',
-                'count' => 20,
-                'exceptionMessage' => 'The value "some string" is not a valid integer'
             ],
             '"start" parameter is a negative number' => [
                 'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
@@ -130,12 +117,28 @@ class ExportControllerTest extends TestCase
             $this->expectExceptionMessage($exceptionMessage);
         }
 
+        $invokeCount = $response ? $this->atLeastOnce() : $this->never();
+
+        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
+        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $salesChannelContextMock->expects($invokeCount)
+            ->method('getContext')
+            ->willReturn(Context::createDefaultContext());
+
+        /** @var Request $request */
+        $request = new Request(['shopkey' => $shopkey, 'start' => $start, 'count' => $count]);
+
+        /** @var ContainerInterface|MockObject $containerMock */
+        $containerMock = $this->getMockBuilder(ContainerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        $invokeCount = $response ? $this->atLeastOnce() : $this->never();
 
         /** @var SystemConfigEntity|MockObject $systemConfigEntity */
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
@@ -150,19 +153,12 @@ class ExportControllerTest extends TestCase
 
         $systemConfigRepositoryMock->expects($invokeCount)->method('search')->willReturn($configs);
 
-        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
-        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        /** @var Request $request */
-        $request = new Request(['shopkey' => $shopkey, 'start' => $start, 'count' => $count]);
-
-        /** @var ContainerInterface|MockObject $containerMock */
-        $containerMock = $this->getMockBuilder(ContainerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $containerMock->method('get')->willReturn($systemConfigRepositoryMock);
+        $containerRepositoriesMap = [
+            ['system_config.repository', $systemConfigRepositoryMock],
+            ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
+            ['product.repository', $this->getContainer()->get('product.repository')],
+        ];
+        $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
 
         $this->exportController->setContainer($containerMock);
 
@@ -176,14 +172,14 @@ class ExportControllerTest extends TestCase
     public function testExportWithSalesChannelId(): void
     {
         $this->markTestSkipped();
-        
-        $salesChannelId = Uuid::randomHex();
-        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
+
+        $salesChannelId = '1F6E8353E5AF483593ABFBD1D319AE84';
+        $shopkey = 'C4FE5E0DA907E9659D3709D8CFDBAE77';
         $start = 0;
         $count = 20;
 
-        /** @var EntityRepository|MockObject $entityRepositoryMock */
-        $entityRepositoryMock = $this->getMockBuilder(EntityRepository::class)
+        /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
+        $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -199,12 +195,11 @@ class ExportControllerTest extends TestCase
         $entitySearchResult =
             new EntitySearchResult(1, $entities, null, new Criteria(), Context::createDefaultContext());
 
-        $entityRepositoryMock->expects($this->atLeastOnce())->method('search')->willReturn($entitySearchResult);
+        $systemConfigRepositoryMock->expects($this->atLeastOnce())->method('search')->willReturn($entitySearchResult);
 
-        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
-        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $salesChannelContext = $this->getContainer()->get('sales_channel.repository')->search(new Criteria([
+            $salesChannelId,
+        ]), Context::createDefaultContext())->getEntities()->first();
 
         /** @var Request $request */
         $request = new Request(['shopkey' => $shopkey, 'start' => $start, 'count' => $count]);
@@ -213,25 +208,32 @@ class ExportControllerTest extends TestCase
         $containerMock = $this->getMockBuilder(ContainerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $containerMock->method('get')
-            ->with('system_config.repository')
-            ->willReturn($entityRepositoryMock);
 
-        $salesChannelContextMock->method('getContext')
-            ->willReturn(Context::createDefaultContext());
-        $salesChannelContextMock->expects($this->once())
-            ->method('getToken')
-            ->willReturn('tokenString');
+        $containerRepositoriesMap = [
+            ['system_config.repository', $systemConfigRepositoryMock],
+            ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
+            ['product.repository', $this->getContainer()->get('product.repository')],
+            ['sales_channel.repository', $this->getContainer()->get('sales_channel.repository')],
+            ['currency.repository', $this->getContainer()->get('currency.repository')],
+            ['customer.repository', $this->getContainer()->get('customer.repository')],
+            ['country.repository', $this->getContainer()->get('country.repository')],
+            ['tax.repository', $this->getContainer()->get('tax.repository')],
+            ['customer_address.repository', $this->getContainer()->get('customer_address.repository')],
+            ['payment_method.repository', $this->getContainer()->get('payment_method.repository')],
+            ['shipping_method.repository', $this->getContainer()->get('shipping_method.repository')],
+            ['country_state.repository', $this->getContainer()->get('country_state.repository')],
+        ];
+        $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
 
         $this->exportController->setContainer($containerMock);
-        $result = $this->exportController->export($request, $salesChannelContextMock);
+        $result = $this->exportController->export($request, $salesChannelContext);
 
         $this->assertEquals(200, $result->getStatusCode());
     }
 
     public function testExportWithUnknownShopkey(): void
     {
-        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
+        $shopkey = 'C4FE5E0DA907E9659D3709D8CFDBAE77';
         $unknownShopkey = '80AB18D4BE2654E782441CCCCCCCCCCC';
 
         $this->expectException(UnknownShopkeyException::class);

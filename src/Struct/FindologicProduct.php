@@ -9,12 +9,12 @@ use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Pricing\Price as ProductPrice;
-use Shopware\Core\Framework\Rule\Container\ContainerInterface;
 use Shopware\Core\Framework\Struct\Struct;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -47,6 +47,10 @@ class FindologicProduct extends Struct
     /** @var array */
     protected $prices;
 
+    /**
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoPricesException
+     */
     public function __construct(
         ProductEntity $product,
         RouterInterface $router,
@@ -61,16 +65,22 @@ class FindologicProduct extends Struct
         $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
+        $this->prices = [];
+        $this->attributes = [];
 
-        $this->setName($product->getName());
+        $this->setName();
         $this->setAttributes();
+        $this->setPrices();
     }
 
-    protected function setName(string $name): void
+    protected function setName(): void
     {
-        $this->name = $name;
+        $this->name = $this->product->getName();
     }
 
+    /**
+     * @throws ProductHasNoCategoriesException
+     */
     protected function setAttributes(): void
     {
         $this->setCategoriesAndCatUrls();
@@ -81,8 +91,8 @@ class FindologicProduct extends Struct
      */
     private function setCategoriesAndCatUrls(): void
     {
-        if (!$this->product->getCategories()) {
-            throw new ProductHasNoCategoriesException(sprintf('%s has no category', $this->name));
+        if (!$this->product->getCategories()->count()) {
+            throw new ProductHasNoCategoriesException();
         }
 
         /** @var Attribute $categoryAttribute */
@@ -119,18 +129,15 @@ class FindologicProduct extends Struct
             }
         }
 
-        if ($catUrls) {
+        if (!empty($catUrls)) {
             $catUrlAttribute->setValues(array_unique($catUrls));
+            $this->attributes[] = $catUrlAttribute;
         }
 
-        if ($categories) {
+        if (!empty($categories)) {
             $categoryAttribute->setValues(array_unique($categories));
+            $this->attributes[] = $categoryAttribute;
         }
-
-        $this->attributes = [
-            $categoryAttribute,
-            $catUrlAttribute
-        ];
     }
 
     /**
@@ -148,11 +155,9 @@ class FindologicProduct extends Struct
             return;
         }
 
-        $this->prices = [];
-
         /** @var ProductEntity $variant */
         foreach ($this->product->getChildren() as $variant) {
-            if (!$variant->getActive() || $variant->getStock() < 0) {
+            if (!$variant->getActive() || $variant->getStock() <= 0) {
                 continue;
             }
 
@@ -171,10 +176,18 @@ class FindologicProduct extends Struct
                 $price = new Price();
                 if ($customerGroup->getDisplayGross()) {
                     $price->setValue($item->getGross(),
-                        Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId()));
+                        Utils::calculateUserGroupHash(
+                            $this->shopkey,
+                            $customerGroup->getId()
+                        )
+                    );
                 } else {
                     $price->setValue($item->getNet(),
-                        Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId()));
+                        Utils::calculateUserGroupHash(
+                            $this->shopkey,
+                            $customerGroup->getId()
+                        )
+                    );
                 }
 
                 $prices[] = $price;
@@ -195,7 +208,7 @@ class FindologicProduct extends Struct
     {
         $prices = $this->getPricesFromProduct($this->product);
         if (empty($prices)) {
-            throw new ProductHasNoPricesException(sprintf('%s has no price set', $this->name));
+            throw new ProductHasNoPricesException();
         }
 
         $this->prices = array_merge($this->prices, $prices);
@@ -203,7 +216,7 @@ class FindologicProduct extends Struct
 
     public function hasName(): bool
     {
-        return $this->name && empty($this->name);
+        return $this->name && !empty($this->name);
     }
 
     public function hasAttributes(): bool
@@ -216,6 +229,9 @@ class FindologicProduct extends Struct
         return $this->prices && !empty($this->prices);
     }
 
+    /**
+     * @throws AccessEmptyPropertyException
+     */
     public function getName(): string
     {
         if (!$this->hasName()) {
@@ -225,6 +241,9 @@ class FindologicProduct extends Struct
         return $this->name;
     }
 
+    /**
+     * @throws AccessEmptyPropertyException
+     */
     public function getAttributes(): array
     {
         if (!$this->hasAttributes()) {
@@ -234,6 +253,9 @@ class FindologicProduct extends Struct
         return $this->attributes;
     }
 
+    /**
+     * @throws AccessEmptyPropertyException
+     */
     public function getPrices(): array
     {
         if (!$this->hasPrices()) {
