@@ -58,7 +58,9 @@ class XmlProductTest extends TestCase
 
         /** @var ContainerInterface|MockObject $containerMock */
         $containerMock = $this->getMockBuilder(ContainerInterface::class)->disableOriginalConstructor()->getMock();
-        $containerMock->expects($this->once())->method('get')->with(FindologicProductFactory::class)->willReturn($findologicFactoryMock);
+        $containerMock->expects($this->once())->method('get')
+            ->with(FindologicProductFactory::class)
+            ->willReturn($findologicFactoryMock);
 
         $xmlProduct =
             new XmlProduct(
