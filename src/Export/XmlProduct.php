@@ -58,15 +58,15 @@ class XmlProduct
     public function __construct(
         ProductEntity $product,
         RouterInterface $router,
-        Context $context,
         ContainerInterface $container,
+        Context $context,
         string $shopkey,
         array $customerGroups
     ) {
         $this->product = $product;
         $this->router = $router;
-        $this->context = $context;
         $this->container = $container;
+        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
 
@@ -98,8 +98,8 @@ class XmlProduct
     }
 
     /**
-     * @throws ProductHasNoNameException
      * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoNameException
      */
     private function setName(): void
     {

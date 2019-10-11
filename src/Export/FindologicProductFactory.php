@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
@@ -17,6 +18,7 @@ class FindologicProductFactory
     /**
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoPricesException
+     * @throws ProductHasNoNameException
      */
     public function buildInstance(
         ProductEntity $product,

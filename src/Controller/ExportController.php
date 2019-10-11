@@ -87,8 +87,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
                 $xmlProduct = new XmlProduct(
                     $productEntity,
                     $this->router,
-                    $salesChannelContext->getContext(),
                     $this->container,
+                    $salesChannelContext->getContext(),
                     $shopkey,
                     $customerGroups
                 );

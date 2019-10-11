@@ -8,6 +8,7 @@ use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
@@ -51,6 +52,7 @@ class FindologicProduct extends Struct
     /**
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoPricesException
+     * @throws ProductHasNoNameException
      */
     public function __construct(
         ProductEntity $product,
@@ -74,8 +76,15 @@ class FindologicProduct extends Struct
         $this->setPrices();
     }
 
+    /**
+     * @throws ProductHasNoNameException
+     */
     protected function setName(): void
     {
+        if (empty($this->product->getName())) {
+            throw new ProductHasNoNameException();
+        }
+
         $this->name = $this->product->getName();
     }
 
@@ -92,7 +101,7 @@ class FindologicProduct extends Struct
      */
     private function setCategoriesAndCatUrls(): void
     {
-        if (!$this->product->getCategories()->count()) {
+        if (empty($this->product->getCategories()->count())) {
             throw new ProductHasNoCategoriesException();
         }
 
@@ -178,18 +187,12 @@ class FindologicProduct extends Struct
                 if ($customerGroup->getDisplayGross()) {
                     $price->setValue(
                         $item->getGross(),
-                        Utils::calculateUserGroupHash(
-                            $this->shopkey,
-                            $customerGroup->getId()
-                        )
+                        Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId())
                     );
                 } else {
                     $price->setValue(
                         $item->getNet(),
-                        Utils::calculateUserGroupHash(
-                            $this->shopkey,
-                            $customerGroup->getId()
-                        )
+                        Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId())
                     );
                 }
 
