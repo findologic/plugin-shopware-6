@@ -58,7 +58,9 @@ class FindologicProductFactoryTest extends TestCase
 
         $this->assertInstanceOf(ProductEntity::class, $productEntity);
 
+        /** @var FindologicProductFactory $findologicProductFactory */
         $findologicProductFactory = new FindologicProductFactory();
+
         $findologicProduct =
             $findologicProductFactory->buildInstance(
                 $productEntity,

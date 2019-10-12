@@ -41,7 +41,7 @@ class FindologicProductTest extends TestCase
         $this->shopkey = 'C4FE5E0DA907E9659D3709D8CFDBAE77';
     }
 
-    public function productNameProvider()
+    public function productNameProvider(): array
     {
         return [
             'Product name is empty' => ['', ProductHasNoNameException::class],
@@ -81,7 +81,7 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    public function categoriesProvider()
+    public function categoriesProvider(): array
     {
         return [
             'Product has no category' => [false, ProductHasNoCategoriesException::class],
@@ -122,7 +122,7 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    public function priceProvider()
+    public function priceProvider(): array
     {
         $price = new Price();
         $price->setValue(15);
@@ -136,7 +136,7 @@ class FindologicProductTest extends TestCase
     /**
      * @dataProvider priceProvider
      */
-    public function testProductPrices(?Price $price, ?string $exception)
+    public function testProductPrices(?Price $price, ?string $exception): void
     {
         if ($exception) {
             $this->expectException($exception);

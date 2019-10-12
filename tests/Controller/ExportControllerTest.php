@@ -140,8 +140,6 @@ class ExportControllerTest extends TestCase
         int $start,
         int $count
     ): void {
-        $invokeCount = $this->atLeastOnce();
-
         $salesChannelId = '1F6E8353E5AF483593ABFBD1D319AE84';
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
@@ -152,7 +150,9 @@ class ExportControllerTest extends TestCase
         $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
         $salesChannelMock->method('getId')->willReturn($salesChannelId);
 
-        $salesChannelContextMock->expects($invokeCount)->method('getContext')->willReturn($this->defaultContext);
+        $salesChannelContextMock->expects($this->atLeastOnce())
+            ->method('getContext')
+            ->willReturn($this->defaultContext);
 
         $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
 
@@ -168,8 +168,8 @@ class ExportControllerTest extends TestCase
 
         /** @var SystemConfigEntity|MockObject $systemConfigEntity */
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->expects($invokeCount)->method('getConfigurationValue')->willReturn($shopkey);
-        $systemConfigEntity->expects($invokeCount)->method('getSalesChannelId')->willReturn(null);
+        $systemConfigEntity->expects($this->atLeastOnce())->method('getConfigurationValue')->willReturn($shopkey);
+        $systemConfigEntity->expects($this->atLeastOnce())->method('getSalesChannelId')->willReturn(null);
 
         /** @var SystemConfigCollection $systemConfigCollection */
         $systemConfigCollection = new SystemConfigCollection([$systemConfigEntity]);
@@ -178,7 +178,7 @@ class ExportControllerTest extends TestCase
         $systemConfigEntitySearchResult =
             new EntitySearchResult(1, $systemConfigCollection, null, new Criteria(), $this->defaultContext);
 
-        $systemConfigRepositoryMock->expects($invokeCount)
+        $systemConfigRepositoryMock->expects($this->atLeastOnce())
             ->method('search')
             ->willReturn($systemConfigEntitySearchResult);
 
@@ -186,6 +186,7 @@ class ExportControllerTest extends TestCase
         $productRepositoryMock =
             $this->getMockBuilder(EntityRepository::class)->disableOriginalConstructor()->getMock();
 
+        // Create test product
         $id = Uuid::randomHex();
 
         $data = [
@@ -257,16 +258,24 @@ class ExportControllerTest extends TestCase
         $result = $this->exportController->export($request, $salesChannelContextMock);
 
         $this->assertEquals(200, $result->getStatusCode());
+        $this->assertStringContainsString('total="1"', $result->getContent());
     }
 
     public function testExportWithSalesChannelId(): void
     {
-        $this->markTestSkipped();
-
-        $salesChannelId = '1F6E8353E5AF483593ABFBD1D319AE84';
         $shopkey = 'C4FE5E0DA907E9659D3709D8CFDBAE77';
         $start = 0;
         $count = 20;
+
+        /** @var EntityRepository $repository */
+        $repository = $this->getContainer()->get('sales_channel.repository');
+
+        $criteria = (new Criteria())->setLimit(1);
+        $salesChannelId = $repository->searchIds($criteria, $this->defaultContext)->getIds()[0];
+
+        /** @var SalesChannelEntity|MockObject $salesChannelMock */
+        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
+        $salesChannelMock->method('getId')->willReturn($salesChannelId);
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock =
@@ -293,17 +302,6 @@ class ExportControllerTest extends TestCase
         $salesChannelContextMock->expects($this->atLeastOnce())
             ->method('getContext')
             ->willReturn($this->defaultContext);
-
-        $criteria = new Criteria([$salesChannelId]);
-        $criteria->addAssociation('currency');
-
-        $salesChannel = $this->getContainer()
-            ->get('sales_channel.repository')
-            ->search($criteria, $this->defaultContext)
-            ->getEntities()
-            ->first();
-
-        $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannel);
 
         /** @var Request $request */
         $request = new Request(['shopkey' => $shopkey, 'start' => $start, 'count' => $count]);

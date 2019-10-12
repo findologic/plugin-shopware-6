@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
@@ -45,12 +46,58 @@ class XmlProductTest extends TestCase
             $shopkey,
             []
         ])->getMock();
-        $findologicProductMock->expects($this->atLeastOnce())->method('hasName');
-        $findologicProductMock->expects($this->atLeastOnce())->method('hasAttributes');
-        $findologicProductMock->expects($this->atLeastOnce())->method('hasPrices');
-        $findologicProductMock->expects($this->atLeastOnce())->method('getName');
-        $findologicProductMock->expects($this->atLeastOnce())->method('getAttributes');
-        $findologicProductMock->expects($this->atLeastOnce())->method('getPrices');
+        $findologicProductMock->expects($this->atLeastOnce())->method('hasName')->willReturn(true);
+        $findologicProductMock->expects($this->atLeastOnce())->method('getName')->willReturn($productEntity->getName());
+        $findologicProductMock->expects($this->atLeastOnce())->method('hasAttributes')->willReturn(true);
+        $findologicProductMock->expects($this->atLeastOnce())->method('getAttributes')->willReturn([]);
+        $findologicProductMock->expects($this->atLeastOnce())->method('hasPrices')->willReturn(true);
+        $findologicProductMock->expects($this->atLeastOnce())->method('getPrices')->willReturn([]);
+
+        /** @var FindologicProductFactory|MockObject $findologicFactoryMock */
+        $findologicFactoryMock = $this->getMockBuilder(FindologicProductFactory::class)->getMock();
+        $findologicFactoryMock->expects($this->once())->method('buildInstance')->willReturn($findologicProductMock);
+
+        /** @var ContainerInterface|MockObject $containerMock */
+        $containerMock = $this->getMockBuilder(ContainerInterface::class)->disableOriginalConstructor()->getMock();
+        $containerMock->expects($this->once())->method('get')
+            ->with(FindologicProductFactory::class)
+            ->willReturn($findologicFactoryMock);
+
+        $xmlProduct =
+            new XmlProduct(
+                $productEntity,
+                $this->getContainer()->get('router'),
+                $containerMock,
+                $this->defaultContext,
+                $shopkey,
+                []
+            );
+    }
+
+    public function testAttributeException(): void
+    {
+        $this->expectException(ProductHasNoAttributesException::class);
+
+        $shopkey = 'C4FE5E0DA907E9659D3709D8CFDBAE77';
+
+        /** @var ProductEntity $productEntity */
+        $productEntity = $this->createTestProduct();
+
+        /** @var FindologicProduct|MockObject $findologicProductMock */
+        $findologicProductMock = $this->getMockBuilder(FindologicProduct::class)->setConstructorArgs([
+            $productEntity,
+            $this->getContainer()->get('router'),
+            $this->getContainer(),
+            $this->defaultContext,
+            $shopkey,
+            []
+        ])->getMock();
+        $findologicProductMock->expects($this->atLeastOnce())->method('hasName')->willReturn(true);
+        $findologicProductMock->expects($this->atLeastOnce())->method('getName')->willReturn($productEntity->getName());
+        $findologicProductMock->expects($this->atLeastOnce())->method('hasAttributes')->willReturn(false);
+        $findologicProductMock->expects($this->never())->method('getAttributes');
+        $findologicProductMock->expects($this->never())->method('hasPrices');
+        $findologicProductMock->expects($this->never())->method('getPrices');
 
         /** @var FindologicProductFactory|MockObject $findologicFactoryMock */
         $findologicFactoryMock = $this->getMockBuilder(FindologicProductFactory::class)->getMock();
