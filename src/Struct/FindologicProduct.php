@@ -37,7 +37,7 @@ class FindologicProduct extends Struct
     /** @var string */
     protected $shopkey;
 
-    /** @var string[] */
+    /** @var CustomerGroupEntity[] */
     protected $customerGroups;
 
     /** @var string */

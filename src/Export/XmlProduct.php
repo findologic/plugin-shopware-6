@@ -15,6 +15,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Symfony\Component\Routing\RouterInterface;
@@ -36,7 +37,7 @@ class XmlProduct
     /** @var string */
     private $shopkey;
 
-    /** @var string[] */
+    /** @var CustomerGroupEntity[] */
     private $customerGroups;
 
     /** @var Item */
@@ -49,7 +50,7 @@ class XmlProduct
     private $findologicProduct;
 
     /**
-     * @param string[] $customerGroups
+     * @param CustomerGroupEntity[] $customerGroups
      *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoAttributesException

@@ -15,6 +15,7 @@ use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Tax\TaxDetector;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
@@ -244,7 +245,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     }
 
     /**
-     * @param string[] $customerGroups
+     * @param CustomerGroupEntity[] $customerGroups
      *
      * @return XmlProduct[]
      */

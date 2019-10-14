@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Symfony\Component\Routing\RouterInterface;
@@ -16,7 +17,7 @@ use Symfony\Component\Routing\RouterInterface;
 class FindologicProductFactory
 {
     /**
-     * @param string[] $customerGroups
+     * @param CustomerGroupEntity[] $customerGroups
      *
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoPricesException
