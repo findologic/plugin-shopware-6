@@ -30,7 +30,6 @@ use Shopware\Core\System\SystemConfig\SystemConfigCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
 use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Request;
-use function strtoupper;
 
 class ExportControllerTest extends TestCase
 {
@@ -114,6 +113,7 @@ class ExportControllerTest extends TestCase
     /**
      * @param int|string $start
      * @param int|string $count
+     *
      * @dataProvider invalidArgumentProvider
      */
     public function testExportWithInvalidArguments(
