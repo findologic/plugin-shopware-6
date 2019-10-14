@@ -79,57 +79,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $customerGroups = $this->container->get('customer_group.repository')
             ->search(new Criteria(), $salesChannelContext->getContext())->getElements();
 
-        $items = [];
-
-        /** @var ProductEntity $productEntity */
-        foreach ($productEntities as $productEntity) {
-            try {
-                $xmlProduct = new XmlProduct(
-                    $productEntity,
-                    $this->router,
-                    $this->container,
-                    $salesChannelContext->getContext(),
-                    $shopkey,
-                    $customerGroups
-                );
-                $items[] = $xmlProduct->getXmlItem();
-            } catch (AccessEmptyPropertyException $e) {
-                $this->logger->warning(
-                    sprintf(
-                        'Product with id %s was not exported because the property does not exist',
-                        $productEntity->getId()
-                    )
-                );
-            } catch (ProductHasNoAttributesException $e) {
-                $this->logger->warning(
-                    sprintf(
-                        'Product with id %s was not exported because it has no attributes',
-                        $productEntity->getId()
-                    )
-                );
-            } catch (ProductHasNoNameException $e) {
-                $this->logger->warning(
-                    sprintf(
-                        'Product with id %s was not exported because it has no name set',
-                        $productEntity->getId()
-                    )
-                );
-            } catch (ProductHasNoPricesException $e) {
-                $this->logger->warning(
-                    sprintf(
-                        'Product with id %s was not exported because it has no price associated to it',
-                        $productEntity->getId()
-                    )
-                );
-            } catch (ProductHasNoCategoriesException $e) {
-                $this->logger->warning(
-                    sprintf(
-                        'Product with id %s was not exported because it has no categories assigned',
-                        $productEntity->getId()
-                    )
-                );
-            }
-        }
+        $items = $this->getAllItems($productEntities, $salesChannelContext, $shopkey, $customerGroups);
 
         $xmlExporter = Exporter::create(Exporter::TYPE_XML);
 
@@ -146,8 +96,18 @@ class ExportController extends AbstractController implements EventSubscriberInte
     private function validateParams(Request $request): void
     {
         $shopkey = $request->get('shopkey');
-        $start = (int)$request->get('start', self::DEFAULT_START_PARAM);
-        $count = (int)$request->get('count', self::DEFAULT_COUNT_PARAM);
+        $start = $request->get('start', self::DEFAULT_START_PARAM);
+        $count = $request->get('count', self::DEFAULT_COUNT_PARAM);
+
+        // We need to have this check here because even though the count / start parameters are passed as integers
+        // the request object returns it as a string which then fails in the validation below. So to overcome this
+        // and also to avoid random strings to be casted as integer, we will first check if it is a numeric value
+        if (is_numeric($request->get('start'))) {
+            $start = (int)$request->get('start');
+        }
+        if (is_numeric($request->get('count'))) {
+            $count = (int)$request->get('count');
+        }
 
         $validator = Validation::createValidator();
         $shopkeyViolations = $validator->validate($shopkey, [
@@ -278,5 +238,71 @@ class ExportController extends AbstractController implements EventSubscriberInte
         }
 
         return $this->queryProducts($salesChannelContext, $start, $count);
+    }
+
+    /**
+     * @param string[] $customerGroups
+     *
+     * @return XmlProduct[]
+     */
+    private function getAllItems(
+        EntitySearchResult $productEntities,
+        SalesChannelContext $salesChannelContext,
+        string $shopkey,
+        array $customerGroups
+    ): array {
+        $items = [];
+
+        /** @var ProductEntity $productEntity */
+        foreach ($productEntities as $productEntity) {
+            try {
+                $xmlProduct = new XmlProduct(
+                    $productEntity,
+                    $this->router,
+                    $this->container,
+                    $salesChannelContext->getContext(),
+                    $shopkey,
+                    $customerGroups
+                );
+                $items[] = $xmlProduct->getXmlItem();
+            } catch (AccessEmptyPropertyException $e) {
+                $this->logger->warning(
+                    sprintf(
+                        'Product with id %s was not exported because the property does not exist',
+                        $productEntity->getId()
+                    )
+                );
+            } catch (ProductHasNoAttributesException $e) {
+                $this->logger->warning(
+                    sprintf(
+                        'Product with id %s was not exported because it has no attributes',
+                        $productEntity->getId()
+                    )
+                );
+            } catch (ProductHasNoNameException $e) {
+                $this->logger->warning(
+                    sprintf(
+                        'Product with id %s was not exported because it has no name set',
+                        $productEntity->getId()
+                    )
+                );
+            } catch (ProductHasNoPricesException $e) {
+                $this->logger->warning(
+                    sprintf(
+                        'Product with id %s was not exported because it has no price associated to it',
+                        $productEntity->getId()
+                    )
+                );
+            } catch (ProductHasNoCategoriesException $e) {
+                $this->logger->warning(
+                    sprintf(
+                        'Product with id %s was not exported because it has no categories assigned',
+                        $productEntity->getId()
+                    )
+                );
+            }
+        }
+
+        return $items;
     }
 }

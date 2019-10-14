@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
@@ -21,7 +22,7 @@ class FrontendSubscriberTest extends TestCase
 
     public function testHeaderPageletLoadedEvent(): void
     {
-        $shopkey = '000000000000000ZZZZZZZZZZZZZZZZZ';
+        $shopkey = strtoupper(Uuid::randomHex());
         $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();

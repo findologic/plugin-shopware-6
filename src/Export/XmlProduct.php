@@ -36,7 +36,7 @@ class XmlProduct
     /** @var string */
     private $shopkey;
 
-    /** @var array */
+    /** @var string[] */
     private $customerGroups;
 
     /** @var Item */
@@ -49,6 +49,8 @@ class XmlProduct
     private $findologicProduct;
 
     /**
+     * @param string[] $customerGroups
+     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoAttributesException
      * @throws ProductHasNoNameException

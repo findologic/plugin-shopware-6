@@ -37,7 +37,7 @@ class FindologicProduct extends Struct
     /** @var string */
     protected $shopkey;
 
-    /** @var array */
+    /** @var string[] */
     protected $customerGroups;
 
     /** @var string */
@@ -46,10 +46,12 @@ class FindologicProduct extends Struct
     /** @var Attribute[] */
     protected $attributes;
 
-    /** @var array */
+    /** @var Price[] */
     protected $prices;
 
     /**
+     * @param string[] $customerGroups
+     *
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoPricesException
      * @throws ProductHasNoNameException
@@ -175,6 +177,9 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @return Price[]
+     */
     private function getPricesFromProduct(ProductEntity $variant): array
     {
         $prices = [];
@@ -248,6 +253,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @return Attribute[]
      * @throws AccessEmptyPropertyException
      */
     public function getAttributes(): array
@@ -260,6 +266,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @return Price[]
      * @throws AccessEmptyPropertyException
      */
     public function getPrices(): array

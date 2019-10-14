@@ -16,6 +16,8 @@ use Symfony\Component\Routing\RouterInterface;
 class FindologicProductFactory
 {
     /**
+     * @param string[] $customerGroups
+     *
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoPricesException
      * @throws ProductHasNoNameException

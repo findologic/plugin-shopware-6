@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Controller;
 use FINDOLOGIC\FinSearch\Controller\ExportController;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Tests\ProductHelper;
 use InvalidArgumentException;
 use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,7 +17,6 @@ use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityD
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
-use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -28,11 +28,14 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
+use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Request;
+use function strtoupper;
 
 class ExportControllerTest extends TestCase
 {
     use IntegrationTestBehaviour;
+    use ProductHelper;
 
     /** @var ExportController */
     private $exportController;
@@ -54,6 +57,8 @@ class ExportControllerTest extends TestCase
 
     public function invalidArgumentProvider(): array
     {
+        $validShopkey = strtoupper(Uuid::randomHex());
+
         return [
             'No shopkey was provided' => [
                 'shopkey' => '',
@@ -74,19 +79,31 @@ class ExportControllerTest extends TestCase
                 )
             ],
             '"count" parameter is zero' => [
-                'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
+                'shopkey' => $validShopkey,
                 'start' => 1,
                 'count' => 0,
                 'exceptionMessage' => 'The value 0 is not greater than zero'
             ],
+            '"count" parameter is some string' => [
+                'shopkey' => $validShopkey,
+                'start' => 'some string',
+                'count' => 20,
+                'exceptionMessage' => 'The value "some string" is not a valid integer'
+            ],
             '"count" parameter is a negative number' => [
-                'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
+                'shopkey' => $validShopkey,
                 'start' => 1,
                 'count' => -1,
                 'exceptionMessage' => 'The value -1 is not greater than zero'
             ],
+            '"start" parameter is some string' => [
+                'shopkey' => $validShopkey,
+                'start' => 'some string',
+                'count' => 20,
+                'exceptionMessage' => 'The value "some string" is not a valid integer'
+            ],
             '"start" parameter is a negative number' => [
-                'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
+                'shopkey' => $validShopkey,
                 'start' => -1,
                 'count' => 20,
                 'exceptionMessage' => 'The value -1 is not greater than or equal to zero'
@@ -95,12 +112,14 @@ class ExportControllerTest extends TestCase
     }
 
     /**
+     * @param int|string $start
+     * @param int|string $count
      * @dataProvider invalidArgumentProvider
      */
     public function testExportWithInvalidArguments(
         string $shopkey,
-        int $start,
-        int $count,
+        $start,
+        $count,
         string $exceptionMessage
     ): void {
         $this->expectException(InvalidArgumentException::class);
@@ -140,7 +159,7 @@ class ExportControllerTest extends TestCase
         int $start,
         int $count
     ): void {
-        $salesChannelId = '1F6E8353E5AF483593ABFBD1D319AE84';
+        $salesChannelId = Uuid::randomHex();
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock =
@@ -150,7 +169,7 @@ class ExportControllerTest extends TestCase
         $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
         $salesChannelMock->method('getId')->willReturn($salesChannelId);
 
-        $salesChannelContextMock->expects($this->atLeastOnce())
+        $salesChannelContextMock->expects($this->exactly(5))
             ->method('getContext')
             ->willReturn($this->defaultContext);
 
@@ -168,8 +187,8 @@ class ExportControllerTest extends TestCase
 
         /** @var SystemConfigEntity|MockObject $systemConfigEntity */
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->expects($this->atLeastOnce())->method('getConfigurationValue')->willReturn($shopkey);
-        $systemConfigEntity->expects($this->atLeastOnce())->method('getSalesChannelId')->willReturn(null);
+        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($shopkey);
+        $systemConfigEntity->expects($this->once())->method('getSalesChannelId')->willReturn(null);
 
         /** @var SystemConfigCollection $systemConfigCollection */
         $systemConfigCollection = new SystemConfigCollection([$systemConfigEntity]);
@@ -178,7 +197,7 @@ class ExportControllerTest extends TestCase
         $systemConfigEntitySearchResult =
             new EntitySearchResult(1, $systemConfigCollection, null, new Criteria(), $this->defaultContext);
 
-        $systemConfigRepositoryMock->expects($this->atLeastOnce())
+        $systemConfigRepositoryMock->expects($this->once())
             ->method('search')
             ->willReturn($systemConfigEntitySearchResult);
 
@@ -186,30 +205,8 @@ class ExportControllerTest extends TestCase
         $productRepositoryMock =
             $this->getMockBuilder(EntityRepository::class)->disableOriginalConstructor()->getMock();
 
-        // Create test product
-        $id = Uuid::randomHex();
-
-        $data = [
-            'id' => $id,
-            'productNumber' => Uuid::randomHex(),
-            'stock' => 10,
-            'name' => 'FINDOLOGIC Test Product',
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
-            'manufacturer' => ['name' => 'FINDOLOGIC'],
-            'tax' => ['name' => '9%', 'taxRate' => 9],
-            'categories' => [
-                ['id' => $id, 'name' => 'FINDOLOGIC'],
-            ],
-        ];
-
-        $this->getContainer()->get('product.repository')->create([$data], $this->defaultContext);
-
-        $criteria = new Criteria([$id]);
-        $criteria->addAssociation('categories');
-
         /** @var ProductEntity $productEntity */
-        $productEntity =
-            $this->getContainer()->get('product.repository')->search($criteria, $this->defaultContext)->get($id);
+        $productEntity = $this->createTestProduct();
 
         $this->assertInstanceOf(ProductEntity::class, $productEntity);
 
@@ -258,12 +255,14 @@ class ExportControllerTest extends TestCase
         $result = $this->exportController->export($request, $salesChannelContextMock);
 
         $this->assertEquals(200, $result->getStatusCode());
-        $this->assertStringContainsString('total="1"', $result->getContent());
+        $xml = new SimpleXMLElement($result->getContent());
+        $this->assertSame(1, $xml->items->count());
+        $this->assertSame($productEntity->getId(), (string)$xml->items->item['id']);
     }
 
     public function testExportWithSalesChannelId(): void
     {
-        $shopkey = 'C4FE5E0DA907E9659D3709D8CFDBAE77';
+        $shopkey = strtoupper(Uuid::randomHex());
         $start = 0;
         $count = 20;
 
@@ -283,8 +282,8 @@ class ExportControllerTest extends TestCase
 
         /** @var SystemConfigEntity|MockObject $systemConfigEntity */
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->expects($this->atLeastOnce())->method('getConfigurationValue')->willReturn($shopkey);
-        $systemConfigEntity->expects($this->atLeastOnce())->method('getSalesChannelId')->willReturn($salesChannelId);
+        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($shopkey);
+        $systemConfigEntity->expects($this->exactly(2))->method('getSalesChannelId')->willReturn($salesChannelId);
 
         /** @var SystemConfigCollection $entities */
         $entities = new SystemConfigCollection([$systemConfigEntity]);
@@ -293,13 +292,13 @@ class ExportControllerTest extends TestCase
         $entitySearchResult =
             new EntitySearchResult(1, $entities, null, new Criteria(), $this->defaultContext);
 
-        $systemConfigRepositoryMock->expects($this->atLeastOnce())->method('search')->willReturn($entitySearchResult);
+        $systemConfigRepositoryMock->expects($this->once())->method('search')->willReturn($entitySearchResult);
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock =
             $this->getMockBuilder(SalesChannelContext::class)->disableOriginalConstructor()->getMock();
 
-        $salesChannelContextMock->expects($this->atLeastOnce())
+        $salesChannelContextMock->expects($this->once())
             ->method('getContext')
             ->willReturn($this->defaultContext);
 
@@ -333,8 +332,8 @@ class ExportControllerTest extends TestCase
 
     public function testExportWithUnknownShopkey(): void
     {
-        $shopkey = 'C4FE5E0DA907E9659D3709D8CFDBAE77';
-        $unknownShopkey = '80AB18D4BE2654E782441CCCCCCCCCCC';
+        $shopkey = strtoupper(Uuid::randomHex());
+        $unknownShopkey = strtoupper(Uuid::randomHex());
 
         $this->expectException(UnknownShopkeyException::class);
         $this->expectExceptionMessage(sprintf('Given shopkey "%s" is not assigned to any shop', $unknownShopkey));

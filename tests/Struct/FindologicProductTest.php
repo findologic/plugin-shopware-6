@@ -9,13 +9,12 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Tests\ProductHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Pricing\PriceCollection;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -23,6 +22,7 @@ use Shopware\Core\Framework\Uuid\Uuid;
 class FindologicProductTest extends TestCase
 {
     use IntegrationTestBehaviour;
+    use ProductHelper;
 
     /** @var ProductEntity|MockObject */
     private $productEntityMock;
@@ -38,7 +38,7 @@ class FindologicProductTest extends TestCase
         parent::setUp();
         $this->productEntityMock = $this->getMockBuilder(ProductEntity::class)->getMock();
         $this->defaultContext = Context::createDefaultContext();
-        $this->shopkey = 'C4FE5E0DA907E9659D3709D8CFDBAE77';
+        $this->shopkey = strtoupper(Uuid::randomHex());
     }
 
     public function productNameProvider(): array
@@ -99,6 +99,7 @@ class FindologicProductTest extends TestCase
         }
 
         $productEntity = $this->createTestProduct();
+
         if (!$hasCategory) {
             $productEntity->setCategories(new CategoryCollection([]));
         }
@@ -143,6 +144,7 @@ class FindologicProductTest extends TestCase
         }
 
         $productEntity = $this->createTestProduct();
+
         if (!$price) {
             $productEntity->setPrice(new PriceCollection([]));
         }
@@ -164,34 +166,5 @@ class FindologicProductTest extends TestCase
         } else {
             $this->assertFalse($findologicProduct->hasPrices());
         }
-    }
-
-    private function createTestProduct(): ProductEntity
-    {
-        $id = Uuid::randomHex();
-
-        $productData = [
-            'id' => $id,
-            'productNumber' => Uuid::randomHex(),
-            'stock' => 10,
-            'name' => 'Test name',
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
-            'manufacturer' => ['name' => 'FINDOLOGIC'],
-            'tax' => ['name' => '9%', 'taxRate' => 9],
-            'categories' => [
-                ['id' => $id, 'name' => 'Test Category'],
-            ],
-        ];
-
-        $this->getContainer()->get('product.repository')->upsert([$productData], $this->defaultContext);
-
-        $criteria = new Criteria([$id]);
-        $criteria->addAssociation('categories');
-
-        /** @var ProductEntity $product */
-        $productEntity =
-            $this->getContainer()->get('product.repository')->search($criteria, $this->defaultContext)->get($id);
-
-        return $productEntity;
     }
 }
