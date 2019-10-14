@@ -28,6 +28,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
+use Shopware\Storefront\Framework\Routing\Router;
 use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -49,8 +50,11 @@ class ExportControllerTest extends TestCase
     {
         parent::setUp();
 
+        /** @var Router $router */
+        $router = $this->getContainer()->get('router');
+
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
-        $this->exportController = new ExportController($this->loggerMock, $this->getContainer()->get('router'));
+        $this->exportController = new ExportController($this->loggerMock, $router);
         $this->defaultContext = Context::createDefaultContext();
     }
 
@@ -137,14 +141,16 @@ class ExportControllerTest extends TestCase
 
     public function validArgumentProvider(): array
     {
+        $validShopkey = strtoupper(Uuid::randomHex());
+
         return [
             'Well formed shopkey provided' => [
-                'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
+                'shopkey' => $validShopkey,
                 'start' => 1,
                 'count' => 20
             ],
             '"start" parameter is zero with well formed shopkey' => [
-                'shopkey' => '80AB18D4BE2654E78244106AD315DC2C',
+                'shopkey' => $validShopkey,
                 'start' => 0,
                 'count' => 20
             ],
@@ -350,10 +356,10 @@ class ExportControllerTest extends TestCase
         /** @var SystemConfigCollection $entities */
         $entities = new SystemConfigCollection([$systemConfigEntity]);
 
-        /** @var EntitySearchResult $configs */
-        $configs = new EntitySearchResult(1, $entities, null, new Criteria(), $this->defaultContext);
+        /** @var EntitySearchResult $systemConfigSearchResult */
+        $systemConfigSearchResult = new EntitySearchResult(1, $entities, null, new Criteria(), $this->defaultContext);
 
-        $systemConfigRepositoryMock->expects($this->once())->method('search')->willReturn($configs);
+        $systemConfigRepositoryMock->expects($this->once())->method('search')->willReturn($systemConfigSearchResult);
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock =
