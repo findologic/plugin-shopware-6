@@ -13,7 +13,7 @@ use Shopware\Core\Framework\Uuid\Uuid;
 
 trait ProductHelper
 {
-    public function createTestProduct(array $data = []): ProductEntity
+    public function createTestProduct(array $data = []): ?ProductEntity
     {
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();

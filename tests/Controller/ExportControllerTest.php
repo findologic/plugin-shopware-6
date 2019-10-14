@@ -60,7 +60,7 @@ class ExportControllerTest extends TestCase
 
     public function invalidArgumentProvider(): array
     {
-        $validShopkey = strtoupper(Uuid::randomHex());
+        $validShopkey = '80AB18D4BE2654E78244106AD315DC2C';
 
         return [
             'No shopkey was provided' => [
@@ -91,7 +91,7 @@ class ExportControllerTest extends TestCase
                 'shopkey' => $validShopkey,
                 'start' => 'some string',
                 'count' => 20,
-                'exceptionMessage' => 'The value "some string" is not a valid integer'
+                'exceptionMessage' => 'The value "some string" is not a valid numeric'
             ],
             '"count" parameter is a negative number' => [
                 'shopkey' => $validShopkey,
@@ -103,7 +103,7 @@ class ExportControllerTest extends TestCase
                 'shopkey' => $validShopkey,
                 'start' => 'some string',
                 'count' => 20,
-                'exceptionMessage' => 'The value "some string" is not a valid integer'
+                'exceptionMessage' => 'The value "some string" is not a valid numeric'
             ],
             '"start" parameter is a negative number' => [
                 'shopkey' => $validShopkey,
@@ -141,7 +141,7 @@ class ExportControllerTest extends TestCase
 
     public function validArgumentProvider(): array
     {
-        $validShopkey = strtoupper(Uuid::randomHex());
+        $validShopkey = '80AB18D4BE2654E78244106AD315DC2C';
 
         return [
             'Well formed shopkey provided' => [
@@ -268,7 +268,7 @@ class ExportControllerTest extends TestCase
 
     public function testExportWithSalesChannelId(): void
     {
-        $shopkey = strtoupper(Uuid::randomHex());
+        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
         $start = 0;
         $count = 20;
 
@@ -338,8 +338,8 @@ class ExportControllerTest extends TestCase
 
     public function testExportWithUnknownShopkey(): void
     {
-        $shopkey = strtoupper(Uuid::randomHex());
-        $unknownShopkey = strtoupper(Uuid::randomHex());
+        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
+        $unknownShopkey = '80AB18D4BE2654E78244106AD315DCCC';
 
         $this->expectException(UnknownShopkeyException::class);
         $this->expectExceptionMessage(sprintf('Given shopkey "%s" is not assigned to any shop', $unknownShopkey));

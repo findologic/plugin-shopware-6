@@ -11,7 +11,6 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\Framework\Uuid\Uuid;
 
 class FindologicProductFactoryTest extends TestCase
 {
@@ -29,7 +28,7 @@ class FindologicProductFactoryTest extends TestCase
 
     public function testBuildInstance(): void
     {
-        $shopkey = strtoupper(Uuid::randomHex());
+        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
         $productEntity = $this->createTestProduct();
 
         $this->assertInstanceOf(ProductEntity::class, $productEntity);

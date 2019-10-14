@@ -78,12 +78,12 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
         $salesChannelContext = $this->getSalesChannelContext($shopkey, $context);
 
-        $totalProductsCount = $this->getTotalProductCount($salesChannelContext);
+        $totalProductCount = $this->getTotalProductCount($salesChannelContext);
         $productEntities = $this->getProductsFromShop($salesChannelContext, $start, $count);
         $customerGroups = $this->container->get('customer_group.repository')
             ->search(new Criteria(), $salesChannelContext->getContext())->getElements();
 
-        $items = $this->getAllItems($productEntities, $salesChannelContext, $shopkey, $customerGroups);
+        $items = $this->buildXmlProducts($productEntities, $salesChannelContext, $shopkey, $customerGroups);
 
         $xmlExporter = Exporter::create(Exporter::TYPE_XML);
 
@@ -91,7 +91,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $items,
             $start,
             $count,
-            $totalProductsCount
+            $totalProductCount
         );
 
         return new Response($response, 200, ['Content-Type' => 'text/xml']);
@@ -102,16 +102,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $shopkey = $request->get('shopkey');
         $start = $request->get('start', self::DEFAULT_START_PARAM);
         $count = $request->get('count', self::DEFAULT_COUNT_PARAM);
-
-        // We need to have this check here because even if the count / start parameters are passed as integers
-        // the $request object returns it as a string which then fails in the validation below. So to overcome this
-        // and also to avoid random strings to be casted as integer, we will first check if it is a numeric value
-        if (is_numeric($start)) {
-            $start = (int)$start;
-        }
-        if (is_numeric($count)) {
-            $count = (int)$count;
-        }
 
         $validator = Validation::createValidator();
         $shopkeyViolations = $validator->validate($shopkey, [
@@ -131,7 +121,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
         $startViolations = $validator->validate($start, [
             new Assert\Type([
-                'type' => 'integer',
+                'type' => 'numeric',
                 'message' => 'The value {{ value }} is not a valid {{ type }}',
             ]),
             new Assert\GreaterThanOrEqual([
@@ -145,7 +135,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
         $countViolations = $validator->validate($count, [
             new Assert\Type([
-                'type' => 'integer',
+                'type' => 'numeric',
                 'message' => 'The value {{ value }} is not a valid {{ type }}',
             ]),
             new Assert\GreaterThan([
@@ -249,7 +239,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
      *
      * @return XmlProduct[]
      */
-    private function getAllItems(
+    private function buildXmlProducts(
         EntitySearchResult $productEntities,
         SalesChannelContext $salesChannelContext,
         string $shopkey,

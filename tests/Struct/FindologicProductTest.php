@@ -17,7 +17,6 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Pricing\PriceCollection;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\Framework\Uuid\Uuid;
 
 class FindologicProductTest extends TestCase
 {
@@ -38,7 +37,7 @@ class FindologicProductTest extends TestCase
         parent::setUp();
         $this->productEntityMock = $this->getMockBuilder(ProductEntity::class)->getMock();
         $this->defaultContext = Context::createDefaultContext();
-        $this->shopkey = strtoupper(Uuid::randomHex());
+        $this->shopkey = '80AB18D4BE2654E78244106AD315DC2C';
     }
 
     public function productNameProvider(): array
