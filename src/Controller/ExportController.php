@@ -69,6 +69,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $this->validateParams($request);
 
         $shopkey = $request->get('shopkey');
+
+        // We can safely cast the values here as integers because the validation is already taken care of in the
+        // previous step so if we reach till here, it means there are no invalid strings being passed as parameter here
         $start = (int)$request->get('start', self::DEFAULT_START_PARAM);
         $count = (int)$request->get('count', self::DEFAULT_COUNT_PARAM);
 
@@ -99,14 +102,14 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $start = $request->get('start', self::DEFAULT_START_PARAM);
         $count = $request->get('count', self::DEFAULT_COUNT_PARAM);
 
-        // We need to have this check here because even though the count / start parameters are passed as integers
-        // the request object returns it as a string which then fails in the validation below. So to overcome this
+        // We need to have this check here because even if the count / start parameters are passed as integers
+        // the $request object returns it as a string which then fails in the validation below. So to overcome this
         // and also to avoid random strings to be casted as integer, we will first check if it is a numeric value
-        if (is_numeric($request->get('start'))) {
-            $start = (int)$request->get('start');
+        if (is_numeric($start)) {
+            $start = (int)$start;
         }
-        if (is_numeric($request->get('count'))) {
-            $count = (int)$request->get('count');
+        if (is_numeric($count)) {
+            $count = (int)$count;
         }
 
         $validator = Validation::createValidator();
