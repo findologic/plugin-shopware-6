@@ -21,7 +21,7 @@ class FrontendSubscriberTest extends TestCase
 
     public function testHeaderPageletLoadedEvent(): void
     {
-        $shopkey = '000000000000000ZZZZZZZZZZZZZZZZZ';
+        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
         $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
