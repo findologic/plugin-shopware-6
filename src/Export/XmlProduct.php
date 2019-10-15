@@ -125,7 +125,7 @@ class XmlProduct
 
         /** @var Attribute $attribute */
         foreach ($this->findologicProduct->getAttributes() as $attribute) {
-            $this->xmlItem->addAttribute($attribute);
+            $this->xmlItem->addMergedAttribute($attribute);
         }
     }
 

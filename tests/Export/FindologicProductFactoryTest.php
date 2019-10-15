@@ -20,15 +20,18 @@ class FindologicProductFactoryTest extends TestCase
     /** @var Context */
     private $defaultContext;
 
+    /** @var string */
+    private $shopkey;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->defaultContext = Context::createDefaultContext();
+        $this->shopkey = '80AB18D4BE2654E78244106AD315DC2C';
     }
 
     public function testBuildInstance(): void
     {
-        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
         $productEntity = $this->createTestProduct();
 
         $this->assertInstanceOf(ProductEntity::class, $productEntity);
@@ -42,7 +45,7 @@ class FindologicProductFactoryTest extends TestCase
                 $this->getContainer()->get('router'),
                 $this->getContainer(),
                 $this->defaultContext,
-                $shopkey,
+                $this->shopkey,
                 []
             );
 

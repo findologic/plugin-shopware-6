@@ -46,6 +46,9 @@ class ExportControllerTest extends TestCase
     /** @var Context */
     private $defaultContext;
 
+    /** @var string */
+    private $validShopkey = '80AB18D4BE2654E78244106AD315DC2C';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -60,8 +63,6 @@ class ExportControllerTest extends TestCase
 
     public function invalidArgumentProvider(): array
     {
-        $validShopkey = '80AB18D4BE2654E78244106AD315DC2C';
-
         return [
             'No shopkey was provided' => [
                 'shopkey' => '',
@@ -82,31 +83,31 @@ class ExportControllerTest extends TestCase
                 )
             ],
             '"count" parameter is zero' => [
-                'shopkey' => $validShopkey,
+                'shopkey' => $this->validShopkey,
                 'start' => 1,
                 'count' => 0,
                 'exceptionMessage' => 'The value 0 is not greater than zero'
             ],
             '"count" parameter is some string' => [
-                'shopkey' => $validShopkey,
+                'shopkey' => $this->validShopkey,
                 'start' => 'some string',
                 'count' => 20,
                 'exceptionMessage' => 'The value "some string" is not a valid numeric'
             ],
             '"count" parameter is a negative number' => [
-                'shopkey' => $validShopkey,
+                'shopkey' => $this->validShopkey,
                 'start' => 1,
                 'count' => -1,
                 'exceptionMessage' => 'The value -1 is not greater than zero'
             ],
             '"start" parameter is some string' => [
-                'shopkey' => $validShopkey,
+                'shopkey' => $this->validShopkey,
                 'start' => 'some string',
                 'count' => 20,
                 'exceptionMessage' => 'The value "some string" is not a valid numeric'
             ],
             '"start" parameter is a negative number' => [
-                'shopkey' => $validShopkey,
+                'shopkey' => $this->validShopkey,
                 'start' => -1,
                 'count' => 20,
                 'exceptionMessage' => 'The value -1 is not greater than or equal to zero'
@@ -141,16 +142,12 @@ class ExportControllerTest extends TestCase
 
     public function validArgumentProvider(): array
     {
-        $validShopkey = '80AB18D4BE2654E78244106AD315DC2C';
-
         return [
             'Well formed shopkey provided' => [
-                'shopkey' => $validShopkey,
                 'start' => 1,
                 'count' => 20
             ],
             '"start" parameter is zero with well formed shopkey' => [
-                'shopkey' => $validShopkey,
                 'start' => 0,
                 'count' => 20
             ],
@@ -161,7 +158,6 @@ class ExportControllerTest extends TestCase
      * @dataProvider validArgumentProvider
      */
     public function testExportWithValidArguments(
-        string $shopkey,
         int $start,
         int $count
     ): void {
@@ -182,7 +178,7 @@ class ExportControllerTest extends TestCase
         $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
 
         /** @var Request $request */
-        $request = new Request(['shopkey' => $shopkey, 'start' => $start, 'count' => $count]);
+        $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
 
         /** @var ContainerInterface|MockObject $containerMock */
         $containerMock = $this->getMockBuilder(ContainerInterface::class)->disableOriginalConstructor()->getMock();
@@ -193,7 +189,7 @@ class ExportControllerTest extends TestCase
 
         /** @var SystemConfigEntity|MockObject $systemConfigEntity */
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($shopkey);
+        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($this->validShopkey);
         $systemConfigEntity->expects($this->once())->method('getSalesChannelId')->willReturn(null);
 
         /** @var SystemConfigCollection $systemConfigCollection */
@@ -268,7 +264,6 @@ class ExportControllerTest extends TestCase
 
     public function testExportWithSalesChannelId(): void
     {
-        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
         $start = 0;
         $count = 20;
 
@@ -288,7 +283,7 @@ class ExportControllerTest extends TestCase
 
         /** @var SystemConfigEntity|MockObject $systemConfigEntity */
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($shopkey);
+        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($this->validShopkey);
         $systemConfigEntity->expects($this->exactly(2))->method('getSalesChannelId')->willReturn($salesChannelId);
 
         /** @var SystemConfigCollection $entities */
@@ -309,7 +304,7 @@ class ExportControllerTest extends TestCase
             ->willReturn($this->defaultContext);
 
         /** @var Request $request */
-        $request = new Request(['shopkey' => $shopkey, 'start' => $start, 'count' => $count]);
+        $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
 
         /** @var ContainerInterface|MockObject $containerMock */
         $containerMock = $this->getMockBuilder(ContainerInterface::class)->disableOriginalConstructor()->getMock();
@@ -338,7 +333,6 @@ class ExportControllerTest extends TestCase
 
     public function testExportWithUnknownShopkey(): void
     {
-        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
         $unknownShopkey = '80AB18D4BE2654E78244106AD315DCCC';
 
         $this->expectException(UnknownShopkeyException::class);
@@ -350,8 +344,8 @@ class ExportControllerTest extends TestCase
 
         /** @var SystemConfigEntity|MockObject $systemConfigEntity */
         $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($shopkey);
-        $systemConfigEntity->expects($this->never())->method('getSalesChannelId')->willReturn($shopkey);
+        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($this->validShopkey);
+        $systemConfigEntity->expects($this->never())->method('getSalesChannelId')->willReturn($this->validShopkey);
 
         /** @var SystemConfigCollection $entities */
         $entities = new SystemConfigCollection([$systemConfigEntity]);

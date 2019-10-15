@@ -25,16 +25,18 @@ class XmlProductTest extends TestCase
     /** @var Context */
     private $defaultContext;
 
+    /** @var string */
+    private $shopkey;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->defaultContext = Context::createDefaultContext();
+        $this->shopkey = '80AB18D4BE2654E78244106AD315DC2C';
     }
 
     public function testIfValidXMLProductIsCreated(): void
     {
-        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
-
         $productEntity = $this->createTestProduct();
 
         /** @var FindologicProduct|MockObject $findologicProductMock */
@@ -43,7 +45,7 @@ class XmlProductTest extends TestCase
             $this->getContainer()->get('router'),
             $this->getContainer(),
             $this->defaultContext,
-            $shopkey,
+            $this->shopkey,
             []
         ])->getMock();
         $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
@@ -68,7 +70,7 @@ class XmlProductTest extends TestCase
             $this->getContainer()->get('router'),
             $containerMock,
             $this->defaultContext,
-            $shopkey,
+            $this->shopkey,
             []
         );
 
@@ -79,8 +81,6 @@ class XmlProductTest extends TestCase
     {
         $this->expectException(ProductHasNoAttributesException::class);
 
-        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
-
         /** @var ProductEntity $productEntity */
         $productEntity = $this->createTestProduct();
 
@@ -90,7 +90,7 @@ class XmlProductTest extends TestCase
             $this->getContainer()->get('router'),
             $this->getContainer(),
             $this->defaultContext,
-            $shopkey,
+            $this->shopkey,
             []
         ])->getMock();
         $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
@@ -115,7 +115,7 @@ class XmlProductTest extends TestCase
             $this->getContainer()->get('router'),
             $containerMock,
             $this->defaultContext,
-            $shopkey,
+            $this->shopkey,
             []
         );
     }
