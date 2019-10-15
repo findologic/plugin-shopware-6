@@ -190,6 +190,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
         throw new UnknownShopkeyException(sprintf('Given shopkey "%s" is not assigned to any shop', $shopkey));
     }
 
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
     public function queryProducts(
         SalesChannelContext $salesChannelContext,
         ?int $offset = null,
@@ -201,8 +204,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $salesChannelContext->getSalesChannel()->getId(),
             ProductVisibilityDefinition::VISIBILITY_SEARCH
         ));
-        $criteria->addAssociation('categories');
-        $criteria->addAssociation('children');
+
+        $this->addAssociations($criteria);
 
         if ($offset !== null) {
             $criteria->setOffset($offset);
@@ -298,5 +301,38 @@ class ExportController extends AbstractController implements EventSubscriberInte
         }
 
         return $items;
+    }
+
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
+    private function addAssociations(Criteria $criteria): Criteria
+    {
+        $associations = [
+            'translations',
+            'tags',
+            'media',
+            'manufacturer',
+            'manufacturer.translations',
+            'properties',
+            'properties.group',
+            'properties.productConfiguratorSettings',
+            'properties.productConfiguratorSettings.option',
+            'properties.productConfiguratorSettings.option.group',
+            'properties.productConfiguratorSettings.option.group.translations',
+            'children',
+            'children.properties',
+            'children.properties.group',
+            'children.properties.productConfiguratorSettings',
+            'children.properties.productConfiguratorSettings.option',
+            'children.properties.productConfiguratorSettings.option.group',
+            'children.properties.productConfiguratorSettings.option.group.translations'
+        ];
+
+        foreach ($associations as $association) {
+            $criteria->addAssociation($association);
+        }
+
+        return $criteria;
     }
 }
