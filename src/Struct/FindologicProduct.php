@@ -15,7 +15,7 @@ use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
-use FINDOLOGIC\FinSearch\Utils\EntityTranslationHelper;
+use FINDOLOGIC\FinSearch\Utils\EntityTranslationUtils;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
@@ -35,7 +35,7 @@ use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProduct extends Struct
 {
-    /** @var EntityTranslationHelper */
+    /** @var EntityTranslationUtils */
     private $translation;
 
     /** @var ProductEntity */
@@ -86,7 +86,7 @@ class FindologicProduct extends Struct
     /** @var Usergroup[] */
     protected $userGroups;
 
-    /** @var array */
+    /** @var Ordernumber[] */
     protected $ordernumbers;
 
     /** @var Property[] */
@@ -115,8 +115,9 @@ class FindologicProduct extends Struct
         $this->customerGroups = $customerGroups;
         $this->prices = [];
         $this->attributes = [];
+        $this->properties = [];
 
-        $this->translation = new EntityTranslationHelper($context);
+        $this->translation = new EntityTranslationUtils($context);
 
         $this->setName();
         $this->setAttributes();
@@ -403,6 +404,7 @@ class FindologicProduct extends Struct
             $canonical = $this->product->getExtension('canonicalUrl');
             $productUrl = $canonical->getUrl();
         }
+
         $this->url = $productUrl;
     }
 
@@ -556,22 +558,22 @@ class FindologicProduct extends Struct
         $attributes = [];
 
         foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {
-            $groupTranslationEntity =
+            $propertyGroupTranslations =
                 $this->translation->getPropertyGroupTranslations($propertyGroupOptionEntity->getGroup());
-            $optionTranslationEntity =
+            $propertyGroupOptionTranslations =
                 $this->translation->getPropertyGroupOptionTranslations($propertyGroupOptionEntity);
 
-            $properyGroupAttrib = new Attribute(Utils::removeControlCharacters($groupTranslationEntity->getName()));
-            $properyGroupAttrib->addValue(Utils::removeControlCharacters($optionTranslationEntity->getName()));
+            $properyGroupAttrib = new Attribute(Utils::removeControlCharacters($propertyGroupTranslations->getName()));
+            $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionTranslations->getName()));
 
             foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $configuratorSetting) {
-                $groupTranslationEntity =
+                $configGroupTranslations =
                     $this->translation->getPropertyGroupTranslations($configuratorSetting->getOption()->getGroup());
-                $optionTranslationEntity =
+                $configOptionGroupTranslations =
                     $this->translation->getPropertyGroupOptionTranslations($configuratorSetting->getOption());
 
-                $configAttrib = new Attribute(Utils::removeControlCharacters($groupTranslationEntity->getName()));
-                $configAttrib->addValue(Utils::removeControlCharacters($optionTranslationEntity->getName()));
+                $configAttrib = new Attribute(Utils::removeControlCharacters($configGroupTranslations->getName()));
+                $configAttrib->addValue(Utils::removeControlCharacters($configOptionGroupTranslations->getName()));
 
                 $attributes[] = $configAttrib;
             }
@@ -590,16 +592,15 @@ class FindologicProduct extends Struct
 
     protected function setAdditionalAttributes(): void
     {
-        foreach ($this->attributes as $attribute) {
-            // TODO implementation
-        }
+        $this->attributes[] = new Attribute('shipping_free', [$this->product->getShippingFree() ? 1 : 0]);
     }
 
     protected function setUserGroups(): void
     {
         foreach ($this->customerGroups as $customerGroupEntity) {
-            $this->userGroups[] =
-                new Usergroup(Utils::calculateUserGroupHash($this->shopkey, $customerGroupEntity->getId()));
+            $this->userGroups[] = new Usergroup(
+                Utils::calculateUserGroupHash($this->shopkey, $customerGroupEntity->getId())
+            );
         }
     }
 
@@ -657,60 +658,91 @@ class FindologicProduct extends Struct
     protected function setProperties(): void
     {
         if ($this->product->getTax()) {
-            $this->properties[] = new Property('tax', [$this->product->getTax()->getTaxRate()]);
+            $this->properties[] = new Property('tax', ['tax' => $this->product->getTax()->getTaxRate()]);
         }
 
         if ($this->product->getDeliveryDate()->getLatest()) {
-            $this->properties[] = new Property('latestdeliverydate', [$this->product->getDeliveryDate()->getLatest()]);
+            $this->properties[] = new Property('latestdeliverydate', [
+                'latestdeliverydate' =>
+                    $this->product->getDeliveryDate()->getLatest()->format(DATE_ATOM)
+            ]);
         }
 
         if ($this->product->getDeliveryDate()->getEarliest()) {
-            $this->properties[] =
-                new Property('earliestdeliverydate', [$this->product->getDeliveryDate()->getEarliest()]);
+            $this->properties[] = new Property('earliestdeliverydate', [
+                    'earliestdeliverydate' =>
+                        $this->product->getDeliveryDate()->getEarliest()->format(DATE_ATOM)
+                ]);
         }
 
         if ($this->product->getPurchaseUnit()) {
-            $this->properties[] = new Property('purchaseunit', [$this->product->getPurchaseUnit()]);
+            $this->properties[] = new Property('purchaseunit', ['purchaseunit' => $this->product->getPurchaseUnit()]);
         }
 
         if ($this->product->getReferenceUnit()) {
-            $this->properties[] = new Property('referenceunit', [$this->product->getReferenceUnit()]);
+            $this->properties[] = new Property('referenceunit', [
+                'referenceunit' => $this->product->getReferenceUnit()
+            ]);
         }
 
         if ($this->product->getPackUnit()) {
-            $this->properties[] = new Property('packunit', [$this->product->getPackUnit()]);
+            $this->properties[] = new Property('packunit', ['packunit' => $this->product->getPackUnit()]);
         }
 
         if ($this->product->getStock()) {
-            $this->properties[] = new Property('stock', [$this->product->getStock()]);
+            $this->properties[] = new Property('stock', ['stock' => $this->product->getStock()]);
         }
 
         if ($this->product->getAvailableStock()) {
-            $this->properties[] = new Property('availableStock', [$this->product->getAvailableStock()]);
+            $this->properties[] = new Property('availableStock', [
+                'availableStock' => $this->product->getAvailableStock()
+            ]);
         }
 
         if ($this->product->getWeight()) {
-            $this->properties[] = new Property('weight', [$this->product->getWeight()]);
+            $this->properties[] = new Property('weight', ['weight' => $this->product->getWeight()]);
         }
 
         if ($this->product->getWidth()) {
-            $this->properties[] = new Property('width', [$this->product->getWidth()]);
+            $this->properties[] = new Property('width', ['width' => $this->product->getWidth()]);
         }
 
         if ($this->product->getHeight()) {
-            $this->properties[] = new Property('height', [$this->product->getHeight()]);
+            $this->properties[] = new Property('height', ['height' => $this->product->getHeight()]);
         }
 
         if ($this->product->getLength()) {
-            $this->properties[] = new Property('length', [$this->product->getLength()]);
+            $this->properties[] = new Property('length', ['length' => $this->product->getLength()]);
         }
 
         if ($this->product->getReleaseDate()) {
-            $this->properties[] = new Property('releasedate', [$this->product->getReleaseDate()->format(DATE_ATOM)]);
+            $this->properties[] = new Property('releasedate', [
+                'releasedate' => $this->product->getReleaseDate()->format(DATE_ATOM)
+            ]);
         }
 
         if ($this->product->getManufacturer() && $this->product->getManufacturer()->getMedia()) {
-            $this->properties[] = new Property('vendorlogo', [$this->product->getManufacturer()->getMedia()->getUrl()]);
+            $this->properties[] = new Property('vendorlogo', [
+                'vendorlogo' => $this->product->getManufacturer()->getMedia()->getUrl()
+            ]);
         }
+    }
+
+    /**
+     * @return Property[]
+     * @throws AccessEmptyPropertyException
+     */
+    public function getProperties(): array
+    {
+        if (!$this->hasProperties()) {
+            throw new AccessEmptyPropertyException();
+        }
+
+        return $this->properties;
+    }
+
+    public function hasProperties(): bool
+    {
+        return $this->properties && !empty($this->properties);
     }
 }

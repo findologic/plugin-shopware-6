@@ -14,7 +14,7 @@ use Shopware\Core\Content\Property\Aggregate\PropertyGroupTranslation\PropertyGr
 use Shopware\Core\Content\Property\PropertyGroupEntity;
 use Shopware\Core\Framework\Context;
 
-class EntityTranslationHelper
+class EntityTranslationUtils
 {
     /** @var Context */
     private $context;

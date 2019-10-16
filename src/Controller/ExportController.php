@@ -12,6 +12,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Tax\TaxDetector;
@@ -205,7 +206,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             ProductVisibilityDefinition::VISIBILITY_SEARCH
         ));
 
-        $this->addAssociations($criteria);
+        $criteria = Utils::addProductAssociations($criteria);
 
         if ($offset !== null) {
             $criteria->setOffset($offset);
@@ -301,38 +302,5 @@ class ExportController extends AbstractController implements EventSubscriberInte
         }
 
         return $items;
-    }
-
-    /**
-     * @throws InconsistentCriteriaIdsException
-     */
-    private function addAssociations(Criteria $criteria): Criteria
-    {
-        $associations = [
-            'translations',
-            'tags',
-            'media',
-            'manufacturer',
-            'manufacturer.translations',
-            'properties',
-            'properties.group',
-            'properties.productConfiguratorSettings',
-            'properties.productConfiguratorSettings.option',
-            'properties.productConfiguratorSettings.option.group',
-            'properties.productConfiguratorSettings.option.group.translations',
-            'children',
-            'children.properties',
-            'children.properties.group',
-            'children.properties.productConfiguratorSettings',
-            'children.properties.productConfiguratorSettings.option',
-            'children.properties.productConfiguratorSettings.option.group',
-            'children.properties.productConfiguratorSettings.option.group.translations'
-        ];
-
-        foreach ($associations as $association) {
-            $criteria->addAssociation($association);
-        }
-
-        return $criteria;
     }
 }

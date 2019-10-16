@@ -11,8 +11,16 @@ use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDateAddedException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDescriptionException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoImagesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoKeywordsException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoOrdernumbersException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPropertiesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoURLException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoUserGroupsException;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
@@ -98,6 +106,15 @@ class XmlProduct
         $this->setName();
         $this->setAttributes();
         $this->setPrices();
+        $this->setDescription();
+        $this->setDateAdded();
+        $this->setUrl();
+        $this->setKeywords();
+        $this->setImages();
+        $this->setSalesFrequency();
+        $this->setUserGroups();
+        $this->setOrdernumbers();
+        $this->setProperties();
     }
 
     /**
@@ -144,6 +161,117 @@ class XmlProduct
             foreach ($priceData->getValues() as $userGroup => $price) {
                 $this->xmlItem->addPrice($price, $userGroup);
             }
+        }
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoDescriptionException
+     */
+    private function setDescription()
+    {
+        if (!$this->findologicProduct->hasDescription()) {
+            throw new ProductHasNoDescriptionException();
+        }
+
+        $this->xmlItem->addDescription($this->findologicProduct->getDescription());
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoDateAddedException
+     */
+    private function setDateAdded()
+    {
+        if (!$this->findologicProduct->hasDateAdded()) {
+            throw new ProductHasNoDateAddedException();
+        }
+
+        $this->xmlItem->setDateAdded($this->findologicProduct->getDateAdded());
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoURLException
+     */
+    private function setUrl()
+    {
+        if (!$this->findologicProduct->hasUrl()) {
+            throw new ProductHasNoURLException();
+        }
+
+        $this->xmlItem->addUrl($this->findologicProduct->getUrl());
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoKeywordsException
+     */
+    private function setKeywords(): void
+    {
+        if (!$this->findologicProduct->hasKeywords()) {
+            throw new ProductHasNoKeywordsException();
+        }
+
+        $this->xmlItem->setAllKeywords($this->findologicProduct->getKeywords());
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoImagesException
+     */
+    private function setImages()
+    {
+        if (!$this->findologicProduct->hasImages()) {
+            throw new ProductHasNoImagesException();
+        }
+
+        $this->xmlItem->setAllImages($this->findologicProduct->getImages());
+    }
+
+    private function setSalesFrequency()
+    {
+        $this->xmlItem->addSalesFrequency($this->findologicProduct->getSalesFrequency());
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoUserGroupsException
+     */
+    private function setUserGroups()
+    {
+        if (!$this->findologicProduct->hasUserGroups()) {
+            throw new ProductHasNoUserGroupsException();
+        }
+
+        $this->xmlItem->setAllUsergroups($this->findologicProduct->getUserGroups());
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoOrdernumbersException
+     */
+    private function setOrdernumbers()
+    {
+        if (!$this->findologicProduct->hasOrdernumbers()) {
+            throw new ProductHasNoOrdernumbersException();
+        }
+
+        $this->xmlItem->setAllOrdernumbers($this->findologicProduct->getOrdernumbers());
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoPropertiesException
+     */
+    private function setProperties()
+    {
+        if (!$this->findologicProduct->hasProperties()) {
+            throw new ProductHasNoPropertiesException();
+        }
+
+        foreach ($this->findologicProduct->getProperties() as $property) {
+            $this->xmlItem->addProperty($property);
         }
     }
 }

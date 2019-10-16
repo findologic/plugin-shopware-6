@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
 use FINDOLOGIC\Export\Data\Price;
+use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
@@ -40,6 +41,9 @@ class FindologicProductTest extends TestCase
         $this->shopkey = '80AB18D4BE2654E78244106AD315DC2C';
     }
 
+    /**
+     * @return array
+     */
     public function productNameProvider(): array
     {
         return [
@@ -51,6 +55,10 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider productNameProvider
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
      */
     public function testProductName(?string $name, ?string $exception): void
     {
@@ -80,6 +88,9 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    /**
+     * @return array
+     */
     public function categoriesProvider(): array
     {
         return [
@@ -90,6 +101,10 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider categoriesProvider
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
      */
     public function testProductCategories(bool $hasCategory, ?string $exception): void
     {
@@ -122,6 +137,9 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    /**
+     * @return array
+     */
     public function priceProvider(): array
     {
         $price = new Price();
@@ -135,6 +153,10 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider priceProvider
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
      */
     public function testProductPrices(?Price $price, ?string $exception): void
     {
