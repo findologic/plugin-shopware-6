@@ -20,7 +20,6 @@ trait ProductHelper
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();
         $redId = Uuid::randomHex();
-        $blueId = Uuid::randomHex();
         $colorId = Uuid::randomHex();
 
         /** @var ContainerInterface $container */
@@ -58,24 +57,14 @@ trait ProductHelper
                     'id' => $redId,
                     'name' => 'red',
                     'group' => ['id' => $colorId, 'name' => 'color'],
-                ],
-                [
-                    'id' => $blueId,
-                    'name' => 'blue',
-                    'groupId' => $colorId,
-                ],
+                ]
             ],
             'options' => [
                 [
                     'id' => $redId,
                     'name' => 'red',
                     'group' => ['id' => $colorId, 'name' => $colorId],
-                ],
-                [
-                    'id' => $blueId,
-                    'name' => 'blue',
-                    'groupId' => $colorId,
-                ],
+                ]
             ],
             'configuratorSettings' => [
                 [
@@ -86,20 +75,11 @@ trait ProductHelper
                         'name' => 'red',
                         'group' => ['id' => $colorId, 'name' => $colorId],
                     ],
-                ],
-                [
-                    'id' => $blueId,
-                    'price' => ['currencyId' => Defaults::CURRENCY, 'gross' => 100, 'net' => 90, 'linked' => false],
-                    'option' => [
-                        'id' => $blueId,
-                        'name' => 'blue',
-                        'groupId' => $colorId,
-                    ],
-                ],
+                ]
             ],
         ];
 
-        $productData = array_merge($productData, $data);
+        $productData = array_merge($data, $productData);
 
         $container->get('product.repository')->upsert([$productData], $context);
 
@@ -114,5 +94,9 @@ trait ProductHelper
         } catch (InconsistentCriteriaIdsException $e) {
             return null;
         }
+    }
+
+    public function getDefaultProductMock()
+    {
     }
 }

@@ -8,8 +8,16 @@ use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDateAddedException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDescriptionException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoImagesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoKeywordsException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoOrdernumbersException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPropertiesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoURLException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoUserGroupsException;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -66,6 +74,14 @@ class ExportController extends AbstractController implements EventSubscriberInte
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
      * @throws InconsistentCriteriaIdsException
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
+     * @throws ProductHasNoOrdernumbersException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
      * @throws UnknownShopkeyException
      */
     public function export(Request $request, SalesChannelContext $context): Response
@@ -258,7 +274,14 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @param CustomerGroupEntity[] $customerGroups
      *
-     * @return XmlProduct[]
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
+     * @throws ProductHasNoOrdernumbersException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
      */
     private function buildXmlProducts(
         EntitySearchResult $productEntities,

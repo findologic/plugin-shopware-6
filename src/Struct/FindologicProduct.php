@@ -427,7 +427,7 @@ class FindologicProduct extends Struct
     private function setKeywords(): void
     {
         $tags = $this->product->getTags();
-        if ($tags !== null) {
+        if ($tags->count()) {
             /** @var TagEntity $tag */
             foreach ($tags as $tag) {
                 $this->keywords[] = new Keyword($tag->getName());
@@ -558,6 +558,8 @@ class FindologicProduct extends Struct
                 new Attribute(Utils::removeControlCharacters($propertyGroupOptionEntity->getGroup()->getName()));
             $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionEntity->getName()));
 
+            $attributes[] = $properyGroupAttrib;
+
             foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
                 $configAttrib =
                     new Attribute(Utils::removeControlCharacters($setting->getOption()->getGroup()->getName()));
@@ -620,9 +622,15 @@ class FindologicProduct extends Struct
 
     protected function setOrdernumberByProduct(ProductEntity $product): void
     {
-        $this->ordernumbers[] = new Ordernumber($product->getProductNumber());
-        $this->ordernumbers[] = new Ordernumber($product->getEan());
-        $this->ordernumbers[] = new Ordernumber($product->getManufacturerNumber());
+        if ($product->getProductNumber()) {
+            $this->ordernumbers[] = new Ordernumber($product->getProductNumber());
+        }
+        if ($product->getEan()) {
+            $this->ordernumbers[] = new Ordernumber($product->getEan());
+        }
+        if ($product->getManufacturerNumber()) {
+            $this->ordernumbers[] = new Ordernumber($product->getManufacturerNumber());
+        }
     }
 
     /**
