@@ -21,13 +21,13 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
-use Shopware\Core\Defaults;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Pricing\PriceCollection;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\Framework\Uuid\Uuid;
+use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProductTest extends TestCase
@@ -203,67 +203,9 @@ class FindologicProductTest extends TestCase
      * @throws ProductHasNoPricesException
      * @throws InconsistentCriteriaIdsException
      */
-    public function testProduct()
+    public function testProduct(): void
     {
-        $id = Uuid::randomHex();
-        $redId = Uuid::randomHex();
-        $colorId = Uuid::randomHex();
-
-        $productData = [
-            'id' => $id,
-            'productNumber' => Uuid::randomHex(),
-            'stock' => 10,
-            'ean' => Uuid::randomHex(),
-            'description' => 'some long description text',
-            'tags' => [
-                ['id' => $id, 'name' => 'Findologic Tag']
-            ],
-            'name' => 'Test name',
-            'manufacturerNumber' => Uuid::randomHex(),
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
-            'manufacturer' => ['name' => 'FINDOLOGIC'],
-            'tax' => ['name' => '9%', 'taxRate' => 9],
-            'categories' => [
-                ['id' => $id, 'name' => 'Test Category'],
-            ],
-            'translations' => [
-                'en-GB' => [
-                    'customTranslated' => [
-                        'root' => 'test',
-                    ],
-                ],
-                'de-DE' => [
-                    'customTranslated' => null,
-                ],
-            ],
-            'properties' => [
-                [
-                    'id' => $redId,
-                    'name' => 'red',
-                    'group' => ['id' => $colorId, 'name' => 'color'],
-                ]
-            ],
-            'options' => [
-                [
-                    'id' => $redId,
-                    'name' => 'red',
-                    'group' => ['id' => $colorId, 'name' => $colorId],
-                ]
-            ],
-            'configuratorSettings' => [
-                [
-                    'id' => $redId,
-                    'price' => ['currencyId' => Defaults::CURRENCY, 'gross' => 50, 'net' => 25, 'linked' => false],
-                    'option' => [
-                        'id' => $redId,
-                        'name' => 'red',
-                        'group' => ['id' => $colorId, 'name' => $colorId],
-                    ],
-                ]
-            ],
-        ];
-
-        $productEntity = $this->createTestProduct($productData);
+        $productEntity = $this->createTestProduct();
 
         $router = $this->getContainer()->get('router');
         $requestContext = $router->getContext();
@@ -275,87 +217,51 @@ class FindologicProductTest extends TestCase
         );
 
         $productTag = new Keyword('Findologic Tag');
-        $schemaAuthority = $requestContext->getScheme() . '://' . $requestContext->getHost();
-        if ($requestContext->getHttpPort() !== 80) {
-            $schemaAuthority .= ':' . $requestContext->getHttpPort();
-        } elseif ($requestContext->getHttpsPort() !== 443) {
-            $schemaAuthority .= ':' . $requestContext->getHttpsPort();
-        }
 
-        $fallbackImage = sprintf(
-            '%s/%s',
-            $schemaAuthority,
-            'bundles/storefront/assets/icon/default/placeholder.svg'
-        );
+        $images = $this->getImages($requestContext);
 
-        $images[] = new Image($fallbackImage);
-        $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
-
-        $catUrl = $router->generate(
-            'frontend.navigation.page',
-            ['navigationId' => $productEntity->getCategories()->first()->getId()],
-            RouterInterface::ABSOLUTE_PATH
-        );
-
-        $catUrlAttribute = new Attribute('cat_url', [$catUrl]);
-        $vendorAttribute = new Attribute('vendor', [$productEntity->getManufacturer()->getName()]);
-
-        $attributes[] = $catUrlAttribute;
-        $attributes[] = $vendorAttribute;
-
-        $attributes[] = new Attribute(
-            $productEntity->getProperties()
-            ->first()->getGroup()->getName(),
-            [
-                $productEntity->getProperties()
-                    ->first()->getName()
-            ]
-        );
-        $attributes[] = new Attribute(
-            $productEntity->getProperties()
-            ->first()
-            ->getProductConfiguratorSettings()
-            ->first()
-            ->getOption()
-            ->getGroup()
-            ->getName(),
-            [
-                $productEntity->getProperties()
-                    ->first()
-                    ->getProductConfiguratorSettings()
-                    ->first()
-                    ->getOption()
-                    ->getName()
-            ]
-        );
-        $attributes[] = new Attribute('shipping_free', [$productEntity->getShippingFree() ? 1 : 0]);
+        $attributes = $this->getAttributes($router, $productEntity);
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
             ->search(new Criteria(), $this->defaultContext)
             ->getElements();
 
-        $userGroup = [];
+        $userGroup = $this->getUserGroups($customerGroupEntities);
 
-        /** @var CustomerGroupEntity $customerGroupEntity */
-        foreach ($customerGroupEntities as $customerGroupEntity) {
-            $userGroup[] = new Usergroup(
-                Utils::calculateUserGroupHash($this->shopkey, $customerGroupEntity->getId())
-            );
-        }
+        $ordernumbers = $this->getOrdernumber($productEntity);
 
-        $ordernumbers = [];
-        if ($productEntity->getProductNumber()) {
-            $ordernumbers[] = new Ordernumber($productEntity->getProductNumber());
-        }
-        if ($productEntity->getEan()) {
-            $ordernumbers[] = new Ordernumber($productEntity->getEan());
-        }
+        $properties = $this->getProperties($productEntity);
 
-        if ($productEntity->getManufacturerNumber()) {
-            $ordernumbers[] = new Ordernumber($productEntity->getManufacturerNumber());
-        }
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct =
+            $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->getContainer()->get('router'),
+            $this->getContainer(),
+            $this->defaultContext,
+            $this->shopkey,
+            $customerGroupEntities
+        );
 
+        $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
+        $this->assertEquals($productUrl, $findologicProduct->getUrl());
+        $this->assertEquals([$productTag], $findologicProduct->getKeywords());
+        $this->assertEquals($images, $findologicProduct->getImages());
+        $this->assertEquals(0, $findologicProduct->getSalesFrequency());
+        $this->assertEquals($attributes, $findologicProduct->getAttributes());
+        $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
+        $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
+        $this->assertEquals($properties, $findologicProduct->getProperties());
+    }
+
+    /**
+     * @param ProductEntity|null $productEntity
+     *
+     * @return Property[]
+     */
+    private function getProperties(?ProductEntity $productEntity): array
+    {
         $properties = [];
 
         if ($productEntity->getTax()) {
@@ -428,25 +334,128 @@ class FindologicProductTest extends TestCase
             ]);
         }
 
-        $findologicProductFactory = new FindologicProductFactory();
-        $findologicProduct =
-            $findologicProductFactory->buildInstance(
-            $productEntity,
-            $this->getContainer()->get('router'),
-            $this->getContainer(),
-            $this->defaultContext,
-            $this->shopkey,
-            $customerGroupEntities
+        return $properties;
+    }
+
+    /**
+     * @param ProductEntity|null $productEntity
+     *
+     * @return Ordernumber[]
+     */
+    private function getOrdernumber(?ProductEntity $productEntity): array
+    {
+        $ordernumbers = [];
+        if ($productEntity->getProductNumber()) {
+            $ordernumbers[] = new Ordernumber($productEntity->getProductNumber());
+        }
+        if ($productEntity->getEan()) {
+            $ordernumbers[] = new Ordernumber($productEntity->getEan());
+        }
+
+        if ($productEntity->getManufacturerNumber()) {
+            $ordernumbers[] = new Ordernumber($productEntity->getManufacturerNumber());
+        }
+
+        return $ordernumbers;
+    }
+
+    /**
+     * @param array $customerGroupEntities
+     *
+     * @return Usergroup[]
+     */
+    private function getUserGroups(array $customerGroupEntities): array
+    {
+        $userGroup = [];
+
+        /** @var CustomerGroupEntity $customerGroupEntity */
+        foreach ($customerGroupEntities as $customerGroupEntity) {
+            $userGroup[] = new Usergroup(
+                Utils::calculateUserGroupHash($this->shopkey, $customerGroupEntity->getId())
+            );
+        }
+
+        return $userGroup;
+    }
+
+    /**
+     * @param RouterInterface $router
+     * @param ProductEntity|null $productEntity
+     * @param Attribute[]
+     *
+     * @return array
+     */
+    private function getAttributes(
+        $router,
+        ?ProductEntity $productEntity
+    ): array {
+        $catUrl = $router->generate(
+            'frontend.navigation.page',
+            ['navigationId' => $productEntity->getCategories()->first()->getId()],
+            RouterInterface::ABSOLUTE_PATH
         );
 
-        $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals($productUrl, $findologicProduct->getUrl());
-        $this->assertEquals([$productTag], $findologicProduct->getKeywords());
-        $this->assertEquals($images, $findologicProduct->getImages());
-        $this->assertEquals(0, $findologicProduct->getSalesFrequency());
-        $this->assertEquals($attributes, $findologicProduct->getAttributes());
-        $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
-        $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
-        $this->assertEquals($properties, $findologicProduct->getProperties());
+        $attributes = [];
+        $catUrlAttribute = new Attribute('cat_url', [$catUrl]);
+        $vendorAttribute = new Attribute('vendor', [$productEntity->getManufacturer()->getName()]);
+
+        $attributes[] = $catUrlAttribute;
+        $attributes[] = $vendorAttribute;
+
+        $attributes[] = new Attribute(
+            $productEntity->getProperties()
+                ->first()->getGroup()->getName(),
+            [
+                $productEntity->getProperties()
+                    ->first()->getName()
+            ]
+        );
+        $attributes[] = new Attribute(
+            $productEntity->getProperties()
+                ->first()
+                ->getProductConfiguratorSettings()
+                ->first()
+                ->getOption()
+                ->getGroup()
+                ->getName(),
+            [
+                $productEntity->getProperties()
+                    ->first()
+                    ->getProductConfiguratorSettings()
+                    ->first()
+                    ->getOption()
+                    ->getName()
+            ]
+        );
+        $attributes[] = new Attribute('shipping_free', [$productEntity->getShippingFree() ? 1 : 0]);
+
+        return $attributes;
+    }
+
+    /**
+     * @param RequestContext $requestContext
+     *
+     * @return array
+     */
+    private function getImages(RequestContext $requestContext): array
+    {
+        $images = [];
+        $schemaAuthority = $requestContext->getScheme() . '://' . $requestContext->getHost();
+        if ($requestContext->getHttpPort() !== 80) {
+            $schemaAuthority .= ':' . $requestContext->getHttpPort();
+        } elseif ($requestContext->getHttpsPort() !== 443) {
+            $schemaAuthority .= ':' . $requestContext->getHttpsPort();
+        }
+
+        $fallbackImage = sprintf(
+            '%s/%s',
+            $schemaAuthority,
+            'bundles/storefront/assets/icon/default/placeholder.svg'
+        );
+
+        $images[] = new Image($fallbackImage);
+        $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
+
+        return $images;
     }
 }
