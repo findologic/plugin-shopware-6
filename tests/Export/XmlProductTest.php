@@ -4,8 +4,21 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use FINDOLOGIC\Export\Data\DateAdded;
 use FINDOLOGIC\Export\Data\Item;
+use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDateAddedException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDescriptionException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoImagesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoKeywordsException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoOrdernumbersException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPropertiesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoURLException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoUserGroupsException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
@@ -35,6 +48,21 @@ class XmlProductTest extends TestCase
         $this->shopkey = '80AB18D4BE2654E78244106AD315DC2C';
     }
 
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoAttributesException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
+     * @throws ProductHasNoOrdernumbersException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
+     */
     public function testIfValidXMLProductIsCreated(): void
     {
         $productEntity = $this->createTestProduct();
@@ -49,11 +77,30 @@ class XmlProductTest extends TestCase
             []
         ])->getMock();
         $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
-        $findologicProductMock->expects($this->once())->method('getName')->willReturn($productEntity->getName());
+        $findologicProductMock->expects($this->once())->method('getName')->willReturn('some name');
         $findologicProductMock->expects($this->once())->method('hasAttributes')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getAttributes')->willReturn([]);
         $findologicProductMock->expects($this->once())->method('hasPrices')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getPrices')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasDescription')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getDescription')->willReturn('some description');
+        $findologicProductMock->expects($this->once())->method('hasDateAdded')->willReturn(true);
+        $dateAdded = new DateAdded();
+        $dateAdded->setDateValue($productEntity->getCreatedAt());
+        $findologicProductMock->expects($this->once())->method('getDateAdded')->willReturn($dateAdded);
+        $findologicProductMock->expects($this->once())->method('hasUrl')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getUrl')->willReturn('some url');
+        $findologicProductMock->expects($this->once())->method('hasKeywords')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getKeywords')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasImages')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getImages')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('getSalesFrequency')->willReturn(1);
+        $findologicProductMock->expects($this->once())->method('hasUserGroups')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getUserGroups')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasOrdernumbers')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getOrdernumbers')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasProperties')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getProperties')->willReturn([]);
 
         /** @var FindologicProductFactory|MockObject $findologicFactoryMock */
         $findologicFactoryMock = $this->getMockBuilder(FindologicProductFactory::class)->getMock();
@@ -77,6 +124,21 @@ class XmlProductTest extends TestCase
         $this->assertInstanceOf(Item::class, $xmlItem->getXmlItem());
     }
 
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoAttributesException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoOrdernumbersException
+     * @throws ProductHasNoPricesException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
+     */
     public function testAttributeException(): void
     {
         $this->expectException(ProductHasNoAttributesException::class);

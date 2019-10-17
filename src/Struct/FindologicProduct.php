@@ -7,12 +7,14 @@ namespace FINDOLOGIC\FinSearch\Struct;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\DateAdded;
 use FINDOLOGIC\Export\Data\Image;
+use FINDOLOGIC\Export\Data\Keyword;
 use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDescriptionException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Utils\EntityTranslationUtils;
@@ -35,9 +37,6 @@ use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProduct extends Struct
 {
-    /** @var EntityTranslationUtils */
-    private $translation;
-
     /** @var ProductEntity */
     protected $product;
 
@@ -74,7 +73,7 @@ class FindologicProduct extends Struct
     /** @var string */
     protected $url;
 
-    /** @var string[] */
+    /** @var Keyword[] */
     protected $keywords;
 
     /** @var Image[] */
@@ -95,6 +94,7 @@ class FindologicProduct extends Struct
     /**
      * @param CustomerGroupEntity[] $customerGroups
      *
+     * @throws ProductHasNoDescriptionException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoPricesException
      * @throws ProductHasNoNameException
@@ -116,8 +116,6 @@ class FindologicProduct extends Struct
         $this->prices = [];
         $this->attributes = [];
         $this->properties = [];
-
-        $this->translation = new EntityTranslationUtils($context);
 
         $this->setName();
         $this->setAttributes();
@@ -142,9 +140,7 @@ class FindologicProduct extends Struct
             throw new ProductHasNoNameException();
         }
 
-        $this->name = Utils::removeControlCharacters(
-            $this->translation->getProductTranslations($this->product)->getName()
-        );
+        $this->name = Utils::removeControlCharacters($this->product->getName());
     }
 
     /**
@@ -163,7 +159,7 @@ class FindologicProduct extends Struct
      */
     private function setCategoriesAndCatUrls(): void
     {
-        if (empty($this->product->getCategories()->count())) {
+        if (!$this->product->getCategories() || empty($this->product->getCategories()->count())) {
             throw new ProductHasNoCategoriesException();
         }
 
@@ -285,13 +281,16 @@ class FindologicProduct extends Struct
         $this->prices = array_merge($this->prices, $prices);
     }
 
+    /**
+     * @throws ProductHasNoDescriptionException
+     */
     protected function setDescription(): void
     {
-        $description = $this->translation->getProductTranslations($this->product)->getName();
-
-        if (!empty($description)) {
-            $this->description = Utils::cleanString($description);
+        if (empty($this->product->getDescription())) {
+            throw new ProductHasNoDescriptionException();
         }
+
+        $this->description = Utils::cleanString($this->product->getDescription());
     }
 
     public function hasName(): bool
@@ -431,7 +430,7 @@ class FindologicProduct extends Struct
         if ($tags !== null) {
             /** @var TagEntity $tag */
             foreach ($tags as $tag) {
-                $this->keywords[] = $tag->getName();
+                $this->keywords[] = new Keyword($tag->getName());
             }
         }
     }
@@ -456,7 +455,7 @@ class FindologicProduct extends Struct
 
     private function setImages(): void
     {
-        if (!$this->product->getMedia()) {
+        if (!$this->product->getMedia()->count()) {
             $fallbackImage = $this->buildFallbackImage($this->router->getContext());
 
             $this->images[] = new Image($fallbackImage);
@@ -467,7 +466,7 @@ class FindologicProduct extends Struct
 
         /** @var ProductMediaEntity $mediaEntity */
         foreach ($this->product->getMedia() as $mediaEntity) {
-            if (!$mediaEntity->getMedia()) {
+            if (!$mediaEntity->getMedia() || !$mediaEntity->getMedia()->getUrl()) {
                 continue;
             }
 
@@ -539,11 +538,8 @@ class FindologicProduct extends Struct
     protected function setVendors(): void
     {
         if ($this->product->getManufacturer()) {
-            $productManufacturerTranslationEntity =
-                $this->translation->getManufacturerTranslations($this->product->getManufacturer());
-            $vendorAttribute = new Attribute('vendor', [
-                Utils::removeControlCharacters($productManufacturerTranslationEntity->getName())
-            ]);
+            $vendorAttribute =
+                new Attribute('vendor', [Utils::removeControlCharacters($this->product->getManufacturer()->getName())]);
 
             $this->attributes[] = $vendorAttribute;
         }
@@ -558,22 +554,14 @@ class FindologicProduct extends Struct
         $attributes = [];
 
         foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {
-            $propertyGroupTranslations =
-                $this->translation->getPropertyGroupTranslations($propertyGroupOptionEntity->getGroup());
-            $propertyGroupOptionTranslations =
-                $this->translation->getPropertyGroupOptionTranslations($propertyGroupOptionEntity);
+            $properyGroupAttrib =
+                new Attribute(Utils::removeControlCharacters($propertyGroupOptionEntity->getGroup()->getName()));
+            $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionEntity->getName()));
 
-            $properyGroupAttrib = new Attribute(Utils::removeControlCharacters($propertyGroupTranslations->getName()));
-            $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionTranslations->getName()));
-
-            foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $configuratorSetting) {
-                $configGroupTranslations =
-                    $this->translation->getPropertyGroupTranslations($configuratorSetting->getOption()->getGroup());
-                $configOptionGroupTranslations =
-                    $this->translation->getPropertyGroupOptionTranslations($configuratorSetting->getOption());
-
-                $configAttrib = new Attribute(Utils::removeControlCharacters($configGroupTranslations->getName()));
-                $configAttrib->addValue(Utils::removeControlCharacters($configOptionGroupTranslations->getName()));
+            foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
+                $configAttrib =
+                    new Attribute(Utils::removeControlCharacters($setting->getOption()->getGroup()->getName()));
+                $configAttrib->addValue(Utils::removeControlCharacters($setting->getOption()->getName()));
 
                 $attributes[] = $configAttrib;
             }
@@ -670,9 +658,9 @@ class FindologicProduct extends Struct
 
         if ($this->product->getDeliveryDate()->getEarliest()) {
             $this->properties[] = new Property('earliestdeliverydate', [
-                    'earliestdeliverydate' =>
-                        $this->product->getDeliveryDate()->getEarliest()->format(DATE_ATOM)
-                ]);
+                'earliestdeliverydate' =>
+                    $this->product->getDeliveryDate()->getEarliest()->format(DATE_ATOM)
+            ]);
         }
 
         if ($this->product->getPurchaseUnit()) {

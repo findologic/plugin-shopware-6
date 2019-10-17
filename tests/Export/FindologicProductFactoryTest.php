@@ -41,13 +41,13 @@ class FindologicProductFactoryTest extends TestCase
 
         $findologicProduct =
             $findologicProductFactory->buildInstance(
-                $productEntity,
-                $this->getContainer()->get('router'),
-                $this->getContainer(),
-                $this->defaultContext,
-                $this->shopkey,
-                []
-            );
+            $productEntity,
+            $this->getContainer()->get('router'),
+            $this->getContainer(),
+            $this->defaultContext,
+            $this->shopkey,
+            []
+        );
 
         $this->assertInstanceOf(FindologicProduct::class, $findologicProduct);
     }

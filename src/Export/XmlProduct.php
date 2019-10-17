@@ -58,13 +58,19 @@ class XmlProduct
     private $findologicProduct;
 
     /**
-     * @param CustomerGroupEntity[] $customerGroups
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoAttributesException
-     * @throws ProductHasNoNameException
-     * @throws ProductHasNoPricesException
      * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoOrdernumbersException
+     * @throws ProductHasNoPricesException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
      */
     public function __construct(
         ProductEntity $product,
@@ -98,8 +104,16 @@ class XmlProduct
     /**
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoAttributesException
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
      * @throws ProductHasNoNameException
+     * @throws ProductHasNoOrdernumbersException
      * @throws ProductHasNoPricesException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
      */
     private function buildXmlItem(): void
     {
@@ -168,7 +182,7 @@ class XmlProduct
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoDescriptionException
      */
-    private function setDescription()
+    private function setDescription(): void
     {
         if (!$this->findologicProduct->hasDescription()) {
             throw new ProductHasNoDescriptionException();
@@ -181,7 +195,7 @@ class XmlProduct
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoDateAddedException
      */
-    private function setDateAdded()
+    private function setDateAdded(): void
     {
         if (!$this->findologicProduct->hasDateAdded()) {
             throw new ProductHasNoDateAddedException();
@@ -194,7 +208,7 @@ class XmlProduct
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoURLException
      */
-    private function setUrl()
+    private function setUrl(): void
     {
         if (!$this->findologicProduct->hasUrl()) {
             throw new ProductHasNoURLException();
@@ -220,7 +234,7 @@ class XmlProduct
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoImagesException
      */
-    private function setImages()
+    private function setImages(): void
     {
         if (!$this->findologicProduct->hasImages()) {
             throw new ProductHasNoImagesException();
@@ -229,7 +243,7 @@ class XmlProduct
         $this->xmlItem->setAllImages($this->findologicProduct->getImages());
     }
 
-    private function setSalesFrequency()
+    private function setSalesFrequency(): void
     {
         $this->xmlItem->addSalesFrequency($this->findologicProduct->getSalesFrequency());
     }
@@ -238,7 +252,7 @@ class XmlProduct
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoUserGroupsException
      */
-    private function setUserGroups()
+    private function setUserGroups(): void
     {
         if (!$this->findologicProduct->hasUserGroups()) {
             throw new ProductHasNoUserGroupsException();
@@ -251,7 +265,7 @@ class XmlProduct
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoOrdernumbersException
      */
-    private function setOrdernumbers()
+    private function setOrdernumbers(): void
     {
         if (!$this->findologicProduct->hasOrdernumbers()) {
             throw new ProductHasNoOrdernumbersException();
@@ -264,7 +278,7 @@ class XmlProduct
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoPropertiesException
      */
-    private function setProperties()
+    private function setProperties(): void
     {
         if (!$this->findologicProduct->hasProperties()) {
             throw new ProductHasNoPropertiesException();
