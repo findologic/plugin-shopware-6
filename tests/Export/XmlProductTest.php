@@ -9,16 +9,8 @@ use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDateAddedException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDescriptionException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoImagesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoKeywordsException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoOrdernumbersException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPropertiesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoURLException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoUserGroupsException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
@@ -54,14 +46,6 @@ class XmlProductTest extends TestCase
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
      * @throws ProductHasNoPricesException
-     * @throws ProductHasNoDateAddedException
-     * @throws ProductHasNoDescriptionException
-     * @throws ProductHasNoImagesException
-     * @throws ProductHasNoKeywordsException
-     * @throws ProductHasNoOrdernumbersException
-     * @throws ProductHasNoPropertiesException
-     * @throws ProductHasNoURLException
-     * @throws ProductHasNoUserGroupsException
      */
     public function testIfValidXMLProductIsCreated(): void
     {
@@ -128,16 +112,8 @@ class XmlProductTest extends TestCase
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoAttributesException
      * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoDateAddedException
-     * @throws ProductHasNoDescriptionException
-     * @throws ProductHasNoImagesException
-     * @throws ProductHasNoKeywordsException
      * @throws ProductHasNoNameException
-     * @throws ProductHasNoOrdernumbersException
      * @throws ProductHasNoPricesException
-     * @throws ProductHasNoPropertiesException
-     * @throws ProductHasNoURLException
-     * @throws ProductHasNoUserGroupsException
      */
     public function testAttributeException(): void
     {
