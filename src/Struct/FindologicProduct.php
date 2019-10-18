@@ -94,10 +94,9 @@ class FindologicProduct extends Struct
     /**
      * @param CustomerGroupEntity[] $customerGroups
      *
-     * @throws ProductHasNoDescriptionException
      * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoPricesException
      * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
      */
     public function __construct(
         ProductEntity $product,
@@ -436,7 +435,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @return string[]
+     * @return Keyword[]
      * @throws AccessEmptyPropertyException
      */
     public function getKeywords(): array
@@ -538,8 +537,9 @@ class FindologicProduct extends Struct
     protected function setVendors(): void
     {
         if ($this->product->getManufacturer()) {
-            $vendorAttribute =
-                new Attribute('vendor', [Utils::removeControlCharacters($this->product->getManufacturer()->getName())]);
+            $vendorAttribute = new Attribute('vendor',
+                [Utils::removeControlCharacters($this->product->getManufacturer()->getName())]
+            );
 
             $this->attributes[] = $vendorAttribute;
         }
@@ -554,16 +554,18 @@ class FindologicProduct extends Struct
         $attributes = [];
 
         foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {
-            $properyGroupAttrib =
-                new Attribute(Utils::removeControlCharacters($propertyGroupOptionEntity->getGroup()->getName()));
-            $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionEntity->getName()));
+            $properyGroupAttrib = new Attribute(
+                Utils::removeControlCharacters($propertyGroupOptionEntity->getGroup()->getName()),
+                [Utils::removeControlCharacters($propertyGroupOptionEntity->getName())]
+            );
 
             $attributes[] = $properyGroupAttrib;
 
             foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-                $configAttrib =
-                    new Attribute(Utils::removeControlCharacters($setting->getOption()->getGroup()->getName()));
-                $configAttrib->addValue(Utils::removeControlCharacters($setting->getOption()->getName()));
+                $configAttrib = new Attribute(
+                    Utils::removeControlCharacters($setting->getOption()->getGroup()->getName()),
+                    [Utils::removeControlCharacters($setting->getOption()->getName())]
+                );
 
                 $attributes[] = $configAttrib;
             }

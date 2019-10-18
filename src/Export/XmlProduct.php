@@ -58,19 +58,13 @@ class XmlProduct
     private $findologicProduct;
 
     /**
+     * @param CustomerGroupEntity[] $customerGroups
+     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoAttributesException
      * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoDateAddedException
-     * @throws ProductHasNoDescriptionException
-     * @throws ProductHasNoImagesException
-     * @throws ProductHasNoKeywordsException
      * @throws ProductHasNoNameException
-     * @throws ProductHasNoOrdernumbersException
      * @throws ProductHasNoPricesException
-     * @throws ProductHasNoPropertiesException
-     * @throws ProductHasNoURLException
-     * @throws ProductHasNoUserGroupsException
      */
     public function __construct(
         ProductEntity $product,
@@ -104,16 +98,8 @@ class XmlProduct
     /**
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoAttributesException
-     * @throws ProductHasNoDateAddedException
-     * @throws ProductHasNoDescriptionException
-     * @throws ProductHasNoImagesException
-     * @throws ProductHasNoKeywordsException
      * @throws ProductHasNoNameException
-     * @throws ProductHasNoOrdernumbersException
      * @throws ProductHasNoPricesException
-     * @throws ProductHasNoPropertiesException
-     * @throws ProductHasNoURLException
-     * @throws ProductHasNoUserGroupsException
      */
     private function buildXmlItem(): void
     {
@@ -180,67 +166,52 @@ class XmlProduct
 
     /**
      * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoDescriptionException
      */
     private function setDescription(): void
     {
-        if (!$this->findologicProduct->hasDescription()) {
-            throw new ProductHasNoDescriptionException();
+        if ($this->findologicProduct->hasDescription()) {
+            $this->xmlItem->addDescription($this->findologicProduct->getDescription());
         }
-
-        $this->xmlItem->addDescription($this->findologicProduct->getDescription());
     }
 
     /**
      * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoDateAddedException
      */
     private function setDateAdded(): void
     {
-        if (!$this->findologicProduct->hasDateAdded()) {
-            throw new ProductHasNoDateAddedException();
+        if ($this->findologicProduct->hasDateAdded()) {
+            $this->xmlItem->setDateAdded($this->findologicProduct->getDateAdded());
         }
-
-        $this->xmlItem->setDateAdded($this->findologicProduct->getDateAdded());
     }
 
     /**
      * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoURLException
      */
     private function setUrl(): void
     {
-        if (!$this->findologicProduct->hasUrl()) {
-            throw new ProductHasNoURLException();
+        if ($this->findologicProduct->hasUrl()) {
+            $this->xmlItem->addUrl($this->findologicProduct->getUrl());
         }
-
-        $this->xmlItem->addUrl($this->findologicProduct->getUrl());
     }
 
     /**
      * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoKeywordsException
      */
     private function setKeywords(): void
     {
-        if (!$this->findologicProduct->hasKeywords()) {
-            throw new ProductHasNoKeywordsException();
+        if ($this->findologicProduct->hasKeywords()) {
+            $this->xmlItem->setAllKeywords($this->findologicProduct->getKeywords());
         }
-
-        $this->xmlItem->setAllKeywords($this->findologicProduct->getKeywords());
     }
 
     /**
      * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoImagesException
      */
     private function setImages(): void
     {
-        if (!$this->findologicProduct->hasImages()) {
-            throw new ProductHasNoImagesException();
+        if ($this->findologicProduct->hasImages()) {
+            $this->xmlItem->setAllImages($this->findologicProduct->getImages());
         }
-
-        $this->xmlItem->setAllImages($this->findologicProduct->getImages());
     }
 
     private function setSalesFrequency(): void
@@ -250,42 +221,33 @@ class XmlProduct
 
     /**
      * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoUserGroupsException
      */
     private function setUserGroups(): void
     {
-        if (!$this->findologicProduct->hasUserGroups()) {
-            throw new ProductHasNoUserGroupsException();
+        if ($this->findologicProduct->hasUserGroups()) {
+            $this->xmlItem->setAllUsergroups($this->findologicProduct->getUserGroups());
         }
-
-        $this->xmlItem->setAllUsergroups($this->findologicProduct->getUserGroups());
     }
 
     /**
      * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoOrdernumbersException
      */
     private function setOrdernumbers(): void
     {
-        if (!$this->findologicProduct->hasOrdernumbers()) {
-            throw new ProductHasNoOrdernumbersException();
+        if ($this->findologicProduct->hasOrdernumbers()) {
+            $this->xmlItem->setAllOrdernumbers($this->findologicProduct->getOrdernumbers());
         }
-
-        $this->xmlItem->setAllOrdernumbers($this->findologicProduct->getOrdernumbers());
     }
 
     /**
      * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoPropertiesException
      */
     private function setProperties(): void
     {
-        if (!$this->findologicProduct->hasProperties()) {
-            throw new ProductHasNoPropertiesException();
-        }
-
-        foreach ($this->findologicProduct->getProperties() as $property) {
-            $this->xmlItem->addProperty($property);
+        if ($this->findologicProduct->hasProperties()) {
+            foreach ($this->findologicProduct->getProperties() as $property) {
+                $this->xmlItem->addProperty($property);
+            }
         }
     }
 }

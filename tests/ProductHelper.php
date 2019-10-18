@@ -95,8 +95,4 @@ trait ProductHelper
             return null;
         }
     }
-
-    public function getDefaultProductMock()
-    {
-    }
 }

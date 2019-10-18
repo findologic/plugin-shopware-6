@@ -74,14 +74,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
      * @throws InconsistentCriteriaIdsException
-     * @throws ProductHasNoDateAddedException
-     * @throws ProductHasNoDescriptionException
-     * @throws ProductHasNoImagesException
-     * @throws ProductHasNoKeywordsException
-     * @throws ProductHasNoOrdernumbersException
-     * @throws ProductHasNoPropertiesException
-     * @throws ProductHasNoURLException
-     * @throws ProductHasNoUserGroupsException
      * @throws UnknownShopkeyException
      */
     public function export(Request $request, SalesChannelContext $context): Response
@@ -274,14 +266,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @param CustomerGroupEntity[] $customerGroups
      *
-     * @throws ProductHasNoDateAddedException
-     * @throws ProductHasNoDescriptionException
-     * @throws ProductHasNoImagesException
-     * @throws ProductHasNoKeywordsException
-     * @throws ProductHasNoOrdernumbersException
-     * @throws ProductHasNoPropertiesException
-     * @throws ProductHasNoURLException
-     * @throws ProductHasNoUserGroupsException
+     * @return XmlProduct[]
      */
     private function buildXmlProducts(
         EntitySearchResult $productEntities,

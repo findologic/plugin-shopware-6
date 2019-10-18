@@ -27,7 +27,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Pricing\PriceCollection;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProductTest extends TestCase
@@ -41,16 +40,17 @@ class FindologicProductTest extends TestCase
     /** @var string */
     private $shopkey;
 
+    /** @var RouterInterface */
+    private $router;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->router = $this->getContainer()->get('router');
         $this->defaultContext = Context::createDefaultContext();
         $this->shopkey = '80AB18D4BE2654E78244106AD315DC2C';
     }
 
-    /**
-     * @return array
-     */
     public function productNameProvider(): array
     {
         return [
@@ -80,7 +80,7 @@ class FindologicProductTest extends TestCase
         $findologicProduct =
             $findologicProductFactory->buildInstance(
             $productEntity,
-            $this->getContainer()->get('router'),
+            $this->router,
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
@@ -95,9 +95,6 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    /**
-     * @return array
-     */
     public function categoriesProvider(): array
     {
         return [
@@ -126,10 +123,9 @@ class FindologicProductTest extends TestCase
         }
 
         $findologicProductFactory = new FindologicProductFactory();
-        $findologicProduct =
-            $findologicProductFactory->buildInstance(
+        $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
-            $this->getContainer()->get('router'),
+            $this->router,
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
@@ -144,9 +140,6 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    /**
-     * @return array
-     */
     public function priceProvider(): array
     {
         $price = new Price();
@@ -181,7 +174,7 @@ class FindologicProductTest extends TestCase
         $findologicProduct =
             $findologicProductFactory->buildInstance(
             $productEntity,
-            $this->getContainer()->get('router'),
+            $this->router,
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
@@ -207,20 +200,15 @@ class FindologicProductTest extends TestCase
     {
         $productEntity = $this->createTestProduct();
 
-        $router = $this->getContainer()->get('router');
-        $requestContext = $router->getContext();
-
-        $productUrl = $router->generate(
+        $productUrl = $this->router->generate(
             'frontend.detail.page',
             ['productId' => $productEntity->getId()],
             RouterInterface::ABSOLUTE_URL
         );
 
         $productTag = new Keyword('Findologic Tag');
-
-        $images = $this->getImages($requestContext);
-
-        $attributes = $this->getAttributes($router, $productEntity);
+        $images = $this->getImages();
+        $attributes = $this->getAttributes($productEntity);
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
@@ -228,16 +216,13 @@ class FindologicProductTest extends TestCase
             ->getElements();
 
         $userGroup = $this->getUserGroups($customerGroupEntities);
-
         $ordernumbers = $this->getOrdernumber($productEntity);
-
         $properties = $this->getProperties($productEntity);
 
         $findologicProductFactory = new FindologicProductFactory();
-        $findologicProduct =
-            $findologicProductFactory->buildInstance(
+        $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
-            $this->getContainer()->get('router'),
+            $this->router,
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
@@ -256,11 +241,9 @@ class FindologicProductTest extends TestCase
     }
 
     /**
-     * @param ProductEntity|null $productEntity
-     *
      * @return Property[]
      */
-    private function getProperties(?ProductEntity $productEntity): array
+    private function getProperties(ProductEntity $productEntity): array
     {
         $properties = [];
 
@@ -338,11 +321,9 @@ class FindologicProductTest extends TestCase
     }
 
     /**
-     * @param ProductEntity|null $productEntity
-     *
      * @return Ordernumber[]
      */
-    private function getOrdernumber(?ProductEntity $productEntity): array
+    private function getOrdernumber(ProductEntity $productEntity): array
     {
         $ordernumbers = [];
         if ($productEntity->getProductNumber()) {
@@ -360,7 +341,7 @@ class FindologicProductTest extends TestCase
     }
 
     /**
-     * @param array $customerGroupEntities
+     * @param CustomerGroupEntity[]
      *
      * @return Usergroup[]
      */
@@ -379,17 +360,11 @@ class FindologicProductTest extends TestCase
     }
 
     /**
-     * @param RouterInterface $router
-     * @param ProductEntity|null $productEntity
-     * @param Attribute[]
-     *
-     * @return array
+     * @return Attribute[]
      */
-    private function getAttributes(
-        $router,
-        ?ProductEntity $productEntity
-    ): array {
-        $catUrl = $router->generate(
+    private function getAttributes(ProductEntity $productEntity): array
+    {
+        $catUrl = $this->router->generate(
             'frontend.navigation.page',
             ['navigationId' => $productEntity->getCategories()->first()->getId()],
             RouterInterface::ABSOLUTE_PATH
@@ -433,13 +408,12 @@ class FindologicProductTest extends TestCase
     }
 
     /**
-     * @param RequestContext $requestContext
-     *
-     * @return array
+     * @return Image[]
      */
-    private function getImages(RequestContext $requestContext): array
+    private function getImages(): array
     {
         $images = [];
+        $requestContext = $this->router->getContext();
         $schemaAuthority = $requestContext->getScheme() . '://' . $requestContext->getHost();
         if ($requestContext->getHttpPort() !== 80) {
             $schemaAuthority .= ':' . $requestContext->getHttpPort();

@@ -5,6 +5,14 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
 use FINDOLOGIC\FinSearch\Controller\ExportController;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDateAddedException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDescriptionException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoImagesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoKeywordsException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoOrdernumbersException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPropertiesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoURLException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoUserGroupsException;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Tests\ProductHelper;
@@ -65,9 +73,6 @@ class ExportControllerTest extends TestCase
         $this->defaultContext = Context::createDefaultContext();
     }
 
-    /**
-     * @return array
-     */
     public function invalidArgumentProvider(): array
     {
         return [
@@ -123,10 +128,17 @@ class ExportControllerTest extends TestCase
     }
 
     /**
-     * @param int|string $start
-     * @param int|string $count
-     *
      * @dataProvider invalidArgumentProvider
+     * @throws InconsistentCriteriaIdsException
+     * @throws UnknownShopkeyException
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
+     * @throws ProductHasNoOrdernumbersException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
      */
     public function testExportWithInvalidArguments(
         string $shopkey,
@@ -164,6 +176,15 @@ class ExportControllerTest extends TestCase
     /**
      * @dataProvider validArgumentProvider
      * @throws InconsistentCriteriaIdsException
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
+     * @throws ProductHasNoOrdernumbersException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
+     * @throws UnknownShopkeyException
      */
     public function testExportWithValidArguments(
         int $start,
@@ -272,6 +293,15 @@ class ExportControllerTest extends TestCase
 
     /**
      * @throws InconsistentCriteriaIdsException
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
+     * @throws ProductHasNoOrdernumbersException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
+     * @throws UnknownShopkeyException
      */
     public function testExportWithSalesChannelId(): void
     {
@@ -344,6 +374,15 @@ class ExportControllerTest extends TestCase
 
     /**
      * @throws InconsistentCriteriaIdsException
+     * @throws ProductHasNoDateAddedException
+     * @throws ProductHasNoDescriptionException
+     * @throws ProductHasNoImagesException
+     * @throws ProductHasNoKeywordsException
+     * @throws ProductHasNoOrdernumbersException
+     * @throws ProductHasNoPropertiesException
+     * @throws ProductHasNoURLException
+     * @throws ProductHasNoUserGroupsException
+     * @throws UnknownShopkeyException
      */
     public function testExportWithUnknownShopkey(): void
     {
