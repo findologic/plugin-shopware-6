@@ -537,7 +537,8 @@ class FindologicProduct extends Struct
     protected function setVendors(): void
     {
         if ($this->product->getManufacturer()) {
-            $vendorAttribute = new Attribute('vendor',
+            $vendorAttribute = new Attribute(
+                'vendor',
                 [Utils::removeControlCharacters($this->product->getManufacturer()->getName())]
             );
 
