@@ -12,6 +12,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Tax\TaxDetector;
@@ -64,6 +65,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
+     * @throws InconsistentCriteriaIdsException
+     * @throws UnknownShopkeyException
      */
     public function export(Request $request, SalesChannelContext $context): Response
     {
@@ -104,12 +107,15 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $count = $request->get('count', self::DEFAULT_COUNT_PARAM);
 
         $validator = Validation::createValidator();
-        $shopkeyViolations = $validator->validate($shopkey, [
-            new NotBlank(),
-            new Assert\Regex([
-                'pattern' => '/^[A-F0-9]{32}$/'
-            ])
-        ]);
+        $shopkeyViolations = $validator->validate(
+            $shopkey,
+            [
+                new NotBlank(),
+                new Assert\Regex([
+                    'pattern' => '/^[A-F0-9]{32}$/'
+                ])
+            ]
+        );
         if (count($shopkeyViolations) > 0) {
             throw new InvalidArgumentException(
                 sprintf(
@@ -119,30 +125,36 @@ class ExportController extends AbstractController implements EventSubscriberInte
             );
         }
 
-        $startViolations = $validator->validate($start, [
-            new Assert\Type([
-                'type' => 'numeric',
-                'message' => 'The value {{ value }} is not a valid {{ type }}',
-            ]),
-            new Assert\GreaterThanOrEqual([
-                'value' => 0,
-                'message' => 'The value {{ value }} is not greater than or equal to zero'
-            ])
-        ]);
+        $startViolations = $validator->validate(
+            $start,
+            [
+                new Assert\Type([
+                    'type' => 'numeric',
+                    'message' => 'The value {{ value }} is not a valid {{ type }}',
+                ]),
+                new Assert\GreaterThanOrEqual([
+                    'value' => 0,
+                    'message' => 'The value {{ value }} is not greater than or equal to zero'
+                ])
+            ]
+        );
         if (count($startViolations) > 0) {
             throw new InvalidArgumentException($startViolations->get(0)->getMessage());
         }
 
-        $countViolations = $validator->validate($count, [
-            new Assert\Type([
-                'type' => 'numeric',
-                'message' => 'The value {{ value }} is not a valid {{ type }}',
-            ]),
-            new Assert\GreaterThan([
-                'value' => 0,
-                'message' => 'The value {{ value }} is not greater than zero'
-            ])
-        ]);
+        $countViolations = $validator->validate(
+            $count,
+            [
+                new Assert\Type([
+                    'type' => 'numeric',
+                    'message' => 'The value {{ value }} is not a valid {{ type }}',
+                ]),
+                new Assert\GreaterThan([
+                    'value' => 0,
+                    'message' => 'The value {{ value }} is not greater than zero'
+                ])
+            ]
+        );
         if (count($countViolations) > 0) {
             throw new InvalidArgumentException($countViolations->get(0)->getMessage());
         }
@@ -190,6 +202,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
         throw new UnknownShopkeyException(sprintf('Given shopkey "%s" is not assigned to any shop', $shopkey));
     }
 
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
     public function queryProducts(
         SalesChannelContext $salesChannelContext,
         ?int $offset = null,
@@ -201,8 +216,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $salesChannelContext->getSalesChannel()->getId(),
             ProductVisibilityDefinition::VISIBILITY_SEARCH
         ));
-        $criteria->addAssociation('categories');
-        $criteria->addAssociation('children');
+
+        $criteria = Utils::addProductAssociations($criteria);
 
         if ($offset !== null) {
             $criteria->setOffset($offset);
@@ -214,11 +229,17 @@ class ExportController extends AbstractController implements EventSubscriberInte
         return $this->container->get('product.repository')->search($criteria, $salesChannelContext->getContext());
     }
 
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
     public function getTotalProductCount(SalesChannelContext $salesChannelContext): int
     {
         return $this->queryProducts($salesChannelContext)->getEntities()->count();
     }
 
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
     public function getProductsFromShop(
         SalesChannelContext $salesChannelContext,
         ?int $start,

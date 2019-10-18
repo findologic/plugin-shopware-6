@@ -20,8 +20,8 @@ class FindologicProductFactory
      * @param CustomerGroupEntity[] $customerGroups
      *
      * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoPricesException
      * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
      */
     public function buildInstance(
         ProductEntity $product,
