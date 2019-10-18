@@ -248,73 +248,87 @@ class FindologicProductTest extends TestCase
         $properties = [];
 
         if ($productEntity->getTax()) {
-            $properties[] = new Property('tax', ['tax' => $productEntity->getTax()->getTaxRate()]);
+            $property = new Property('tax');
+            $property->addValue((string)$productEntity->getTax()->getTaxRate());
+            $properties[] = $property;
         }
 
         if ($productEntity->getDeliveryDate()->getLatest()) {
-            $properties[] = new Property('latestdeliverydate', [
-                'latestdeliverydate' =>
-                    $productEntity->getDeliveryDate()->getLatest()->format(DATE_ATOM)
-            ]);
+            $property = new Property('latestdeliverydate');
+            $property->addValue($productEntity->getDeliveryDate()->getLatest()->format(DATE_ATOM));
+            $properties[] = $property;
         }
 
         if ($productEntity->getDeliveryDate()->getEarliest()) {
-            $properties[] = new Property('earliestdeliverydate', [
-                'earliestdeliverydate' =>
-                    $productEntity->getDeliveryDate()->getEarliest()->format(DATE_ATOM)
-            ]);
+            $property = new Property('earliestdeliverydate');
+            $property->addValue($productEntity->getDeliveryDate()->getEarliest()->format(DATE_ATOM));
+            $properties[] = $property;
         }
 
         if ($productEntity->getPurchaseUnit()) {
-            $properties[] = new Property('purchaseunit', ['purchaseunit' => $productEntity->getPurchaseUnit()]);
+            $property = new Property('purchaseunit');
+            $property->addValue((string)$productEntity->getPurchaseUnit());
+            $properties[] = $property;
         }
 
         if ($productEntity->getReferenceUnit()) {
-            $properties[] = new Property('referenceunit', [
-                'referenceunit' => $productEntity->getReferenceUnit()
-            ]);
+            $property = new Property('referenceunit');
+            $property->addValue((string)$productEntity->getReferenceUnit());
+            $properties[] = $property;
         }
 
         if ($productEntity->getPackUnit()) {
-            $properties[] = new Property('packunit', ['packunit' => $productEntity->getPackUnit()]);
+            $property = new Property('packunit');
+            $property->addValue((string)$productEntity->getPackUnit());
+            $properties[] = $property;
         }
 
         if ($productEntity->getStock()) {
-            $properties[] = new Property('stock', ['stock' => $productEntity->getStock()]);
+            $property = new Property('stock');
+            $property->addValue((string)$productEntity->getStock());
+            $properties[] = $property;
         }
 
         if ($productEntity->getAvailableStock()) {
-            $properties[] = new Property('availableStock', [
-                'availableStock' => $productEntity->getAvailableStock()
-            ]);
+            $property = new Property('availableStock');
+            $property->addValue((string)$productEntity->getAvailableStock());
+            $properties[] = $property;
         }
 
         if ($productEntity->getWeight()) {
-            $properties[] = new Property('weight', ['weight' => $productEntity->getWeight()]);
+            $property = new Property('weight');
+            $property->addValue((string)$productEntity->getWeight());
+            $properties[] = $property;
         }
 
         if ($productEntity->getWidth()) {
-            $properties[] = new Property('width', ['width' => $productEntity->getWidth()]);
+            $property = new Property('width');
+            $property->addValue((string)$productEntity->getWidth());
+            $properties[] = $property;
         }
 
         if ($productEntity->getHeight()) {
-            $properties[] = new Property('height', ['height' => $productEntity->getHeight()]);
+            $property = new Property('height');
+            $property->addValue((string)$productEntity->getHeight());
+            $properties[] = $property;
         }
 
         if ($productEntity->getLength()) {
-            $properties[] = new Property('length', ['length' => $productEntity->getLength()]);
+            $property = new Property('length');
+            $property->addValue((string)$productEntity->getLength());
+            $properties[] = $property;
         }
 
         if ($productEntity->getReleaseDate()) {
-            $properties[] = new Property('releasedate', [
-                'releasedate' => $productEntity->getReleaseDate()->format(DATE_ATOM)
-            ]);
+            $property = new Property('releasedate');
+            $property->addValue((string)$productEntity->getReleaseDate()->format(DATE_ATOM));
+            $properties[] = $property;
         }
 
         if ($productEntity->getManufacturer() && $productEntity->getManufacturer()->getMedia()) {
-            $properties[] = new Property('vendorlogo', [
-                'vendorlogo' => $productEntity->getManufacturer()->getMedia()->getUrl()
-            ]);
+            $property = new Property('vendorlogo');
+            $property->addValue($productEntity->getManufacturer()->getMedia()->getUrl());
+            $properties[] = $property;
         }
 
         return $properties;

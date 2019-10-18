@@ -280,18 +280,6 @@ class FindologicProduct extends Struct
         $this->prices = array_merge($this->prices, $prices);
     }
 
-    /**
-     * @throws ProductHasNoDescriptionException
-     */
-    protected function setDescription(): void
-    {
-        if (empty($this->product->getDescription())) {
-            throw new ProductHasNoDescriptionException();
-        }
-
-        $this->description = Utils::cleanString($this->product->getDescription());
-    }
-
     public function hasName(): bool
     {
         return $this->name && !empty($this->name);
@@ -348,6 +336,13 @@ class FindologicProduct extends Struct
         }
 
         return $this->prices;
+    }
+
+    protected function setDescription(): void
+    {
+        if (!$this->product->getDescription()) {
+            $this->description = Utils::cleanString($this->product->getDescription());
+        }
     }
 
     /**
@@ -454,7 +449,7 @@ class FindologicProduct extends Struct
 
     private function setImages(): void
     {
-        if (!$this->product->getMedia()->count()) {
+        if (!$this->product->getMedia() || !$this->product->getMedia()->count()) {
             $fallbackImage = $this->buildFallbackImage($this->router->getContext());
 
             $this->images[] = new Image($fallbackImage);
@@ -478,7 +473,7 @@ class FindologicProduct extends Struct
 
             /** @var MediaThumbnailEntity $thumbnailEntity */
             foreach ($thumbnails as $thumbnailEntity) {
-                $this->images[] = new Image($thumbnailEntity->getUrl() . Image::TYPE_THUMBNAIL);
+                $this->images[] = new Image($thumbnailEntity->getUrl(), Image::TYPE_THUMBNAIL);
             }
         }
     }
@@ -536,7 +531,7 @@ class FindologicProduct extends Struct
 
     protected function setVendors(): void
     {
-        if ($this->product->getManufacturer()) {
+        if ($this->product->getManufacturer() && $this->product->getManufacturer()->getName()) {
             $vendorAttribute = new Attribute(
                 'vendor',
                 [Utils::removeControlCharacters($this->product->getManufacturer()->getName())]
@@ -555,20 +550,26 @@ class FindologicProduct extends Struct
         $attributes = [];
 
         foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {
-            $properyGroupAttrib = new Attribute(
-                Utils::removeControlCharacters($propertyGroupOptionEntity->getGroup()->getName()),
-                [Utils::removeControlCharacters($propertyGroupOptionEntity->getName())]
-            );
-
-            $attributes[] = $properyGroupAttrib;
-
-            foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-                $configAttrib = new Attribute(
-                    Utils::removeControlCharacters($setting->getOption()->getGroup()->getName()),
-                    [Utils::removeControlCharacters($setting->getOption()->getName())]
+            $group = $propertyGroupOptionEntity->getGroup();
+            if ($group && $propertyGroupOptionEntity->getName() && $group->getName()) {
+                $properyGroupAttrib = new Attribute(
+                    Utils::removeControlCharacters($group->getName()),
+                    [Utils::removeControlCharacters($propertyGroupOptionEntity->getName())]
                 );
 
-                $attributes[] = $configAttrib;
+                $attributes[] = $properyGroupAttrib;
+            }
+
+            foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
+                $group = $setting->getOption()->getGroup();
+                if ($group && $setting->getOption() && $group->getName() && $setting->getOption()->getName()) {
+                    $configAttrib = new Attribute(
+                        Utils::removeControlCharacters($setting->getOption()->getGroup()->getName()),
+                        [Utils::removeControlCharacters($setting->getOption()->getName())]
+                    );
+
+                    $attributes[] = $configAttrib;
+                }
             }
         }
 
@@ -657,73 +658,87 @@ class FindologicProduct extends Struct
     protected function setProperties(): void
     {
         if ($this->product->getTax()) {
-            $this->properties[] = new Property('tax', ['tax' => $this->product->getTax()->getTaxRate()]);
+            $property = new Property('tax');
+            $property->addValue((string)$this->product->getTax()->getTaxRate());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getDeliveryDate()->getLatest()) {
-            $this->properties[] = new Property('latestdeliverydate', [
-                'latestdeliverydate' =>
-                    $this->product->getDeliveryDate()->getLatest()->format(DATE_ATOM)
-            ]);
+            $property = new Property('latestdeliverydate');
+            $property->addValue($this->product->getDeliveryDate()->getLatest()->format(DATE_ATOM));
+            $this->properties[] = $property;
         }
 
         if ($this->product->getDeliveryDate()->getEarliest()) {
-            $this->properties[] = new Property('earliestdeliverydate', [
-                'earliestdeliverydate' =>
-                    $this->product->getDeliveryDate()->getEarliest()->format(DATE_ATOM)
-            ]);
+            $property = new Property('earliestdeliverydate');
+            $property->addValue($this->product->getDeliveryDate()->getEarliest()->format(DATE_ATOM));
+            $this->properties[] = $property;
         }
 
         if ($this->product->getPurchaseUnit()) {
-            $this->properties[] = new Property('purchaseunit', ['purchaseunit' => $this->product->getPurchaseUnit()]);
+            $property = new Property('purchaseunit');
+            $property->addValue((string)$this->product->getPurchaseUnit());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getReferenceUnit()) {
-            $this->properties[] = new Property('referenceunit', [
-                'referenceunit' => $this->product->getReferenceUnit()
-            ]);
+            $property = new Property('referenceunit');
+            $property->addValue((string)$this->product->getReferenceUnit());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getPackUnit()) {
-            $this->properties[] = new Property('packunit', ['packunit' => $this->product->getPackUnit()]);
+            $property = new Property('packunit');
+            $property->addValue((string)$this->product->getPackUnit());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getStock()) {
-            $this->properties[] = new Property('stock', ['stock' => $this->product->getStock()]);
+            $property = new Property('stock');
+            $property->addValue((string)$this->product->getStock());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getAvailableStock()) {
-            $this->properties[] = new Property('availableStock', [
-                'availableStock' => $this->product->getAvailableStock()
-            ]);
+            $property = new Property('availableStock');
+            $property->addValue((string)$this->product->getAvailableStock());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getWeight()) {
-            $this->properties[] = new Property('weight', ['weight' => $this->product->getWeight()]);
+            $property = new Property('weight');
+            $property->addValue((string)$this->product->getWeight());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getWidth()) {
-            $this->properties[] = new Property('width', ['width' => $this->product->getWidth()]);
+            $property = new Property('width');
+            $property->addValue((string)$this->product->getWidth());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getHeight()) {
-            $this->properties[] = new Property('height', ['height' => $this->product->getHeight()]);
+            $property = new Property('height');
+            $property->addValue((string)$this->product->getHeight());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getLength()) {
-            $this->properties[] = new Property('length', ['length' => $this->product->getLength()]);
+            $property = new Property('length');
+            $property->addValue((string)$this->product->getLength());
+            $this->properties[] = $property;
         }
 
         if ($this->product->getReleaseDate()) {
-            $this->properties[] = new Property('releasedate', [
-                'releasedate' => $this->product->getReleaseDate()->format(DATE_ATOM)
-            ]);
+            $property = new Property('releasedate');
+            $property->addValue((string)$this->product->getReleaseDate()->format(DATE_ATOM));
+            $this->properties[] = $property;
         }
 
         if ($this->product->getManufacturer() && $this->product->getManufacturer()->getMedia()) {
-            $this->properties[] = new Property('vendorlogo', [
-                'vendorlogo' => $this->product->getManufacturer()->getMedia()->getUrl()
-            ]);
+            $property = new Property('vendorlogo');
+            $property->addValue($this->product->getManufacturer()->getMedia()->getUrl());
+            $this->properties[] = $property;
         }
     }
 
