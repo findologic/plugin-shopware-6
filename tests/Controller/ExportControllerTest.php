@@ -8,6 +8,7 @@ use FINDOLOGIC\FinSearch\Controller\ExportController;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Tests\ProductHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
 use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -19,6 +20,7 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -37,6 +39,9 @@ class ExportControllerTest extends TestCase
     use IntegrationTestBehaviour;
     use ProductHelper;
 
+    /** @var Router $router */
+    private $router;
+
     /** @var ExportController */
     private $exportController;
 
@@ -53,11 +58,10 @@ class ExportControllerTest extends TestCase
     {
         parent::setUp();
 
-        /** @var Router $router */
-        $router = $this->getContainer()->get('router');
+        $this->router = $this->getContainer()->get('router');
 
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
-        $this->exportController = new ExportController($this->loggerMock, $router);
+        $this->exportController = new ExportController($this->loggerMock, $this->router);
         $this->defaultContext = Context::createDefaultContext();
     }
 
@@ -116,10 +120,9 @@ class ExportControllerTest extends TestCase
     }
 
     /**
-     * @param int|string $start
-     * @param int|string $count
-     *
      * @dataProvider invalidArgumentProvider
+     * @throws InconsistentCriteriaIdsException
+     * @throws UnknownShopkeyException
      */
     public function testExportWithInvalidArguments(
         string $shopkey,
@@ -156,6 +159,8 @@ class ExportControllerTest extends TestCase
 
     /**
      * @dataProvider validArgumentProvider
+     * @throws InconsistentCriteriaIdsException
+     * @throws UnknownShopkeyException
      */
     public function testExportWithValidArguments(
         int $start,
@@ -222,8 +227,7 @@ class ExportControllerTest extends TestCase
             ProductVisibilityDefinition::VISIBILITY_SEARCH
         ));
 
-        $criteria->addAssociation('categories');
-        $criteria->addAssociation('children');
+        $criteria = Utils::addProductAssociations($criteria);
         $criteria->setOffset($start);
         $criteria->setLimit($count);
 
@@ -247,6 +251,7 @@ class ExportControllerTest extends TestCase
         $containerRepositoriesMap = [
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
+            ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['product.repository', $productRepositoryMock],
             [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
@@ -262,6 +267,10 @@ class ExportControllerTest extends TestCase
         $this->assertSame($productEntity->getId(), (string)$xml->items->item['id']);
     }
 
+    /**
+     * @throws InconsistentCriteriaIdsException
+     * @throws UnknownShopkeyException
+     */
     public function testExportWithSalesChannelId(): void
     {
         $start = 0;
@@ -331,6 +340,10 @@ class ExportControllerTest extends TestCase
         $this->assertEquals(200, $result->getStatusCode());
     }
 
+    /**
+     * @throws InconsistentCriteriaIdsException
+     * @throws UnknownShopkeyException
+     */
     public function testExportWithUnknownShopkey(): void
     {
         $unknownShopkey = '80AB18D4BE2654E78244106AD315DCCC';
