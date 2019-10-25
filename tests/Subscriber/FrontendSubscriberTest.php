@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber;
+use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -18,10 +19,11 @@ use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
 class FrontendSubscriberTest extends TestCase
 {
     use IntegrationTestBehaviour;
+    use ConfigHelper;
 
     public function testHeaderPageletLoadedEvent(): void
     {
-        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
+        $shopkey = $this->getShopkey();
         $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();

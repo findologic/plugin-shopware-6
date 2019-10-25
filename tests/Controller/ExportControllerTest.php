@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Controller;
 use FINDOLOGIC\FinSearch\Controller\ExportController;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
@@ -38,6 +39,7 @@ class ExportControllerTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use ProductHelper;
+    use ConfigHelper;
 
     /** @var Router $router */
     private $router;
@@ -52,7 +54,7 @@ class ExportControllerTest extends TestCase
     private $defaultContext;
 
     /** @var string */
-    private $validShopkey = '80AB18D4BE2654E78244106AD315DC2C';
+    private $validShopkey;
 
     protected function setUp(): void
     {
@@ -63,6 +65,7 @@ class ExportControllerTest extends TestCase
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $this->exportController = new ExportController($this->loggerMock, $this->router);
         $this->defaultContext = Context::createDefaultContext();
+        $this->validShopkey = $this->getShopkey();
     }
 
     public function invalidArgumentProvider(): array

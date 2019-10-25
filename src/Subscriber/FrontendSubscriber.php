@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Subscriber;
 
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -19,10 +20,10 @@ class FrontendSubscriber implements EventSubscriberInterface
     /** @var Config */
     private $config;
 
-    public function __construct(SystemConfigService $systemConfigService)
+    public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->systemConfigService = $systemConfigService;
-        $this->config = new Config($this->systemConfigService);
+        $this->config = new Config($this->systemConfigService, $serviceConfigResource);
     }
 
     /**

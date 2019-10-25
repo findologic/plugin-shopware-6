@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
 
+use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
@@ -30,7 +33,7 @@ class Config extends Struct
     /** @var string */
     private $integrationType;
 
-    public function __construct(SystemConfigService $systemConfigService)
+    public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->shopkey = $systemConfigService->get('FinSearch.config.shopkey');
         $this->active = $systemConfigService->get('FinSearch.config.active') ?? false;
@@ -71,5 +74,41 @@ class Config extends Struct
     public function getIntegrationType(): string
     {
         return $this->integrationType;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function initializeBySalesChannel(?string $salesChannelId, ServiceConfigResource $serviceConfigResource)
+    {
+        $this->shopkey = $this->systemConfigService->get(
+            'FinSearch.config.shopkey',
+            $salesChannelId
+        );
+        $this->active = $this->systemConfigService->get(
+            'FinSearch.config.active',
+            $salesChannelId
+        ) ?? false;
+        $this->activeOnCategoryPages = $this->systemConfigService->get(
+            'FinSearch.config.activeOnCategoryPages',
+            $salesChannelId
+        );
+        $this->searchResultContainer = $this->systemConfigService->get(
+            'FinSearch.config.searchResultContainer',
+            $salesChannelId
+        ) ?? 'fl-result';
+        $this->navigationResultContainer = $this->systemConfigService->get(
+            'FinSearch.config.navigationResultContainer',
+            $salesChannelId
+        ) ?? 'fl-navigation-result';
+
+        $isDirectIntegration = $serviceConfigResource->isDirectIntegration($this->shopkey);
+        $integrationType = $isDirectIntegration ? IntegrationType::DIRECT_INTEGRATION : IntegrationType::API;
+
+        $this->integrationType = $integrationType;
+
+        if ($integrationType !== $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId)) {
+            $this->systemConfigService->set('FinSearch.config.integrationType', $integrationType, $salesChannelId);
+        }
     }
 }
