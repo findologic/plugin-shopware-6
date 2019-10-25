@@ -98,8 +98,6 @@ class ServiceConfigResource
      */
     public function isStaging(string $shopkey): bool
     {
-        $stagingShop = $this->get($shopkey, 'isStagingShop');
-
-        return $stagingShop['enabled'];
+        return $this->get($shopkey, 'isStagingShop');
     }
 }

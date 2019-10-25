@@ -54,7 +54,7 @@ class ExportControllerTest extends TestCase
     private $defaultContext;
 
     /** @var string */
-    private $validShopkey;
+    private $validShopkey = '80AB18D4BE2654E78244106AD315DC2C';
 
     protected function setUp(): void
     {
@@ -65,7 +65,6 @@ class ExportControllerTest extends TestCase
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $this->exportController = new ExportController($this->loggerMock, $this->router);
         $this->defaultContext = Context::createDefaultContext();
-        $this->validShopkey = $this->getShopkey();
     }
 
     public function invalidArgumentProvider(): array

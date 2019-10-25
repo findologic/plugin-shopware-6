@@ -79,28 +79,30 @@ class Config extends Struct
     /**
      * @throws InvalidArgumentException
      */
-    public function initializeBySalesChannel(?string $salesChannelId, ServiceConfigResource $serviceConfigResource)
-    {
+    public function initializeBySalesChannel(
+        ?string $salesChannelId,
+        ServiceConfigResource $serviceConfigResource
+    ): void {
         $this->shopkey = $this->systemConfigService->get(
             'FinSearch.config.shopkey',
             $salesChannelId
         );
         $this->active = $this->systemConfigService->get(
-            'FinSearch.config.active',
-            $salesChannelId
-        ) ?? false;
+                'FinSearch.config.active',
+                $salesChannelId
+            ) ?? false;
         $this->activeOnCategoryPages = $this->systemConfigService->get(
             'FinSearch.config.activeOnCategoryPages',
             $salesChannelId
         );
         $this->searchResultContainer = $this->systemConfigService->get(
-            'FinSearch.config.searchResultContainer',
-            $salesChannelId
-        ) ?? 'fl-result';
+                'FinSearch.config.searchResultContainer',
+                $salesChannelId
+            ) ?? 'fl-result';
         $this->navigationResultContainer = $this->systemConfigService->get(
-            'FinSearch.config.navigationResultContainer',
-            $salesChannelId
-        ) ?? 'fl-navigation-result';
+                'FinSearch.config.navigationResultContainer',
+                $salesChannelId
+            ) ?? 'fl-navigation-result';
 
         $isDirectIntegration = $serviceConfigResource->isDirectIntegration($this->shopkey);
         $integrationType = $isDirectIntegration ? IntegrationType::DIRECT_INTEGRATION : IntegrationType::API;

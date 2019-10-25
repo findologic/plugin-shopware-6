@@ -23,26 +23,32 @@ class ServiceConfigResourceTest extends TestCase
     {
         return [
             'Direct Integration does not exist in the cache' => [
-                'directionIntegration' => ['enabled' => false],
+                'existsInCache' => false,
+                'directionIntegration' => ['enabled' => true],
                 'isStagingShop' => false
             ],
             'Direct Integration is enabled and exists in cache' => [
+                'existsInCache' => true,
                 'directionIntegration' => ['enabled' => true],
                 'isStagingShop' => false
             ],
             'Direct Integration is disabled and exists in cache' => [
+                'existsInCache' => true,
                 'directionIntegration' => ['enabled' => false],
                 'isStagingShop' => false
             ],
             'Staging shop does not exist in the cache' => [
+                'existsInCache' => false,
                 'directionIntegration' => ['enabled' => true],
                 'isStagingShop' => false
             ],
             'Shop is staging and exists in cache' => [
+                'existsInCache' => true,
                 'directionIntegration' => ['enabled' => true],
                 'isStagingShop' => true
             ],
             'Shop is live and exists in cache' => [
+                'existsInCache' => true,
                 'directionIntegration' => ['enabled' => false],
                 'isStagingShop' => false
             ]
@@ -53,11 +59,11 @@ class ServiceConfigResourceTest extends TestCase
      * @dataProvider configDataProvider
      * @throws InvalidArgumentException
      */
-    public function testIfConfigIsStoredInCache(array $directIntegration, bool $isStagingShop)
+    public function testIfConfigIsStoredInCache(bool $existsInCache, array $directIntegration, bool $isStagingShop)
     {
-        // Config from FDL
-        $config = $this->getConfig();
+        $configFromFindologic = $this->getConfig();
         $shopkey = $this->getShopkey();
+        $cacheKey = 'finsearch_serviceconfig';
 
         $serviceConfig = new ServiceConfig();
         $serviceConfig->setFromArray(['directIntegration' => $directIntegration, 'isStagingShop' => $isStagingShop]);
@@ -66,11 +72,22 @@ class ServiceConfigResourceTest extends TestCase
         $serviceConfigClientMock = $this->getMockBuilder(ServiceConfigClient::class)
             ->setConstructorArgs([$shopkey])
             ->getMock();
-        $serviceConfigClientMock->expects($this->once())->method('get')->willReturn($config);
+        if ($existsInCache) {
+            // Serialize the service config data to mock the cache value
+            $serviceConfigFromCache = serialize($serviceConfig);
+        } else {
+            // Get config data from FINDOLOGIC if the entry in cache does not exist
+            $serviceConfigFromCache = null;
+            $serviceConfigClientMock->expects($this->exactly(2))
+                ->method('get')
+                ->willReturn($configFromFindologic);
+        }
+
+        $invokeCount = $existsInCache ? $this->never() : $this->exactly(2);
 
         /** @var FindologicClientFactory|MockObject $findologicClientFactory */
         $findologicClientFactory = $this->getMockBuilder(FindologicClientFactory::class)->getMock();
-        $findologicClientFactory->expects($this->once())
+        $findologicClientFactory->expects($invokeCount)
             ->method('createServiceConfigClient')
             ->willReturn($serviceConfigClientMock);
 
@@ -81,16 +98,27 @@ class ServiceConfigResourceTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cacheItemMock->method('get')->willReturn(serialize($serviceConfig));
+        $cacheItemMock->expects($this->exactly(2))->method('get')->willReturn($serviceConfigFromCache);
 
-        $cachePoolMock->method('getItem')->with('finsearch_serviceconfig')->willReturn($cacheItemMock);
+        if (!$existsInCache) {
+            $cacheItemMock->expects($this->exactly(2))->method('set')->willReturnSelf();
+        }
+
+        $cachePoolMock->expects($existsInCache ? $this->exactly(2) : $this->exactly(4))
+            ->method('getItem')
+            ->with($cacheKey)
+            ->willReturn($cacheItemMock);
+
+        if (!$existsInCache) {
+            $cachePoolMock->expects($this->exactly(2))->method('save')->with($cacheItemMock);
+        }
 
         $serviceConfigResource = new ServiceConfigResource(
             $cachePoolMock,
             $findologicClientFactory
         );
 
-        $serviceConfigResource->isDirectIntegration($shopkey);
-        $serviceConfigResource->isStaging($shopkey);
+        $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
+        $this->assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
     }
 }
