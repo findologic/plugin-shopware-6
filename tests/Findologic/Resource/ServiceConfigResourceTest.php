@@ -57,6 +57,9 @@ class ServiceConfigResourceTest extends TestCase
 
     /**
      * @dataProvider configDataProvider
+     *
+     * @param bool[] $directIntegration
+     *
      * @throws InvalidArgumentException
      */
     public function testIfConfigIsStoredInCache(bool $existsInCache, array $directIntegration, bool $isStagingShop)
@@ -102,6 +105,8 @@ class ServiceConfigResourceTest extends TestCase
 
         if (!$existsInCache) {
             $cacheItemMock->expects($this->exactly(2))->method('set')->willReturnSelf();
+        } else {
+            $cacheItemMock->expects($this->never())->method('set')->willReturnSelf();
         }
 
         $cachePoolMock->expects($existsInCache ? $this->exactly(2) : $this->exactly(4))

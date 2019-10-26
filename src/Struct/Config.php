@@ -33,6 +33,9 @@ class Config extends Struct
     /** @var string */
     private $integrationType;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->shopkey = $systemConfigService->get('FinSearch.config.shopkey');
@@ -43,6 +46,11 @@ class Config extends Struct
         $this->navigationResultContainer =
             $systemConfigService->get('FinSearch.config.navigationResultContainer') ?? 'fl-navigation-result';
         $this->integrationType = $systemConfigService->get('FinSearch.config.integrationType');
+
+        $isDirectIntegration = $serviceConfigResource->isDirectIntegration($this->shopkey);
+        $integrationType = $isDirectIntegration ? IntegrationType::DIRECT_INTEGRATION : IntegrationType::API;
+        $systemConfigService->set('FinSearch.config.integrationType', $integrationType);
+
         $this->systemConfigService = $systemConfigService;
     }
 
@@ -88,21 +96,21 @@ class Config extends Struct
             $salesChannelId
         );
         $this->active = $this->systemConfigService->get(
-                'FinSearch.config.active',
-                $salesChannelId
-            ) ?? false;
+            'FinSearch.config.active',
+            $salesChannelId
+        ) ?? false;
         $this->activeOnCategoryPages = $this->systemConfigService->get(
             'FinSearch.config.activeOnCategoryPages',
             $salesChannelId
         );
         $this->searchResultContainer = $this->systemConfigService->get(
-                'FinSearch.config.searchResultContainer',
-                $salesChannelId
-            ) ?? 'fl-result';
+            'FinSearch.config.searchResultContainer',
+            $salesChannelId
+        ) ?? 'fl-result';
         $this->navigationResultContainer = $this->systemConfigService->get(
-                'FinSearch.config.navigationResultContainer',
-                $salesChannelId
-            ) ?? 'fl-navigation-result';
+            'FinSearch.config.navigationResultContainer',
+            $salesChannelId
+        ) ?? 'fl-navigation-result';
 
         $isDirectIntegration = $serviceConfigResource->isDirectIntegration($this->shopkey);
         $integrationType = $isDirectIntegration ? IntegrationType::DIRECT_INTEGRATION : IntegrationType::API;

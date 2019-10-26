@@ -49,10 +49,6 @@ class FrontendSubscriber implements EventSubscriberInterface
         // This will store the plugin config for usage in our templates
         $event->getPagelet()->addExtension('flConfig', $this->config);
         if ($this->config->isActive()) {
-            $this->config->initializeBySalesChannel(
-                $event->getSalesChannelContext()->getSalesChannel()->getId(),
-                $this->serviceConfigResource
-            );
             $shopkey = $this->config->getShopkey();
             $customerGroupId = $event->getSalesChannelContext()->getCurrentCustomerGroup()->getId();
             $userGroupHash = Utils::calculateUserGroupHash($shopkey, $customerGroupId);

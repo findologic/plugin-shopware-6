@@ -116,7 +116,7 @@ class FrontendSubscriberTest extends TestCase
             ->willReturn($salesChannelContextMock);
 
         $serviceConfig = new ServiceConfig();
-        $serviceConfig->setFromArray(['directIntegration' => true, 'isStagingShop' => false]);
+        $serviceConfig->setFromArray(['directIntegration' => ['enabled' => true], 'isStagingShop' => false]);
         $serviceConfigFromCache = serialize($serviceConfig);
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
