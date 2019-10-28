@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
-use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
-use FINDOLOGIC\FinSearch\Findologic\Client\FindologicClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
@@ -13,8 +11,6 @@ use FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber;
 use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -58,13 +54,15 @@ class FrontendSubscriberTest extends TestCase
             ->with('FinSearch.config.integrationType')
             ->willReturn('Direct Integration');
 
+        /** @var HeaderPageletLoadedEvent|MockObject $headerPageletLoadedEventMock */
         $headerPageletLoadedEventMock = $this->getMockBuilder(HeaderPageletLoadedEvent::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        /** @var HeaderPagelet|MockObject $headerPageletMock */
         $headerPageletMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
             ->getMock();
-
         $headerPageletMock->expects($this->at(0))
             ->method('addExtension')
             ->with(
@@ -102,14 +100,17 @@ class FrontendSubscriberTest extends TestCase
                 )
             );
 
+        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        /** @var CustomerGroupEntity|MockObject $customerGroupEntityMock */
         $customerGroupEntityMock = $this->getMockBuilder(CustomerGroupEntity::class)
             ->disableOriginalConstructor()
             ->getMock();
-
         $customerGroupEntityMock->expects($this->once())->method('getId')->willReturn('1');
+
         $salesChannelContextMock->expects($this->once())
             ->method('getCurrentCustomerGroup')
             ->willReturn($customerGroupEntityMock);
@@ -118,27 +119,10 @@ class FrontendSubscriberTest extends TestCase
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')
             ->willReturn($salesChannelContextMock);
 
-        $serviceConfig = new ServiceConfig();
-        $serviceConfig->setFromArray(['directIntegration' => ['enabled' => true], 'isStagingShop' => false]);
-        $serviceConfigFromCache = serialize($serviceConfig);
-
-        /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
-        $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
+        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
+        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        /** @var CacheItemInterface|MockObject $cacheItemMock */
-        $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cacheItemMock->expects($this->once())->method('get')->willReturn($serviceConfigFromCache);
-        $cachePoolMock->expects($this->once())->method('getItem')->willReturn($cacheItemMock);
-
-        /** @var FindologicClientFactory|MockObject $findologicClientFactory */
-        $findologicClientFactory = $this->getMockBuilder(FindologicClientFactory::class)->getMock();
-
-        $serviceConfigResource = new ServiceConfigResource(
-            $cachePoolMock,
-            $findologicClientFactory
-        );
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,

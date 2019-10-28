@@ -33,9 +33,13 @@ class Config extends Struct
     /** @var string */
     private $integrationType;
 
-    public function __construct(SystemConfigService $systemConfigService)
+    /** @var ServiceConfigResource */
+    private $serviceConfigResource;
+
+    public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->systemConfigService = $systemConfigService;
+        $this->serviceConfigResource = $serviceConfigResource;
     }
 
     public function getShopkey(): string
@@ -71,10 +75,8 @@ class Config extends Struct
     /**
      * @throws InvalidArgumentException
      */
-    public function initializeBySalesChannel(
-        string $salesChannelId,
-        ServiceConfigResource $serviceConfigResource
-    ): void {
+    public function initializeBySalesChannel(?string $salesChannelId): void
+    {
         $this->shopkey = $this->systemConfigService->get(
             'FinSearch.config.shopkey',
             $salesChannelId
@@ -96,7 +98,7 @@ class Config extends Struct
             $salesChannelId
         ) ?? 'fl-navigation-result';
 
-        $isDirectIntegration = $serviceConfigResource->isDirectIntegration($this->shopkey);
+        $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
         $integrationType = $isDirectIntegration ? IntegrationType::DIRECT_INTEGRATION : IntegrationType::API;
 
         if ($integrationType !== $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId)) {
