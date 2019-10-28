@@ -33,24 +33,8 @@ class Config extends Struct
     /** @var string */
     private $integrationType;
 
-    /**
-     * @throws InvalidArgumentException
-     */
-    public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
+    public function __construct(SystemConfigService $systemConfigService)
     {
-        $this->shopkey = $systemConfigService->get('FinSearch.config.shopkey');
-        $this->active = $systemConfigService->get('FinSearch.config.active') ?? false;
-        $this->activeOnCategoryPages = $systemConfigService->get('FinSearch.config.activeOnCategoryPages');
-        $this->searchResultContainer =
-            $systemConfigService->get('FinSearch.config.searchResultContainer') ?? 'fl-result';
-        $this->navigationResultContainer =
-            $systemConfigService->get('FinSearch.config.navigationResultContainer') ?? 'fl-navigation-result';
-        $this->integrationType = $systemConfigService->get('FinSearch.config.integrationType');
-
-        $isDirectIntegration = $serviceConfigResource->isDirectIntegration($this->shopkey);
-        $integrationType = $isDirectIntegration ? IntegrationType::DIRECT_INTEGRATION : IntegrationType::API;
-        $systemConfigService->set('FinSearch.config.integrationType', $integrationType);
-
         $this->systemConfigService = $systemConfigService;
     }
 
@@ -88,7 +72,7 @@ class Config extends Struct
      * @throws InvalidArgumentException
      */
     public function initializeBySalesChannel(
-        ?string $salesChannelId,
+        string $salesChannelId,
         ServiceConfigResource $serviceConfigResource
     ): void {
         $this->shopkey = $this->systemConfigService->get(
@@ -115,10 +99,12 @@ class Config extends Struct
         $isDirectIntegration = $serviceConfigResource->isDirectIntegration($this->shopkey);
         $integrationType = $isDirectIntegration ? IntegrationType::DIRECT_INTEGRATION : IntegrationType::API;
 
-        $this->integrationType = $integrationType;
-
         if ($integrationType !== $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId)) {
-            $this->systemConfigService->set('FinSearch.config.integrationType', $integrationType, $salesChannelId);
+            $this->systemConfigService->set(
+                'FinSearch.config.integrationType',
+                $integrationType,
+                $salesChannelId
+            );
         }
     }
 }

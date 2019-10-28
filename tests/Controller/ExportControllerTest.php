@@ -348,7 +348,7 @@ class ExportControllerTest extends TestCase
      */
     public function testExportWithUnknownShopkey(): void
     {
-        $unknownShopkey = '80AB18D4BE2654E78244106AD315DCCC';
+        $unknownShopkey = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
         $this->expectException(UnknownShopkeyException::class);
         $this->expectExceptionMessage(sprintf('Given shopkey "%s" is not assigned to any shop', $unknownShopkey));

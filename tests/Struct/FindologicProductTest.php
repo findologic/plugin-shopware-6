@@ -79,8 +79,7 @@ class FindologicProductTest extends TestCase
         $productEntity->setName($name);
 
         $findologicProductFactory = new FindologicProductFactory();
-        $findologicProduct =
-            $findologicProductFactory->buildInstance(
+        $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
             $this->getContainer(),
@@ -173,8 +172,7 @@ class FindologicProductTest extends TestCase
         }
 
         $findologicProductFactory = new FindologicProductFactory();
-        $findologicProduct =
-            $findologicProductFactory->buildInstance(
+        $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
             $this->getContainer(),

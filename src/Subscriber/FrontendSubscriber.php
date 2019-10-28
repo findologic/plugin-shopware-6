@@ -27,7 +27,7 @@ class FrontendSubscriber implements EventSubscriberInterface
     public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->systemConfigService = $systemConfigService;
-        $this->config = new Config($this->systemConfigService, $serviceConfigResource);
+        $this->config = new Config($this->systemConfigService);
         $this->serviceConfigResource = $serviceConfigResource;
     }
 
@@ -46,6 +46,11 @@ class FrontendSubscriber implements EventSubscriberInterface
      */
     public function onHeaderLoaded(HeaderPageletLoadedEvent $event): void
     {
+        $this->config->initializeBySalesChannel(
+            $event->getSalesChannelContext()->getSalesChannel()->getId(),
+            $this->serviceConfigResource
+        );
+
         // This will store the plugin config for usage in our templates
         $event->getPagelet()->addExtension('flConfig', $this->config);
         if ($this->config->isActive()) {

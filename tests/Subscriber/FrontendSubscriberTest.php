@@ -15,6 +15,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -27,6 +28,9 @@ class FrontendSubscriberTest extends TestCase
     use IntegrationTestBehaviour;
     use ConfigHelper;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function testHeaderPageletLoadedEvent(): void
     {
         $shopkey = $this->getShopkey();
@@ -111,8 +115,7 @@ class FrontendSubscriberTest extends TestCase
             ->willReturn($customerGroupEntityMock);
 
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')->willReturn($headerPageletMock);
-        $headerPageletLoadedEventMock->expects($this->once())
-            ->method('getSalesChannelContext')
+        $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')
             ->willReturn($salesChannelContextMock);
 
         $serviceConfig = new ServiceConfig();
