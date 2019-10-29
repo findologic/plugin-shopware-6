@@ -99,7 +99,7 @@ class Config extends Struct
         ) ?? 'fl-navigation-result';
 
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
-        $integrationType = $isDirectIntegration ? IntegrationType::DIRECT_INTEGRATION : IntegrationType::API;
+        $integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
 
         if ($integrationType !== $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId)) {
             $this->systemConfigService->set(

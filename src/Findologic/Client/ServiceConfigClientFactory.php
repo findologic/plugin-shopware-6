@@ -6,9 +6,9 @@ namespace FINDOLOGIC\FinSearch\Findologic\Client;
 
 use GuzzleHttp\Client;
 
-class FindologicClientFactory
+class ServiceConfigClientFactory
 {
-    public function createServiceConfigClient(string $shopkey, ?Client $client = null)
+    public function getInstance(string $shopkey, ?Client $client = null): ServiceConfigClient
     {
         return new ServiceConfigClient($shopkey, $client);
     }

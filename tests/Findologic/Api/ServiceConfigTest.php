@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Api;
 
 use DateTime;
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
-use FINDOLOGIC\FinSearch\Findologic\Client\FindologicClientFactory;
+use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -55,8 +55,8 @@ class ServiceConfigTest extends TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
 
-        $clientFactory = new FindologicClientFactory();
-        $serviceConfigClient = $clientFactory->createServiceConfigClient($this->getShopkey(), $client);
+        $clientFactory = new ServiceConfigClientFactory();
+        $serviceConfigClient = $clientFactory->getInstance($this->getShopkey(), $client);
 
         $serviceConfig = new ServiceConfig();
         $serviceConfig->setFromArray($serviceConfigClient->get());

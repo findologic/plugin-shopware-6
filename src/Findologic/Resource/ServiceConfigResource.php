@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Resource;
 
 use DateTime;
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
-use FINDOLOGIC\FinSearch\Findologic\Client\FindologicClientFactory;
+use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use GuzzleHttp\Client;
 use InvalidArgumentException as InvalidServiceConfigKeyException;
 use Psr\Cache\CacheItemPoolInterface;
@@ -19,7 +19,7 @@ class ServiceConfigResource
     /** @var CacheItemPoolInterface */
     private $cache;
 
-    /** @var FindologicClientFactory */
+    /** @var ServiceConfigClientFactory */
     private $findologicClientFactory;
 
     /** @var Client|null */
@@ -27,7 +27,7 @@ class ServiceConfigResource
 
     public function __construct(
         CacheItemPoolInterface $cache,
-        FindologicClientFactory $findologicClientFactory,
+        ServiceConfigClientFactory $findologicClientFactory,
         ?Client $client = null
     ) {
         $this->cache = $cache;
@@ -70,7 +70,7 @@ class ServiceConfigResource
     {
         $serviceConfig = $this->getFromCache();
         if ($serviceConfig === null || $this->isExpired($serviceConfig)) {
-            $serviceConfigClient = $this->findologicClientFactory->createServiceConfigClient($shopkey, $this->client);
+            $serviceConfigClient = $this->findologicClientFactory->getInstance($shopkey, $this->client);
             $serviceConfig = new ServiceConfig();
             $serviceConfig->setFromArray($serviceConfigClient->get());
             $this->saveToCache($serviceConfig);

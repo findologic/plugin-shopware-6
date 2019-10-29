@@ -7,6 +7,6 @@ namespace FINDOLOGIC\FinSearch\Findologic;
 final class IntegrationType
 {
     public const
-        DIRECT_INTEGRATION = 'Direct Integration',
+        DI = 'Direct Integration',
         API = 'API';
 }

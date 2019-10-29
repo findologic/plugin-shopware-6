@@ -26,7 +26,7 @@
         />
 
         <service
-            class="FINDOLOGIC\FinSearch\Findologic\Client\FindologicClientFactory"
+            class="ServiceConfigClientFactory"
             id="FINDOLOGIC\FinSearch\Findologic\Client\FindologicClientFactory"
         />
 
@@ -35,7 +35,7 @@
             id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"
         >
             <argument id="serializer.mapping.cache.symfony" type="service" />
-            <argument id="FINDOLOGIC\FinSearch\Findologic\Client\FindologicClientFactory" type="service" />
+            <argument id="ServiceConfigClientFactory" type="service" />
         </service>
 
     </services>

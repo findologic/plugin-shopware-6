@@ -29,20 +29,14 @@ class ServiceConfig extends Struct
         $this->expireDateTime = $dateTime;
     }
 
+    /**
+     * @param mixed[] $options
+     */
     public function setFromArray(array $options): void
     {
         foreach ($options as $key => $value) {
-            if ($key === 'id' && method_exists($this, 'setId')) {
-                $this->setId($value);
-                continue;
-            }
-
-            try {
-                if (property_exists($this, $key)) {
-                    $this->{"set$key"}($value);
-                }
-            } catch (\Error | \Exception $error) {
-                // nth
+            if (is_callable([$this, "set$key"])) {
+                $this->{"set$key"}($value);
             }
         }
     }

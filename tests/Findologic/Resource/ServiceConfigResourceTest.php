@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Findologic\Resource;
 
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
-use FINDOLOGIC\FinSearch\Findologic\Client\FindologicClientFactory;
+use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClient;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
@@ -19,7 +19,7 @@ class ServiceConfigResourceTest extends TestCase
 {
     use ConfigHelper;
 
-    public function configDataProvider()
+    public function configDataProvider(): array
     {
         return [
             'Direct Integration does not exist in the cache' => [
@@ -62,7 +62,7 @@ class ServiceConfigResourceTest extends TestCase
      *
      * @throws InvalidArgumentException
      */
-    public function testIfConfigIsStoredInCache(bool $existsInCache, array $directIntegration, bool $isStagingShop)
+    public function testIfConfigIsStoredInCache(bool $existsInCache, array $directIntegration, bool $isStagingShop): void
     {
         $configFromFindologic = $this->getConfig();
         $shopkey = $this->getShopkey();
@@ -88,10 +88,10 @@ class ServiceConfigResourceTest extends TestCase
 
         $invokeCount = $existsInCache ? $this->never() : $this->exactly(2);
 
-        /** @var FindologicClientFactory|MockObject $findologicClientFactory */
-        $findologicClientFactory = $this->getMockBuilder(FindologicClientFactory::class)->getMock();
+        /** @var ServiceConfigClientFactory|MockObject $findologicClientFactory */
+        $findologicClientFactory = $this->getMockBuilder(ServiceConfigClientFactory::class)->getMock();
         $findologicClientFactory->expects($invokeCount)
-            ->method('createServiceConfigClient')
+            ->method('getInstance')
             ->willReturn($serviceConfigClientMock);
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
