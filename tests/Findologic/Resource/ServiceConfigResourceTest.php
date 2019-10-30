@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Findologic\Resource;
 
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
-use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClient;
+use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -62,8 +62,11 @@ class ServiceConfigResourceTest extends TestCase
      *
      * @throws InvalidArgumentException
      */
-    public function testIfConfigIsStoredInCache(bool $existsInCache, array $directIntegration, bool $isStagingShop): void
-    {
+    public function testIfConfigIsStoredInCache(
+        bool $existsInCache,
+        array $directIntegration,
+        bool $isStagingShop
+    ): void {
         $configFromFindologic = $this->getConfig();
         $shopkey = $this->getShopkey();
         $cacheKey = 'finsearch_serviceconfig';

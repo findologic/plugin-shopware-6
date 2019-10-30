@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Client;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClient;
 use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
@@ -16,12 +17,29 @@ class ServiceConfigClientTest extends TestCase
 {
     use ConfigHelper;
 
-    public function testConfigUrlAndValues(): void
+    public function responseDataProvider(): array
+    {
+        return [
+            'Response is successful' => [200, null],
+            'Response is not successful' => [404, ClientException::class],
+        ];
+    }
+
+    /**
+     * @dataProvider responseDataProvider
+     */
+    public function testConfigUrlAndValues(int $responseCode, ?string $exception): void
     {
         $shopkey = $this->getShopkey();
 
+        if ($responseCode === 200) {
+            $body = $this->getConfig(false);
+        } else {
+            $this->expectException($exception);
+            $body = null;
+        }
         // Create a mock and queue one response with the config json file
-        $mock = new MockHandler([new Response(200, [], $this->getConfig(false))]);
+        $mock = new MockHandler([new Response($responseCode, [], $body)]);
 
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
