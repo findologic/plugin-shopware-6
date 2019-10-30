@@ -20,18 +20,18 @@ class ServiceConfigResource
     private $cache;
 
     /** @var ServiceConfigClientFactory */
-    private $findologicClientFactory;
+    private $serviceConfigClientFactory;
 
     /** @var Client|null */
     private $client;
 
     public function __construct(
         CacheItemPoolInterface $cache,
-        ServiceConfigClientFactory $findologicClientFactory,
+        ServiceConfigClientFactory $serviceConfigClientFactory,
         ?Client $client = null
     ) {
         $this->cache = $cache;
-        $this->findologicClientFactory = $findologicClientFactory;
+        $this->serviceConfigClientFactory = $serviceConfigClientFactory;
         $this->client = $client;
     }
 
@@ -70,9 +70,9 @@ class ServiceConfigResource
     {
         $serviceConfig = $this->getFromCache();
         if ($serviceConfig === null || $this->isExpired($serviceConfig)) {
-            $serviceConfigClient = $this->findologicClientFactory->getInstance($shopkey, $this->client);
+            $serviceConfigClient = $this->serviceConfigClientFactory->getInstance($shopkey, $this->client);
             $serviceConfig = new ServiceConfig();
-            $serviceConfig->setFromArray($serviceConfigClient->get());
+            $serviceConfig->assign($serviceConfigClient->get());
             $this->saveToCache($serviceConfig);
         }
 

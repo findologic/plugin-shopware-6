@@ -59,13 +59,13 @@ class ServiceConfigTest extends TestCase
         $serviceConfigClient = $clientFactory->getInstance($this->getShopkey(), $client);
 
         $serviceConfig = new ServiceConfig();
-        $serviceConfig->setFromArray($serviceConfigClient->get());
+        $serviceConfig->assign($serviceConfigClient->get());
 
         $expectedExpiration = new DateTime('+1 day');
         $expirationDate = $serviceConfig->getExpireDateTime();
 
         $this->assertSame($directIntegration, $serviceConfig->getDirectIntegration());
         $this->assertEquals($isStagingShop, $serviceConfig->getIsStagingShop());
-        $this->assertEquals($expectedExpiration->format('Y-m-d'), $expirationDate->format('Y-m-d'));
+        $this->assertEqualsWithDelta($expectedExpiration, $expirationDate, 5);
     }
 }
