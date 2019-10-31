@@ -80,18 +80,12 @@ class ServiceConfigResourceTest extends TestCase
             ->setConstructorArgs([$shopkey])
             ->getMock();
 
-        if ($existsInCache) {
-            // Serialize the service config data to mock the cache value
-            $serviceConfigFromCache = serialize($serviceConfig);
-        } else {
-            // Get config data from FINDOLOGIC if the entry in cache does not exist
-            $serviceConfigFromCache = null;
-            $serviceConfigClientMock->expects($this->exactly(2))
-                ->method('get')
-                ->willReturn($configFromFindologic);
-        }
+        // Serialize the service config data to mock the cache value or return null if it does not exist
+        $serviceConfigFromCache = $existsInCache ? serialize($serviceConfig) : null;
 
-        $invokeCount = $existsInCache ? $this->never() : $this->exactly(2);
+        $invokeCount = $existsInCache ? $this->never() : $this->once();
+
+        $serviceConfigClientMock->expects($invokeCount)->method('get')->willReturn($configFromFindologic);
 
         /** @var ServiceConfigClientFactory|MockObject $serviceConfigClientFactory */
         $serviceConfigClientFactory = $this->getMockBuilder(ServiceConfigClientFactory::class)->getMock();
@@ -106,22 +100,16 @@ class ServiceConfigResourceTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cacheItemMock->expects($this->exactly(2))->method('get')->willReturn($serviceConfigFromCache);
-
-        if (!$existsInCache) {
-            $cacheItemMock->expects($this->exactly(2))->method('set')->willReturnSelf();
-        } else {
-            $cacheItemMock->expects($this->never())->method('set')->willReturnSelf();
-        }
+        $cacheItemMock->expects($this->at(0))->method('get')->willReturn($serviceConfigFromCache);
+        $cacheItemMock->expects($this->at(1))->method('get')->willReturn(serialize($serviceConfig));
+        $cacheItemMock->expects($invokeCount)->method('set')->with($serviceConfigFromCache)->willReturnSelf();
 
         $cachePoolMock->expects($existsInCache ? $this->exactly(2) : $this->exactly(4))
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
 
-        if (!$existsInCache) {
-            $cachePoolMock->expects($this->exactly(2))->method('save')->with($cacheItemMock);
-        }
+        $cachePoolMock->expects($invokeCount)->method('save')->with($cacheItemMock);
 
         $serviceConfigResource = new ServiceConfigResource(
             $cachePoolMock,
@@ -132,7 +120,7 @@ class ServiceConfigResourceTest extends TestCase
         $this->assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
     }
 
-    public function expiredTimeProvider()
+    public function expiredTimeProvider(): array
     {
         return [
             'Cache is expired and Direct Integration is true' => [
@@ -154,8 +142,8 @@ class ServiceConfigResourceTest extends TestCase
      */
     public function testConfigWhenCacheIsExpired(bool $isExpired, array $directIntegration, string $expiredTime): void
     {
-        $expiredDateTime = new DateTime('now');
-        $expiredDateTime->modify($expiredTime);
+        $expiredDateTime = new DateTime();
+        $expiredDateTime = $expiredDateTime->modify($expiredTime);
 
         $shopkey = $this->getShopkey();
         $cacheKey = 'finsearch_serviceconfig';

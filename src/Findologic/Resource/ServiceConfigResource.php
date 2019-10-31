@@ -51,7 +51,7 @@ class ServiceConfigResource
 
     private function isExpired(ServiceConfig $serviceConfig): bool
     {
-        return new DateTime('now') > $serviceConfig->getExpireDateTime();
+        return new DateTime() > $serviceConfig->getExpireDateTime();
     }
 
     /**

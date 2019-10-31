@@ -23,8 +23,8 @@ class ServiceConfig extends Struct
     public function __construct()
     {
         // Add 24 hours to the current time to set expiration date
-        $dateTime = new DateTime('now');
-        $dateTime->modify(sprintf('+%d seconds', self::EXPIRE_TIME));
+        $dateTime = new DateTime();
+        $dateTime = $dateTime->modify(sprintf('+%d seconds', self::EXPIRE_TIME));
 
         $this->expireDateTime = $dateTime;
     }

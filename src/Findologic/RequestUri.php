@@ -6,6 +6,6 @@ namespace FINDOLOGIC\FinSearch\Findologic;
 
 final class RequestUri
 {
-    // %s represents the hashed shopkey
+    /** The %s represents the hashed shopkey */
     public const SERVICE_CONFIG_RESOURCE = 'static/%s/config.json';
 }
