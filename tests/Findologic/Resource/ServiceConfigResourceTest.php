@@ -24,53 +24,38 @@ class ServiceConfigResourceTest extends TestCase
 {
     use ConfigHelper;
 
-    public function configDataProvider(): array
+    public function cacheConfigDataProvider(): array
     {
         return [
-            'Direct Integration does not exist in the cache' => [
+            'Direct Integration is enabled' => [
                 'directionIntegration' => ['enabled' => true],
-                'isStagingShop' => false,
-                'existsInCache' => false
+                'isStagingShop' => false
             ],
-            'Direct Integration is enabled and exists in cache' => [
-                'directionIntegration' => ['enabled' => true],
-                'isStagingShop' => false,
-                'existsInCache' => true
-            ],
-            'Direct Integration is disabled and exists in cache' => [
+            'Direct Integration is disabled' => [
                 'directionIntegration' => ['enabled' => false],
-                'isStagingShop' => false,
-                'existsInCache' => true
+                'isStagingShop' => false
             ],
-            'Staging shop does not exist in the cache' => [
+            'Shop is staging' => [
                 'directionIntegration' => ['enabled' => true],
-                'isStagingShop' => false,
-                'existsInCache' => false
+                'isStagingShop' => true
             ],
-            'Shop is staging and exists in cache' => [
+            'Shop is live' => [
                 'directionIntegration' => ['enabled' => true],
-                'isStagingShop' => true,
-                'existsInCache' => true
-            ],
-            'Shop is live and exists in cache' => [
-                'directionIntegration' => ['enabled' => false],
-                'isStagingShop' => false,
-                'existsInCache' => true
+                'isStagingShop' => false
             ]
         ];
     }
 
     /**
-     * @dataProvider configDataProvider
+     * @dataProvider cacheConfigDataProvider
      *
      * @param bool[] $directIntegration
      *
      * @throws InvalidArgumentException
      */
-    public function testIfConfigIsStoredInCache(
+    public function testConfigIsStoredInCache(
         array $directIntegration,
-        bool $isStagingShop,
-        bool $existsInCache
+        bool $isStagingShop
     ): void {
         $shopkey = $this->getShopkey();
         $cacheKey = 'finsearch_serviceconfig';
@@ -78,29 +63,57 @@ class ServiceConfigResourceTest extends TestCase
         $serviceConfig = new ServiceConfig();
         $serviceConfig->assign(['directIntegration' => $directIntegration, 'isStagingShop' => $isStagingShop]);
 
-        // Create a mock and queue one response with the config json file
-        $mock = new MockHandler([new Response(200, [], $this->getConfig(false))]);
-        $handler = HandlerStack::create($mock);
+        /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
+        $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $client = new Client(['handler' => $handler]);
+        /** @var CacheItemInterface|MockObject $cacheItemMock */
+        $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
+        $cacheItemMock->expects($this->exactly(2))->method('get')->willReturn(serialize($serviceConfig));
+        $cacheItemMock->expects($this->never())->method('set')->willReturnSelf();
 
-        $serviceConfigClient = new ServiceConfigClient($shopkey, $client);
-        /*$serviceConfigClientMock = $this->getMockBuilder(ServiceConfigClient::class)
-            ->setConstructorArgs([$shopkey])
-            ->getMock();*/
+        $cachePoolMock->expects($this->exactly(2))
+            ->method('getItem')
+            ->with($cacheKey)
+            ->willReturn($cacheItemMock);
+        $cachePoolMock->expects($this->never())->method('save')->with($cacheItemMock);
 
-        // Serialize the service config data to mock the cache value or return null if it does not exist
-        $serviceConfigFromCache = $existsInCache ? serialize($serviceConfig) : null;
+        $serviceConfigResource = new ServiceConfigResource(
+            $cachePoolMock,
+            new ServiceConfigClientFactory()
+        );
 
-        $invokeCount = $existsInCache ? $this->never() : $this->once();
+        $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
+        $this->assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
+    }
 
-        // $serviceConfigClientMock->expects($invokeCount)->method('get')->willReturn($configFromFindologic);
+    public function findologicConfigDataProvider(): array
+    {
+        return [
+            'Direct Integration is enabled and Shop is live' => [
+                'directionIntegration' => ['enabled' => true],
+                'isStagingShop' => false
+            ],
+        ];
+    }
 
-        /** @var ServiceConfigClientFactory|MockObject $serviceConfigClientFactory */
-        $serviceConfigClientFactory = $this->getMockBuilder(ServiceConfigClientFactory::class)->getMock();
-        $serviceConfigClientFactory->expects($invokeCount)
-            ->method('getInstance')
-            ->willReturn($serviceConfigClient);
+    /**
+     * @dataProvider findologicConfigDataProvider
+     *
+     * @param bool[] $directIntegration
+     *
+     * @throws InvalidArgumentException
+     */
+    public function testConfigIsFetchedFromFindologic(
+        array $directIntegration,
+        bool $isStagingShop
+    ): void {
+        $shopkey = $this->getShopkey();
+        $cacheKey = 'finsearch_serviceconfig';
+
+        $serviceConfig = new ServiceConfig();
+        $serviceConfig->assign($this->getConfig());
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
@@ -110,22 +123,28 @@ class ServiceConfigResourceTest extends TestCase
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
         // The first call will either get the value from the cache if it exists, or return null
-        $cacheItemMock->expects($this->at(0))->method('get')->willReturn($serviceConfigFromCache);
+        $cacheItemMock->expects($this->at(0))->method('get')->willReturn(null);
         // The second call to get should already have the cache stored so it will get the serialized config object
         $cacheItemMock->expects($this->at(1))->method('get')->willReturn(serialize($serviceConfig));
+        $cacheItemMock->expects($this->once())->method('set')->willReturnSelf();
+        $cachePoolMock->expects($this->once())->method('save')->with($cacheItemMock);
 
-        $cacheItemMock->expects($invokeCount)->method('set')->with(serialize($serviceConfig))->willReturnSelf();
-
-        $cachePoolMock->expects($existsInCache ? $this->exactly(2) : $this->exactly(4))
+        $cachePoolMock->expects($this->exactly(3))
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
 
-        $cachePoolMock->expects($invokeCount)->method('save')->with($cacheItemMock);
+        // Create a mock and queue one response with the config json file
+        $mock = new MockHandler([
+            new Response(200, [], $this->getConfig(false))
+        ]);
+        $handler = HandlerStack::create($mock);
+
+        $client = new Client(['handler' => $handler]);
 
         $serviceConfigResource = new ServiceConfigResource(
             $cachePoolMock,
-            $serviceConfigClientFactory,
+            new ServiceConfigClientFactory(),
             $client
         );
 

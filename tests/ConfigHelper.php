@@ -8,7 +8,7 @@ trait ConfigHelper
 {
     public function getShopkey(): string
     {
-        return '80AB18D4BE2654E78244106AD315DC2C';
+        return '74B87337454200D4D33F80C4663DC5E5';
     }
 
     public function getConfig(bool $assoc = true)
