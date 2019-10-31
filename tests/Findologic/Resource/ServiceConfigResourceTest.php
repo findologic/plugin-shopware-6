@@ -10,6 +10,10 @@ use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClient;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -68,30 +72,35 @@ class ServiceConfigResourceTest extends TestCase
         bool $isStagingShop,
         bool $existsInCache
     ): void {
-        $configFromFindologic = $this->getConfig();
         $shopkey = $this->getShopkey();
         $cacheKey = 'finsearch_serviceconfig';
 
         $serviceConfig = new ServiceConfig();
         $serviceConfig->assign(['directIntegration' => $directIntegration, 'isStagingShop' => $isStagingShop]);
 
-        /** @var ServiceConfigClient|MockObject $serviceConfigClientMock */
-        $serviceConfigClientMock = $this->getMockBuilder(ServiceConfigClient::class)
+        // Create a mock and queue one response with the config json file
+        $mock = new MockHandler([new Response(200, [], $this->getConfig(false))]);
+        $handler = HandlerStack::create($mock);
+
+        $client = new Client(['handler' => $handler]);
+
+        $serviceConfigClient = new ServiceConfigClient($shopkey, $client);
+        /*$serviceConfigClientMock = $this->getMockBuilder(ServiceConfigClient::class)
             ->setConstructorArgs([$shopkey])
-            ->getMock();
+            ->getMock();*/
 
         // Serialize the service config data to mock the cache value or return null if it does not exist
         $serviceConfigFromCache = $existsInCache ? serialize($serviceConfig) : null;
 
         $invokeCount = $existsInCache ? $this->never() : $this->once();
 
-        $serviceConfigClientMock->expects($invokeCount)->method('get')->willReturn($configFromFindologic);
+        // $serviceConfigClientMock->expects($invokeCount)->method('get')->willReturn($configFromFindologic);
 
         /** @var ServiceConfigClientFactory|MockObject $serviceConfigClientFactory */
         $serviceConfigClientFactory = $this->getMockBuilder(ServiceConfigClientFactory::class)->getMock();
         $serviceConfigClientFactory->expects($invokeCount)
             ->method('getInstance')
-            ->willReturn($serviceConfigClientMock);
+            ->willReturn($serviceConfigClient);
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
@@ -105,7 +114,7 @@ class ServiceConfigResourceTest extends TestCase
         // The second call to get should already have the cache stored so it will get the serialized config object
         $cacheItemMock->expects($this->at(1))->method('get')->willReturn(serialize($serviceConfig));
 
-        $cacheItemMock->expects($invokeCount)->method('set')->with($serviceConfigFromCache)->willReturnSelf();
+        $cacheItemMock->expects($invokeCount)->method('set')->with(serialize($serviceConfig))->willReturnSelf();
 
         $cachePoolMock->expects($existsInCache ? $this->exactly(2) : $this->exactly(4))
             ->method('getItem')
@@ -116,7 +125,8 @@ class ServiceConfigResourceTest extends TestCase
 
         $serviceConfigResource = new ServiceConfigResource(
             $cachePoolMock,
-            $serviceConfigClientFactory
+            $serviceConfigClientFactory,
+            $client
         );
 
         $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
