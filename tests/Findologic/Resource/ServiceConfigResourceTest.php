@@ -100,8 +100,11 @@ class ServiceConfigResourceTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
+        // The first call will either get the value from the cache if it exists, or return null
         $cacheItemMock->expects($this->at(0))->method('get')->willReturn($serviceConfigFromCache);
+        // The second call to get should already have the cache stored so it will get the serialized config object
         $cacheItemMock->expects($this->at(1))->method('get')->willReturn(serialize($serviceConfig));
+
         $cacheItemMock->expects($invokeCount)->method('set')->with($serviceConfigFromCache)->willReturnSelf();
 
         $cachePoolMock->expects($existsInCache ? $this->exactly(2) : $this->exactly(4))
