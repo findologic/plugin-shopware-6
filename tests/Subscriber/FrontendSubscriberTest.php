@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
 use FINDOLOGIC\Api\Client;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
+use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
@@ -146,7 +148,7 @@ class FrontendSubscriberTest extends TestCase
 
     public function testOnSearch()
     {
-        $this->markTestSkipped('testOnSearch implementation remains');
+        $this->markTestSkipped('XML21Response sample XML needed to implement mock');
 
         /** @var ProductListingCriteriaEvent|MockObject $event */
         $event = $this->getMockBuilder(ProductListingCriteriaEvent::class)
@@ -210,9 +212,13 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$apiConfig])
             ->getMock();
 
-        $response = $this->getMockBuilder(\FINDOLOGIC\Api\Requests\Request::class)
+        /** @var Xml21Response|MockObject $response */
+        $response = $this->getMockBuilder(Xml21Response::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $product = new Product(new \SimpleXMLElement(''));
+        $response->expects($this->once())->method('getProducts')->willReturn([$product]);
         $apiClientMock->expects($this->once())->method('send')->willReturn($response);
 
         $frontendSubscriber = new FrontendSubscriber(
