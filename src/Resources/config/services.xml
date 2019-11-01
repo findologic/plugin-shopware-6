@@ -23,17 +23,20 @@
 
         <service
             class="FINDOLOGIC\FinSearch\Export\FindologicProductFactory"
-            id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory" public="true"
+            id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory"
+            public="true"
         />
 
         <service
             class="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory"
             id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory"
+            public="true"
         />
 
         <service
             class="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"
             id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"
+            public="true"
         >
             <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory" type="service" />
@@ -42,8 +45,9 @@
         <service
             class="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
             id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
+            public="true"
         >
-            <argument id="cache.object" type="service" />
+            <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument id="service_container" type="service" />
         </service>
 

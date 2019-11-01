@@ -44,14 +44,16 @@ class FrontendSubscriber implements EventSubscriberInterface
     public function __construct(
         SystemConfigService $systemConfigService,
         ServiceConfigResource $serviceConfigResource,
-        SearchRequestFactory $searchRequestFactory
+        SearchRequestFactory $searchRequestFactory,
+        ?ApiConfig $apiConfig,
+        ?ApiClient $apiClient
     ) {
         $this->systemConfigService = $systemConfigService;
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = new Config($this->systemConfigService, $this->serviceConfigResource);
         $this->searchRequestFactory = $searchRequestFactory;
-        $this->apiConfig = new ApiConfig();
-        $this->apiClient = new ApiClient($this->apiConfig);
+        $this->apiConfig = $apiConfig ?? new ApiConfig();
+        $this->apiClient = $apiClient ?? new ApiClient($this->apiConfig);
     }
 
     public static function getSubscribedEvents(): array
@@ -107,8 +109,10 @@ class FrontendSubscriber implements EventSubscriberInterface
 
         $this->apiConfig->setServiceId($shopkey);
 
-        $searchRequest = $this->searchRequestFactory->getInstance($this->config, $event->getRequest());
-        $searchRequest->setQuery($event->getRequest()->query->get('search'));
+        $request = $event->getRequest();
+
+        $searchRequest = $this->searchRequestFactory->getInstance($this->config, $request);
+        $searchRequest->setQuery($request->query->get('search'));
 
         $response = $this->apiClient->send($searchRequest);
 

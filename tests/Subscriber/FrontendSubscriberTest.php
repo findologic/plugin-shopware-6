@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
+use FINDOLOGIC\Api\Client;
+use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
@@ -11,13 +13,17 @@ use FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber;
 use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
+use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
+use Symfony\Component\HttpFoundation\Request;
 
 class FrontendSubscriberTest extends TestCase
 {
@@ -35,24 +41,21 @@ class FrontendSubscriberTest extends TestCase
         $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $configServiceMock->expects($this->at(0))->method('get')
-            ->with('FinSearch.config.shopkey')
-            ->willReturn($shopkey);
-        $configServiceMock->expects($this->at(1))->method('get')
-            ->with('FinSearch.config.active')
-            ->willReturn(true);
-        $configServiceMock->expects($this->at(2))->method('get')
-            ->with('FinSearch.config.activeOnCategoryPages')
-            ->willReturn(true);
-        $configServiceMock->expects($this->at(3))->method('get')
-            ->with('FinSearch.config.searchResultContainer')
-            ->willReturn('fl-result');
-        $configServiceMock->expects($this->at(4))->method('get')
-            ->with('FinSearch.config.navigationResultContainer')
-            ->willReturn('fl-navigation-result');
-        $configServiceMock->expects($this->at(5))->method('get')
-            ->with('FinSearch.config.integrationType')
-            ->willReturn('Direct Integration');
+        $configServiceMock->method('get')
+            ->willReturnOnConsecutiveCalls(
+                $shopkey,
+                true,
+                true,
+                'fl-result',
+                'fl-navigation-result',
+                'Direct Integration',
+                $shopkey,
+                true,
+                true,
+                'fl-result',
+                'fl-navigation-result',
+                'Direct Integration'
+            );
 
         /** @var HeaderPageletLoadedEvent|MockObject $headerPageletLoadedEventMock */
         $headerPageletLoadedEventMock = $this->getMockBuilder(HeaderPageletLoadedEvent::class)
@@ -124,10 +127,101 @@ class FrontendSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
+        $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $searchRequestFactory = new SearchRequestFactory($cachePoolMock, $this->getContainer());
+
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
-            $serviceConfigResource
+            $serviceConfigResource,
+            $searchRequestFactory,
+            null,
+            null
         );
         $frontendSubscriber->onHeaderLoaded($headerPageletLoadedEventMock);
+    }
+
+    public function testOnSearch()
+    {
+        $this->markTestSkipped('testOnSearch implementation remains');
+
+        /** @var ProductListingCriteriaEvent|MockObject $event */
+        $event = $this->getMockBuilder(ProductListingCriteriaEvent::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $request = new Request();
+        $request->headers->set('referer', 'http://localhost.shopware');
+        $request->query->set('search', 'findologic');
+
+        $event->expects($this->once())->method('getRequest')->willReturn($request);
+
+        $shopkey = $this->getShopkey();
+
+        /** @var SystemConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configServiceMock->method('get')
+            ->willReturnOnConsecutiveCalls(
+                $shopkey,
+                true,
+                true,
+                'fl-result',
+                'fl-navigation-result',
+                'Direct Integration',
+                $shopkey,
+                true,
+                true,
+                'fl-result',
+                'fl-navigation-result',
+                'Direct Integration'
+            );
+
+        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
+        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
+        $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var CacheItemInterface|MockObject $cacheItemMock */
+        $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
+        $cacheItemMock->expects($this->exactly(2))->method('get')->willReturn('0.10.0');
+
+        $cachePoolMock->expects($this->once())
+            ->method('getItem')
+            ->with('finsearch_version')
+            ->willReturn($cacheItemMock);
+
+        $searchRequestFactory = new SearchRequestFactory($cachePoolMock, $this->getContainer());
+
+        $apiConfig = new \FINDOLOGIC\Api\Config();
+
+        /** @var Client|MockObject $apiClientMock */
+        $apiClientMock = $this->getMockBuilder(Client::class)
+            ->setConstructorArgs([$apiConfig])
+            ->getMock();
+
+        $response = $this->getMockBuilder(\FINDOLOGIC\Api\Requests\Request::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $apiClientMock->expects($this->once())->method('send')->willReturn($response);
+
+        $frontendSubscriber = new FrontendSubscriber(
+            $configServiceMock,
+            $serviceConfigResource,
+            $searchRequestFactory,
+            $apiConfig,
+            $apiClientMock
+        );
+        $frontendSubscriber->onSearch($event);
     }
 }

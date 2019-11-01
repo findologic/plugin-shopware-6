@@ -40,6 +40,7 @@ class Config extends Struct
     {
         $this->systemConfigService = $systemConfigService;
         $this->serviceConfigResource = $serviceConfigResource;
+        $this->initializeBySalesChannel(null);
     }
 
     public function getShopkey(): string
@@ -100,6 +101,8 @@ class Config extends Struct
 
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
         $integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
+
+        $this->integrationType = $integrationType;
 
         if ($integrationType !== $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId)) {
             $this->systemConfigService->set(
