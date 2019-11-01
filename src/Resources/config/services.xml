@@ -8,6 +8,7 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <tag name="kernel.event_subscriber" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
@@ -36,6 +37,14 @@
         >
             <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory" type="service" />
+        </service>
+
+        <service
+            class="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
+            id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
+        >
+            <argument id="cache.object" type="service" />
+            <argument id="service_container" type="service" />
         </service>
 
     </services>
