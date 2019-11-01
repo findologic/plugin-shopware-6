@@ -33,9 +33,11 @@ before_script:
   - ./psh.phar init
   - mkdir ${PLUGIN_DIR}/${PLUGIN_NAME}
   - mv ${TRAVIS_BUILD_DIR}/* ${PLUGIN_DIR}/${PLUGIN_NAME}
+  - php bin/console plugin:refresh
   - php bin/console plugin:install --activate ${PLUGIN_NAME}
   - composer dump-autoload -d custom/plugins/FinSearch
   - ./psh.phar init-test-databases
+  - ./psh.phar cache
   - cd ${PLUGIN_DIR}/${PLUGIN_NAME}
 
 script:
