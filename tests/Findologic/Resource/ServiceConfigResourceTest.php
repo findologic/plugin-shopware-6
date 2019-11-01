@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Resource;
 
 use DateTime;
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
-use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClient;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
@@ -122,10 +121,9 @@ class ServiceConfigResourceTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        // The first call will either get the value from the cache if it exists, or return null
-        $cacheItemMock->expects($this->at(0))->method('get')->willReturn(null);
-        // The second call to get should already have the cache stored so it will get the serialized config object
-        $cacheItemMock->expects($this->at(1))->method('get')->willReturn(serialize($serviceConfig));
+        $cacheItemMock->expects($this->exactly(2))
+            ->method('get')
+            ->willReturnOnConsecutiveCalls(null, serialize($serviceConfig));
         $cacheItemMock->expects($this->once())->method('set')->willReturnSelf();
         $cachePoolMock->expects($this->once())->method('save')->with($cacheItemMock);
 
@@ -181,31 +179,14 @@ class ServiceConfigResourceTest extends TestCase
         $cacheKey = 'finsearch_serviceconfig';
 
         /** @var ServiceConfig|MockObject $serviceConfig */
-        $serviceConfig = $this->getMockBuilder(ServiceConfig::class)->disableOriginalConstructor()->getMock();
+        $serviceConfig = $this->getMockBuilder(ServiceConfig::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $serviceConfig->method('getExpireDateTime')->willReturn($expiredDateTime);
         $serviceConfig->method('getDirectIntegration')->willReturn($directIntegration);
 
-        /** @var ServiceConfigClient|MockObject $serviceConfigClientMock */
-        $serviceConfigClientMock = $this->getMockBuilder(ServiceConfigClient::class)
-            ->setConstructorArgs([$shopkey])
-            ->getMock();
         // Serialize the service config data to mock the cache value
         $serviceConfigFromCache = serialize($serviceConfig);
-
-        if ($isExpired) {
-            // Get config data from FINDOLOGIC if the entry in cache does not exist
-            $serviceConfigClientMock->expects($this->once())
-                ->method('get')
-                ->willReturn($this->getConfig());
-        }
-
-        $invokeCount = $isExpired ? $this->once() : $this->never();
-
-        /** @var ServiceConfigClientFactory|MockObject $serviceConfigClientFactory */
-        $serviceConfigClientFactory = $this->getMockBuilder(ServiceConfigClientFactory::class)->getMock();
-        $serviceConfigClientFactory->expects($invokeCount)
-            ->method('getInstance')
-            ->willReturn($serviceConfigClientMock);
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
@@ -218,6 +199,8 @@ class ServiceConfigResourceTest extends TestCase
 
         if ($isExpired) {
             $cacheItemMock->expects($this->once())->method('set')->willReturnSelf();
+        } else {
+            $cacheItemMock->expects($this->never())->method('set');
         }
 
         $cachePoolMock->expects($isExpired ? $this->exactly(2) : $this->once())
@@ -225,13 +208,24 @@ class ServiceConfigResourceTest extends TestCase
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
 
-        if (!$isExpired) {
-            $cachePoolMock->expects($this->never())->method('save')->with($cacheItemMock);
+        if ($isExpired) {
+            $cachePoolMock->expects($this->once())->method('save')->with($cacheItemMock);
+        } else {
+            $cachePoolMock->expects($this->never())->method('save');
         }
+
+        // Create a mock and queue one response with the config json file
+        $mock = new MockHandler([
+            new Response(200, [], $this->getConfig(false))
+        ]);
+        $handler = HandlerStack::create($mock);
+
+        $client = new Client(['handler' => $handler]);
 
         $serviceConfigResource = new ServiceConfigResource(
             $cachePoolMock,
-            $serviceConfigClientFactory
+            new ServiceConfigClientFactory(),
+            $client
         );
 
         $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
