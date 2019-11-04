@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Findologic\Request;
 
+use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
-use FINDOLOGIC\FinSearch\Struct\Config;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -30,6 +30,10 @@ class SearchRequestFactoryTest extends TestCase
         string $expectedVersion
     ): void {
         $cacheKey = 'finsearch_version';
+        $expectedReferer = 'http://localhost.shopware';
+        $expectedIpAddress = '192.168.0.1';
+        $expectedHost = 'findologic.de';
+        $expectedAdapter = 'XML_2.1';
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
@@ -55,22 +59,26 @@ class SearchRequestFactoryTest extends TestCase
 
         $searchRequestFactory = new SearchRequestFactory($cachePoolMock, $this->getContainer());
 
-        /** @var Config|MockObject $config */
-        $config = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
-
         $request = new Request();
-        $request->headers->set('referer', 'http://localhost.shopware');
+        $request->headers->set('referer', $expectedReferer);
+        $request->headers->set('host', $expectedHost);
+        $request->server->set('REMOTE_ADDR', $expectedIpAddress);
 
-        $searchRequest = $searchRequestFactory->getInstance(
-            $config,
-            $request
-        );
+        $searchRequest = $searchRequestFactory->getInstance($request);
+
+        $this->assertInstanceOf(SearchRequest::class, $searchRequest);
 
         $params = $searchRequest->getParams();
         $this->assertSame($expectedVersion, $params['revision']);
+
+        // Test other parameters are passed correctly
+        $this->assertSame($expectedReferer, $params['referer']);
+        $this->assertSame($expectedIpAddress, $params['userip']);
+        $this->assertSame($expectedAdapter, $params['outputAdapter']);
+        $this->assertSame($expectedHost, $params['shopurl']);
     }
 
-    public function pluginVersionProvider()
+    public function pluginVersionProvider(): array
     {
         return [
             'Plugin version is cached' => [

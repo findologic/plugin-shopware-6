@@ -20,4 +20,9 @@ trait ConfigHelper
 
         return $config;
     }
+
+    public function getDemoXMLResponse(): string
+    {
+        return file_get_contents(__DIR__ . '/demo.xml');
+    }
 }

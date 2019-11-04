@@ -67,7 +67,7 @@ class SearchRequestFactory
      * @throws InconsistentCriteriaIdsException
      * @throws InvalidArgumentException
      */
-    public function getInstance(Config $config, Request $request): SearchRequest
+    public function getInstance(Request $request): SearchRequest
     {
         $searchRequest = new SearchRequest();
         $searchRequest->setUserIp($request->getClientIp());

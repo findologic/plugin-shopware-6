@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
 use FINDOLOGIC\Api\Client;
+use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
@@ -20,6 +21,8 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
+use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -146,10 +149,12 @@ class FrontendSubscriberTest extends TestCase
         $frontendSubscriber->onHeaderLoaded($headerPageletLoadedEventMock);
     }
 
-    public function testOnSearch()
+    /**
+     * @throws InvalidArgumentException
+     * @throws InconsistentCriteriaIdsException
+     */
+    public function testOnSearch(): void
     {
-        $this->markTestSkipped('XML21Response sample XML needed to implement mock');
-
         /** @var ProductListingCriteriaEvent|MockObject $event */
         $event = $this->getMockBuilder(ProductListingCriteriaEvent::class)
             ->disableOriginalConstructor()
@@ -158,6 +163,8 @@ class FrontendSubscriberTest extends TestCase
         $request = new Request();
         $request->headers->set('referer', 'http://localhost.shopware');
         $request->query->set('search', 'findologic');
+        $request->headers->set('host', 'findologic.de');
+        $request->server->set('REMOTE_ADDR', '192.168.0.1');
 
         $event->expects($this->once())->method('getRequest')->willReturn($request);
 
@@ -212,14 +219,27 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$apiConfig])
             ->getMock();
 
-        /** @var Xml21Response|MockObject $response */
-        $response = $this->getMockBuilder(Xml21Response::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $response = new Xml21Response($this->getDemoXMLResponse());
+        $productIds = array_map(
+            static function (Product $product) {
+                return $product->getId();
+            },
+            $response->getProducts()
+        );
 
-        $product = new Product(new \SimpleXMLElement(''));
-        $response->expects($this->once())->method('getProducts')->willReturn([$product]);
-        $apiClientMock->expects($this->once())->method('send')->willReturn($response);
+        // Create example search request to match the expected request to be passed in the `send` method
+        $searchRequest = new SearchRequest();
+        $searchRequest->setUserIp($request->getClientIp());
+        $searchRequest->setReferer($request->headers->get('referer'));
+        $searchRequest->setRevision('0.10.0');
+        $searchRequest->setOutputAdapter('XML_2.1');
+        $searchRequest->setShopUrl($request->getHost());
+        $searchRequest->setQuery('findologic');
+
+        $apiClientMock->expects($this->once())->method('send')->with($searchRequest)->willReturn($response);
+
+        $criteria = new Criteria($productIds);
+        $event->expects($this->once())->method('getCriteria')->willReturn($criteria);
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,

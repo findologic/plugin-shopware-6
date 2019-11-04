@@ -111,7 +111,7 @@ class FrontendSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
 
-        $searchRequest = $this->searchRequestFactory->getInstance($this->config, $request);
+        $searchRequest = $this->searchRequestFactory->getInstance($request);
         $searchRequest->setQuery($request->query->get('search'));
 
         $response = $this->apiClient->send($searchRequest);
