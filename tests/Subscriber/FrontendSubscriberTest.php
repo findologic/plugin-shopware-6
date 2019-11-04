@@ -20,7 +20,7 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
+use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -155,8 +155,8 @@ class FrontendSubscriberTest extends TestCase
      */
     public function testOnSearch(): void
     {
-        /** @var ProductListingCriteriaEvent|MockObject $event */
-        $event = $this->getMockBuilder(ProductListingCriteriaEvent::class)
+        /** @var ProductSearchCriteriaEvent|MockObject $event */
+        $event = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
             ->disableOriginalConstructor()
             ->getMock();
 

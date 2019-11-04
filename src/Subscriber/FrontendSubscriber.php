@@ -13,7 +13,7 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\InvalidArgumentException;
-use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
+use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\ProductEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -93,7 +93,7 @@ class FrontendSubscriber implements EventSubscriberInterface
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
      */
-    public function onSearch(ProductListingCriteriaEvent $event): void
+    public function onSearch(ProductSearchCriteriaEvent $event): void
     {
         $shopkey = $this->config->getShopkey();
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
