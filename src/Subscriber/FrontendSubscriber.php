@@ -94,15 +94,15 @@ class FrontendSubscriber implements EventSubscriberInterface
      */
     public function onSearch(ProductSearchCriteriaEvent $event): void
     {
+        if (!$this->config->isActive()) {
+            return;
+        }
+
         $shopkey = $this->config->getShopkey();
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
 
         if ($isDirectIntegration || $isStagingShop) {
-            return;
-        }
-
-        if (!$this->config->isActive()) {
             return;
         }
 

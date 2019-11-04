@@ -79,11 +79,13 @@ class Config extends Struct
     public function initializeBySalesChannel(?string $salesChannelId): void
     {
         $this->active = $this->systemConfigService->get(
-                'FinSearch.config.active',
-                $salesChannelId
-            ) ?? false;
+            'FinSearch.config.active',
+            $salesChannelId
+        ) ?? false;
 
-        if(!$this->active) return;
+        if (!$this->active) {
+            return;
+        }
 
         $this->shopkey = $this->systemConfigService->get(
             'FinSearch.config.shopkey',
