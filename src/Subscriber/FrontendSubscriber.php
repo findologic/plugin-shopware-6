@@ -45,8 +45,8 @@ class FrontendSubscriber implements EventSubscriberInterface
         SystemConfigService $systemConfigService,
         ServiceConfigResource $serviceConfigResource,
         SearchRequestFactory $searchRequestFactory,
-        ?ApiConfig $apiConfig,
-        ?ApiClient $apiClient
+        ?ApiConfig $apiConfig = null,
+        ?ApiClient $apiClient = null
     ) {
         $this->systemConfigService = $systemConfigService;
         $this->serviceConfigResource = $serviceConfigResource;
