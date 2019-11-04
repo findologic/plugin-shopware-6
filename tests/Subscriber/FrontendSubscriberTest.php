@@ -48,14 +48,14 @@ class FrontendSubscriberTest extends TestCase
             ->getMock();
         $configServiceMock->method('get')
             ->willReturnOnConsecutiveCalls(
-                $shopkey,
                 true,
+                $shopkey,
                 true,
                 'fl-result',
                 'fl-navigation-result',
                 'Direct Integration',
-                $shopkey,
                 true,
+                $shopkey,
                 true,
                 'fl-result',
                 'fl-navigation-result',
@@ -177,14 +177,14 @@ class FrontendSubscriberTest extends TestCase
 
         $configServiceMock->method('get')
             ->willReturnOnConsecutiveCalls(
-                $shopkey,
                 true,
+                $shopkey,
                 true,
                 'fl-result',
                 'fl-navigation-result',
                 'Direct Integration',
-                $shopkey,
                 true,
+                $shopkey,
                 true,
                 'fl-result',
                 'fl-navigation-result',

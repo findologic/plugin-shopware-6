@@ -69,11 +69,10 @@ class FrontendSubscriber implements EventSubscriberInterface
      */
     public function onHeaderLoaded(HeaderPageletLoadedEvent $event): void
     {
-        $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
-
         // This will store the plugin config for usage in our templates
         $event->getPagelet()->addExtension('flConfig', $this->config);
         if ($this->config->isActive()) {
+            $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
             $shopkey = $this->config->getShopkey();
             $customerGroupId = $event->getSalesChannelContext()->getCurrentCustomerGroup()->getId();
             $userGroupHash = Utils::calculateUserGroupHash($shopkey, $customerGroupId);
