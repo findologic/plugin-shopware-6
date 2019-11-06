@@ -7,7 +7,6 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request;
 use FINDOLOGIC\Api\Definitions\OutputAdapter;
 use FINDOLOGIC\Api\Exceptions\InvalidParamException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
-use FINDOLOGIC\FinSearch\Struct\Config;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Container\ContainerInterface;
@@ -43,24 +42,22 @@ class SearchRequestFactory
     private function getPluginVersion(): string
     {
         $item = $this->cache->getItem(self::CACHE_VERSION_KEY);
-        if (!empty($item->get())) {
-            return $item->get();
+        if (empty($item->get())) {
+            $criteria = new Criteria();
+            $criteria->setLimit(1);
+            $criteria->addFilter(new EqualsFilter('name', 'FinSearch'));
+
+            $result = $this->container->get('plugin.repository')->search($criteria, Context::createDefaultContext());
+
+            /** @var PluginEntity $plugin */
+            $plugin = $result->first();
+            $item->set($plugin->getVersion());
+            $item->expiresAfter(self::CACHE_VERSION_LIFETIME);
+
+            $this->cache->save($item);
         }
 
-        $criteria = new Criteria();
-        $criteria->setLimit(1);
-        $criteria->addFilter(new EqualsFilter('name', 'FinSearch'));
-
-        $result = $this->container->get('plugin.repository')->search($criteria, Context::createDefaultContext());
-
-        /** @var PluginEntity $plugin */
-        $plugin = $result->first();
-        $item->set($plugin->getVersion());
-        $item->expiresAfter(self::CACHE_VERSION_LIFETIME);
-
-        $this->cache->save($item);
-
-        return $plugin->getVersion();
+        return $item->get();
     }
 
     /**

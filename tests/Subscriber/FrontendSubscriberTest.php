@@ -46,20 +46,28 @@ class FrontendSubscriberTest extends TestCase
         $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $active = true;
+        $shopkey = $this->getShopkey();
+        $activeOnCategoryPages = true;
+        $searchResultContainer = 'fl-result';
+        $navigationResultContainer = 'fl-navigation-result';
+        $integrationType = 'Direct Integration';
+
         $configServiceMock->method('get')
             ->willReturnOnConsecutiveCalls(
-                true,
+                $active,
                 $shopkey,
-                true,
-                'fl-result',
-                'fl-navigation-result',
-                'Direct Integration',
-                true,
+                $activeOnCategoryPages,
+                $searchResultContainer,
+                $navigationResultContainer,
+                $integrationType,
+                $active,
                 $shopkey,
-                true,
-                'fl-result',
-                'fl-navigation-result',
-                'Direct Integration'
+                $activeOnCategoryPages,
+                $searchResultContainer,
+                $navigationResultContainer,
+                $integrationType
             );
 
         /** @var HeaderPageletLoadedEvent|MockObject $headerPageletLoadedEventMock */
@@ -175,20 +183,28 @@ class FrontendSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $active = true;
+        $shopkey = $this->getShopkey();
+        $activeOnCategoryPages = true;
+        $searchResultContainer = 'fl-result';
+        $navigationResultContainer = 'fl-navigation-result';
+        $integrationType = 'Direct Integration';
+
         $configServiceMock->method('get')
             ->willReturnOnConsecutiveCalls(
-                true,
+                $active,
                 $shopkey,
-                true,
-                'fl-result',
-                'fl-navigation-result',
-                'Direct Integration',
-                true,
+                $activeOnCategoryPages,
+                $searchResultContainer,
+                $navigationResultContainer,
+                $integrationType,
+                // Called second time with salesChannelID
+                $active,
                 $shopkey,
-                true,
-                'fl-result',
-                'fl-navigation-result',
-                'Direct Integration'
+                $activeOnCategoryPages,
+                $searchResultContainer,
+                $navigationResultContainer,
+                $integrationType
             );
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */

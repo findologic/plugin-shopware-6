@@ -19,6 +19,22 @@ class SearchRequestFactoryTest extends TestCase
 {
     use IntegrationTestBehaviour;
 
+    public function pluginVersionProvider(): array
+    {
+        return [
+            'Plugin version is cached' => [
+                'isCached' => true,
+                'cachedVersion' => '1.0.0',
+                'expectedVersion' => '1.0.0'
+            ],
+            'Plugin version is not cached' => [
+                'isCached' => false,
+                'cachedVersion' => null,
+                'expectedVersion' => '0.1.0'
+            ]
+        ];
+    }
+
     /**
      * @dataProvider pluginVersionProvider
      * @throws InvalidArgumentException
@@ -48,9 +64,9 @@ class SearchRequestFactoryTest extends TestCase
             $cachePoolMock->expects($this->once())->method('save');
         }
 
-        $cacheItemMock->expects($isCached ? $this->exactly(2) : $this->once())
+        $cacheItemMock->expects($this->exactly(2))
             ->method('get')
-            ->willReturn($cachedVersion);
+            ->willReturnOnConsecutiveCalls($cachedVersion, $expectedVersion);
 
         $cachePoolMock->expects($this->once())
             ->method('getItem')
@@ -76,21 +92,5 @@ class SearchRequestFactoryTest extends TestCase
         $this->assertSame($expectedIpAddress, $params['userip']);
         $this->assertSame($expectedAdapter, $params['outputAdapter']);
         $this->assertSame($expectedHost, $params['shopurl']);
-    }
-
-    public function pluginVersionProvider(): array
-    {
-        return [
-            'Plugin version is cached' => [
-                'isCached' => true,
-                'cachedVersion' => '1.0.0',
-                'expectedVersion' => '1.0.0'
-            ],
-            'Plugin version is not cached' => [
-                'isCached' => false,
-                'cachedVersion' => null,
-                'expectedVersion' => '0.1.0'
-            ]
-        ];
     }
 }
