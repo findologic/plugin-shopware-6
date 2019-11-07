@@ -40,19 +40,20 @@ class FrontendSubscriberTest extends TestCase
      */
     public function testHeaderPageletLoadedEvent(): void
     {
-        $shopkey = $this->getShopkey();
-
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $active = true;
-        $shopkey = $this->getShopkey();
-        $activeOnCategoryPages = true;
-        $searchResultContainer = 'fl-result';
-        $navigationResultContainer = 'fl-navigation-result';
-        $integrationType = 'Direct Integration';
+        /**
+         * @var bool $active
+         * @var string $shopkey
+         * @var bool $activeOnCategoryPages
+         * @var string $searchResultContainer
+         * @var string $navigationResultContainer
+         * @var string $integrationType
+         */
+        extract($this->getFindologicConfigValues());
 
         $configServiceMock->method('get')
             ->willReturnOnConsecutiveCalls(
@@ -62,6 +63,7 @@ class FrontendSubscriberTest extends TestCase
                 $searchResultContainer,
                 $navigationResultContainer,
                 $integrationType,
+                // Called second time with salesChannelID
                 $active,
                 $shopkey,
                 $activeOnCategoryPages,
@@ -176,19 +178,20 @@ class FrontendSubscriberTest extends TestCase
 
         $event->expects($this->once())->method('getRequest')->willReturn($request);
 
-        $shopkey = $this->getShopkey();
-
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $active = true;
-        $shopkey = $this->getShopkey();
-        $activeOnCategoryPages = true;
-        $searchResultContainer = 'fl-result';
-        $navigationResultContainer = 'fl-navigation-result';
-        $integrationType = 'Direct Integration';
+        /**
+         * @var bool $active
+         * @var string $shopkey
+         * @var bool $activeOnCategoryPages
+         * @var string $searchResultContainer
+         * @var string $navigationResultContainer
+         * @var string $integrationType
+         */
+        extract($this->getFindologicConfigValues());
 
         $configServiceMock->method('get')
             ->willReturnOnConsecutiveCalls(
@@ -236,6 +239,7 @@ class FrontendSubscriberTest extends TestCase
             ->getMock();
 
         $response = new Xml21Response($this->getDemoXMLResponse());
+
         $productIds = array_map(
             static function (Product $product) {
                 return $product->getId();
@@ -256,6 +260,8 @@ class FrontendSubscriberTest extends TestCase
 
         $criteria = new Criteria($productIds);
         $event->expects($this->once())->method('getCriteria')->willReturn($criteria);
+
+        $this->assertSame($productIds, $criteria->getIds());
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,

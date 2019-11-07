@@ -25,4 +25,23 @@ trait ConfigHelper
     {
         return file_get_contents(__DIR__ . '/demo.xml');
     }
+
+    public function getFindologicConfigValues(): array
+    {
+        $active = true;
+        $shopkey = $this->getShopkey();
+        $activeOnCategoryPages = true;
+        $searchResultContainer = 'fl-result';
+        $navigationResultContainer = 'fl-navigation-result';
+        $integrationType = 'Direct Integration';
+
+        return [
+            'active' => $active,
+            'shopkey' => $shopkey,
+            'activeOnCategoryPages' => $activeOnCategoryPages,
+            'searchResultContainer' => $searchResultContainer,
+            'navigationResultContainer' => $navigationResultContainer,
+            'integrationType' => $integrationType
+        ];
+    }
 }
