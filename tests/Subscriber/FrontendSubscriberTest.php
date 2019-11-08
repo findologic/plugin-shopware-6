@@ -40,37 +40,10 @@ class FrontendSubscriberTest extends TestCase
      */
     public function testHeaderPageletLoadedEvent(): void
     {
+        $shopkey = $this->getShopkey();
+
         /** @var SystemConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        /**
-         * @var bool $active
-         * @var string $shopkey
-         * @var bool $activeOnCategoryPages
-         * @var string $searchResultContainer
-         * @var string $navigationResultContainer
-         * @var string $integrationType
-         */
-        extract($this->getFindologicConfigValues());
-
-        $configServiceMock->method('get')
-            ->willReturnOnConsecutiveCalls(
-                $active,
-                $shopkey,
-                $activeOnCategoryPages,
-                $searchResultContainer,
-                $navigationResultContainer,
-                $integrationType,
-                // Called second time with salesChannelID
-                $active,
-                $shopkey,
-                $activeOnCategoryPages,
-                $searchResultContainer,
-                $navigationResultContainer,
-                $integrationType
-            );
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock();
 
         /** @var HeaderPageletLoadedEvent|MockObject $headerPageletLoadedEventMock */
         $headerPageletLoadedEventMock = $this->getMockBuilder(HeaderPageletLoadedEvent::class)
@@ -179,36 +152,7 @@ class FrontendSubscriberTest extends TestCase
         $event->expects($this->once())->method('getRequest')->willReturn($request);
 
         /** @var SystemConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        /**
-         * @var bool $active
-         * @var string $shopkey
-         * @var bool $activeOnCategoryPages
-         * @var string $searchResultContainer
-         * @var string $navigationResultContainer
-         * @var string $integrationType
-         */
-        extract($this->getFindologicConfigValues());
-
-        $configServiceMock->method('get')
-            ->willReturnOnConsecutiveCalls(
-                $active,
-                $shopkey,
-                $activeOnCategoryPages,
-                $searchResultContainer,
-                $navigationResultContainer,
-                $integrationType,
-                // Called second time with salesChannelID
-                $active,
-                $shopkey,
-                $activeOnCategoryPages,
-                $searchResultContainer,
-                $navigationResultContainer,
-                $integrationType
-            );
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock();
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
         $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
@@ -271,5 +215,43 @@ class FrontendSubscriberTest extends TestCase
             $apiClientMock
         );
         $frontendSubscriber->onSearch($event);
+    }
+
+    /**
+     * Creates a system config service mock with default findologic config values initialized
+     * Passing the data array will override any default values if needed
+     */
+    private function getDefaultFindologicConfigServiceMock(array $data = [])
+    {
+        /** @var SystemConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $active = $data['active'] ?? true;
+        $shopkey = $data['shopkey'] ?? $this->getShopkey();
+        $activeOnCategoryPages = $data['activeOnCategoryPages'] ?? true;
+        $searchResultContainer = $data['searchResultContainer'] ?? 'fl-result';
+        $navigationResultContainer = $data['navigationResultContainer'] ?? 'fl-navigation-result';
+        $integrationType = $data['integrationType'] ?? 'Direct Integration';
+
+        $configServiceMock->method('get')
+            ->willReturnOnConsecutiveCalls(
+                $active,
+                $shopkey,
+                $activeOnCategoryPages,
+                $searchResultContainer,
+                $navigationResultContainer,
+                $integrationType,
+                // Called second time with salesChannelID
+                $active,
+                $shopkey,
+                $activeOnCategoryPages,
+                $searchResultContainer,
+                $navigationResultContainer,
+                $integrationType
+            );
+
+        return $configServiceMock;
     }
 }
