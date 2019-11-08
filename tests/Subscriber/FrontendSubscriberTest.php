@@ -21,9 +21,12 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
@@ -138,18 +141,11 @@ class FrontendSubscriberTest extends TestCase
      */
     public function testOnSearch(): void
     {
-        /** @var ProductSearchCriteriaEvent|MockObject $event */
-        $event = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $request = new Request();
         $request->headers->set('referer', 'http://localhost.shopware');
         $request->query->set('search', 'findologic');
         $request->headers->set('host', 'findologic.de');
         $request->server->set('REMOTE_ADDR', '192.168.0.1');
-
-        $event->expects($this->once())->method('getRequest')->willReturn($request);
 
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock();
@@ -182,13 +178,13 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$apiConfig])
             ->getMock();
 
-        $response = new Xml21Response($this->getDemoXMLResponse());
+        $context = $this->getContainer()->get(SalesChannelContextFactory::class)
+            ->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
 
-        $productIds = array_map(
-            static function (Product $product) {
-                return $product->getId();
-            },
-            $response->getProducts()
+        $event = new ProductSearchCriteriaEvent(
+            $request,
+            new Criteria(),
+            $context
         );
 
         // Create example search request to match the expected request to be passed in the `send` method
@@ -200,12 +196,16 @@ class FrontendSubscriberTest extends TestCase
         $searchRequest->setShopUrl($request->getHost());
         $searchRequest->setQuery('findologic');
 
+        $response = new Xml21Response($this->getDemoXMLResponse());
+
+        $productIds = array_map(
+            static function (Product $product) {
+                return $product->getId();
+            },
+            $response->getProducts()
+        );
+
         $apiClientMock->expects($this->once())->method('send')->with($searchRequest)->willReturn($response);
-
-        $criteria = new Criteria($productIds);
-        $event->expects($this->once())->method('getCriteria')->willReturn($criteria);
-
-        $this->assertSame($productIds, $criteria->getIds());
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
@@ -215,6 +215,9 @@ class FrontendSubscriberTest extends TestCase
             $apiClientMock
         );
         $frontendSubscriber->onSearch($event);
+
+        // Make sure that the product IDs are assigned correctly to the criteria after the onSearch event is triggered
+        $this->assertSame($productIds, $event->getCriteria()->getIds());
     }
 
     /**
