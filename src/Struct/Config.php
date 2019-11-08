@@ -36,14 +36,10 @@ class Config extends Struct
     /** @var ServiceConfigResource */
     private $serviceConfigResource;
 
-    /**
-     * @throws InvalidArgumentException
-     */
     public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->systemConfigService = $systemConfigService;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->initializeBySalesChannel();
     }
 
     public function getShopkey(): string
@@ -79,7 +75,7 @@ class Config extends Struct
     /**
      * @throws InvalidArgumentException
      */
-    public function initializeBySalesChannel(?string $salesChannelId = null): void
+    public function initializeBySalesChannel(string $salesChannelId): void
     {
         $this->active = $this->systemConfigService->get(
             'FinSearch.config.active',
@@ -94,7 +90,6 @@ class Config extends Struct
             'FinSearch.config.shopkey',
             $salesChannelId
         );
-
         $this->activeOnCategoryPages = $this->systemConfigService->get(
             'FinSearch.config.activeOnCategoryPages',
             $salesChannelId

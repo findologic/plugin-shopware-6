@@ -128,10 +128,9 @@ class FrontendSubscriberTest extends TestCase
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
             $serviceConfigResource,
-            $searchRequestFactory,
-            null,
-            null
+            $searchRequestFactory
         );
+
         $frontendSubscriber->onHeaderLoaded($headerPageletLoadedEventMock);
     }
 
@@ -139,7 +138,7 @@ class FrontendSubscriberTest extends TestCase
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
      */
-    public function testOnSearch(): void
+    public function testProductSearchCriteria(): void
     {
         $request = new Request();
         $request->headers->set('referer', 'http://localhost.shopware');
@@ -207,10 +206,18 @@ class FrontendSubscriberTest extends TestCase
 
         $apiClientMock->expects($this->once())->method('send')->with($searchRequest)->willReturn($response);
 
+        /** @var Config|MockObject $configMock */
+        $configMock = $this->getMockBuilder(Config::class)
+            ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
+            ->getMock();
+        $configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $configMock->expects($this->once())->method('getShopkey')->willReturn($this->getShopkey());
+
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
             $serviceConfigResource,
             $searchRequestFactory,
+            $configMock,
             $apiConfig,
             $apiClientMock
         );
@@ -240,13 +247,6 @@ class FrontendSubscriberTest extends TestCase
 
         $configServiceMock->method('get')
             ->willReturnOnConsecutiveCalls(
-                $active,
-                $shopkey,
-                $activeOnCategoryPages,
-                $searchResultContainer,
-                $navigationResultContainer,
-                $integrationType,
-                // Called second time with salesChannelID
                 $active,
                 $shopkey,
                 $activeOnCategoryPages,

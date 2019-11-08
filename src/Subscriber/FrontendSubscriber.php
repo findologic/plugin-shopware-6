@@ -45,13 +45,15 @@ class FrontendSubscriber implements EventSubscriberInterface
         SystemConfigService $systemConfigService,
         ServiceConfigResource $serviceConfigResource,
         SearchRequestFactory $searchRequestFactory,
+        ?Config $config = null,
         ?ApiConfig $apiConfig = null,
         ?ApiClient $apiClient = null
     ) {
         $this->systemConfigService = $systemConfigService;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->config = new Config($this->systemConfigService, $this->serviceConfigResource);
         $this->searchRequestFactory = $searchRequestFactory;
+
+        $this->config = $config ?? new Config($this->systemConfigService, $this->serviceConfigResource);
         $this->apiConfig = $apiConfig ?? new ApiConfig();
         $this->apiClient = $apiClient ?? new ApiClient($this->apiConfig);
     }
