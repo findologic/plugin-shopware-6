@@ -79,13 +79,13 @@ class FindologicProductTest extends TestCase
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct =
             $findologicProductFactory->buildInstance(
-            $productEntity,
-            $this->router,
-            $this->getContainer(),
-            $this->defaultContext,
-            $this->shopkey,
-            []
-        );
+                $productEntity,
+                $this->router,
+                $this->getContainer(),
+                $this->defaultContext,
+                $this->shopkey,
+                []
+            );
 
         if (!$exception) {
             $this->assertTrue($findologicProduct->hasName());
@@ -173,13 +173,13 @@ class FindologicProductTest extends TestCase
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct =
             $findologicProductFactory->buildInstance(
-            $productEntity,
-            $this->router,
-            $this->getContainer(),
-            $this->defaultContext,
-            $this->shopkey,
-            []
-        );
+                $productEntity,
+                $this->router,
+                $this->getContainer(),
+                $this->defaultContext,
+                $this->shopkey,
+                []
+            );
 
         if (!$exception) {
             $this->assertTrue($findologicProduct->hasPrices());
