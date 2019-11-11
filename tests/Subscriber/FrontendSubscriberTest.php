@@ -214,20 +214,16 @@ class FrontendSubscriberTest extends TestCase
         $searchRequest->setShopUrl($request->getHost());
         $searchRequest->setQuery('findologic');
 
-        try {
-            if ($response === null) {
-                $apiClientMock->expects($this->once())
-                    ->method('send')
-                    ->with($searchRequest)
-                    ->willThrowException(new ServiceNotAliveException($message));
-            } else {
-                $apiClientMock->expects($this->once())
-                    ->method('send')
-                    ->with($searchRequest)
-                    ->willReturn($response);
-            }
-        } catch (ServiceNotAliveException $e) {
-            $this->expectExceptionMessage(sprintf('The service is not alive. Reason: %s', $message));
+        if ($response === null) {
+            $apiClientMock->expects($this->once())
+                ->method('send')
+                ->with($searchRequest)
+                ->willThrowException(new ServiceNotAliveException($message));
+        } else {
+            $apiClientMock->expects($this->once())
+                ->method('send')
+                ->with($searchRequest)
+                ->willReturn($response);
         }
 
         /** @var Config|MockObject $configMock */
