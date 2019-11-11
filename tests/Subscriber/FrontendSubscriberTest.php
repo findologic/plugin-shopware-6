@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
 use FINDOLOGIC\Api\Client;
+use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
@@ -46,7 +47,7 @@ class FrontendSubscriberTest extends TestCase
         $shopkey = $this->getShopkey();
 
         /** @var SystemConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock();
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
 
         /** @var HeaderPageletLoadedEvent|MockObject $headerPageletLoadedEventMock */
         $headerPageletLoadedEventMock = $this->getMockBuilder(HeaderPageletLoadedEvent::class)
@@ -134,11 +135,29 @@ class FrontendSubscriberTest extends TestCase
         $frontendSubscriber->onHeaderLoaded($headerPageletLoadedEventMock);
     }
 
+    public function apiClientExceptionProvider(): array
+    {
+        $response = new Xml21Response($this->getDemoXMLResponse());
+
+        $productIds = array_map(
+            static function (Product $product) {
+                return $product->getId();
+            },
+            $response->getProducts()
+        );
+
+        return [
+            'ServiceNotAliveException is thrown' => [null, [], 'Service responded with an error'],
+            'ServiceNotAliveException is not thrown' => [$response, $productIds, ''],
+        ];
+    }
+
     /**
+     * @dataProvider apiClientExceptionProvider
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
      */
-    public function testProductSearchCriteria(): void
+    public function testProductSearchCriteria(?Xml21Response $response, array $productIds, string $message): void
     {
         $request = new Request();
         $request->headers->set('referer', 'http://localhost.shopware');
@@ -147,7 +166,7 @@ class FrontendSubscriberTest extends TestCase
         $request->server->set('REMOTE_ADDR', '192.168.0.1');
 
         /** @var SystemConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock();
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
         $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
@@ -195,16 +214,21 @@ class FrontendSubscriberTest extends TestCase
         $searchRequest->setShopUrl($request->getHost());
         $searchRequest->setQuery('findologic');
 
-        $response = new Xml21Response($this->getDemoXMLResponse());
-
-        $productIds = array_map(
-            static function (Product $product) {
-                return $product->getId();
-            },
-            $response->getProducts()
-        );
-
-        $apiClientMock->expects($this->once())->method('send')->with($searchRequest)->willReturn($response);
+        try {
+            if ($response === null) {
+                $apiClientMock->expects($this->once())
+                    ->method('send')
+                    ->with($searchRequest)
+                    ->willThrowException(new ServiceNotAliveException($message));
+            } else {
+                $apiClientMock->expects($this->once())
+                    ->method('send')
+                    ->with($searchRequest)
+                    ->willReturn($response);
+            }
+        } catch (ServiceNotAliveException $e) {
+            $this->expectExceptionMessage(sprintf('The service is not alive. Reason: %s', $message));
+        }
 
         /** @var Config|MockObject $configMock */
         $configMock = $this->getMockBuilder(Config::class)
@@ -225,36 +249,5 @@ class FrontendSubscriberTest extends TestCase
 
         // Make sure that the product IDs are assigned correctly to the criteria after the onSearch event is triggered
         $this->assertSame($productIds, $event->getCriteria()->getIds());
-    }
-
-    /**
-     * Creates a system config service mock with default findologic config values initialized
-     * Passing the data array will override any default values if needed
-     */
-    private function getDefaultFindologicConfigServiceMock(array $data = [])
-    {
-        /** @var SystemConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $active = $data['active'] ?? true;
-        $shopkey = $data['shopkey'] ?? $this->getShopkey();
-        $activeOnCategoryPages = $data['activeOnCategoryPages'] ?? true;
-        $searchResultContainer = $data['searchResultContainer'] ?? 'fl-result';
-        $navigationResultContainer = $data['navigationResultContainer'] ?? 'fl-navigation-result';
-        $integrationType = $data['integrationType'] ?? 'Direct Integration';
-
-        $configServiceMock->method('get')
-            ->willReturnOnConsecutiveCalls(
-                $active,
-                $shopkey,
-                $activeOnCategoryPages,
-                $searchResultContainer,
-                $navigationResultContainer,
-                $integrationType
-            );
-
-        return $configServiceMock;
     }
 }

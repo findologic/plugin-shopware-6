@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
 
+use Exception;
 use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use Psr\Cache\InvalidArgumentException;
@@ -30,7 +31,7 @@ class Config extends Struct
     /** @var string */
     private $navigationResultContainer;
 
-    /** @var string */
+    /** @var string|null */
     private $integrationType;
 
     /** @var ServiceConfigResource */
@@ -67,7 +68,7 @@ class Config extends Struct
         return $this->navigationResultContainer;
     }
 
-    public function getIntegrationType(): string
+    public function getIntegrationType(): ?string
     {
         return $this->integrationType;
     }
@@ -103,17 +104,23 @@ class Config extends Struct
             $salesChannelId
         ) ?? 'fl-navigation-result';
 
-        $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
-        $integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
+        try {
+            $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
+            $integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
+            $this->integrationType = $integrationType;
 
-        $this->integrationType = $integrationType;
-
-        if ($integrationType !== $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId)) {
-            $this->systemConfigService->set(
+            $integrationType = $this->systemConfigService->get(
                 'FinSearch.config.integrationType',
-                $integrationType,
                 $salesChannelId
             );
+
+            if ($this->integrationType !== $integrationType) {
+                $this->systemConfigService->set('FinSearch.config.integrationType', $integrationType, $salesChannelId);
+            }
+        } catch (Exception $e) {
+            $this->integrationType = null;
+
+            return;
         }
     }
 }

@@ -8,6 +8,7 @@ use DateTime;
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use InvalidArgumentException as InvalidServiceConfigKeyException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
@@ -65,6 +66,7 @@ class ServiceConfigResource
 
     /**
      * @throws InvalidArgumentException
+     * @throws ClientException
      */
     private function get(string $shopkey, string $key)
     {
@@ -85,6 +87,7 @@ class ServiceConfigResource
 
     /**
      * @throws InvalidArgumentException
+     * @throws ClientException
      */
     public function isDirectIntegration(string $shopkey): bool
     {
@@ -95,6 +98,7 @@ class ServiceConfigResource
 
     /**
      * @throws InvalidArgumentException
+     * @throws ClientException
      */
     public function isStaging(string $shopkey): bool
     {

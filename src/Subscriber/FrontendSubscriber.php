@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Subscriber;
 
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
+use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
@@ -101,6 +102,8 @@ class FrontendSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $originalCriteria = $event->getCriteria();
+
         $shopkey = $this->config->getShopkey();
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
@@ -116,7 +119,13 @@ class FrontendSubscriber implements EventSubscriberInterface
         $searchRequest = $this->searchRequestFactory->getInstance($request);
         $searchRequest->setQuery($request->query->get('search'));
 
-        $response = $this->apiClient->send($searchRequest);
+        try {
+            $response = $this->apiClient->send($searchRequest);
+        } catch (ServiceNotAliveException $e) {
+            $event->getCriteria()->assign($originalCriteria->getVars());
+
+            return;
+        }
 
         $productIds = array_map(
             static function (Product $product) {
