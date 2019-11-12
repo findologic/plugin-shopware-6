@@ -75,16 +75,12 @@ class Config extends Struct
     /**
      * @throws InvalidArgumentException
      */
-    public function initializeBySalesChannel(string $salesChannelId): void
+    public function initializeBySalesChannel(?string $salesChannelId): void
     {
         $this->active = $this->systemConfigService->get(
             'FinSearch.config.active',
             $salesChannelId
         ) ?? false;
-
-        if (!$this->active) {
-            return;
-        }
 
         $this->shopkey = $this->systemConfigService->get(
             'FinSearch.config.shopkey',
@@ -103,17 +99,20 @@ class Config extends Struct
             $salesChannelId
         ) ?? 'fl-navigation-result';
 
-        $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
-        $integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
+        // Only check for integration type if the shopkey is set and plugin is active
+        if ($this->active) {
+            $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
+            $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
 
-        $this->integrationType = $integrationType;
+            $integrationType = $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
 
-        if ($integrationType !== $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId)) {
-            $this->systemConfigService->set(
-                'FinSearch.config.integrationType',
-                $integrationType,
-                $salesChannelId
-            );
+            if ($this->integrationType !== $integrationType) {
+                $this->systemConfigService->set(
+                    'FinSearch.config.integrationType',
+                    $this->integrationType,
+                    $salesChannelId
+                );
+            }
         }
     }
 }

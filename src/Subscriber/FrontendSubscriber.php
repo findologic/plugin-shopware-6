@@ -58,6 +58,9 @@ class FrontendSubscriber implements EventSubscriberInterface
         $this->apiClient = $apiClient ?? new ApiClient($this->apiConfig);
     }
 
+    /**
+     * @return string[]
+     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -73,9 +76,10 @@ class FrontendSubscriber implements EventSubscriberInterface
     {
         $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
 
+        // This will store the plugin config for usage in our templates
+        $event->getPagelet()->addExtension('flConfig', $this->config);
+
         if ($this->config->isActive()) {
-            // This will store the plugin config for usage in our templates
-            $event->getPagelet()->addExtension('flConfig', $this->config);
             $shopkey = $this->config->getShopkey();
             $customerGroupId = $event->getSalesChannelContext()->getCurrentCustomerGroup()->getId();
             $userGroupHash = Utils::calculateUserGroupHash($shopkey, $customerGroupId);
