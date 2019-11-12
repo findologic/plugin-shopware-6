@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Struct;
 
 use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use GuzzleHttp\Exception\ClientException;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -101,17 +102,20 @@ class Config extends Struct
 
         // Only check for integration type if the shopkey is set and plugin is active
         if ($this->active) {
-            $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
-            $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
+            try {
+                $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
+                $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
+                $integrationType = $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
 
-            $integrationType = $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
-
-            if ($this->integrationType !== $integrationType) {
-                $this->systemConfigService->set(
-                    'FinSearch.config.integrationType',
-                    $this->integrationType,
-                    $salesChannelId
-                );
+                if ($this->integrationType !== $integrationType) {
+                    $this->systemConfigService->set(
+                        'FinSearch.config.integrationType',
+                        $this->integrationType,
+                        $salesChannelId
+                    );
+                }
+            } catch (ClientException $e) {
+                $this->integrationType = null;
             }
         }
     }

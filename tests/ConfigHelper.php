@@ -34,28 +34,32 @@ trait ConfigHelper
      * Creates a system config service mock with default findologic config values initialized
      * Passing the data array will override any default values if needed
      */
-    private function getDefaultFindologicConfigServiceMock(TestCase $testClass, array $data = [])
+    private function getDefaultFindologicConfigServiceMock(TestCase $testClass, array $overrides = [])
     {
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $testClass->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $active = $data['active'] ?? true;
-        $shopkey = $data['shopkey'] ?? $this->getShopkey();
-        $activeOnCategoryPages = $data['activeOnCategoryPages'] ?? true;
-        $searchResultContainer = $data['searchResultContainer'] ?? 'fl-result';
-        $navigationResultContainer = $data['navigationResultContainer'] ?? 'fl-navigation-result';
-        $integrationType = $data['integrationType'] ?? 'Direct Integration';
+        $defaultConfig = [
+            'active' => true,
+            'shopkey' => $this->getShopkey(),
+            'activeOnCategoryPages' => true,
+            'searchResultContainer' => 'fl-result',
+            'navigationResultContainer' => 'fl-navigation-result',
+            'integrationType' => 'Direct Integration',
+        ];
+
+        $config = array_merge($defaultConfig, $overrides);
 
         $configServiceMock->method('get')
             ->willReturnOnConsecutiveCalls(
-                $active,
-                $shopkey,
-                $activeOnCategoryPages,
-                $searchResultContainer,
-                $navigationResultContainer,
-                $integrationType
+                $config['active'],
+                $config['shopkey'],
+                $config['activeOnCategoryPages'],
+                $config['searchResultContainer'],
+                $config['navigationResultContainer'],
+                $config['integrationType']
             );
 
         return $configServiceMock;

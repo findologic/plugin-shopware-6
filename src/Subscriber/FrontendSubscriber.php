@@ -106,7 +106,7 @@ class FrontendSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $originalCriteria = $event->getCriteria();
+        $originalCriteria = clone $event->getCriteria();
 
         $shopkey = $this->config->getShopkey();
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
