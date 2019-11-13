@@ -10,7 +10,7 @@
   ],
   "require": {
     "findologic/libflexport": "^2.5",
-    "findologic/findologic-api": "^1.0.1"
+    "findologic/findologic-api": "^1.0.0"
   },
   "extra": {
     "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
