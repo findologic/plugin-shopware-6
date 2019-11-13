@@ -99,7 +99,7 @@ class Config extends Struct
             $salesChannelId
         ) ?? 'fl-navigation-result';
 
-        // Only check for integration type if the shopkey is set and plugin is active
+        // Only check for integration type if the plugin is active
         if ($this->active) {
             $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
             $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
