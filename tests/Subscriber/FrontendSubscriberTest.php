@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber;
+use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -18,10 +22,16 @@ use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
 class FrontendSubscriberTest extends TestCase
 {
     use IntegrationTestBehaviour;
+    use ConfigHelper;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function testHeaderPageletLoadedEvent(): void
     {
-        $shopkey = '80AB18D4BE2654E78244106AD315DC2C';
+        $shopkey = $this->getShopkey();
+
+        /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -44,13 +54,15 @@ class FrontendSubscriberTest extends TestCase
             ->with('FinSearch.config.integrationType')
             ->willReturn('Direct Integration');
 
+        /** @var HeaderPageletLoadedEvent|MockObject $headerPageletLoadedEventMock */
         $headerPageletLoadedEventMock = $this->getMockBuilder(HeaderPageletLoadedEvent::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        /** @var HeaderPagelet|MockObject $headerPageletMock */
         $headerPageletMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
             ->getMock();
-
         $headerPageletMock->expects($this->at(0))
             ->method('addExtension')
             ->with(
@@ -88,24 +100,34 @@ class FrontendSubscriberTest extends TestCase
                 )
             );
 
+        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        /** @var CustomerGroupEntity|MockObject $customerGroupEntityMock */
         $customerGroupEntityMock = $this->getMockBuilder(CustomerGroupEntity::class)
             ->disableOriginalConstructor()
             ->getMock();
-
         $customerGroupEntityMock->expects($this->once())->method('getId')->willReturn('1');
+
         $salesChannelContextMock->expects($this->once())
             ->method('getCurrentCustomerGroup')
             ->willReturn($customerGroupEntityMock);
 
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')->willReturn($headerPageletMock);
-        $headerPageletLoadedEventMock->expects($this->once())
-            ->method('getSalesChannelContext')
+        $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')
             ->willReturn($salesChannelContextMock);
 
-        $frontendSubscriber = new FrontendSubscriber($configServiceMock);
+        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
+        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $frontendSubscriber = new FrontendSubscriber(
+            $configServiceMock,
+            $serviceConfigResource
+        );
         $frontendSubscriber->onHeaderLoaded($headerPageletLoadedEventMock);
     }
 }
