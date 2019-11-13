@@ -4,10 +4,15 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
 
-        <service id="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber">
+        <service
+            id="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"
+            class="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"
+            public="true"
+        >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <tag name="kernel.event_subscriber" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
@@ -22,20 +27,32 @@
 
         <service
             class="FINDOLOGIC\FinSearch\Export\FindologicProductFactory"
-            id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory" public="true"
+            id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory"
+            public="true"
         />
 
         <service
             class="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory"
             id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory"
+            public="true"
         />
 
         <service
             class="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"
             id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"
+            public="true"
         >
             <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory" type="service" />
+        </service>
+
+        <service
+            class="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
+            id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
+            public="true"
+        >
+            <argument id="serializer.mapping.cache.symfony" type="service" />
+            <argument id="service_container" type="service" />
         </service>
 
     </services>
