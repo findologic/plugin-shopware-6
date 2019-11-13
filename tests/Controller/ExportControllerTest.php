@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Controller;
 use FINDOLOGIC\FinSearch\Controller\ExportController;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
@@ -38,6 +39,7 @@ class ExportControllerTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use ProductHelper;
+    use ConfigHelper;
 
     /** @var Router $router */
     private $router;
@@ -346,7 +348,7 @@ class ExportControllerTest extends TestCase
      */
     public function testExportWithUnknownShopkey(): void
     {
-        $unknownShopkey = '80AB18D4BE2654E78244106AD315DCCC';
+        $unknownShopkey = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
         $this->expectException(UnknownShopkeyException::class);
         $this->expectExceptionMessage(sprintf('Given shopkey "%s" is not assigned to any shop', $unknownShopkey));

@@ -16,6 +16,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
@@ -33,6 +34,7 @@ class FindologicProductTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use ProductHelper;
+    use ConfigHelper;
 
     /** @var Context */
     private $defaultContext;
@@ -48,7 +50,7 @@ class FindologicProductTest extends TestCase
         parent::setUp();
         $this->router = $this->getContainer()->get('router');
         $this->defaultContext = Context::createDefaultContext();
-        $this->shopkey = '80AB18D4BE2654E78244106AD315DC2C';
+        $this->shopkey = $this->getShopkey();
     }
 
     public function productNameProvider(): array
@@ -77,8 +79,8 @@ class FindologicProductTest extends TestCase
         $productEntity->setName($name);
 
         $findologicProductFactory = new FindologicProductFactory();
-        $findologicProduct =
-            $findologicProductFactory->buildInstance(
+
+        $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
             $this->getContainer(),
@@ -171,8 +173,8 @@ class FindologicProductTest extends TestCase
         }
 
         $findologicProductFactory = new FindologicProductFactory();
-        $findologicProduct =
-            $findologicProductFactory->buildInstance(
+
+        $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
             $this->getContainer(),

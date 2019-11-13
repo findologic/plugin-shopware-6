@@ -14,6 +14,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
+use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\ProductHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -26,6 +27,7 @@ class XmlProductTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use ProductHelper;
+    use ConfigHelper;
 
     /** @var Context */
     private $defaultContext;
@@ -37,7 +39,7 @@ class XmlProductTest extends TestCase
     {
         parent::setUp();
         $this->defaultContext = Context::createDefaultContext();
-        $this->shopkey = '80AB18D4BE2654E78244106AD315DC2C';
+        $this->shopkey = $this->getShopkey();
     }
 
     /**
