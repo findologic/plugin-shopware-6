@@ -34,8 +34,10 @@ trait ConfigHelper
      * Creates a system config service mock with default findologic config values initialized
      * Passing the data array will override any default values if needed
      */
-    private function getDefaultFindologicConfigServiceMock(TestCase $testClass, array $overrides = [])
-    {
+    private function getDefaultFindologicConfigServiceMock(
+        TestCase $testClass,
+        array $overrides = []
+    ): SystemConfigService {
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $testClass->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()

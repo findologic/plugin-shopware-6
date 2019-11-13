@@ -100,23 +100,33 @@ class Config extends Struct
             $salesChannelId
         ) ?? 'fl-navigation-result';
 
-        // Only check for integration type if the shopkey is set and plugin is active
+        // Only check for integration type if the plugin is active
         if ($this->active) {
-            try {
-                $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
-                $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
-                $integrationType = $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
+            $this->fetchNavigationType($salesChannelId);
+        }
+    }
 
-                if ($this->integrationType !== $integrationType) {
-                    $this->systemConfigService->set(
-                        'FinSearch.config.integrationType',
-                        $this->integrationType,
-                        $salesChannelId
-                    );
-                }
-            } catch (ClientException $e) {
-                $this->integrationType = null;
+    /**
+     * @param string|null $salesChannelId
+     *
+     * @throws InvalidArgumentException
+     */
+    private function fetchNavigationType(?string $salesChannelId): void
+    {
+        try {
+            $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
+            $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
+            $integrationType = $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
+
+            if ($this->integrationType !== $integrationType) {
+                $this->systemConfigService->set(
+                    'FinSearch.config.integrationType',
+                    $this->integrationType,
+                    $salesChannelId
+                );
             }
+        } catch (ClientException $e) {
+            $this->integrationType = null;
         }
     }
 }
