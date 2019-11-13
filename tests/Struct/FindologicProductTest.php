@@ -79,6 +79,7 @@ class FindologicProductTest extends TestCase
         $productEntity->setName($name);
 
         $findologicProductFactory = new FindologicProductFactory();
+
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
@@ -172,6 +173,7 @@ class FindologicProductTest extends TestCase
         }
 
         $findologicProductFactory = new FindologicProductFactory();
+
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
