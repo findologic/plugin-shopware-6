@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests;
 
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
+
 trait ConfigHelper
 {
     public function getShopkey(): string
@@ -24,5 +28,42 @@ trait ConfigHelper
     public function getDemoXMLResponse(): string
     {
         return file_get_contents(__DIR__ . '/demo.xml');
+    }
+
+    /**
+     * Creates a system config service mock with default findologic config values initialized
+     * Passing the data array will override any default values if needed
+     */
+    private function getDefaultFindologicConfigServiceMock(
+        TestCase $testClass,
+        array $overrides = []
+    ): SystemConfigService {
+        /** @var SystemConfigService|MockObject $configServiceMock */
+        $configServiceMock = $testClass->getMockBuilder(SystemConfigService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $defaultConfig = [
+            'active' => true,
+            'shopkey' => $this->getShopkey(),
+            'activeOnCategoryPages' => true,
+            'searchResultContainer' => 'fl-result',
+            'navigationResultContainer' => 'fl-navigation-result',
+            'integrationType' => 'Direct Integration',
+        ];
+
+        $config = array_merge($defaultConfig, $overrides);
+
+        $configServiceMock->method('get')
+            ->willReturnOnConsecutiveCalls(
+                $config['active'],
+                $config['shopkey'],
+                $config['activeOnCategoryPages'],
+                $config['searchResultContainer'],
+                $config['navigationResultContainer'],
+                $config['integrationType']
+            );
+
+        return $configServiceMock;
     }
 }
