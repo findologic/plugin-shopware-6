@@ -1,6 +1,6 @@
-{% sw_extends '@Storefront/page/content/index.html.twig' %}
+{% sw_extends '@Storefront/layout/meta.html.twig' %}
 
-{% block base_main_inner %}
+{% block layout_head_javascript_tracking %}
     {% if page.header.extensions.flConfig.active %}
         <script>
             {% verbatim %}
