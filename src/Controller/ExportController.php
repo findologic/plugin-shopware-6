@@ -192,7 +192,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
                     $this->container->get('shipping_method.repository'),
                     Kernel::getConnection(),
                     $this->container->get('country_state.repository'),
-                    new TaxDetector()
+                    new TaxDetector(),
+                    []
                 );
 
                 return $factory->create($currentContext->getToken(), $systemConfigEntity->getSalesChannelId());
