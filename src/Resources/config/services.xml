@@ -13,6 +13,8 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <tag name="kernel.event_subscriber" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" />
+            <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
@@ -49,6 +51,15 @@
         <service
             class="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
             id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
+            public="true"
+        >
+            <argument id="serializer.mapping.cache.symfony" type="service" />
+            <argument id="service_container" type="service" />
+        </service>
+
+        <service
+            class="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory"
+            id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory"
             public="true"
         >
             <argument id="serializer.mapping.cache.symfony" type="service" />
