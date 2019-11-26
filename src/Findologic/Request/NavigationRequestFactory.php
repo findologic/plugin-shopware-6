@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Request;
 
@@ -22,7 +24,7 @@ class NavigationRequestFactory extends FindologicRequestFactory
         $navigationRequest->setReferer($request->headers->get('referer'));
         $navigationRequest->setRevision($this->getPluginVersion());
         $navigationRequest->setOutputAdapter(OutputAdapter::XML_21);
-        $navigationRequest->setSelected('cat', $categoryPath);
+        $navigationRequest->setSelected('catFilter', $categoryPath);
 
         try {
             $navigationRequest->setShopUrl($request->getHost());
