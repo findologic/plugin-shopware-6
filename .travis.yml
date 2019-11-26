@@ -30,6 +30,7 @@ before_script:
   - cd ${SHOPWARE_DIR}
   - mysql -u root -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app'"
   - mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'app'@'localhost';"
+  - composer update
   - ./psh.phar init
   - mkdir ${PLUGIN_DIR}/${PLUGIN_NAME}
   - mv ${TRAVIS_BUILD_DIR}/* ${PLUGIN_DIR}/${PLUGIN_NAME}
