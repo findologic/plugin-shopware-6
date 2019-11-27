@@ -127,11 +127,11 @@ class FrontendSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
 
         // We simply return if the current page is not a category page
-        if (!$request->get('catFilter')) {
+        if (!$request->get('cat')) {
             return;
         }
 
-        $navigationRequest = $this->navigationRequestFactory->getInstance($request, $request->get('catFilter'));
+        $navigationRequest = $this->navigationRequestFactory->getInstance($request);
 
         try {
             $response = $this->apiClient->send($navigationRequest);

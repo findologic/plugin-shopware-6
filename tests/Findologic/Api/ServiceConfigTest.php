@@ -7,7 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Api;
 use DateTime;
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
-use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelperTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 
 class ServiceConfigTest extends TestCase
 {
-    use ConfigHelper;
+    use ConfigHelperTrait;
 
     public function configParameterProvider(): array
     {

@@ -8,7 +8,7 @@ use DateTime;
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
-use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelperTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -21,7 +21,7 @@ use Psr\Cache\InvalidArgumentException;
 
 class ServiceConfigResourceTest extends TestCase
 {
-    use ConfigHelper;
+    use ConfigHelperTrait;
 
     public function cacheConfigDataProvider(): array
     {

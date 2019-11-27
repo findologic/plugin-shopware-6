@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Client;
 
 use Exception;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClient;
-use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelperTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Handler\MockHandler;
@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 
 class ServiceConfigClientTest extends TestCase
 {
-    use ConfigHelper;
+    use ConfigHelperTrait;
 
     public function responseDataProvider(): array
     {

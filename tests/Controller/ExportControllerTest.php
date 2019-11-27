@@ -7,8 +7,8 @@ namespace FINDOLOGIC\FinSearch\Tests\Controller;
 use FINDOLOGIC\FinSearch\Controller\ExportController;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
-use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
-use FINDOLOGIC\FinSearch\Tests\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelperTrait;
+use FINDOLOGIC\FinSearch\Tests\Traits\ProductHelperTrait;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
 use Monolog\Logger;
@@ -38,8 +38,8 @@ use Symfony\Component\HttpFoundation\Request;
 class ExportControllerTest extends TestCase
 {
     use IntegrationTestBehaviour;
-    use ProductHelper;
-    use ConfigHelper;
+    use ProductHelperTrait;
+    use ConfigHelperTrait;
 
     /** @var Router $router */
     private $router;

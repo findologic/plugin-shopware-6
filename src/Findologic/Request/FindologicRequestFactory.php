@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Request;
 
+use FINDOLOGIC\Api\Definitions\OutputAdapter;
+use FINDOLOGIC\Api\Exceptions\InvalidParamException;
+use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Context;
@@ -12,8 +15,9 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
-class FindologicRequestFactory
+abstract class FindologicRequestFactory
 {
     private const
         CACHE_VERSION_LIFETIME = 60 * 60 * 24,
@@ -30,6 +34,8 @@ class FindologicRequestFactory
         $this->cache = $cache;
         $this->container = $container;
     }
+
+    abstract public function getInstance(Request $request);
 
     /**
      * @throws InvalidArgumentException
@@ -54,5 +60,28 @@ class FindologicRequestFactory
         }
 
         return $item->get();
+    }
+
+    /**
+     * @return SearchNavigationRequest
+     * @throws InconsistentCriteriaIdsException
+     * @throws InvalidArgumentException
+     */
+    protected function setDefaults(
+        Request $request,
+        SearchNavigationRequest $searchNavigationRequest
+    ): SearchNavigationRequest {
+        $searchNavigationRequest->setUserIp($request->getClientIp());
+        $searchNavigationRequest->setReferer($request->headers->get('referer'));
+        $searchNavigationRequest->setRevision($this->getPluginVersion());
+        $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
+
+        try {
+            $searchNavigationRequest->setShopUrl($request->getHost());
+        } catch (InvalidParamException $e) {
+            $searchNavigationRequest->setShopUrl('example.org');
+        }
+
+        return $searchNavigationRequest;
     }
 }

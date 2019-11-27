@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests;
+namespace FINDOLOGIC\FinSearch\Tests\Traits;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
@@ -13,7 +13,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
 
-trait ProductHelper
+trait ProductHelperTrait
 {
     public function createTestProduct(array $data = []): ?ProductEntity
     {

@@ -31,11 +31,7 @@ class NavigationRequestFactoryTest extends TestCase
         $expectedHost = 'findologic.de';
         $expectedAdapter = 'XML_2.1';
         $expectedVersion = '0.1.0';
-
-        $categories = ['Main Category', 'Kids & Music', 'Computers & Shoes'];
-        unset($categories[0]);
-        $categoryPath = implode('_', $categories);
-        $expectedFilter = ['catFilter' => [$categoryPath]];
+        $expectedCategoryPath = 'Kids & Music_Computers & Shoes';
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
@@ -61,8 +57,9 @@ class NavigationRequestFactoryTest extends TestCase
         $request->headers->set('referer', $expectedReferer);
         $request->headers->set('host', $expectedHost);
         $request->server->set('REMOTE_ADDR', $expectedIpAddress);
+        $request->query->set('cat', $expectedCategoryPath);
 
-        $navigationRequest = $navigationRequestFactory->getInstance($request, $categoryPath);
+        $navigationRequest = $navigationRequestFactory->getInstance($request);
 
         $this->assertInstanceOf(NavigationRequest::class, $navigationRequest);
 
@@ -74,6 +71,6 @@ class NavigationRequestFactoryTest extends TestCase
         $this->assertSame($expectedIpAddress, $params['userip']);
         $this->assertSame($expectedAdapter, $params['outputAdapter']);
         $this->assertSame($expectedHost, $params['shopurl']);
-        $this->assertSame($expectedFilter, $params['selected']);
+        $this->assertSame($expectedCategoryPath, $params['selected']['cat'][0]);
     }
 }

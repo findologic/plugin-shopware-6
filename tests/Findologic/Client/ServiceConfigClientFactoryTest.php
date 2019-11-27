@@ -6,12 +6,12 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Client;
 
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClient;
-use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelperTrait;
 use PHPUnit\Framework\TestCase;
 
 class ServiceConfigClientFactoryTest extends TestCase
 {
-    use ConfigHelper;
+    use ConfigHelperTrait;
 
     public function testCreateServiceConfigClient()
     {

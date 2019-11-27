@@ -16,8 +16,8 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
-use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
-use FINDOLOGIC\FinSearch\Tests\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelperTrait;
+use FINDOLOGIC\FinSearch\Tests\Traits\ProductHelperTrait;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
@@ -33,8 +33,8 @@ use Symfony\Component\Routing\RouterInterface;
 class FindologicProductTest extends TestCase
 {
     use IntegrationTestBehaviour;
-    use ProductHelper;
-    use ConfigHelper;
+    use ProductHelperTrait;
+    use ConfigHelperTrait;
 
     /** @var Context */
     private $defaultContext;
