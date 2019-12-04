@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
+use FINDOLOGIC\FinSearch\Struct\Promotion;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -45,6 +46,11 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             },
             $response->getProducts()
         );
+
+        if ($response->getPromotion() !== null) {
+            $promotion = new Promotion($response->getPromotion()->getImage(), $response->getPromotion()->getLink());
+            $event->getContext()->addExtension('flPromotion', $promotion);
+        }
 
         $cleanCriteria = new Criteria($productIds);
         $event->getCriteria()->assign($cleanCriteria->getVars());

@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use SimpleXMLElement;
 
 trait ConfigHelperTrait
 {
@@ -28,6 +29,11 @@ trait ConfigHelperTrait
     public function getDemoXMLResponse(): string
     {
         return file_get_contents(__DIR__ . '/../MockData/demo.xml');
+    }
+
+    public function getDemoXML(): SimpleXMLElement
+    {
+        return new SimpleXMLElement($this->getDemoXMLResponse());
     }
 
     /**
