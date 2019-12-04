@@ -6,10 +6,10 @@ namespace FINDOLOGIC\FinSearch\Subscriber;
 
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
-use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
+use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
+use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
@@ -19,7 +19,6 @@ use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\ProductEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -110,44 +109,14 @@ class FrontendSubscriber implements EventSubscriberInterface
      */
     public function onNavigation(ProductListingCriteriaEvent $event): void
     {
-        if (!$this->config->isActive()) {
-            return;
-        }
-
-        $shopkey = $this->config->getShopkey();
-        $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
-        $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
-
-        if ($isDirectIntegration || $isStagingShop) {
-            return;
-        }
-
-        $this->apiConfig->setServiceId($shopkey);
-
-        $request = $event->getRequest();
-
-        // We simply return if the current page is not a category page
-        if (!$request->get('cat')) {
-            return;
-        }
-
-        $navigationRequest = $this->navigationRequestFactory->getInstance($request);
-
-        try {
-            $response = $this->apiClient->send($navigationRequest);
-        } catch (ServiceNotAliveException $e) {
-            return;
-        }
-
-        $productIds = array_map(
-            static function (Product $product) {
-                return $product->getId();
-            },
-            $response->getProducts()
+        $navigationHandler = new NavigationRequestHandler(
+            $this->serviceConfigResource,
+            $this->navigationRequestFactory,
+            $this->config,
+            $this->apiConfig,
+            $this->apiClient
         );
-
-        $cleanCriteria = new Criteria($productIds);
-        $event->getCriteria()->assign($cleanCriteria->getVars());
+        $navigationHandler->handleRequest($event);
     }
 
     /**
@@ -156,43 +125,13 @@ class FrontendSubscriber implements EventSubscriberInterface
      */
     public function onSearch(ProductSearchCriteriaEvent $event): void
     {
-        if (!$this->config->isActive()) {
-            return;
-        }
-
-        $originalCriteria = clone $event->getCriteria();
-
-        $shopkey = $this->config->getShopkey();
-        $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
-        $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
-
-        if ($isDirectIntegration || $isStagingShop) {
-            return;
-        }
-
-        $this->apiConfig->setServiceId($shopkey);
-
-        $request = $event->getRequest();
-
-        $searchRequest = $this->searchRequestFactory->getInstance($request);
-        $searchRequest->setQuery($request->query->get('search'));
-
-        try {
-            $response = $this->apiClient->send($searchRequest);
-        } catch (ServiceNotAliveException $e) {
-            $event->getCriteria()->assign($originalCriteria->getVars());
-
-            return;
-        }
-
-        $productIds = array_map(
-            static function (Product $product) {
-                return $product->getId();
-            },
-            $response->getProducts()
+        $searchHandler = new SearchRequestHandler(
+            $this->serviceConfigResource,
+            $this->searchRequestFactory,
+            $this->config,
+            $this->apiConfig,
+            $this->apiClient
         );
-
-        $cleanCriteria = new Criteria($productIds);
-        $event->getCriteria()->assign($cleanCriteria->getVars());
+        $searchHandler->handleRequest($event);
     }
 }
