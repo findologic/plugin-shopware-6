@@ -1,168 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <searchResult xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/findologic/xml-response-schema/master/schema.xsd">
+    xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/findologic/xml-response-schema/master/schema.xsd">
     <servers>
-        <frontend>bolton.frontend.findologic.com</frontend>
-        <backend>desdemona.backend.findologic.com</backend>
+        <frontend>martell.frontend.findologic.com</frontend>
+        <backend>hydra.backend.findologic.com</backend>
     </servers>
     <query>
-        <limit first="0" count="25"/>
-        <queryString/>
+        <limit first="0" count="24" />
+        <queryString type="corrected">ps3</queryString>
+        <originalQuery allow-override="1">original query</originalQuery>
+        <didYouMeanQuery>ps4</didYouMeanQuery>
     </query>
+    <landingPage link="https://www.landingpage.io/agb/" />
+    <promotion link="https://promotion.com/" image="https://promotion.com/promotion.png" />
     <results>
-        <count>34</count>
+        <count>1808</count>
     </results>
     <products>
-        <product id="102" relevance="1.38629"/>
-        <product id="103" relevance="1.38629"/>
-        <product id="104" relevance="1.38629"/>
-        <product id="105" relevance="1.38629"/>
-        <product id="106" relevance="1.38629"/>
-        <product id="107" relevance="1.38629"/>
-        <product id="108" relevance="1.38629"/>
-        <product id="109" relevance="1.38629"/>
-        <product id="110" relevance="1.38629"/>
-        <product id="111" relevance="1.38629"/>
-        <product id="112" relevance="1.38629"/>
-        <product id="113" relevance="1.38629"/>
-        <product id="114" relevance="1.38629"/>
-        <product id="115" relevance="1.38629"/>
-        <product id="116" relevance="1.38629"/>
-        <product id="117" relevance="1.38629"/>
-        <product id="118" relevance="1.38629"/>
-        <product id="119" relevance="1.38629"/>
-        <product id="120" relevance="1.38629"/>
-        <product id="121" relevance="1.38629"/>
-        <product id="122" relevance="1.38629"/>
-        <product id="123" relevance="1.38629"/>
-        <product id="124" relevance="1.38629"/>
-        <product id="125" relevance="1.38629"/>
-        <product id="126" relevance="1.38629"/>
+        <product id="019111105-37900" relevance="1.3862943649292">
+            <properties>
+                <property name="ordernumber">019111105-37900</property>
+            </properties>
+        </product>
+        <product id="029214085-37860" relevance="1.3862943649292" />
     </products>
     <filters>
         <main>
             <filter>
-                <itemCount>6</itemCount>
-                <name>cat</name>
-                <display>Category</display>
-                <select>single</select>
-                <type>select</type>
-                <items>
-                    <item>
-                        <name>Living room</name>
-                        <weight>0.11764705181122</weight>
-                        <frequency>32</frequency>
-                        <items>
-                            <item>
-                                <name>Armchairs &amp; Stools</name>
-                                <weight>0.82352936267853</weight>
-                                <frequency>20</frequency>
-                            </item>
-                            <item>
-                                <name>Sofas</name>
-                                <weight>0.70588237047195</weight>
-                                <frequency>12</frequency>
-                            </item>
-                        </items>
-                    </item>
-                    <item>
-                        <name>Office</name>
-                        <weight>0.17647059261799</weight>
-                        <frequency>3</frequency>
-                        <items>
-                            <item>
-                                <name>Office Chairs</name>
-                                <weight>0.17647059261799</weight>
-                                <frequency>3</frequency>
-                            </item>
-                        </items>
-                    </item>
-                </items>
-            </filter>
-            <filter>
-                <itemCount>2</itemCount>
-                <cssClass>testing-filter-class-from-fd</cssClass>
-                <name>vendor</name>
-                <display>Manufacturer</display>
-                <select>multiple</select>
-                <type>select</type>
-                <items>
-                    <item>
-                        <name>A &amp; C Design</name>
-                        <weight>0.8824</weight>
-                        <frequency>15</frequency>
-                    </item>
-                    <item>
-                        <name>Brand Manufacturer</name>
-                        <weight>0.1765</weight>
-                        <frequency>3</frequency>
-                    </item>
-                    <item>
-                        <name>Exclusive Leather</name>
-                        <weight>0.4118</weight>
-                        <frequency>7</frequency>
-                    </item>
-                    <item>
-                        <name>H Manufacturer</name>
-                        <weight>0.2353</weight>
-                        <frequency>4</frequency>
-                    </item>
-                    <item>
-                        <name>Z Manufacturer</name>
-                        <weight>0.2941</weight>
-                        <frequency>5</frequency>
-                    </item>
-                </items>
-            </filter>
-            <filter>
-                <cssClass>test-price-class-fd</cssClass>
                 <name>price</name>
-                <display>Price</display>
+                <display>Preis</display>
                 <select>single</select>
                 <type>range-slider</type>
                 <attributes>
                     <selectedRange>
-                        <min>59</min>
-                        <max>2300</max>
+                        <min>0.39</min>
+                        <max>2239.1</max>
                     </selectedRange>
                     <totalRange>
-                        <min>59</min>
-                        <max>2300</max>
+                        <min>0.39</min>
+                        <max>2239.1</max>
                     </totalRange>
                     <stepSize>0.1</stepSize>
-                    <unit>£</unit>
+                    <unit>€</unit>
                 </attributes>
                 <items>
                     <item>
-                        <name>59 - 149</name>
-                        <weight>0.6471</weight>
+                        <name>0.39 - 13.4</name>
+                        <weight>0.51743012666702</weight>
                         <parameters>
-                            <min>59</min>
-                            <max>149</max>
+                            <min>0.39</min>
+                            <max>13.4</max>
                         </parameters>
                     </item>
                     <item>
-                        <name>169 - 279</name>
-                        <weight>0.5294</weight>
+                        <name>13.45 - 25.99</name>
+                        <weight>0.50098878145218</weight>
                         <parameters>
-                            <min>169</min>
-                            <max>279</max>
+                            <min>13.45</min>
+                            <max>25.99</max>
                         </parameters>
                     </item>
                     <item>
-                        <name>289 - 740</name>
-                        <weight>0.5294</weight>
+                        <name>26 - 40.3</name>
+                        <weight>0.3976277410984</weight>
                         <parameters>
-                            <min>289</min>
-                            <max>740</max>
-                        </parameters>
-                    </item>
-                    <item>
-                        <name>890 - 2300</name>
-                        <weight>0.2941</weight>
-                        <parameters>
-                            <min>890</min>
-                            <max>2300</max>
+                            <min>26</min>
+                            <max>40.3</max>
                         </parameters>
                     </item>
                 </items>
@@ -170,120 +73,100 @@
         </main>
         <other>
             <filter>
-                <name>Color</name>
-                <display>Color</display>
+                <name>Farbe</name>
+                <display>Farbe</display>
                 <select>multiselect</select>
-                <selectedItems>0</selectedItems>
+                <selectedItems>1</selectedItems>
                 <type>color</type>
                 <items>
                     <item>
-                        <name>black</name>
-                        <weight>0.0588</weight>
-                        <image>https://www.etc-shop.de/layout/findologic/black.png</image>
-                        <color>#000000</color>
+                        <name>beige</name>
+                        <weight>0.10730088502169</weight>
+                        <image>https://blubbergurken.io/farbfilter/beige.gif</image>
+                        <color>#F5F5DC</color>
+                    </item>
+                    <item selected="1">
+                        <name>blau</name>
+                        <weight>0.3296460211277</weight>
+                        <image>https://blubbergurken.io/farbfilter/blau.gif</image>
+                        <color>#3c6380</color>
                     </item>
                     <item>
-                        <name>purple</name>
-                        <weight>0.0588</weight>
-                        <image>https://www.etc-shop.de/layout/findologic/purple.png</image>
-                        <color>#BA55D3</color>
-                    </item>
-                    <item>
-                        <name>red</name>
-                        <weight>0.0588</weight>
-                        <image>https://www.etc-shop.de/layout/findologic/red.png</image>
-                        <color>#FF0000</color>
-                    </item>
-                    <item>
-                        <name>white</name>
-                        <weight>0.0588</weight>
-                        <image>https://www.etc-shop.de/layout/findologic/white.png</image>
-                        <color>#FFFFFF</color>
+                        <name>braun</name>
+                        <weight>0.90265488624573</weight>
+                        <image>https://blubbergurken.io/farbfilter/braun.gif</image>
+                        <color>#94651e</color>
                     </item>
                 </items>
             </filter>
             <filter>
-                <name>Second Property</name>
-                <display>max. Size</display>
+                <itemCount>2</itemCount>
+                <cssClass>fl-material</cssClass>
+                <name>Material</name>
+                <display>Material</display>
+                <select>multiple</select>
+                <type>select</type>
+                <items>
+                    <item>
+                        <name>Hartgepäck</name>
+                        <weight>0.038716815412045</weight>
+                        <frequency>35</frequency>
+                    </item>
+                    <item>
+                        <name>Leder</name>
+                        <weight>0.63053095340729</weight>
+                        <frequency>1238</frequency>
+                    </item>
+                    <item>
+                        <name>Nylon</name>
+                        <weight>0.12168141454458</weight>
+                        <frequency>110</frequency>
+                    </item>
+                </items>
+            </filter>
+            <filter>
+                <itemCount>0</itemCount>
+                <noAvailableFiltersText>Keine Hersteller</noAvailableFiltersText>
+                <name>vendor</name>
+                <display>Hersteller</display>
+                <select>multiple</select>
+                <type>select</type>
+                <items>
+                    <item>
+                        <name>Bodenschatz</name>
+                        <weight>0.0022123893722892</weight>
+                        <frequency>2</frequency>
+                    </item>
+                    <item>
+                        <name>Braun Büffel</name>
+                        <weight>0.08517698943615</weight>
+                        <frequency>77</frequency>
+                    </item>
+                    <item>
+                        <name>Camel Active</name>
+                        <weight>0.13495574891567</weight>
+                        <frequency>122</frequency>
+                    </item>
+                </items>
+            </filter>
+            <filter>
+                <itemCount>-2</itemCount>
+                <name>cat</name>
+                <display>Kategorie</display>
                 <select>single</select>
-                <type>range-slider</type>
-                <attributes>
-                    <selectedRange>
-                        <min>3.0</min>
-                        <max>158221.0</max>
-                    </selectedRange>
-                    <totalRange>
-                        <min>3.0</min>
-                        <max>158221.0</max>
-                    </totalRange>
-                    <stepSize>0.1</stepSize>
-                    <unit/>
-                </attributes>
-                <items>
-                    <item>
-                        <name>3.0</name>
-                        <weight>0</weight>
-                    </item>
-                    <item>
-                        <name>158221.0</name>
-                        <weight>0</weight>
-                    </item>
-                </items>
-            </filter>
-            <filter>
-                <itemCount>1</itemCount>
-                <name>Test</name>
-                <display>Test</display>
-                <select>multiple</select>
                 <type>select</type>
                 <items>
                     <item>
-                        <name>158</name>
-                        <weight>0.0588</weight>
-                        <frequency>1</frequency>
-                    </item>
-                    <item>
-                        <name>22220</name>
-                        <weight>0.9412</weight>
-                        <frequency>18</frequency>
-                    </item>
-                    <item>
-                        <name>22221</name>
-                        <weight>0.1765</weight>
-                        <frequency>3</frequency>
-                    </item>
-                </items>
-            </filter>
-            <filter>
-                <itemCount>6</itemCount>
-                <name>Test Group</name>
-                <display>Test Group</display>
-                <select>multiple</select>
-                <type>select</type>
-                <items>
-                    <item>
-                        <name>Third Property</name>
-                        <weight>0</weight>
-                        <frequency>34</frequency>
-                    </item>
-                </items>
-            </filter>
-            <filter>
-                <itemCount>6</itemCount>
-                <name>Description</name>
-                <display>Description</display>
-                <select>multiple</select>
-                <type>select</type>
-                <items>
-                    <item>
-                        <name>Changes</name>
-                        <weight>0.0588</weight>
-                        <frequency>1</frequency>
-                    </item>
-                    <item>
-                        <name>Some awesome descption here</name>
-                        <weight>0.0588</weight>
-                        <frequency>1</frequency>
+                        <name>Buch</name>
+                        <weight>0.25156819820404</weight>
+                        <frequency>5</frequency>
+                        <items>
+                            <item>
+                                <name>Beste Bücher</name>
+                                <weight>0.33799207210541</weight>
+                                <frequency>0</frequency>
+                            </item>
+                        </items>
                     </item>
                 </items>
             </filter>
