@@ -6,10 +6,15 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request;
 
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
+use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
+use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
+use FINDOLOGIC\Api\Responses\Response;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use Psr\Cache\InvalidArgumentException;
-use Shopware\Core\Framework\Event\NestedEvent;
+use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\Event\ShopwareEvent;
 
 class SearchNavigationRequestHandler
 {
@@ -53,20 +58,39 @@ class SearchNavigationRequestHandler
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws InconsistentCriteriaIdsException
      */
-    protected function handleRequest(NestedEvent $event)
-    {
-        if ($this->config->isActive()) {
-            $shopkey = $this->config->getShopkey();
-            $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
-            $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
-
-            if ($isDirectIntegration || $isStagingShop) {
-                return;
+    public function sendRequest(
+        ShopwareEvent $event,
+        SearchNavigationRequest $searchNavigationRequest,
+        ?Criteria $originalCriteria = null
+    ): void {
+        try {
+            $response = $this->apiClient->send($searchNavigationRequest);
+            $cleanCriteria = new Criteria($this->parseProductIdsFromResponse($response));
+            $this->assignCriteriaToEvent($event, $cleanCriteria);
+        } catch (ServiceNotAliveException $e) {
+            if ($originalCriteria !== null) {
+                $this->assignCriteriaToEvent($event, $originalCriteria);
             }
-
-            $this->apiConfig->setServiceId($shopkey);
         }
+    }
+
+    /**
+     * @return int[]
+     */
+    protected function parseProductIdsFromResponse(Response $response): array
+    {
+        return array_map(
+            static function (Product $product) {
+                return $product->getId();
+            },
+            $response->getProducts()
+        );
+    }
+
+    protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
+    {
+        $event->getCriteria()->assign($criteria->getVars());
     }
 }

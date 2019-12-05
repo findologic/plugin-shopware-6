@@ -57,9 +57,9 @@ class NavigationRequestFactoryTest extends TestCase
         $request->headers->set('referer', $expectedReferer);
         $request->headers->set('host', $expectedHost);
         $request->server->set('REMOTE_ADDR', $expectedIpAddress);
-        $request->query->set('cat', $expectedCategoryPath);
 
         $navigationRequest = $navigationRequestFactory->getInstance($request);
+        $navigationRequest->setSelected('cat', $expectedCategoryPath);
 
         $this->assertInstanceOf(NavigationRequest::class, $navigationRequest);
 

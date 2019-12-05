@@ -8,7 +8,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
-trait ConfigHelperTrait
+trait ConfigHelper
 {
     public function getShopkey(): string
     {
@@ -17,7 +17,7 @@ trait ConfigHelperTrait
 
     public function getConfig(bool $assoc = true)
     {
-        $config = file_get_contents(__DIR__ . '/../MockData/example_config.json');
+        $config = file_get_contents(__DIR__ . '/../MockData/ConfigResponse/example_config.json');
         if ($assoc) {
             return json_decode($config, true);
         }
@@ -27,7 +27,7 @@ trait ConfigHelperTrait
 
     public function getDemoXMLResponse(): string
     {
-        return file_get_contents(__DIR__ . '/../MockData/demo.xml');
+        return file_get_contents(__DIR__ . '/../MockData/XMLResponse/demo.xml');
     }
 
     /**

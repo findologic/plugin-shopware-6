@@ -19,7 +19,6 @@ class NavigationRequestFactory extends FindologicRequestFactory
     {
         $navigationRequest = new NavigationRequest();
         $this->setDefaults($request, $navigationRequest);
-        $navigationRequest->setSelected('cat', $request->get('cat'));
 
         return $navigationRequest;
     }

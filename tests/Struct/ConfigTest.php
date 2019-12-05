@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelperTrait;
+use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelper;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
@@ -18,7 +18,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigTest extends TestCase
 {
-    use ConfigHelperTrait;
+    use ConfigHelper;
 
     public function configValuesProvider(): array
     {

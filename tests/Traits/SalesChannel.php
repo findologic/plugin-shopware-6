@@ -11,7 +11,7 @@ use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
-trait SalesChannelTrait
+trait SalesChannel
 {
     public function buildSalesChannelContext(): SalesChannelContext
     {
@@ -22,10 +22,10 @@ trait SalesChannelTrait
             'typeId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'customerGroupId' => Defaults::FALLBACK_CUSTOMER_GROUP,
             'currencyId' => Defaults::CURRENCY,
-            'paymentMethodId' => $this->getId('payment_method'),
-            'shippingMethodId' => $this->getId('shipping_method'),
-            'countryId' => $this->getId('country'),
-            'navigationCategoryId' => $this->getId('category'),
+            'paymentMethodId' => $this->fetchIdFromDatabase('payment_method'),
+            'shippingMethodId' => $this->fetchIdFromDatabase('shipping_method'),
+            'countryId' => $this->fetchIdFromDatabase('country'),
+            'navigationCategoryId' => $this->fetchIdFromDatabase('category'),
             'accessKey' => 'test',
             'languages' => [
                 ['id' => Defaults::LANGUAGE_SYSTEM],
@@ -35,22 +35,28 @@ trait SalesChannelTrait
                     'url' => 'http://test.de',
                     'currencyId' => Defaults::CURRENCY,
                     'languageId' => Defaults::LANGUAGE_SYSTEM,
-                    'snippetSetId' => $this->getId('snippet_set'),
+                    'snippetSetId' => $this->fetchIdFromDatabase('snippet_set'),
                 ],
             ],
         ];
 
-        $this->getContainer()->get('sales_channel.repository')
-            ->create([$salesChannel], Context::createDefaultContext());
+        $this->getContainer()->get('sales_channel.repository')->create(
+            [$salesChannel],
+            Context::createDefaultContext()
+        );
 
+        /** @var SalesChannelContextFactory $salesChannelContextFactory */
         $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
 
         return $salesChannelContextFactory->create(Uuid::randomHex(), $id);
     }
 
-    private function getId(string $table): string
+    /**
+     * In order to create a useable sales channel context we need to pass some IDs for initialization from several
+     * tables from the database.
+     */
+    private function fetchIdFromDatabase(string $table): string
     {
-        return $this->getContainer()->get(Connection::class)
-            ->fetchColumn('SELECT LOWER(HEX(id)) FROM ' . $table);
+        return $this->getContainer()->get(Connection::class)->fetchColumn('SELECT LOWER(HEX(id)) FROM ' . $table);
     }
 }

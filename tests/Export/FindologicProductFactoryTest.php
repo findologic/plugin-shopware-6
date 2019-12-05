@@ -9,8 +9,8 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
-use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelperTrait;
-use FINDOLOGIC\FinSearch\Tests\Traits\ProductHelperTrait;
+use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\ProductHelper;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
@@ -19,8 +19,8 @@ use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 class FindologicProductFactoryTest extends TestCase
 {
     use IntegrationTestBehaviour;
-    use ProductHelperTrait;
-    use ConfigHelperTrait;
+    use ProductHelper;
+    use ConfigHelper;
 
     /** @var Context */
     private $defaultContext;

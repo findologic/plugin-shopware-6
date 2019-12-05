@@ -13,7 +13,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
 
-trait ProductHelperTrait
+trait ProductHelper
 {
     public function createTestProduct(array $data = []): ?ProductEntity
     {
