@@ -10,8 +10,10 @@ use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\Promotion;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
@@ -68,6 +70,14 @@ class SearchNavigationRequestHandler
         try {
             $response = $this->apiClient->send($searchNavigationRequest);
             $cleanCriteria = new Criteria($this->parseProductIdsFromResponse($response));
+
+            $promotion = $response->getPromotion();
+
+            if ($promotion instanceof ApiPromotion) {
+                $promotion = new Promotion($promotion->getImage(), $promotion->getLink());
+                $event->getContext()->addExtension('flPromotion', $promotion);
+            }
+
             $this->assignCriteriaToEvent($event, $cleanCriteria);
         } catch (ServiceNotAliveException $e) {
             if ($originalCriteria !== null) {

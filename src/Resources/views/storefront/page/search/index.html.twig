@@ -2,7 +2,9 @@
 
 {% block page_search_listing %}
     {% if context.context.extensions.flPromotion %}
-        <a href="{{ context.context.extensions.flPromotion.link }}"><img src="{{ context.context.extensions.flPromotion.image }}" id="fl-promotion" alt="Promotion Image"/></a>
+        <a href="{{ context.context.extensions.flPromotion.link }}">
+            <img src="{{ context.context.extensions.flPromotion.image }}" id="fl-promotion" alt="Promotion Image"/>
+        </a>
     {% endif %}
 
     {{ parent() }}

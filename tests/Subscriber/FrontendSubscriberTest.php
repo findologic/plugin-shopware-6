@@ -362,10 +362,7 @@ class FrontendSubscriberTest extends TestCase
 
         $this->createTestCategory($categories);
 
-        $request = new Request();
-        $request->headers->set('referer', 'http://localhost.shopware');
-        $request->headers->set('host', 'findologic.de');
-        $request->server->set('REMOTE_ADDR', '192.168.0.1');
+        $request = $this->createDefaultRequest();
         $request->query->set('navigationId', $recordA);
 
         /** @var SystemConfigService|MockObject $configServiceMock */
@@ -408,13 +405,7 @@ class FrontendSubscriberTest extends TestCase
             $context
         );
 
-        // Create example request to match the expected request to be passed in the `send` method
-        $navigationRequest = new NavigationRequest();
-        $navigationRequest->setUserIp($request->getClientIp());
-        $navigationRequest->setReferer($request->headers->get('referer'));
-        $navigationRequest->setRevision('0.10.0');
-        $navigationRequest->setOutputAdapter('XML_2.1');
-        $navigationRequest->setShopUrl($request->getHost());
+        $navigationRequest = $this->createDefaultNavigationRequest($request);
         $navigationRequest->setSelected('cat', $categoryPath);
 
         return [
@@ -431,11 +422,7 @@ class FrontendSubscriberTest extends TestCase
 
     private function setupProductSearchTest(): array
     {
-        $request = new Request();
-        $request->headers->set('referer', 'http://localhost.shopware');
-        $request->query->set('search', 'findologic');
-        $request->headers->set('host', 'findologic.de');
-        $request->server->set('REMOTE_ADDR', '192.168.0.1');
+        $request = $this->createDefaultRequest();
 
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
@@ -478,14 +465,7 @@ class FrontendSubscriberTest extends TestCase
             $context
         );
 
-        // Create example search request to match the expected request to be passed in the `send` method
-        $searchRequest = new SearchRequest();
-        $searchRequest->setUserIp($request->getClientIp());
-        $searchRequest->setReferer($request->headers->get('referer'));
-        $searchRequest->setRevision('0.10.0');
-        $searchRequest->setOutputAdapter('XML_2.1');
-        $searchRequest->setShopUrl($request->getHost());
-        $searchRequest->setQuery('findologic');
+        $searchRequest = $this->createDefaultSearchRequest($request);
 
         return [
             $configServiceMock,
@@ -499,36 +479,68 @@ class FrontendSubscriberTest extends TestCase
         ];
     }
 
-    public function promotionProvider()
+    public function testPromotionIsAvailable()
     {
-        return [
-            'Promotion is not available' => ['hasPromotion' => false, 'expectedExtensions' => null],
-            'Promotion is available' => [
-                'hasPromotion' => true,
-                'expectedExtensions' => new Promotion('https://promotion.com/promotion.png', 'https://promotion.com/')
-            ],
-        ];
+        $expectedExtension = new Promotion('https://promotion.com/promotion.png', 'https://promotion.com/');
+
+        $xml = $this->getDemoXML();
+        $extensions = $this->getExtensionsFromFrontendSubscriber($xml);
+
+        $this->assertArrayHasKey('flPromotion', $extensions);
+        $this->assertEquals($expectedExtension, $extensions['flPromotion']);
     }
 
-    /**
-     * @dataProvider promotionProvider
-     * @throws InconsistentCriteriaIdsException
-     * @throws InvalidArgumentException
-     */
-    public function testPromotion(bool $hasPromotion, ?Promotion $expectedExtension)
+    public function testPromotionIsNotAvailable()
     {
         $xml = $this->getDemoXML();
-        if (!$hasPromotion) {
-            unset($xml->promotion);
-        }
+        unset($xml->promotion);
 
-        $response = new Xml21Response($xml->asXML());
+        $extensions = $this->getExtensionsFromFrontendSubscriber($xml);
+        $this->assertEmpty($extensions);
+    }
 
+    private function createDefaultSearchRequest(Request $request): SearchRequest
+    {
+        // Create example search request to match the expected request to be passed in the `send` method
+        $searchRequest = new SearchRequest();
+        $searchRequest->setUserIp($request->getClientIp());
+        $searchRequest->setReferer($request->headers->get('referer'));
+        $searchRequest->setRevision('0.10.0');
+        $searchRequest->setOutputAdapter('XML_2.1');
+        $searchRequest->setShopUrl($request->getHost());
+        $searchRequest->setQuery('findologic');
+
+        return $searchRequest;
+    }
+
+    private function createDefaultRequest(): Request
+    {
         $request = new Request();
         $request->headers->set('referer', 'http://localhost.shopware');
         $request->query->set('search', 'findologic');
         $request->headers->set('host', 'findologic.de');
         $request->server->set('REMOTE_ADDR', '192.168.0.1');
+
+        return $request;
+    }
+
+    private function createDefaultNavigationRequest(Request $request): NavigationRequest
+    {
+        $navigationRequest = new NavigationRequest();
+        $navigationRequest->setUserIp($request->getClientIp());
+        $navigationRequest->setReferer($request->headers->get('referer'));
+        $navigationRequest->setRevision('0.10.0');
+        $navigationRequest->setOutputAdapter('XML_2.1');
+        $navigationRequest->setShopUrl($request->getHost());
+
+        return $navigationRequest;
+    }
+
+    private function getExtensionsFromFrontendSubscriber(\SimpleXMLElement $xml)
+    {
+        $response = new Xml21Response($xml->asXML());
+
+        $request = $this->createDefaultRequest();
 
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
@@ -555,7 +567,7 @@ class FrontendSubscriberTest extends TestCase
         $searchRequestFactory = new SearchRequestFactory($cachePoolMock, $this->getContainer());
         $navigationRequestFactory = new NavigationRequestFactory($cachePoolMock, $this->getContainer());
 
-        $apiConfig = new \FINDOLOGIC\Api\Config();
+        $apiConfig = new ApiConfig();
 
         /** @var Client|MockObject $apiClientMock */
         $apiClientMock = $this->getMockBuilder(Client::class)
@@ -571,14 +583,7 @@ class FrontendSubscriberTest extends TestCase
             $context
         );
 
-        // Create example search request to match the expected request to be passed in the `send` method
-        $searchRequest = new SearchRequest();
-        $searchRequest->setUserIp($request->getClientIp());
-        $searchRequest->setReferer($request->headers->get('referer'));
-        $searchRequest->setRevision('0.10.0');
-        $searchRequest->setOutputAdapter('XML_2.1');
-        $searchRequest->setShopUrl($request->getHost());
-        $searchRequest->setQuery('findologic');
+        $searchRequest = $this->createDefaultSearchRequest($request);
 
         $apiClientMock->expects($this->once())
             ->method('send')
@@ -597,19 +602,15 @@ class FrontendSubscriberTest extends TestCase
             $serviceConfigResource,
             $searchRequestFactory,
             $navigationRequestFactory,
+            $this->getContainer()->get(GenericPageLoader::class),
             $configMock,
             $apiConfig,
             $apiClientMock
         );
-        $frontendSubscriber->onSearch($event);
 
+        $frontendSubscriber->onSearch($event);
         $extensions = $event->getContext()->getExtensions();
 
-        if ($hasPromotion) {
-            $this->assertArrayHasKey('flPromotion', $extensions);
-            $this->assertEquals($expectedExtension, $extensions['flPromotion']);
-        } else {
-            $this->assertEmpty($extensions);
-        }
+        return $extensions;
     }
 }
