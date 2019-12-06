@@ -36,6 +36,11 @@ trait ConfigHelper
         return new SimpleXMLElement($this->getDemoXMLResponse());
     }
 
+    public function getDemoXML(): SimpleXMLElement
+    {
+        return new SimpleXMLElement($this->getDemoXMLResponse());
+    }
+
     /**
      * Creates a system config service mock with default findologic config values initialized
      * Passing the data array will override any default values if needed
