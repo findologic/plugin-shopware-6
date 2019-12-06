@@ -28,26 +28,14 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FrontendSubscriber implements EventSubscriberInterface
 {
-    /** @var SystemConfigService */
-    private $systemConfigService;
-
     /** @var Config */
     private $config;
 
     /** @var ServiceConfigResource */
     private $serviceConfigResource;
 
-    /** @var SearchRequestFactory */
-    private $searchRequestFactory;
-
     /** @var ApiConfig */
     private $apiConfig;
-
-    /** @var ApiClient */
-    private $apiClient;
-
-    /** @var NavigationRequestFactory */
-    private $navigationRequestFactory;
 
     /** @var SearchRequestHandler */
     private $searchRequestHandler;
@@ -65,29 +53,25 @@ class FrontendSubscriber implements EventSubscriberInterface
         ?ApiConfig $apiConfig = null,
         ?ApiClient $apiClient = null
     ) {
-        $this->systemConfigService = $systemConfigService;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->searchRequestFactory = $searchRequestFactory;
-        $this->navigationRequestFactory = $navigationRequestFactory;
-
-        $this->config = $config ?? new Config($this->systemConfigService, $this->serviceConfigResource);
+        $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
         $this->apiConfig = $apiConfig ?? new ApiConfig();
-        $this->apiClient = $apiClient ?? new ApiClient($this->apiConfig);
+        $apiClient = $apiClient ?? new ApiClient($this->apiConfig);
 
         $this->searchRequestHandler = new SearchRequestHandler(
             $this->serviceConfigResource,
-            $this->searchRequestFactory,
+            $searchRequestFactory,
             $this->config,
             $this->apiConfig,
-            $this->apiClient
+            $apiClient
         );
 
         $this->navigationRequestHandler = new NavigationRequestHandler(
             $this->serviceConfigResource,
-            $this->navigationRequestFactory,
+            $navigationRequestFactory,
             $this->config,
             $this->apiConfig,
-            $this->apiClient,
+            $apiClient,
             $genericPageLoader
         );
     }
