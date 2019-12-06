@@ -17,8 +17,9 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber;
-use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelper;
-use FINDOLOGIC\FinSearch\Tests\Traits\SalesChannel;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\CategoryHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -46,7 +47,8 @@ class FrontendSubscriberTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use ConfigHelper;
-    use SalesChannel;
+    use SalesChannelHelper;
+    use CategoryHelper;
 
     /**
      * @throws InvalidArgumentException
@@ -338,12 +340,32 @@ class FrontendSubscriberTest extends TestCase
 
     private function setupProductListingTest(): array
     {
-        $categoryPath = 'Kids & Music_Computers & Shoes';
+        $categoryPath = 'First Level Category_Second Level Category';
+
+        $parent = Uuid::randomHex();
+        $recordA = Uuid::randomHex();
+        $recordB = Uuid::randomHex();
+        $recordC = Uuid::randomHex();
+
+        $categories = [
+            ['id' => $parent, 'name' => 'First Level Category', 'parentId' => $this->fetchIdFromDatabase('category')],
+            ['id' => $recordA, 'name' => 'Second Level Category', 'parentId' => $parent],
+            ['id' => $recordC, 'name' => 'Third Level Category', 'parentId' => $recordA],
+            [
+                'id' => $recordB,
+                'name' => 'Second Level Category 2',
+                'parentId' => $parent,
+                'afterCategoryId' => $recordA
+            ],
+        ];
+
+        $this->createTestCategory($categories);
 
         $request = new Request();
         $request->headers->set('referer', 'http://localhost.shopware');
         $request->headers->set('host', 'findologic.de');
         $request->server->set('REMOTE_ADDR', '192.168.0.1');
+        $request->query->set('navigationId', $recordA);
 
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);

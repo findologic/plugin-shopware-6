@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Client;
 
 use Exception;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClient;
-use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Handler\MockHandler;

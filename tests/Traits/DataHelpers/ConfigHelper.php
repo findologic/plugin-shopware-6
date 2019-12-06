@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Traits;
+namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -17,7 +17,7 @@ trait ConfigHelper
 
     public function getConfig(bool $assoc = true)
     {
-        $config = file_get_contents(__DIR__ . '/../MockData/ConfigResponse/example_config.json');
+        $config = file_get_contents(__DIR__ . '/../../MockData/ConfigResponse/example_config.json');
         if ($assoc) {
             return json_decode($config, true);
         }
@@ -27,7 +27,7 @@ trait ConfigHelper
 
     public function getDemoXMLResponse(): string
     {
-        return file_get_contents(__DIR__ . '/../MockData/XMLResponse/demo.xml');
+        return file_get_contents(__DIR__ . '/../../MockData/XMLResponse/demo.xml');
     }
 
     /**

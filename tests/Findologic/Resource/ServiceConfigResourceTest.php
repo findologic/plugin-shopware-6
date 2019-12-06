@@ -8,7 +8,7 @@ use DateTime;
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
-use FINDOLOGIC\FinSearch\Tests\Traits\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Traits;
+namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Defaults;
@@ -11,7 +11,7 @@ use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
-trait SalesChannel
+trait SalesChannelHelper
 {
     public function buildSalesChannelContext(): SalesChannelContext
     {
@@ -55,7 +55,7 @@ trait SalesChannel
      * In order to create a useable sales channel context we need to pass some IDs for initialization from several
      * tables from the database.
      */
-    private function fetchIdFromDatabase(string $table): string
+    public function fetchIdFromDatabase(string $table): string
     {
         return $this->getContainer()->get(Connection::class)->fetchColumn('SELECT LOWER(HEX(id)) FROM ' . $table);
     }
