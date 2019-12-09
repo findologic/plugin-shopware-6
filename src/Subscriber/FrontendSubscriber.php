@@ -6,10 +6,10 @@ namespace FINDOLOGIC\FinSearch\Subscriber;
 
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
-use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
-use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
@@ -153,12 +153,7 @@ class FrontendSubscriber implements EventSubscriberInterface
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
 
-        if ($isDirectIntegration || $isStagingShop) {
-            return false;
-        }
-
-        $this->apiConfig->setServiceId($shopkey);
-
-        return true;
+        // If it is direct integration or a staging shop, then we do not allow the request
+        return !($isDirectIntegration || $isStagingShop);
     }
 }

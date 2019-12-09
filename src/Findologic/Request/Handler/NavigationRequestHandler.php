@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Findologic\Request;
+namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
+use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
+use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Storefront\Page\GenericPageLoader;
@@ -53,12 +56,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         /** @var CategoryEntity $category */
         $category = $page->getHeader()->getNavigation()->getActive();
-
-        // Remove the first element as it is the main category
-        $path = $category->getBreadcrumb();
-        unset($path[0]);
-
-        $categoryPath = implode('_', $path);
+        $categoryPath = $this->fetchCategoryPath($category);
 
         // We simply return if the current page is not a category page
         if (empty($categoryPath)) {
@@ -69,6 +67,21 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $categoryPath);
 
-        $this->sendRequest($event, $navigationRequest);
+        try {
+            $response = $this->sendRequest($navigationRequest);
+            $cleanCriteria = new Criteria($this->parseProductIdsFromResponse($response));
+            $this->assignCriteriaToEvent($event, $cleanCriteria);
+        } catch (ServiceNotAliveException $e) {
+            return;
+        }
+    }
+
+    private function fetchCategoryPath(CategoryEntity $category): string
+    {
+        // Remove the first element as it is the main category
+        $path = $category->getBreadcrumb();
+        unset($path[0]);
+
+        return implode('_', $path);
     }
 }
