@@ -170,6 +170,7 @@ class FrontendSubscriberTest extends TestCase
     }
 
     /**
+     * @runInSeparateProcess
      * @dataProvider responseProvider
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
@@ -479,6 +480,9 @@ class FrontendSubscriberTest extends TestCase
         ];
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testPromotionIsAvailable()
     {
         $expectedExtension = new Promotion('https://promotion.com/promotion.png', 'https://promotion.com/');
@@ -490,6 +494,9 @@ class FrontendSubscriberTest extends TestCase
         $this->assertEquals($expectedExtension, $extensions['flPromotion']);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testPromotionIsNotAvailable()
     {
         $xml = $this->getDemoXML();
