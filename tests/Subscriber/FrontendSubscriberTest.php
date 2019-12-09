@@ -170,6 +170,7 @@ class FrontendSubscriberTest extends TestCase
     }
 
     /**
+     * @runInSeparateProcess
      * @dataProvider responseProvider
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
