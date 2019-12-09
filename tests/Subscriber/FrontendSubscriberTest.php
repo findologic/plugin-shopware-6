@@ -197,7 +197,7 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
             ->getMock();
         $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->once())->method('getShopkey')->willReturn($this->getShopkey());
+        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
@@ -248,7 +248,7 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
             ->getMock();
         $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->once())->method('getShopkey')->willReturn($this->getShopkey());
+        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
@@ -317,7 +317,7 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
             ->getMock();
         $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->once())->method('getShopkey')->willReturn($this->getShopkey());
+        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
@@ -595,7 +595,7 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
             ->getMock();
         $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->once())->method('getShopkey')->willReturn($this->getShopkey());
+        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
