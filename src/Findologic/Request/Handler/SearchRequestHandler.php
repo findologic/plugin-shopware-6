@@ -17,7 +17,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
     /**
      * @throws InconsistentCriteriaIdsException
      */
-    public function handleRequest(ShopwareEvent $event)
+    public function handleRequest(ShopwareEvent $event): void
     {
         $originalCriteria = clone $event->getCriteria();
         $request = $event->getRequest();

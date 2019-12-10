@@ -17,6 +17,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Page\Navigation\NavigationPage;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,17 +47,15 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      * @throws MissingRequestParameterException
      * @throws InconsistentCriteriaIdsException
      */
-    public function handleRequest(ShopwareEvent $event)
+    public function handleRequest(ShopwareEvent $event): void
     {
         /** @var Request $request */
         $request = $event->getRequest();
 
-        $page = $this->genericPageLoader->load($request, $event->getSalesChannelContext());
-        $page = NavigationPage::createFrom($page);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $event->getSalesChannelContext();
 
-        /** @var CategoryEntity $category */
-        $category = $page->getHeader()->getNavigation()->getActive();
-        $categoryPath = $this->fetchCategoryPath($category);
+        $categoryPath = $this->fetchCategoryPath($request, $salesChannelContext);
 
         // We simply return if the current page is not a category page
         if (empty($categoryPath)) {
@@ -76,8 +75,18 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         }
     }
 
-    private function fetchCategoryPath(CategoryEntity $category): string
+    /**
+     * @throws CategoryNotFoundException
+     * @throws InconsistentCriteriaIdsException
+     * @throws MissingRequestParameterException
+     */
+    private function fetchCategoryPath(Request $request, SalesChannelContext $salesChannelContext): string
     {
+        $page = $this->genericPageLoader->load($request, $salesChannelContext);
+        $page = NavigationPage::createFrom($page);
+
+        /** @var CategoryEntity $category */
+        $category = $page->getHeader()->getNavigation()->getActive();
         // Remove the first element as it is the main category
         $path = $category->getBreadcrumb();
         unset($path[0]);

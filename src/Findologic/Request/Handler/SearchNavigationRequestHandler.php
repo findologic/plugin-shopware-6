@@ -57,7 +57,7 @@ abstract class SearchNavigationRequestHandler
         $this->findologicRequestFactory = $findologicRequestFactory;
     }
 
-    abstract public function handleRequest(ShopwareEvent $event);
+    abstract public function handleRequest(ShopwareEvent $event): void;
 
     /**
      * @throws ServiceNotAliveException
