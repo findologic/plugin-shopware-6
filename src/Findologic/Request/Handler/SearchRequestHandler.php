@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -29,6 +30,12 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         try {
             $response = $this->sendRequest($searchRequest);
             $cleanCriteria = new Criteria($this->parseProductIdsFromResponse($response));
+
+            $landingPage = $response->getLandingPage();
+            if ($landingPage instanceof LandingPage) {
+                header('Location:' . $landingPage->getLink());
+                exit;
+            }
 
             $promotion = $response->getPromotion();
 
