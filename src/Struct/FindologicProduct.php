@@ -29,6 +29,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Pricing\Price as ProductPrice;
+use Shopware\Core\Framework\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\Tag\TagEntity;
 use Shopware\Storefront\Framework\Seo\SeoUrl\SeoUrlEntity;
@@ -177,19 +178,23 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            $catUrl = $this->router->generate(
-                'frontend.navigation.page',
-                ['navigationId' => $categoryEntity->getId()],
-                RouterInterface::ABSOLUTE_PATH
-            );
-
-            if (!empty($catUrl)) {
-                $catUrls[] = $catUrl;
+            $catUrls = $this->fetchCategorySeoUrls($categoryEntity);
+            if ($catUrls !== null) {
+                foreach ($catUrls as $seoUrlEntity) {
+                    $catUrls[] = $seoUrlEntity->getSeoPathInfo();
+                }
+            } else {
+                $catUrl = $this->router->generate(
+                    'frontend.navigation.page',
+                    ['navigationId' => $categoryEntity->getId()],
+                    RouterInterface::ABSOLUTE_PATH
+                );
+                if (!empty($catUrl)) {
+                    $catUrls[] = $catUrl;
+                }
             }
 
-            $breadCrumbs = $categoryEntity->getBreadcrumb();
-            array_shift($breadCrumbs);
-            $categoryPath = implode('_', $breadCrumbs);
+            $categoryPath = $this->getCategoryPath($categoryEntity);
 
             if (!empty($categoryPath)) {
                 $categories[] = $categoryPath;
@@ -758,5 +763,18 @@ class FindologicProduct extends Struct
     public function hasProperties(): bool
     {
         return $this->properties && !empty($this->properties);
+    }
+
+    private function fetchCategorySeoUrls(CategoryEntity $categoryEntity): ?SeoUrlCollection
+    {
+        return $categoryEntity->getSeoUrls();
+    }
+
+    private function getCategoryPath(CategoryEntity $categoryEntity): string
+    {
+        $breadCrumbs = $categoryEntity->getBreadcrumb();
+        array_shift($breadCrumbs);
+
+        return implode('_', $breadCrumbs);
     }
 }

@@ -41,6 +41,7 @@ class Utils
     {
         $associations = [
             'categories',
+            'categories.seoUrls',
             'translations',
             'tags',
             'media',

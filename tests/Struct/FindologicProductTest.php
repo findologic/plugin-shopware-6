@@ -142,6 +142,32 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
+     */
+    public function testProductCategoriesSeoUrl(): void
+    {
+        $productEntity = $this->createTestProduct();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->defaultContext,
+            $this->shopkey,
+            []
+        );
+
+        $this->assertTrue($findologicProduct->hasAttributes());
+        $attribute = current($findologicProduct->getAttributes());
+        $this->assertSame('cat_url', $attribute->getKey());
+
+    }
+
     public function priceProvider(): array
     {
         $price = new Price();
