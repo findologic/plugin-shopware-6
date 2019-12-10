@@ -14,10 +14,8 @@ use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoDescriptionException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
-use FINDOLOGIC\FinSearch\Utils\EntityTranslationUtils;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
@@ -25,14 +23,14 @@ use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
+use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Shopware\Core\Framework\Pricing\Price as ProductPrice;
-use Shopware\Core\Framework\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\Tag\TagEntity;
-use Shopware\Storefront\Framework\Seo\SeoUrl\SeoUrlEntity;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -178,12 +176,18 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            $catUrls = $this->fetchCategorySeoUrls($categoryEntity);
-            if ($catUrls !== null) {
-                foreach ($catUrls as $seoUrlEntity) {
-                    $catUrls[] = $seoUrlEntity->getSeoPathInfo();
+            $seoUrls = $this->fetchCategorySeoUrls($categoryEntity);
+            if ($seoUrls->count()) {
+                foreach ($seoUrls->getElements() as $seoUrlEntity) {
+                    $catUrl = $seoUrlEntity->getSeoPathInfo();
+                    if (!empty(trim($catUrl))) {
+                        // Add a leading slash to the url for export
+                        $catUrls[] = sprintf('/%s', ltrim($catUrl, '/'));
+                    }
                 }
-            } else {
+            }
+
+            if (empty($catUrls)) {
                 $catUrl = $this->router->generate(
                     'frontend.navigation.page',
                     ['navigationId' => $categoryEntity->getId()],
@@ -426,7 +430,7 @@ class FindologicProduct extends Struct
     private function setKeywords(): void
     {
         $tags = $this->product->getTags();
-        if ($tags->count()) {
+        if ($tags !== null && $tags->count()) {
             /** @var TagEntity $tag */
             foreach ($tags as $tag) {
                 $this->keywords[] = new Keyword($tag->getName());
@@ -765,7 +769,7 @@ class FindologicProduct extends Struct
         return $this->properties && !empty($this->properties);
     }
 
-    private function fetchCategorySeoUrls(CategoryEntity $categoryEntity): ?SeoUrlCollection
+    private function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
     {
         return $categoryEntity->getSeoUrls();
     }

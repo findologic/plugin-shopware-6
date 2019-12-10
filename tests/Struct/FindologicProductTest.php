@@ -25,9 +25,10 @@ use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
+use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Pricing\PriceCollection;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProductTest extends TestCase
@@ -97,32 +98,74 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    public function categoriesProvider(): array
+    /**
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
+     */
+    public function testNoProductCategories(): void
     {
+        $this->expectException(ProductHasNoCategoriesException::class);
+
+        $productEntity = $this->createTestProduct();
+        $productEntity->setCategories(new CategoryCollection([]));
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->defaultContext,
+            $this->shopkey,
+            []
+        );
+    }
+
+    public function categorySeoProvider(): array
+    {
+        $categoryId = Uuid::randomHex();
+
         return [
-            'Product has no category' => [false, ProductHasNoCategoriesException::class],
-            'Product has a category' => [true, null],
+            'Category does not have SEO path assigned' => [
+                'data' => [
+                    [
+                        'id' => $categoryId,
+                        'name' => 'FINDOLOGIC Category'
+                    ]
+                ],
+                'categoryId' => $categoryId
+            ],
+            'Category have a pseudo empty SEO path assigned' => [
+                'data' => [
+                    [
+                        'id' => $categoryId,
+                        'name' => 'FINDOLOGIC Category',
+                        'seoUrls' => [
+                            [
+                                'pathInfo' => 'navigation/' . $categoryId,
+                                'seoPathInfo' => ' ',
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page'
+                            ]
+                        ]
+                    ]
+                ],
+                'categoryId' => $categoryId
+            ]
         ];
     }
 
     /**
-     * @dataProvider categoriesProvider
+     * @dataProvider categorySeoProvider
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
      * @throws ProductHasNoPricesException
      */
-    public function testProductCategories(bool $hasCategory, ?string $exception): void
+    public function testProductCategoriesUrlWithoutSeoOrEmptyPath(array $data, string $categoryId): void
     {
-        if ($exception) {
-            $this->expectException($exception);
-        }
-
-        $productEntity = $this->createTestProduct();
-
-        if (!$hasCategory) {
-            $productEntity->setCategories(new CategoryCollection([]));
-        }
+        $categoryData['categories'] = $data;
+        $productEntity = $this->createTestProduct($categoryData);
 
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
@@ -134,12 +177,10 @@ class FindologicProductTest extends TestCase
             []
         );
 
-        if (!$exception) {
-            $this->assertTrue($findologicProduct->hasAttributes());
-            $attribute = current($findologicProduct->getAttributes());
-            $this->assertSame('cat_url', $attribute->getKey());
-            $this->assertSame(sprintf('/navigation/%s', $productEntity->getId()), current($attribute->getValues()));
-        }
+        $this->assertTrue($findologicProduct->hasAttributes());
+        $attribute = current($findologicProduct->getAttributes());
+        $this->assertSame('cat_url', $attribute->getKey());
+        $this->assertSame(sprintf('/navigation/%s', $categoryId), current($attribute->getValues()));
     }
 
     /**
@@ -165,7 +206,7 @@ class FindologicProductTest extends TestCase
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-
+        $this->assertSame('/Findologic-Category/', current($attribute->getValues()));
     }
 
     public function priceProvider(): array
@@ -234,7 +275,7 @@ class FindologicProductTest extends TestCase
             RouterInterface::ABSOLUTE_URL
         );
 
-        $productTag = new Keyword('Findologic Tag');
+        $productTag = new Keyword('FINDOLOGIC Tag');
         $images = $this->getImages();
         $attributes = $this->getAttributes($productEntity);
 
@@ -406,15 +447,11 @@ class FindologicProductTest extends TestCase
      */
     private function getAttributes(ProductEntity $productEntity): array
     {
-        $catUrl = $this->router->generate(
-            'frontend.navigation.page',
-            ['navigationId' => $productEntity->getCategories()->first()->getId()],
-            RouterInterface::ABSOLUTE_PATH
-        );
+        $catUrl = '/Findologic-Category/';
 
         $attributes = [];
         $catUrlAttribute = new Attribute('cat_url', [$catUrl]);
-        $vendorAttribute = new Attribute('vendor', [$productEntity->getManufacturer()->getName()]);
+        $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
 
         $attributes[] = $catUrlAttribute;
         $attributes[] = $vendorAttribute;
