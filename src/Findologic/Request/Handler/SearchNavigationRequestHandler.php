@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Findologic\Request;
+namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
@@ -10,13 +10,13 @@ use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
+use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 
-class SearchNavigationRequestHandler
+abstract class SearchNavigationRequestHandler
 {
     /**
      * @var ServiceConfigResource
@@ -57,23 +57,14 @@ class SearchNavigationRequestHandler
         $this->findologicRequestFactory = $findologicRequestFactory;
     }
 
+    abstract public function handleRequest(ShopwareEvent $event): void;
+
     /**
-     * @throws InconsistentCriteriaIdsException
+     * @throws ServiceNotAliveException
      */
-    public function sendRequest(
-        ShopwareEvent $event,
-        SearchNavigationRequest $searchNavigationRequest,
-        ?Criteria $originalCriteria = null
-    ): void {
-        try {
-            $response = $this->apiClient->send($searchNavigationRequest);
-            $cleanCriteria = new Criteria($this->parseProductIdsFromResponse($response));
-            $this->assignCriteriaToEvent($event, $cleanCriteria);
-        } catch (ServiceNotAliveException $e) {
-            if ($originalCriteria !== null) {
-                $this->assignCriteriaToEvent($event, $originalCriteria);
-            }
-        }
+    public function sendRequest(SearchNavigationRequest $searchNavigationRequest): Response
+    {
+        return $this->apiClient->send($searchNavigationRequest);
     }
 
     /**

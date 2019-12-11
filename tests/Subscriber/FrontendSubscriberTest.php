@@ -15,6 +15,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\CategoryHelper;
@@ -169,6 +170,7 @@ class FrontendSubscriberTest extends TestCase
     }
 
     /**
+     * @runInSeparateProcess
      * @dataProvider responseProvider
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
@@ -196,7 +198,7 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
             ->getMock();
         $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->once())->method('getShopkey')->willReturn($this->getShopkey());
+        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
@@ -247,7 +249,7 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
             ->getMock();
         $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->once())->method('getShopkey')->willReturn($this->getShopkey());
+        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
@@ -316,7 +318,7 @@ class FrontendSubscriberTest extends TestCase
             ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
             ->getMock();
         $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->once())->method('getShopkey')->willReturn($this->getShopkey());
+        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
 
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
@@ -361,10 +363,7 @@ class FrontendSubscriberTest extends TestCase
 
         $this->createTestCategory($categories);
 
-        $request = new Request();
-        $request->headers->set('referer', 'http://localhost.shopware');
-        $request->headers->set('host', 'findologic.de');
-        $request->server->set('REMOTE_ADDR', '192.168.0.1');
+        $request = $this->createDefaultRequest();
         $request->query->set('navigationId', $recordA);
 
         /** @var SystemConfigService|MockObject $configServiceMock */
@@ -407,13 +406,7 @@ class FrontendSubscriberTest extends TestCase
             $context
         );
 
-        // Create example request to match the expected request to be passed in the `send` method
-        $navigationRequest = new NavigationRequest();
-        $navigationRequest->setUserIp($request->getClientIp());
-        $navigationRequest->setReferer($request->headers->get('referer'));
-        $navigationRequest->setRevision('0.10.0');
-        $navigationRequest->setOutputAdapter('XML_2.1');
-        $navigationRequest->setShopUrl($request->getHost());
+        $navigationRequest = $this->createDefaultNavigationRequest($request);
         $navigationRequest->setSelected('cat', $categoryPath);
 
         return [
@@ -430,11 +423,7 @@ class FrontendSubscriberTest extends TestCase
 
     private function setupProductSearchTest(): array
     {
-        $request = new Request();
-        $request->headers->set('referer', 'http://localhost.shopware');
-        $request->query->set('search', 'findologic');
-        $request->headers->set('host', 'findologic.de');
-        $request->server->set('REMOTE_ADDR', '192.168.0.1');
+        $request = $this->createDefaultRequest();
 
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
@@ -477,14 +466,7 @@ class FrontendSubscriberTest extends TestCase
             $context
         );
 
-        // Create example search request to match the expected request to be passed in the `send` method
-        $searchRequest = new SearchRequest();
-        $searchRequest->setUserIp($request->getClientIp());
-        $searchRequest->setReferer($request->headers->get('referer'));
-        $searchRequest->setRevision('0.10.0');
-        $searchRequest->setOutputAdapter('XML_2.1');
-        $searchRequest->setShopUrl($request->getHost());
-        $searchRequest->setQuery('findologic');
+        $searchRequest = $this->createDefaultSearchRequest($request);
 
         return [
             $configServiceMock,
@@ -496,5 +478,146 @@ class FrontendSubscriberTest extends TestCase
             $event,
             $searchRequest
         ];
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testPromotionIsAvailable()
+    {
+        $expectedExtension = new Promotion('https://promotion.com/promotion.png', 'https://promotion.com/');
+
+        $xml = $this->getDemoXML();
+        $extensions = $this->getExtensionsFromFrontendSubscriber($xml);
+
+        $this->assertArrayHasKey('flPromotion', $extensions);
+        $this->assertEquals($expectedExtension, $extensions['flPromotion']);
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testPromotionIsNotAvailable()
+    {
+        $xml = $this->getDemoXML();
+        unset($xml->promotion);
+
+        $extensions = $this->getExtensionsFromFrontendSubscriber($xml);
+        $this->assertEmpty($extensions);
+    }
+
+    private function createDefaultSearchRequest(Request $request): SearchRequest
+    {
+        // Create example search request to match the expected request to be passed in the `send` method
+        $searchRequest = new SearchRequest();
+        $searchRequest->setUserIp($request->getClientIp());
+        $searchRequest->setReferer($request->headers->get('referer'));
+        $searchRequest->setRevision('0.10.0');
+        $searchRequest->setOutputAdapter('XML_2.1');
+        $searchRequest->setShopUrl($request->getHost());
+        $searchRequest->setQuery('findologic');
+
+        return $searchRequest;
+    }
+
+    private function createDefaultRequest(): Request
+    {
+        $request = new Request();
+        $request->headers->set('referer', 'http://localhost.shopware');
+        $request->query->set('search', 'findologic');
+        $request->headers->set('host', 'findologic.de');
+        $request->server->set('REMOTE_ADDR', '192.168.0.1');
+
+        return $request;
+    }
+
+    private function createDefaultNavigationRequest(Request $request): NavigationRequest
+    {
+        $navigationRequest = new NavigationRequest();
+        $navigationRequest->setUserIp($request->getClientIp());
+        $navigationRequest->setReferer($request->headers->get('referer'));
+        $navigationRequest->setRevision('0.10.0');
+        $navigationRequest->setOutputAdapter('XML_2.1');
+        $navigationRequest->setShopUrl($request->getHost());
+
+        return $navigationRequest;
+    }
+
+    private function getExtensionsFromFrontendSubscriber(\SimpleXMLElement $xml)
+    {
+        $response = new Xml21Response($xml->asXML());
+
+        $request = $this->createDefaultRequest();
+
+        /** @var SystemConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
+
+        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
+        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
+        $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var CacheItemInterface|MockObject $cacheItemMock */
+        $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
+        $cacheItemMock->expects($this->exactly(2))->method('get')->willReturn('0.10.0');
+
+        $cachePoolMock->expects($this->once())
+            ->method('getItem')
+            ->with('finsearch_version')
+            ->willReturn($cacheItemMock);
+
+        $searchRequestFactory = new SearchRequestFactory($cachePoolMock, $this->getContainer());
+        $navigationRequestFactory = new NavigationRequestFactory($cachePoolMock, $this->getContainer());
+
+        $apiConfig = new ApiConfig();
+
+        /** @var Client|MockObject $apiClientMock */
+        $apiClientMock = $this->getMockBuilder(Client::class)
+            ->setConstructorArgs([$apiConfig])
+            ->getMock();
+
+        $context = $this->getContainer()->get(SalesChannelContextFactory::class)
+            ->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
+
+        $event = new ProductSearchCriteriaEvent(
+            $request,
+            new Criteria(),
+            $context
+        );
+
+        $searchRequest = $this->createDefaultSearchRequest($request);
+
+        $apiClientMock->expects($this->once())
+            ->method('send')
+            ->with($searchRequest)
+            ->willReturn($response);
+
+        /** @var Config|MockObject $configMock */
+        $configMock = $this->getMockBuilder(Config::class)
+            ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
+            ->getMock();
+        $configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
+
+        $frontendSubscriber = new FrontendSubscriber(
+            $configServiceMock,
+            $serviceConfigResource,
+            $searchRequestFactory,
+            $navigationRequestFactory,
+            $this->getContainer()->get(GenericPageLoader::class),
+            $configMock,
+            $apiConfig,
+            $apiClientMock
+        );
+
+        $frontendSubscriber->onSearch($event);
+        $extensions = $event->getContext()->getExtensions();
+
+        return $extensions;
     }
 }
