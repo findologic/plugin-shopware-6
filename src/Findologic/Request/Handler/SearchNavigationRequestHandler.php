@@ -62,9 +62,13 @@ abstract class SearchNavigationRequestHandler
     /**
      * @throws ServiceNotAliveException
      */
-    public function sendRequest(SearchNavigationRequest $searchNavigationRequest): Response
+    public function sendRequest(SearchNavigationRequest $searchNavigationRequest): ?Response
     {
-        return $this->apiClient->send($searchNavigationRequest);
+        try {
+            return $this->apiClient->send($searchNavigationRequest);
+        } catch (ServiceNotAliveException $e) {
+            return null;
+        }
     }
 
     /**

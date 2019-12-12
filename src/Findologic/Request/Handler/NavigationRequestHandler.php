@@ -9,25 +9,29 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
+use FINDOLOGIC\FinSearch\Findologic\Request\Parser\NavigationCategoryParser;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Page\Navigation\NavigationPage;
 use Symfony\Component\HttpFoundation\Request;
 
 class NavigationRequestHandler extends SearchNavigationRequestHandler
 {
-    /**
-     * @var GenericPageLoader
-     */
+    /** @var GenericPageLoader */
     private $genericPageLoader;
+
+    /** @var ContainerInterface */
+    private $container;
 
     public function __construct(
         ServiceConfigResource $serviceConfigResource,
@@ -35,11 +39,13 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         Config $config,
         ApiConfig $apiConfig,
         ApiClient $apiClient,
-        GenericPageLoader $genericPageLoader
+        GenericPageLoader $genericPageLoader,
+        ContainerInterface $container
     ) {
         parent::__construct($serviceConfigResource, $findologicRequestFactory, $config, $apiConfig, $apiClient);
 
         $this->genericPageLoader = $genericPageLoader;
+        $this->container = $container;
     }
 
     /**
@@ -68,8 +74,10 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         try {
             $response = $this->sendRequest($navigationRequest);
-            $cleanCriteria = new Criteria($this->parseProductIdsFromResponse($response));
-            $this->assignCriteriaToEvent($event, $cleanCriteria);
+
+            /** @var Criteria $criteria */
+            $criteria = $event->getCriteria();
+            $criteria->setIds($this->parseProductIdsFromResponse($response));
         } catch (ServiceNotAliveException $e) {
             return;
         }
@@ -80,17 +88,19 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      * @throws InconsistentCriteriaIdsException
      * @throws MissingRequestParameterException
      */
-    private function fetchCategoryPath(Request $request, SalesChannelContext $salesChannelContext): string
+    private function fetchCategoryPath(Request $request, SalesChannelContext $salesChannelContext): ?string
     {
-        $page = $this->genericPageLoader->load($request, $salesChannelContext);
-        $page = NavigationPage::createFrom($page);
+        $navigationCategoryParser = new NavigationCategoryParser($this->container, $this->genericPageLoader);
+        $category = $navigationCategoryParser->parse($request, $salesChannelContext);
 
-        /** @var CategoryEntity $category */
-        $category = $page->getHeader()->getNavigation()->getActive();
-        // Remove the first element as it is the main category
-        $path = $category->getBreadcrumb();
-        unset($path[0]);
+        return $this->buildCategoryPath($category->getBreadcrumb());
+    }
 
-        return implode('_', $path);
+    private function buildCategoryPath(array $breadCrumbs): string
+    {
+        // Remove the first element as it is the main category.
+        unset($breadCrumbs[0]);
+
+        return implode('_', $breadCrumbs);
     }
 }

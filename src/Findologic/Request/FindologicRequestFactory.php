@@ -72,11 +72,15 @@ abstract class FindologicRequestFactory
         SearchNavigationRequest $searchNavigationRequest
     ): SearchNavigationRequest {
         $searchNavigationRequest->setUserIp($request->getClientIp());
-        $searchNavigationRequest->setReferer($request->headers->get('referer'));
         $searchNavigationRequest->setRevision($this->getPluginVersion());
         $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
 
+        if ($request->headers->get('referer')) {
+            $searchNavigationRequest->setReferer($request->headers->get('referer'));
+        }
         try {
+            // setShopUrl() requires a valid host. If we do not have a valid host (e.g. local development)
+            // this would cause an exception.
             $searchNavigationRequest->setShopUrl($request->getHost());
         } catch (InvalidParamException $e) {
             $searchNavigationRequest->setShopUrl('example.org');

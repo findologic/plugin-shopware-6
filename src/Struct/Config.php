@@ -37,6 +37,9 @@ class Config extends Struct
     /** @var ServiceConfigResource */
     private $serviceConfigResource;
 
+    /** @var bool */
+    private $initialized = false;
+
     public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->systemConfigService = $systemConfigService;
@@ -73,6 +76,11 @@ class Config extends Struct
         return $this->integrationType;
     }
 
+    public function isInitialized(): bool
+    {
+        return $this->initialized;
+    }
+
     /**
      * @throws InvalidArgumentException
      */
@@ -101,6 +109,8 @@ class Config extends Struct
         ) ?? 'fl-navigation-result';
 
         $this->fetchNavigationType($salesChannelId);
+
+        $this->initialized = true;
     }
 
     /**

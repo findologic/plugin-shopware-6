@@ -15,6 +15,7 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" />
             <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
+            <argument type="service" id="Symfony\Component\DependencyInjection\ContainerInterface" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
