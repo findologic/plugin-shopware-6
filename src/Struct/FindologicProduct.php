@@ -181,14 +181,14 @@ class FindologicProduct extends Struct
                 foreach ($seoUrls->getElements() as $seoUrlEntity) {
                     $catUrl = $seoUrlEntity->getSeoPathInfo();
                     if (!empty(trim($catUrl))) {
-                        $catUrls[] = sprintf('/%s/', trim($catUrl, '/'));
+                        $catUrls[] = sprintf('/%s', ltrim($catUrl, '/'));
                     }
                 }
             }
 
             $catUrl = sprintf(
-                '/%s/',
-                trim(
+                '/%s',
+                ltrim(
                     $this->router->generate(
                         'frontend.navigation.page',
                         ['navigationId' => $categoryEntity->getId()],
@@ -528,12 +528,7 @@ class FindologicProduct extends Struct
     private function setSalesFrequency(): void
     {
         $criteria = new Criteria();
-        $criteria->addFilter(
-            new EqualsFilter(
-                'payload.productNumber',
-                $this->product->getProductNumber()
-            )
-        );
+        $criteria->addFilter(new EqualsFilter('payload.productNumber', $this->product->getProductNumber()));
 
         $orders = $this->container->get('order_line_item.repository')->search($criteria, $this->context);
         $this->salesFrequency = $orders->count();

@@ -180,7 +180,7 @@ class FindologicProductTest extends TestCase
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-        $this->assertSame(sprintf('/navigation/%s/', $categoryId), current($attribute->getValues()));
+        $this->assertSame(sprintf('/navigation/%s', $categoryId), current($attribute->getValues()));
     }
 
     /**
@@ -206,7 +206,7 @@ class FindologicProductTest extends TestCase
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-        $this->assertSame('/Findologic-Category/', current($attribute->getValues()));
+        $this->assertSame('/Findologic-Category', current($attribute->getValues()));
     }
 
     public function priceProvider(): array
@@ -447,8 +447,8 @@ class FindologicProductTest extends TestCase
      */
     private function getAttributes(ProductEntity $productEntity): array
     {
-        $catUrl = '/Findologic-Category/';
-        $defaultCatUrl = sprintf('/navigation/%s/', $productEntity->getCategories()->first()->getId());
+        $catUrl = '/Findologic-Category';
+        $defaultCatUrl = sprintf('/navigation/%s', $productEntity->getCategories()->first()->getId());
 
         $attributes = [];
         $catUrlAttribute = new Attribute('cat_url', [$catUrl, $defaultCatUrl]);
