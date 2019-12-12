@@ -47,7 +47,7 @@ trait ProductHelper
                     'seoUrls' => [
                         [
                             'pathInfo' => 'navigation/' . $categoryId,
-                            'seoPathInfo' => 'Findologic-Category/',
+                            'seoPathInfo' => 'Findologic-Category',
                             'isCanonical' => true,
                             'routeName' => 'frontend.navigation.page'
                         ]

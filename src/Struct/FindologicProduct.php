@@ -177,28 +177,32 @@ class FindologicProduct extends Struct
             }
 
             $seoUrls = $this->fetchCategorySeoUrls($categoryEntity);
-            if ($seoUrls->count()) {
+            if ($seoUrls->count() > 0) {
                 foreach ($seoUrls->getElements() as $seoUrlEntity) {
                     $catUrl = $seoUrlEntity->getSeoPathInfo();
                     if (!empty(trim($catUrl))) {
-                        // Add a leading slash to the url for export
-                        $catUrls[] = sprintf('/%s', ltrim($catUrl, '/'));
+                        $catUrls[] = sprintf('/%s/', trim($catUrl, '/'));
                     }
                 }
             }
 
-            if (empty($catUrls)) {
-                $catUrl = $this->router->generate(
-                    'frontend.navigation.page',
-                    ['navigationId' => $categoryEntity->getId()],
-                    RouterInterface::ABSOLUTE_PATH
-                );
-                if (!empty($catUrl)) {
-                    $catUrls[] = $catUrl;
-                }
+            $catUrl = sprintf(
+                '/%s/',
+                trim(
+                    $this->router->generate(
+                        'frontend.navigation.page',
+                        ['navigationId' => $categoryEntity->getId()],
+                        RouterInterface::ABSOLUTE_PATH
+                    ),
+                    '/'
+                )
+            );
+
+            if (!empty($catUrl)) {
+                $catUrls[] = $catUrl;
             }
 
-            $categoryPath = $this->getCategoryPath($categoryEntity);
+            $categoryPath = $this->buildCategoryPath($categoryEntity);
 
             if (!empty($categoryPath)) {
                 $categories[] = $categoryPath;
@@ -430,7 +434,7 @@ class FindologicProduct extends Struct
     private function setKeywords(): void
     {
         $tags = $this->product->getTags();
-        if ($tags !== null && $tags->count()) {
+        if ($tags !== null && $tags->count() > 0) {
             /** @var TagEntity $tag */
             foreach ($tags as $tag) {
                 $this->keywords[] = new Keyword($tag->getName());
@@ -524,10 +528,12 @@ class FindologicProduct extends Struct
     private function setSalesFrequency(): void
     {
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter(
-            'payload.productNumber',
-            $this->product->getProductNumber()
-        ));
+        $criteria->addFilter(
+            new EqualsFilter(
+                'payload.productNumber',
+                $this->product->getProductNumber()
+            )
+        );
 
         $orders = $this->container->get('order_line_item.repository')->search($criteria, $this->context);
         $this->salesFrequency = $orders->count();
@@ -774,7 +780,7 @@ class FindologicProduct extends Struct
         return $categoryEntity->getSeoUrls();
     }
 
-    private function getCategoryPath(CategoryEntity $categoryEntity): string
+    private function buildCategoryPath(CategoryEntity $categoryEntity): string
     {
         $breadCrumbs = $categoryEntity->getBreadcrumb();
         array_shift($breadCrumbs);
