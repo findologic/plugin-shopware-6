@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Request;
 
 use FINDOLOGIC\Api\Definitions\OutputAdapter;
+use FINDOLOGIC\Api\Definitions\QueryParameter;
 use FINDOLOGIC\Api\Exceptions\InvalidParamException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use Psr\Cache\CacheItemPoolInterface;
@@ -71,6 +72,10 @@ class SearchRequestFactory
         $searchRequest->setReferer($request->headers->get('referer'));
         $searchRequest->setRevision($this->getPluginVersion());
         $searchRequest->setOutputAdapter(OutputAdapter::XML_21);
+
+        if ($request->get(QueryParameter::FORCE_ORIGINAL_QUERY, -1) !== -1) {
+            $searchRequest->setForceOriginalQuery();
+        }
 
         try {
             $searchRequest->setShopUrl($request->getHost());

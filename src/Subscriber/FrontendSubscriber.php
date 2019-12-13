@@ -8,9 +8,11 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
+use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\InvalidArgumentException;
@@ -124,7 +126,12 @@ class FrontendSubscriber implements EventSubscriberInterface
         $searchRequest->setQuery($request->query->get('search'));
 
         try {
+            /** @var Xml21Response $response */
             $response = $this->apiClient->send($searchRequest);
+            $event->getContext()->addExtension(
+                'flSmartDidYouMean',
+                new SmartDidYouMean($response->getQuery(), $request->getRequestUri())
+            );
         } catch (ServiceNotAliveException $e) {
             $event->getCriteria()->assign($originalCriteria->getVars());
 

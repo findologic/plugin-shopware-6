@@ -113,8 +113,7 @@ class Config extends Struct
             if ($this->active) {
                 $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
                 $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
-                $integrationType =
-                    $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
+                $integrationType = $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
 
                 if ($this->integrationType !== $integrationType) {
                     $this->systemConfigService->set(
