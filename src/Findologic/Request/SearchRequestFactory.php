@@ -73,7 +73,7 @@ class SearchRequestFactory
         $searchRequest->setRevision($this->getPluginVersion());
         $searchRequest->setOutputAdapter(OutputAdapter::XML_21);
 
-        if ($request->get(QueryParameter::FORCE_ORIGINAL_QUERY, -1) !== -1) {
+        if ($request->get(QueryParameter::FORCE_ORIGINAL_QUERY, false)) {
             $searchRequest->setForceOriginalQuery();
         }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Subscriber;
 
-use FINDOLOGIC\Api\Client as ApiClient;
+use FINDOLOGIC\Api\Client;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
@@ -50,7 +50,7 @@ class FrontendSubscriber implements EventSubscriberInterface
         SearchRequestFactory $searchRequestFactory,
         ?Config $config = null,
         ?ApiConfig $apiConfig = null,
-        ?ApiClient $apiClient = null
+        ?Client $apiClient = null
     ) {
         $this->systemConfigService = $systemConfigService;
         $this->serviceConfigResource = $serviceConfigResource;
@@ -58,7 +58,7 @@ class FrontendSubscriber implements EventSubscriberInterface
 
         $this->config = $config ?? new Config($this->systemConfigService, $this->serviceConfigResource);
         $this->apiConfig = $apiConfig ?? new ApiConfig();
-        $this->apiClient = $apiClient ?? new ApiClient($this->apiConfig);
+        $this->apiClient = $apiClient ?? new Client($this->apiConfig);
     }
 
     /**
