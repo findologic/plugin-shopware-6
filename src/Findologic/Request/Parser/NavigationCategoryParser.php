@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Findologic\Request\Parser;
 
 use Shopware\Core\Content\Category\CategoryEntity;
