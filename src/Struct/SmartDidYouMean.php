@@ -10,19 +10,19 @@ use Shopware\Core\Framework\Struct\Struct;
 class SmartDidYouMean extends Struct
 {
     /** @var string */
-    private $type;
+    protected $type;
 
     /** @var string */
-    private $controllerPath;
+    protected $controllerPath;
 
     /** @var string|null */
-    private $link;
+    protected $link;
 
     /** @var string */
-    private $alternativeQuery;
+    protected $alternativeQuery;
 
     /** @var string */
-    private $originalQuery;
+    protected $originalQuery;
 
     public function __construct(Query $query, string $controllerPath)
     {
@@ -60,20 +60,5 @@ class SmartDidYouMean extends Struct
 
                 return;
         }
-    }
-
-    public function getLink(): ?string
-    {
-        return $this->link;
-    }
-
-    public function getAlternativeQuery(): string
-    {
-        return $this->alternativeQuery;
-    }
-
-    public function getOriginalQuery(): string
-    {
-        return $this->originalQuery;
     }
 }

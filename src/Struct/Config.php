@@ -87,10 +87,9 @@ class Config extends Struct
     public function initializeBySalesChannel(?string $salesChannelId): void
     {
         $this->active = $this->systemConfigService->get(
-                'FinSearch.config.active',
-                $salesChannelId
-            ) ?? false;
-
+            'FinSearch.config.active',
+            $salesChannelId
+        ) ?? false;
         $this->shopkey = $this->systemConfigService->get(
             'FinSearch.config.shopkey',
             $salesChannelId
@@ -100,13 +99,13 @@ class Config extends Struct
             $salesChannelId
         );
         $this->searchResultContainer = $this->systemConfigService->get(
-                'FinSearch.config.searchResultContainer',
-                $salesChannelId
-            ) ?? 'fl-result';
+            'FinSearch.config.searchResultContainer',
+            $salesChannelId
+        ) ?? 'fl-result';
         $this->navigationResultContainer = $this->systemConfigService->get(
-                'FinSearch.config.navigationResultContainer',
-                $salesChannelId
-            ) ?? 'fl-navigation-result';
+            'FinSearch.config.navigationResultContainer',
+            $salesChannelId
+        ) ?? 'fl-navigation-result';
 
         $this->initializeReadonlyConfig($salesChannelId);
     }
