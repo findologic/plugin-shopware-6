@@ -64,6 +64,7 @@ abstract class SearchNavigationRequestHandler
      */
     public function sendRequest(SearchNavigationRequest $searchNavigationRequest): Response
     {
+        $this->apiConfig->setServiceId($this->config->getShopkey());
         return $this->apiClient->send($searchNavigationRequest);
     }
 

@@ -37,6 +37,9 @@ class Config extends Struct
     /** @var ServiceConfigResource */
     private $serviceConfigResource;
 
+    /**@var bool */
+    private $staging;
+
     public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->systemConfigService = $systemConfigService;
@@ -51,6 +54,11 @@ class Config extends Struct
     public function isActive(): bool
     {
         return $this->active;
+    }
+
+    public function isStaging(): bool
+    {
+        return $this->staging;
     }
 
     public function isActiveOnCategoryPages(): bool
@@ -82,7 +90,6 @@ class Config extends Struct
             'FinSearch.config.active',
             $salesChannelId
         ) ?? false;
-
         $this->shopkey = $this->systemConfigService->get(
             'FinSearch.config.shopkey',
             $salesChannelId
@@ -100,21 +107,20 @@ class Config extends Struct
             $salesChannelId
         ) ?? 'fl-navigation-result';
 
-        $this->fetchNavigationType($salesChannelId);
+        $this->initializeReadonlyConfig($salesChannelId);
     }
 
     /**
      * @throws InvalidArgumentException
      */
-    private function fetchNavigationType(?string $salesChannelId): void
+    private function initializeReadonlyConfig(?string $salesChannelId): void
     {
         try {
-            // Only check for integration type if the plugin is active
+            // Only set read-only configurations if the plugin is active
             if ($this->active) {
                 $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
                 $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
-                $integrationType =
-                    $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
+                $integrationType = $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
 
                 if ($this->integrationType !== $integrationType) {
                     $this->systemConfigService->set(
@@ -123,8 +129,20 @@ class Config extends Struct
                         $salesChannelId
                     );
                 }
+
+                $this->staging = $this->serviceConfigResource->isStaging($this->shopkey);
+                $isStaging = $this->systemConfigService->get('FinSearch.config.isStaging', $salesChannelId);
+
+                if ($this->staging !== $isStaging) {
+                    $this->systemConfigService->set(
+                        'FinSearch.config.isStaging',
+                        $this->staging,
+                        $salesChannelId
+                    );
+                }
             }
         } catch (ClientException $e) {
+            $this->staging = false;
             $this->integrationType = null;
         }
     }

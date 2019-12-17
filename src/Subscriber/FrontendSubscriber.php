@@ -125,7 +125,6 @@ class FrontendSubscriber implements EventSubscriberInterface
     public function onNavigation(ProductListingCriteriaEvent $event): void
     {
         if ($this->allowRequest()) {
-            $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->navigationRequestHandler->handleRequest($event);
         }
     }
@@ -137,7 +136,6 @@ class FrontendSubscriber implements EventSubscriberInterface
     public function onSearch(ProductSearchCriteriaEvent $event): void
     {
         if ($this->allowRequest()) {
-            $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->searchRequestHandler->handleRequest($event);
         }
     }
