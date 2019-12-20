@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NO_COLOR='\033[0m'
+
 echo 'Creating a release zip file of the latest plugin version.'
 echo 'The zip can be uploaded directly to the Shopware store.'
 
@@ -20,19 +24,19 @@ echo ${STASH}
 
 git fetch --all --tags --prune
 
-TAG=$(git tag -l "v${VERSION}")
+TAG=$(git tag -l "${VERSION}")
 
 # Get current working branch
 BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
 
 # If tag is available we proceed with the checkout and zip commands
 # else exit with code 1
-#if [[ -z "${TAG}" ]]; then
-#    echo "[ERROR]: Tag ${TAG} not found"
-#    exit 1
-#fi
-#
-#git checkout tags/${TAG}
+if [[ -z "${TAG}" ]]; then
+    echo -e "${RED}[ERROR]: Tag ${TAG} not found"
+    exit 1
+fi
+
+git checkout tags/${TAG}
 
 # Copying plugins files
 echo "Copying files ... "
@@ -46,8 +50,9 @@ composer install --no-dev --optimize-autoloader
 
 cd /tmp
 
+ZIP_FILE="${ROOT_DIR}/FinSearch-${VERSION}.zip"
 # Run archive command to create the zip in the root directory
-zip -r9 ${ROOT_DIR}/FinSearch-${VERSION}.zip FinSearch -x FinSearch/phpunit.xml.dist \
+zip -r9 ${ZIP_FILE} FinSearch -x FinSearch/phpunit.xml.dist \
 FinSearch/phpcs.xml FinSearch/tests/\* FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip
 
 # Delete the directory after script execution
@@ -63,3 +68,5 @@ git checkout ${BRANCH}
 if [[ ${STASH} != 'No local changes to save' ]]; then
     git stash pop
 fi
+
+echo -e "${GREEN}Release was successfully created! Location: '${ZIP_FILE}'"
