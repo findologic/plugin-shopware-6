@@ -523,7 +523,6 @@ class FrontendSubscriberTest extends TestCase
         $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
         $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
         $this->assertSame('did-you-mean', $smartDidYouMeanParameters['type']);
-        $this->assertSame('/findologic', $smartDidYouMeanParameters['controllerPath']);
         $this->assertSame('/findologic?search=ps4&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
         $this->assertSame('ps4', $smartDidYouMeanParameters['alternativeQuery']);
     }
@@ -543,7 +542,6 @@ class FrontendSubscriberTest extends TestCase
         $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
         $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
         $this->assertSame('improved', $smartDidYouMeanParameters['type']);
-        $this->assertSame('/findologic', $smartDidYouMeanParameters['controllerPath']);
         $this->assertSame('/findologic?search=original+query&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
         $this->assertSame('ps3', $smartDidYouMeanParameters['alternativeQuery']);
     }
@@ -560,7 +558,6 @@ class FrontendSubscriberTest extends TestCase
         $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
         $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
         $this->assertSame('corrected', $smartDidYouMeanParameters['type']);
-        $this->assertSame('/findologic', $smartDidYouMeanParameters['controllerPath']);
         $this->assertNull($smartDidYouMeanParameters['link']);
         $this->assertSame('ps3', $smartDidYouMeanParameters['alternativeQuery']);
     }
