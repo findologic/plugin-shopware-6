@@ -27,31 +27,31 @@ BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
 
 # If tag is available we proceed with the checkout and zip commands
 # else exit with code 1
-if [[ -z "${TAG}" ]]; then
-    echo "[ERROR]: Tag ${TAG} not found"
-    exit 1
-fi
-
-git checkout tags/${TAG}
+#if [[ -z "${TAG}" ]]; then
+#    echo "[ERROR]: Tag ${TAG} not found"
+#    exit 1
+#fi
+#
+#git checkout tags/${TAG}
 
 # Copying plugins files
 echo "Copying files ... "
 cp -rf . /tmp/FinSearch
 
 # Get into the created directory for running the archive command
-cd /tmp/FinSearchUnified
+cd /tmp/FinSearch
 
 # Install dependencies
-composer install --no-dev --optimize-autoload
+composer install --no-dev --optimize-autoloader
 
 cd /tmp
 
 # Run archive command to create the zip in the root directory
 zip -r9 ${ROOT_DIR}/FinSearch-${VERSION}.zip FinSearch -x FinSearch/phpunit.xml.dist \
-FinSearch/phpcs.xml FinSearch/tests/\* FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml
+FinSearch/phpcs.xml FinSearch/tests/\* FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip
 
 # Delete the directory after script execution
-rm -rf '/tmp/FinSearchUnified'
+rm -rf '/tmp/FinSearch'
 
 cd ${ROOT_DIR}
 
