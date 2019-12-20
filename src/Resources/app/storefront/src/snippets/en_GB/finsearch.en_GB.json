@@ -2,7 +2,7 @@
   "finSearch": {
     "smartDidYouMean": {
       "didYouMeanQuery": "Did you mean \"<a href='%link%'>%alternativeQuery%</a>\"?",
-      "improvedQuery": "Showing results for \"%alternativeQuery%\". Search instead for \"<a href='%link%',>%originalQuery%</a>\"?",
+      "improvedQuery": "Showing results for \"%alternativeQuery%\". Search instead for \"<a href='%link%'>%originalQuery%</a>\"?",
       "correctedQuery": "No results for \"%originalQuery%\". Showing results for \"%alternativeQuery%\" instead",
       "searchHeadline": "The following products have been found matching your search \"%alternativeQuery%\": <span class='headline--product-count'>%articlesCount%</span>"
     }

@@ -14,9 +14,6 @@ class SmartDidYouMean extends Struct
     /** @var string */
     protected $type;
 
-    /** @var string */
-    protected $controllerPath;
-
     /** @var string|null */
     protected $link;
 
@@ -34,33 +31,31 @@ class SmartDidYouMean extends Struct
         $originalQuery = $query->getOriginalQuery() !== null ? $query->getOriginalQuery()->getValue() : '';
         $this->originalQuery = $this->type === 'did-you-mean' ? '' : urlencode($originalQuery);
 
-        $this->controllerPath = $controllerPath;
-        $this->createLink();
+        $this->link = $this->createLink($controllerPath);
     }
 
-    private function createLink(): void
+    private function createLink(string $controllerPath): ?string
     {
         switch ($this->type) {
             case 'did-you-mean':
-                $this->link = sprintf(
+                $link = sprintf(
                     '%s?search=%s&forceOriginalQuery=1',
-                    $this->controllerPath,
+                    $controllerPath,
                     $this->alternativeQuery
                 );
-
-                return;
+                break;
             case 'improved':
-                $this->link = sprintf(
+                $link = sprintf(
                     '%s?search=%s&forceOriginalQuery=1',
-                    $this->controllerPath,
+                    $controllerPath,
                     $this->originalQuery
                 );
-
-                return;
+                break;
             default:
-                $this->link = null;
-
-                return;
+                $link = null;
+                break;
         }
+
+        return $link;
     }
 }

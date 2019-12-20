@@ -130,10 +130,11 @@ class Config extends Struct
                     );
                 }
 
-                $this->staging = $this->serviceConfigResource->isStaging($this->shopkey);
-                $isStaging = $this->systemConfigService->get('FinSearch.config.isStaging', $salesChannelId);
+                $this->staging = $this->systemConfigService->get('FinSearch.config.isStaging', $salesChannelId);
+                $isStaging = $this->serviceConfigResource->isStaging($this->shopkey);
 
                 if ($this->staging !== $isStaging) {
+                    $this->staging = $isStaging;
                     $this->systemConfigService->set(
                         'FinSearch.config.isStaging',
                         $this->staging,
