@@ -44,3 +44,6 @@ Before starting the deployment make sure that a release is already created.
  required checkboxes.
 1. Once the release is available require an *automatic code review*.
 1. Notify everyone at Basecamp that the new release is available.
+
+## Export customization
+Use the FINDOLOGIC Shopware 6 extension plugin to customize your export. There are already pre-defined examples, that guide you on how you can customize certain entities, like attributes or properties. Further information can be found in the repository of the extension plugin.
