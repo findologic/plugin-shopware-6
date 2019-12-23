@@ -45,6 +45,7 @@ cp -rf . /tmp/FinSearch
 # Get into the created directory for running the archive command
 cd /tmp/FinSearch
 
+echo "Running composer install..."
 # Install dependencies
 composer install --no-dev --optimize-autoloader
 
