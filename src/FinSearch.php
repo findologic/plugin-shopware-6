@@ -9,7 +9,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
-use Shopware\Core\Framework\Plugin\Context\DeactivateContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -21,16 +20,11 @@ class FinSearch extends Plugin
         parent::build($container);
     }
 
-    public function deactivate(DeactivateContext $deactivateContext): void
-    {
-        parent::deactivate($deactivateContext);
-    }
-
     public function uninstall(UninstallContext $uninstallContext): void
     {
-        // Only install this plugin if FinSearch plugin is installed and active
         $activePlugins = $this->container->getParameter('kernel.active_plugins');
 
+        // If the Extension plugin is installed we will uninstall it with the FinSearch base plugin
         if (isset($activePlugins[ExtendFinSearch::class])) {
             /** @var EntityRepository $repository */
             $repository = $this->container->get('plugin.repository');
