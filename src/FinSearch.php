@@ -16,10 +16,7 @@ class FinSearch extends Plugin
 {
     public function build(ContainerBuilder $container): void
     {
-        $loader = require $this->getBasePath() . '/vendor/autoload.php';
-        spl_autoload_unregister([$loader, 'loadClass']);
-        $loader->register(false);
-
+        require_once $this->getBasePath() . '/vendor/autoload.php';
         parent::build($container);
     }
 
