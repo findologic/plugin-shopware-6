@@ -9,6 +9,8 @@
     }
   ],
   "require": {
+    "shopware/core": "*",
+    "shopware/storefront": "*",
     "findologic/libflexport": "^2.5",
     "findologic/findologic-api": "^1.0.0"
   },
