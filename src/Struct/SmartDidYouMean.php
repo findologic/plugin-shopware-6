@@ -38,24 +38,19 @@ class SmartDidYouMean extends Struct
     {
         switch ($this->type) {
             case 'did-you-mean':
-                $link = sprintf(
+                return sprintf(
                     '%s?search=%s&forceOriginalQuery=1',
                     $controllerPath,
                     $this->alternativeQuery
                 );
-                break;
             case 'improved':
-                $link = sprintf(
+                return sprintf(
                     '%s?search=%s&forceOriginalQuery=1',
                     $controllerPath,
                     $this->originalQuery
                 );
-                break;
             default:
-                $link = null;
-                break;
+                return null;
         }
-
-        return $link;
     }
 }
