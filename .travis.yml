@@ -26,7 +26,7 @@ install:
   - composer install
 
 before_script:
-  - git clone https://github.com/shopware/development.git ${SHOPWARE_DIRECTORY} --branch ${SHOPWARE_VERSION}
+  - git clone https://github.com/shopware/development.git ${SHOPWARE_DIR} --branch ${SHOPWARE_VERSION}
   - cd ${SHOPWARE_DIR}
   - rm composer.lock
   - mysql -u root -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app'"
