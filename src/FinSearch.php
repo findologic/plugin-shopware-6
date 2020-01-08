@@ -18,7 +18,7 @@ class FinSearch extends Plugin
     {
         parent::build($container);
         $loader = require $this->getBasePath() . '/vendor/autoload.php';
-        spl_autoload_unregister([$loader, 'loadClass']);
+        $loader->unregister();
         $loader->register(false);
     }
 
