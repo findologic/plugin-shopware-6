@@ -28,7 +28,6 @@ install:
 before_script:
   - git clone https://github.com/shopware/development.git ${SHOPWARE_DIR} --branch ${SHOPWARE_VERSION}
   - cd ${SHOPWARE_DIR}
-  - rm composer.lock
   - mysql -u root -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app'"
   - mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'app'@'localhost';"
   - ./psh.phar init
