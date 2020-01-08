@@ -12,7 +12,7 @@ services:
 
 env:
   matrix:
-    - SHOPWARE_VERSION="master"
+    - SHOPWARE_VERSION="6.1"
   global:
     - PLUGIN_NAME=FinSearch
     - SHOPWARE_DIR=${HOME}/shopware
@@ -26,8 +26,9 @@ install:
   - composer install
 
 before_script:
-  - git clone -b ${SHOPWARE_VERSION} --single-branch https://github.com/shopware/development.git ${SHOPWARE_DIR}
+  - git clone https://github.com/shopware/development.git ${SHOPWARE_DIRECTORY} --branch ${SHOPWARE_VERSION}
   - cd ${SHOPWARE_DIR}
+  - rm composer.lock
   - mysql -u root -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app'"
   - mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'app'@'localhost';"
   - ./psh.phar init
