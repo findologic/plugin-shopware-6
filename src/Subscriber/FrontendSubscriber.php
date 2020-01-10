@@ -29,23 +29,14 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FrontendSubscriber implements EventSubscriberInterface
 {
-    /** @var SystemConfigService */
-    private $systemConfigService;
-
     /** @var Config */
     private $config;
 
     /** @var ServiceConfigResource */
     private $serviceConfigResource;
 
-    /** @var SearchRequestFactory */
-    private $searchRequestFactory;
-
     /** @var ApiConfig */
     private $apiConfig;
-
-    /** @var ApiClient */
-    private $apiClient;
 
     /** @var SearchRequestHandler */
     private $searchRequestHandler;
@@ -70,28 +61,26 @@ class FrontendSubscriber implements EventSubscriberInterface
         // Ensure that all classes were autoloaded / will be autoloaded.
         require_once __DIR__ . '/../../vendor/autoload.php';
 
-        $this->systemConfigService = $systemConfigService;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->searchRequestFactory = $searchRequestFactory;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
-        $this->apiConfig = $apiConfig ?? new ApiConfig();
+        $config = $config ?? new Config($systemConfigService, $serviceConfigResource);
+        $apiConfig = $apiConfig ?? new ApiConfig();
         $apiClient = $apiClient ?? new ApiClient($this->apiConfig);
         $this->container = $container;
 
         $this->searchRequestHandler = new SearchRequestHandler(
             $this->serviceConfigResource,
             $searchRequestFactory,
-            $this->config,
-            $this->apiConfig,
+            $config,
+            $apiConfig,
             $apiClient
         );
 
         $this->navigationRequestHandler = new NavigationRequestHandler(
             $this->serviceConfigResource,
             $navigationRequestFactory,
-            $this->config,
-            $this->apiConfig,
+            $config,
+            $apiConfig,
             $apiClient,
             $genericPageLoader,
             $container

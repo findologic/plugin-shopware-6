@@ -7,7 +7,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Controller;
 use FINDOLOGIC\FinSearch\Controller\ExportController;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
-use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
