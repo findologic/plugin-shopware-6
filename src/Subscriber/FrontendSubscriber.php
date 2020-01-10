@@ -24,6 +24,7 @@ use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FrontendSubscriber implements EventSubscriberInterface
@@ -43,20 +44,28 @@ class FrontendSubscriber implements EventSubscriberInterface
     /** @var NavigationRequestHandler */
     private $navigationRequestHandler;
 
+    /** @var ContainerInterface */
+    private $container;
+
     public function __construct(
         SystemConfigService $systemConfigService,
         ServiceConfigResource $serviceConfigResource,
         SearchRequestFactory $searchRequestFactory,
         NavigationRequestFactory $navigationRequestFactory,
         GenericPageLoader $genericPageLoader,
+        ContainerInterface $container,
         ?Config $config = null,
         ?ApiConfig $apiConfig = null,
         ?ApiClient $apiClient = null
     ) {
+        // Ensure that all classes were autoloaded / will be autoloaded.
+        require_once __DIR__ . '/../../vendor/autoload.php';
+
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
         $this->apiConfig = $apiConfig ?? new ApiConfig();
         $apiClient = $apiClient ?? new ApiClient($this->apiConfig);
+        $this->container = $container;
 
         $this->searchRequestHandler = new SearchRequestHandler(
             $this->serviceConfigResource,
@@ -72,7 +81,8 @@ class FrontendSubscriber implements EventSubscriberInterface
             $this->config,
             $this->apiConfig,
             $apiClient,
-            $genericPageLoader
+            $genericPageLoader,
+            $container
         );
     }
 
@@ -124,7 +134,7 @@ class FrontendSubscriber implements EventSubscriberInterface
      */
     public function onNavigation(ProductListingCriteriaEvent $event): void
     {
-        if ($this->allowRequest()) {
+        if ($this->allowRequest($event)) {
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->navigationRequestHandler->handleRequest($event);
         }
@@ -136,7 +146,7 @@ class FrontendSubscriber implements EventSubscriberInterface
      */
     public function onSearch(ProductSearchCriteriaEvent $event): void
     {
-        if ($this->allowRequest()) {
+        if ($this->allowRequest($event)) {
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->searchRequestHandler->handleRequest($event);
         }
@@ -145,8 +155,12 @@ class FrontendSubscriber implements EventSubscriberInterface
     /**
      * @throws InvalidArgumentException
      */
-    private function allowRequest(): bool
+    private function allowRequest(ProductListingCriteriaEvent $event): bool
     {
+        if (!$this->config->isInitialized()) {
+            $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
+        }
+
         if (!$this->config->isActive()) {
             return false;
         }

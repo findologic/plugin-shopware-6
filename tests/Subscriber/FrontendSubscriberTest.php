@@ -145,7 +145,8 @@ class FrontendSubscriberTest extends TestCase
             $serviceConfigResource,
             $searchRequestFactory,
             $navigationRequestFactory,
-            $this->getContainer()->get(GenericPageLoader::class)
+            $this->getContainer()->get(GenericPageLoader::class),
+            $this->getContainer()
         );
 
         $frontendSubscriber->onHeaderLoaded($headerPageletLoadedEventMock);
@@ -206,6 +207,7 @@ class FrontendSubscriberTest extends TestCase
             $searchRequestFactory,
             $navigationRequestFactory,
             $this->getContainer()->get(GenericPageLoader::class),
+            $this->getContainer(),
             $configMock,
             $apiConfig,
             $apiClientMock
@@ -257,6 +259,7 @@ class FrontendSubscriberTest extends TestCase
             $searchRequestFactory,
             $navigationRequestFactory,
             $this->getContainer()->get(GenericPageLoader::class),
+            $this->getContainer(),
             $configMock,
             $apiConfig,
             $apiClientMock
@@ -326,6 +329,7 @@ class FrontendSubscriberTest extends TestCase
             $searchRequestFactory,
             $navigationRequestFactory,
             $this->getContainer()->get(GenericPageLoader::class),
+            $this->getContainer(),
             $configMock,
             $apiConfig,
             $apiClientMock
@@ -669,6 +673,7 @@ class FrontendSubscriberTest extends TestCase
             $searchRequestFactory,
             $navigationRequestFactory,
             $this->getContainer()->get(GenericPageLoader::class),
+            $this->getContainer(),
             $configMock,
             $apiConfig,
             $apiClientMock
