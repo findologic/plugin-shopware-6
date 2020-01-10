@@ -1,0 +1,10 @@
+{
+  "finSearch": {
+    "smartDidYouMean": {
+      "didYouMeanQuery": "Meinten Sie \"<a href='%link%'>%alternativeQuery%</a>\"?",
+      "improvedQuery": "Ergebnisse für \"%alternativeQuery%\" werden angezeigt. Alternativ nach \"<a href='%link%'>%originalQuery%</a>\" suchen",
+      "correctedQuery": "Keine Ergebnisse für \"%originalQuery%\". Zeige stattdessen \"%alternativeQuery%\"",
+      "searchHeadline": "Zu \"%alternativeQuery%\" wurden <span class=\"headline--product-count\">%articlesCount%</span> Artikel gefunden!"
+    }
+  }
+}

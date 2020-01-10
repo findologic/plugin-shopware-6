@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests;
+namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use SimpleXMLElement;
 
 trait ConfigHelper
 {
@@ -17,7 +18,7 @@ trait ConfigHelper
 
     public function getConfig(bool $assoc = true)
     {
-        $config = file_get_contents(__DIR__ . '/example_config.json');
+        $config = file_get_contents(__DIR__ . '/../../MockData/ConfigResponse/example_config.json');
         if ($assoc) {
             return json_decode($config, true);
         }
@@ -27,7 +28,12 @@ trait ConfigHelper
 
     public function getDemoXMLResponse(): string
     {
-        return file_get_contents(__DIR__ . '/demo.xml');
+        return file_get_contents(__DIR__ . '/../../MockData/XMLResponse/demo.xml');
+    }
+
+    public function getDemoXML(): SimpleXMLElement
+    {
+        return new SimpleXMLElement($this->getDemoXMLResponse());
     }
 
     /**
