@@ -40,7 +40,9 @@ class Utils
     public static function addProductAssociations(Criteria $criteria): Criteria
     {
         $associations = [
+            'seoUrls',
             'categories',
+            'categories.seoUrls',
             'translations',
             'tags',
             'media',

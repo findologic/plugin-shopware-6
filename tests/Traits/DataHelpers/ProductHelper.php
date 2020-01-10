@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests;
+namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
@@ -19,6 +19,7 @@ trait ProductHelper
     {
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();
+        $categoryId = Uuid::randomHex();
         $redId = Uuid::randomHex();
         $colorId = Uuid::randomHex();
 
@@ -30,22 +31,33 @@ trait ProductHelper
             'productNumber' => Uuid::randomHex(),
             'stock' => 10,
             'ean' => Uuid::randomHex(),
-            'description' => 'some long description text',
+            'description' => 'FINDOLOGIC Description',
             'tags' => [
-                ['id' => $id, 'name' => 'Findologic Tag']
+                ['id' => Uuid::randomHex(), 'name' => 'FINDOLOGIC Tag']
             ],
-            'name' => 'Test name',
+            'name' => 'FINDOLOGIC Product',
             'manufacturerNumber' => Uuid::randomHex(),
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
             'manufacturer' => ['name' => 'FINDOLOGIC'],
             'tax' => ['name' => '9%', 'taxRate' => 9],
             'categories' => [
-                ['id' => $id, 'name' => 'Test Category'],
+                [
+                    'id' => $categoryId,
+                    'name' => 'FINDOLOGIC Category',
+                    'seoUrls' => [
+                        [
+                            'pathInfo' => 'navigation/' . $categoryId,
+                            'seoPathInfo' => 'Findologic-Category',
+                            'isCanonical' => true,
+                            'routeName' => 'frontend.navigation.page'
+                        ]
+                    ]
+                ],
             ],
             'translations' => [
                 'en-GB' => [
                     'customTranslated' => [
-                        'root' => 'test',
+                        'root' => 'FINDOLOGIC Translated',
                     ],
                 ],
                 'de-DE' => [
@@ -79,7 +91,7 @@ trait ProductHelper
             ],
         ];
 
-        $productData = array_merge($data, $productData);
+        $productData = array_merge($productData, $data);
 
         $container->get('product.repository')->upsert([$productData], $context);
 
