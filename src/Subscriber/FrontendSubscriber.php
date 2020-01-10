@@ -108,7 +108,6 @@ class FrontendSubscriber implements EventSubscriberInterface
         // This will store the plugin config for usage in our templates
         $event->getPagelet()->addExtension('flConfig', $this->config);
 
-
         if (!$this->config->isActive()) {
             return;
         }
