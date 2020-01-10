@@ -9,3 +9,52 @@
 
     {{ parent() }}
 {% endblock %}
+
+{% block page_search_headline %}
+    {% if page.header.extensions.flConfig.active == false
+        or page.header.extensions.flConfig.staging == true
+        or page.header.extensions.flConfig.directIntegration is constant('\\FINDOLOGIC\\FinSearch\\Findologic\\IntegrationType::DI') %}
+        {{ parent() }}
+    {% else %}
+        <h1 class="search-headline">
+
+            {% block page_search_headline_text %}
+                {% if context.context.extensions.flSmartDidYouMean == false
+                    or context.context.extensions.flSmartDidYouMean.type == 'did-you-mean' %}
+                    {{ "search.headline"|trans({
+                        '%searchTerm%': page.searchTerm,
+                        '%totalCount%': page.searchResult.total,
+                    })|sw_sanitize }}
+                {% else %}
+                    {{ "finSearch.smartDidYouMean.searchHeadline"|trans({
+                        '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
+                        '%articlesCount%': page.searchResult.total,
+                    })|sw_sanitize }}
+
+                    <p id="fl-smart-did-you-mean" class="search-headline">
+                        {% if context.context.extensions.flSmartDidYouMean.type == 'did-you-mean' %}
+                            {{ "finSearch.smartDidYouMean.didYouMeanQuery"|trans({
+                                '%link%': context.context.extensions.flSmartDidYouMean.link,
+                                '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery
+                            })|sw_sanitize }}
+                        {% elseif context.context.extensions.flSmartDidYouMean.type == 'improved' %}
+                            {{ "finSearch.smartDidYouMean.improvedQuery"|trans({
+                                '%link%': context.context.extensions.flSmartDidYouMean.link,
+                                '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
+                                '%originalQuery%': context.context.extensions.flSmartDidYouMean.originalQuery
+                            })|sw_sanitize }}
+                        {% elseif context.context.extensions.flSmartDidYouMean.type == 'corrected' %}
+                            {{ "finSearch.smartDidYouMean.correctedQuery"|trans({
+                                '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
+                                '%originalQuery%': context.context.extensions.flSmartDidYouMean.originalQuery
+                            })|sw_sanitize }}
+                        {% else %}
+                            {# Nothing to render here #}
+                        {% endif %}
+                    </p>
+                {% endif %}
+            {% endblock %}
+
+        </h1>
+    {% endif %}
+{% endblock %}

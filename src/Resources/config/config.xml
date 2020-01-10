@@ -57,5 +57,14 @@
             </helpText>
             <disabled>true</disabled>
         </input-field>
+        <input-field type="bool">
+            <name>isStaging</name>
+            <label>Staging active? (read-only)</label>
+            <label lang="de-DE">Staging aktiv? (schreibgeschützt)</label>
+            <helpText>Indicates if the shop is a staging shop or live shop.</helpText>
+            <helpText lang="de-DE">Gibt an, ob es sich bei dem Shop um einen Staging-Shop oder Live-Shop handelt.
+            </helpText>
+            <disabled>true</disabled>
+        </input-field>
     </card>
 </config>

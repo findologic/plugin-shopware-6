@@ -11,7 +11,6 @@
         <originalQuery allow-override="1">original query</originalQuery>
         <didYouMeanQuery>ps4</didYouMeanQuery>
     </query>
-    <landingPage link="https://www.landingpage.io/agb/" />
     <promotion link="https://promotion.com/" image="https://promotion.com/promotion.png" />
     <results>
         <count>1808</count>
