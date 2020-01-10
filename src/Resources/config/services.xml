@@ -13,6 +13,9 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <tag name="kernel.event_subscriber" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" />
+            <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
+            <argument type="service" id="Symfony\Component\DependencyInjection\ContainerInterface" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
@@ -53,6 +56,23 @@
         >
             <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument id="service_container" type="service" />
+        </service>
+
+        <service
+            class="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory"
+            id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory"
+            public="true"
+        >
+            <argument id="serializer.mapping.cache.symfony" type="service" />
+            <argument id="service_container" type="service" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\en_GB\SnippetFile_en_GB" public="true">
+            <tag name="shopware.snippet.file" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\de_DE\SnippetFile_de_DE" public="true">
+            <tag name="shopware.snippet.file" />
         </service>
 
     </services>
