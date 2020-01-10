@@ -62,25 +62,24 @@ class FrontendSubscriber implements EventSubscriberInterface
         require_once __DIR__ . '/../../vendor/autoload.php';
 
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->serviceConfigResource = $serviceConfigResource;
-        $config = $config ?? new Config($systemConfigService, $serviceConfigResource);
-        $apiConfig = $apiConfig ?? new ApiConfig();
+        $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
+        $this->apiConfig = $apiConfig ?? new ApiConfig();
         $apiClient = $apiClient ?? new ApiClient($this->apiConfig);
         $this->container = $container;
 
         $this->searchRequestHandler = new SearchRequestHandler(
             $this->serviceConfigResource,
             $searchRequestFactory,
-            $config,
-            $apiConfig,
+            $this->config,
+            $this->apiConfig,
             $apiClient
         );
 
         $this->navigationRequestHandler = new NavigationRequestHandler(
             $this->serviceConfigResource,
             $navigationRequestFactory,
-            $config,
-            $apiConfig,
+            $this->config,
+            $this->apiConfig,
             $apiClient,
             $genericPageLoader,
             $container
