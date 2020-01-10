@@ -30,13 +30,11 @@ before_script:
   - cd ${SHOPWARE_DIR}
   - mysql -u root -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app'"
   - mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'app'@'localhost';"
-  - composer update
   - ./psh.phar init
   - mkdir ${PLUGIN_DIR}/${PLUGIN_NAME}
   - mv ${TRAVIS_BUILD_DIR}/* ${PLUGIN_DIR}/${PLUGIN_NAME}
   - php bin/console plugin:refresh
-  - php bin/console plugin:install --activate ${PLUGIN_NAME}
-  - composer dump-autoload -d custom/plugins/FinSearch
+  - php bin/console plugin:install --activate --clearCache ${PLUGIN_NAME}
   - ./psh.phar init-test-databases
   - ./psh.phar cache
   - cd ${PLUGIN_DIR}/${PLUGIN_NAME}

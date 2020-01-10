@@ -42,6 +42,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
+use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Request;
 
 class FrontendSubscriberTest extends TestCase
@@ -171,7 +172,6 @@ class FrontendSubscriberTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
      * @dataProvider responseProvider
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
@@ -484,30 +484,84 @@ class FrontendSubscriberTest extends TestCase
         ];
     }
 
-    /**
-     * @runInSeparateProcess
-     */
-    public function testPromotionIsAvailable()
+    public function testResponseHasPromotion()
     {
         $expectedExtension = new Promotion('https://promotion.com/promotion.png', 'https://promotion.com/');
 
         $xml = $this->getDemoXML();
-        $extensions = $this->getExtensionsFromFrontendSubscriber($xml);
+        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
 
         $this->assertArrayHasKey('flPromotion', $extensions);
         $this->assertEquals($expectedExtension, $extensions['flPromotion']);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
-    public function testPromotionIsNotAvailable()
+    public function testResponseDoesNotHavePromotion()
     {
         $xml = $this->getDemoXML();
         unset($xml->promotion);
 
-        $extensions = $this->getExtensionsFromFrontendSubscriber($xml);
+        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
+        $this->assertArrayNotHasKey('flPromotion', $extensions);
+    }
+
+    public function testResponseHasLandingPage()
+    {
+        $this->markTestSkipped('Issue due to redirection');
+        $xml = $this->getDemoXML();
+        $xml->addChild('landingPage')->addAttribute('link', 'https://www.landingpage.io/agb/');
+
+        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
         $this->assertEmpty($extensions);
+    }
+
+    public function testResponseContainsDidYouMeanQuery()
+    {
+        $xml = $this->getDemoXML();
+
+        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
+        $this->assertNotEmpty($extensions);
+        $this->assertArrayHasKey('flSmartDidYouMean', $extensions);
+
+        $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
+        $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
+        $this->assertSame('did-you-mean', $smartDidYouMeanParameters['type']);
+        $this->assertSame('/findologic?search=ps4&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
+        $this->assertSame('ps4', $smartDidYouMeanParameters['alternativeQuery']);
+    }
+
+    public function testResponseContainsImprovedQuery()
+    {
+        $xml = $this->getDemoXML();
+        unset($xml->query->didYouMeanQuery);
+        unset($xml->query->queryString);
+
+        $xml->query->addChild('queryString', 'ps3')->addAttribute('type', 'improved');
+
+        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
+        $this->assertNotEmpty($extensions);
+        $this->assertArrayHasKey('flSmartDidYouMean', $extensions);
+
+        $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
+        $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
+        $this->assertSame('improved', $smartDidYouMeanParameters['type']);
+        $this->assertSame('/findologic?search=original+query&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
+        $this->assertSame('ps3', $smartDidYouMeanParameters['alternativeQuery']);
+    }
+
+    public function testResponseContainsCorrectedQuery()
+    {
+        $xml = $this->getDemoXML();
+        unset($xml->query->didYouMeanQuery);
+
+        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
+        $this->assertNotEmpty($extensions);
+        $this->assertArrayHasKey('flSmartDidYouMean', $extensions);
+
+        $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
+        $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
+        $this->assertSame('corrected', $smartDidYouMeanParameters['type']);
+        $this->assertNull($smartDidYouMeanParameters['link']);
+        $this->assertSame('ps3', $smartDidYouMeanParameters['alternativeQuery']);
     }
 
     private function createDefaultSearchRequest(Request $request): SearchRequest
@@ -521,6 +575,10 @@ class FrontendSubscriberTest extends TestCase
         $searchRequest->setShopUrl($request->getHost());
         $searchRequest->setQuery('findologic');
 
+        if ($request->get('forceOriginalQuery', false)) {
+            $searchRequest->setForceOriginalQuery();
+        }
+
         return $searchRequest;
     }
 
@@ -531,6 +589,7 @@ class FrontendSubscriberTest extends TestCase
         $request->query->set('search', 'findologic');
         $request->headers->set('host', 'findologic.de');
         $request->server->set('REMOTE_ADDR', '192.168.0.1');
+        $request->server->set('REQUEST_URI', 'http://localhost/findologic');
 
         return $request;
     }
@@ -547,7 +606,7 @@ class FrontendSubscriberTest extends TestCase
         return $navigationRequest;
     }
 
-    private function getExtensionsFromFrontendSubscriber(\SimpleXMLElement $xml)
+    private function getSearchExtensionsFromFrontendSubscriber(SimpleXMLElement $xml)
     {
         $response = new Xml21Response($xml->asXML());
 

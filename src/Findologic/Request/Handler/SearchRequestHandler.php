@@ -8,10 +8,13 @@ use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
+use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
+use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
+use Symfony\Component\HttpFoundation\Request;
 
 class SearchRequestHandler extends SearchNavigationRequestHandler
 {
@@ -21,6 +24,8 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
     public function handleRequest(ShopwareEvent $event): void
     {
         $originalCriteria = clone $event->getCriteria();
+
+        /** @var Request $request */
         $request = $event->getRequest();
 
         /** @var SearchRequest $searchRequest */
@@ -28,7 +33,12 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $searchRequest->setQuery($request->query->get('search'));
 
         try {
+            /** @var Xml21Response $response */
             $response = $this->sendRequest($searchRequest);
+            $event->getContext()->addExtension(
+                'flSmartDidYouMean',
+                new SmartDidYouMean($response->getQuery(), $request->getRequestUri())
+            );
             $cleanCriteria = new Criteria($this->parseProductIdsFromResponse($response));
 
             $landingPage = $response->getLandingPage();
