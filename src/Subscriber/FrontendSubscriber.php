@@ -29,14 +29,23 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FrontendSubscriber implements EventSubscriberInterface
 {
+    /** @var SystemConfigService */
+    private $systemConfigService;
+
     /** @var Config */
     private $config;
 
     /** @var ServiceConfigResource */
     private $serviceConfigResource;
 
+    /** @var SearchRequestFactory */
+    private $searchRequestFactory;
+
     /** @var ApiConfig */
     private $apiConfig;
+
+    /** @var ApiClient */
+    private $apiClient;
 
     /** @var SearchRequestHandler */
     private $searchRequestHandler;
@@ -61,6 +70,9 @@ class FrontendSubscriber implements EventSubscriberInterface
         // Ensure that all classes were autoloaded / will be autoloaded.
         require_once __DIR__ . '/../../vendor/autoload.php';
 
+        $this->systemConfigService = $systemConfigService;
+        $this->serviceConfigResource = $serviceConfigResource;
+        $this->searchRequestFactory = $searchRequestFactory;
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
         $this->apiConfig = $apiConfig ?? new ApiConfig();
@@ -107,6 +119,7 @@ class FrontendSubscriber implements EventSubscriberInterface
 
         // This will store the plugin config for usage in our templates
         $event->getPagelet()->addExtension('flConfig', $this->config);
+
 
         if (!$this->config->isActive()) {
             return;

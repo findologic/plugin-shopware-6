@@ -14,6 +14,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
+use FINDOLOGIC\FinSearch\Tests\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use PHPUnit\Framework\MockObject\MockObject;
