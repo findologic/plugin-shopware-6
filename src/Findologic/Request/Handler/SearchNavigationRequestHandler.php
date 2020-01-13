@@ -13,6 +13,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 
@@ -65,6 +66,16 @@ abstract class SearchNavigationRequestHandler
     public function sendRequest(SearchNavigationRequest $searchNavigationRequest): Response
     {
         return $this->apiClient->send($searchNavigationRequest);
+    }
+
+    /**
+     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
+     * @param SearchNavigationRequest $request
+     */
+    protected function setPaginationParams(ShopwareEvent $event, SearchNavigationRequest $request): void
+    {
+        $request->setFirst($event->getCriteria()->getOffset());
+        $request->setCount($event->getCriteria()->getLimit());
     }
 
     /**
