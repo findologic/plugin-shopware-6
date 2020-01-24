@@ -27,8 +27,6 @@ class SearchController extends ShopwareSearchController
 
     public function __construct(SearchPageLoader $searchPageLoader, SuggestPageLoader $suggestPageLoader)
     {
-        require_once __DIR__ . '/../../../vendor/autoload.php';
-
         parent::__construct($searchPageLoader, $suggestPageLoader);
 
         $this->searchPageLoader = $searchPageLoader;

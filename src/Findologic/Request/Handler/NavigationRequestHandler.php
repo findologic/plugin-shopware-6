@@ -59,6 +59,11 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
     {
         $originalCriteria = clone $event->getCriteria();
 
+        // Prevent exception if someone really tried to order by score on a category page.
+        if ($event->getRequest()->query->get('sort') === 'score') {
+            $event->getCriteria()->resetSorting();
+        }
+
         $request = $event->getRequest();
 
         /** @var SalesChannelContext $salesChannelContext */
