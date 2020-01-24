@@ -36,6 +36,7 @@ class FinSearch extends Plugin
     }
 }
 
+// phpcs:disable
 /**
  * Shopware themselves use this method to autoload their libraries inside of plugins.
  * @see https://github.com/shopware-blog/shopware-fastbill-connector/blob/development/src/FastBillConnector.php#L47
@@ -45,3 +46,4 @@ $loader = require_once __DIR__ . '/../vendor/autoload.php';
 // This is required, because FINDOLOGIC-API requires a later version of Guzzle than Shopware 6.
 $loader->unregister();
 $loader->register(false);
+// phpcs:enable
