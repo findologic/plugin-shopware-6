@@ -10,18 +10,9 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class FinSearch extends Plugin
 {
-    public function build(ContainerBuilder $container): void
-    {
-        parent::build($container);
-        $loader = require $this->getBasePath() . '/vendor/autoload.php';
-        $loader->unregister();
-        $loader->register(false);
-    }
-
     public function uninstall(UninstallContext $uninstallContext): void
     {
         $activePlugins = $this->container->getParameter('kernel.active_plugins');
@@ -44,3 +35,13 @@ class FinSearch extends Plugin
         parent::uninstall($uninstallContext);
     }
 }
+
+/**
+ * Shopware themselves use this method to autoload their libraries inside of plugins.
+ * @see https://github.com/shopware-blog/shopware-fastbill-connector/blob/development/src/FastBillConnector.php#L47
+ */
+$loader = require_once __DIR__ . '/../vendor/autoload.php';
+
+// This is required, because FINDOLOGIC-API requires a later version of Guzzle than Shopware 6.
+$loader->unregister();
+$loader->register(false);

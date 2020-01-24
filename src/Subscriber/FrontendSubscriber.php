@@ -27,8 +27,6 @@ use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\RequestEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
 
 class FrontendSubscriber implements EventSubscriberInterface
 {
