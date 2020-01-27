@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
@@ -54,7 +56,10 @@ class SearchController extends ShopwareSearchController
     {
         $page = $this->suggestPageLoader->load($request, $context);
 
-        return $this->renderStorefront('@Storefront/storefront/layout/header/search-suggest.html.twig', ['page' => $page]);
+        return $this->renderStorefront(
+            '@Storefront/storefront/layout/header/search-suggest.html.twig',
+            ['page' => $page]
+        );
     }
 
     /**
@@ -63,7 +68,8 @@ class SearchController extends ShopwareSearchController
      * Route to load the listing filters
      *
      * @RouteScope(scopes={"storefront"})
-     * @Route("/widgets/search/{search}", name="widgets.search.pagelet", methods={"GET", "POST"}, defaults={"XmlHttpRequest"=true})
+     * @Route("/widgets/search/{search}", name="widgets.search.pagelet", methods={"GET", "POST"},
+     *     defaults={"XmlHttpRequest"=true})
      *
      * @throws MissingRequestParameterException
      */
@@ -73,6 +79,9 @@ class SearchController extends ShopwareSearchController
 
         $page = $this->searchPageLoader->load($request, $context);
 
-        return $this->renderStorefront('@Storefront/storefront/page/search/search-pagelet.html.twig', ['page' => $page]);
+        return $this->renderStorefront(
+            '@Storefront/storefront/page/search/search-pagelet.html.twig',
+            ['page' => $page]
+        );
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword;
 
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilder as ShopwareProductSearchBuilder;
@@ -56,7 +58,11 @@ class ProductSearchBuilder extends ShopwareProductSearchBuilder
             )
         );
 
-        $criteria->addFilter(new EqualsAnyFilter('product.searchKeywords.keyword', array_values($pattern->getAllTerms())));
-        $criteria->addFilter(new EqualsFilter('product.searchKeywords.languageId', $context->getContext()->getLanguageId()));
+        $criteria->addFilter(
+            new EqualsAnyFilter('product.searchKeywords.keyword', array_values($pattern->getAllTerms()))
+        );
+        $criteria->addFilter(
+            new EqualsFilter('product.searchKeywords.languageId', $context->getContext()->getLanguageId())
+        );
     }
 }

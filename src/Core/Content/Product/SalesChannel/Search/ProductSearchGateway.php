@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search;
 
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
@@ -49,7 +51,10 @@ class ProductSearchGateway extends ShopwareProductSearchGateway
     {
         $criteria = new Criteria();
         $criteria->addFilter(
-            new ProductAvailableFilter($context->getSalesChannel()->getId(), ProductVisibilityDefinition::VISIBILITY_SEARCH)
+            new ProductAvailableFilter(
+                $context->getSalesChannel()->getId(),
+                ProductVisibilityDefinition::VISIBILITY_SEARCH
+            )
         );
 
         $this->searchBuilder->build($request, $criteria, $context);

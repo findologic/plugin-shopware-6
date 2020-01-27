@@ -83,7 +83,6 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         try {
             $response = $this->sendRequest($navigationRequest);
-
         } catch (ServiceNotAliveException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
             return;

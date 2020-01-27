@@ -37,6 +37,7 @@ class FinSearch extends Plugin
     }
 }
 
+// phpcs:disable
 /**
  * Shopware themselves use this method to autoload their libraries inside of plugins.
  * @see https://github.com/shopware-blog/shopware-fastbill-connector/blob/development/src/FastBillConnector.php#L47
@@ -48,3 +49,4 @@ if ($loader instanceof ClassLoader) {
     $loader->unregister();
     $loader->register(false);
 }
+// phpcs:enable
