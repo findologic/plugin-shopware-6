@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch;
 
+use Composer\Autoload\ClassLoader;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -43,5 +44,7 @@ class FinSearch extends Plugin
 $loader = require_once __DIR__ . '/../vendor/autoload.php';
 
 // This is required, because FINDOLOGIC-API requires a later version of Guzzle than Shopware 6.
-$loader->unregister();
-$loader->register(false);
+if ($loader instanceof ClassLoader) {
+    $loader->unregister();
+    $loader->register(false);
+}
