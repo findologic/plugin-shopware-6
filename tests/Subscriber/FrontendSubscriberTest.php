@@ -574,6 +574,8 @@ class FrontendSubscriberTest extends TestCase
         $searchRequest->setOutputAdapter('XML_2.1');
         $searchRequest->setShopUrl($request->getHost());
         $searchRequest->setQuery('findologic');
+        $searchRequest->setFirst(null);
+        $searchRequest->setCount(null);
 
         if ($request->get('forceOriginalQuery', false)) {
             $searchRequest->setForceOriginalQuery();
