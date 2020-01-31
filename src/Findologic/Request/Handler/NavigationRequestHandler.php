@@ -14,6 +14,7 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
+use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -52,10 +53,17 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      * @throws CategoryNotFoundException
      * @throws MissingRequestParameterException
      * @throws InconsistentCriteriaIdsException
+     * @param ShopwareEvent|ProductListingCriteriaEvent $event
      */
     public function handleRequest(ShopwareEvent $event): void
     {
-        /** @var Request $request */
+        $originalCriteria = clone $event->getCriteria();
+
+        // Prevent exception if someone really tried to order by score on a category page.
+        if ($event->getRequest()->query->get('sort') === 'score') {
+            $event->getCriteria()->resetSorting();
+        }
+
         $request = $event->getRequest();
 
         /** @var SalesChannelContext $salesChannelContext */
@@ -63,7 +71,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         $categoryPath = $this->fetchCategoryPath($request, $salesChannelContext);
 
-        // We simply return if the current page is not a category page
+        // If we can't fetch the category path, we let Shopware handle the request.
         if (empty($categoryPath)) {
             return;
         }
@@ -71,16 +79,18 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         /** @var NavigationRequest $navigationRequest */
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $categoryPath);
+        $this->setPaginationParams($event, $navigationRequest);
 
         try {
             $response = $this->sendRequest($navigationRequest);
-
-            /** @var Criteria $criteria */
-            $criteria = $event->getCriteria();
-            $criteria->setIds($this->parseProductIdsFromResponse($response));
         } catch (ServiceNotAliveException $e) {
+            $this->assignCriteriaToEvent($event, $originalCriteria);
             return;
         }
+
+        /** @var Criteria $criteria */
+        $criteria = $event->getCriteria();
+        $criteria->setIds($this->parseProductIdsFromResponse($response));
     }
 
     /**

@@ -1,8 +1,47 @@
 <?xml version="1.0" ?>
 <container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="http://symfony.com/schema/dic/services"
-    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
+    >
     <services>
+
+        <service id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
+                 decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
+                 public="true"
+        >
+            <tag name="kernel.event_subscriber"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="property_group_option.repository"/>
+            <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry"/>
+        </service>
+
+        <service id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"
+                 class="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder">
+            <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter"/>
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchGateway">
+            <argument type="service" id="sales_channel.product.repository"/>
+            <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"/>
+            <argument type="service" id="event_dispatcher"/>
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader" public="true">
+            <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchGateway"/>
+            <argument type="service" id="event_dispatcher"/>
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController"
+                 decorates="Shopware\Storefront\Controller\SearchController"
+                 public="true"
+        >
+            <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader" />
+            <argument type="service" id="Shopware\Storefront\Page\Suggest\SuggestPageLoader" />
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
 
         <service
             id="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"

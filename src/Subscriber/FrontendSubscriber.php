@@ -14,6 +14,7 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use GuzzleHttp\Client;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
@@ -58,12 +59,10 @@ class FrontendSubscriber implements EventSubscriberInterface
         ?ApiConfig $apiConfig = null,
         ?ApiClient $apiClient = null
     ) {
-        // Ensure that all classes were autoloaded / will be autoloaded.
-        require_once __DIR__ . '/../../vendor/autoload.php';
-
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
         $this->apiConfig = $apiConfig ?? new ApiConfig();
+        $this->apiConfig->setHttpClient(new Client());
         $apiClient = $apiClient ?? new ApiClient($this->apiConfig);
         $this->container = $container;
 
