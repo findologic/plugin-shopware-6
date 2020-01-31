@@ -544,7 +544,7 @@ class FrontendSubscriberTest extends TestCase
         $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
         $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
         $this->assertSame('improved', $smartDidYouMeanParameters['type']);
-        $this->assertSame('/findologic?search=original+query&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
+        $this->assertSame('/findologic?search=original query&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
         $this->assertSame('ps3', $smartDidYouMeanParameters['alternativeQuery']);
     }
 

@@ -7,29 +7,27 @@ namespace FINDOLOGIC\FinSearch\Struct;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use Shopware\Core\Framework\Struct\Struct;
 
-use function urlencode;
-
 class SmartDidYouMean extends Struct
 {
-    /** @var string */
-    protected $type;
+    /** @var null|string */
+    private $type;
 
     /** @var string|null */
-    protected $link;
+    private $link;
 
     /** @var string */
-    protected $alternativeQuery;
+    private $alternativeQuery;
 
     /** @var string */
-    protected $originalQuery;
+    private $originalQuery;
 
     public function __construct(Query $query, string $controllerPath)
     {
         $this->type = $query->getDidYouMeanQuery() !== null ? 'did-you-mean' : $query->getQueryString()->getType();
-        $this->alternativeQuery = urlencode($query->getAlternativeQuery());
+        $this->alternativeQuery = htmlentities($query->getAlternativeQuery());
 
         $originalQuery = $query->getOriginalQuery() !== null ? $query->getOriginalQuery()->getValue() : '';
-        $this->originalQuery = $this->type === 'did-you-mean' ? '' : urlencode($originalQuery);
+        $this->originalQuery = $this->type === 'did-you-mean' ? '' : htmlentities($originalQuery);
 
         $this->link = $this->createLink($controllerPath);
     }
@@ -52,5 +50,35 @@ class SmartDidYouMean extends Struct
             default:
                 return null;
         }
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function getLink(): ?string
+    {
+        return $this->link;
+    }
+
+    public function getAlternativeQuery(): string
+    {
+        return $this->alternativeQuery;
+    }
+
+    public function getOriginalQuery(): string
+    {
+        return $this->originalQuery;
+    }
+
+    public function getVars(): array
+    {
+        return [
+            'type' => $this->type,
+            'link' => $this->link,
+            'alternativeQuery' => $this->alternativeQuery,
+            'originalQuery' => $this->originalQuery,
+        ];
     }
 }
