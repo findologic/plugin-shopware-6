@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Struct;
 
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use Shopware\Core\Framework\Struct\Struct;
-use SimpleXMLElement;
 
 class SmartDidYouMean extends Struct
 {
@@ -71,5 +70,15 @@ class SmartDidYouMean extends Struct
     public function getOriginalQuery(): string
     {
         return $this->originalQuery;
+    }
+
+    public function getVars(): array
+    {
+        return [
+            'type' => $this->type,
+            'link' => $this->link,
+            'alternativeQuery' => $this->alternativeQuery,
+            'originalQuery' => $this->originalQuery,
+        ];
     }
 }
