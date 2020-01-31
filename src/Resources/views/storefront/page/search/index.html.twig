@@ -17,7 +17,6 @@
         {{ parent() }}
     {% else %}
         <h1 class="search-headline">
-
             {% block page_search_headline_text %}
                 {% if context.context.extensions.flSmartDidYouMean == false
                     or context.context.extensions.flSmartDidYouMean.type == 'did-you-mean' %}
@@ -30,7 +29,9 @@
                         '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
                         '%articlesCount%': page.searchResult.total,
                     })|sw_sanitize }}
-
+                {% endif %}
+        </h1>
+                {% if context.context.extensions.flSmartDidYouMean %}
                     <p id="fl-smart-did-you-mean" class="search-headline">
                         {% if context.context.extensions.flSmartDidYouMean.type == 'did-you-mean' %}
                             {{ "finSearch.smartDidYouMean.didYouMeanQuery"|trans({
@@ -54,7 +55,5 @@
                     </p>
                 {% endif %}
             {% endblock %}
-
-        </h1>
     {% endif %}
 {% endblock %}
