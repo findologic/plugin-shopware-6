@@ -544,7 +544,7 @@ class FrontendSubscriberTest extends TestCase
         $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
         $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
         $this->assertSame('improved', $smartDidYouMeanParameters['type']);
-        $this->assertSame('/findologic?search=original+query&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
+        $this->assertSame('/findologic?search=original query&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
         $this->assertSame('ps3', $smartDidYouMeanParameters['alternativeQuery']);
     }
 
@@ -574,6 +574,8 @@ class FrontendSubscriberTest extends TestCase
         $searchRequest->setOutputAdapter('XML_2.1');
         $searchRequest->setShopUrl($request->getHost());
         $searchRequest->setQuery('findologic');
+        $searchRequest->setFirst(null);
+        $searchRequest->setCount(null);
 
         if ($request->get('forceOriginalQuery', false)) {
             $searchRequest->setForceOriginalQuery();
@@ -602,6 +604,8 @@ class FrontendSubscriberTest extends TestCase
         $navigationRequest->setRevision('0.10.0');
         $navigationRequest->setOutputAdapter('XML_2.1');
         $navigationRequest->setShopUrl($request->getHost());
+        $navigationRequest->setFirst(null);
+        $navigationRequest->setCount(null);
 
         return $navigationRequest;
     }

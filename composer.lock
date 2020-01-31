@@ -1,23 +1,23 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1106e6134cc784d33c75efd545d726fd",
+    "content-hash": "e65b75a82ea5f930778ce0f14de914cd",
     "packages": [
         {
             "name": "findologic/findologic-api",
-            "version": "v1.0.2",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "721beab7c7c3fcf50497998ebf999d440728b7ef"
+                "reference": "d1aa7c5b587a86f1f8cb9bb6fab34292a49b0100"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/721beab7c7c3fcf50497998ebf999d440728b7ef",
-                "reference": "721beab7c7c3fcf50497998ebf999d440728b7ef",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/d1aa7c5b587a86f1f8cb9bb6fab34292a49b0100",
+                "reference": "d1aa7c5b587a86f1f8cb9bb6fab34292a49b0100",
                 "shasum": ""
             },
             "require": {
@@ -36,8 +36,8 @@
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "FINDOLOGIC\\Api": "src/"
+                "psr-4": {
+                    "FINDOLOGIC\\Api\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -62,7 +62,7 @@
                 }
             ],
             "description": "Library for FINDOLOGIC API requests",
-            "time": "2019-12-12T12:15:15+00:00"
+            "time": "2020-01-22T11:45:55+00:00"
         },
         {
             "name": "findologic/libflexport",

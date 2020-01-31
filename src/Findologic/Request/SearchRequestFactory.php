@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Request;
 
 use FINDOLOGIC\Api\Definitions\QueryParameter;
+use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -20,10 +21,20 @@ class SearchRequestFactory extends FindologicRequestFactory
     {
         $searchRequest = new SearchRequest();
         $this->setDefaults($request, $searchRequest);
-        if ($request->get(QueryParameter::FORCE_ORIGINAL_QUERY, false)) {
-            $searchRequest->setForceOriginalQuery();
-        }
 
         return $searchRequest;
+    }
+
+    protected function setDefaults(
+        Request $request,
+        SearchNavigationRequest $searchNavigationRequest
+    ): SearchNavigationRequest {
+        parent::setDefaults($request, $searchNavigationRequest);
+
+        if ($request->get(QueryParameter::FORCE_ORIGINAL_QUERY, false)) {
+            $searchNavigationRequest->setForceOriginalQuery();
+        }
+
+        return $searchNavigationRequest;
     }
 }
