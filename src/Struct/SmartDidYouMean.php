@@ -6,9 +6,7 @@ namespace FINDOLOGIC\FinSearch\Struct;
 
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use Shopware\Core\Framework\Struct\Struct;
-
 use SimpleXMLElement;
-use function urlencode;
 
 class SmartDidYouMean extends Struct
 {
