@@ -20,8 +20,9 @@ use Symfony\Component\HttpFoundation\Request;
 class SearchRequestHandler extends SearchNavigationRequestHandler
 {
     /**
-     * @throws InconsistentCriteriaIdsException
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
+     *
+     * @throws InconsistentCriteriaIdsException
      */
     public function handleRequest(ShopwareEvent $event): void
     {
@@ -32,18 +33,19 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $searchRequest = $this->findologicRequestFactory->getInstance($request);
         $searchRequest->setQuery((string)$request->query->get('search'));
         $this->setPaginationParams($event, $searchRequest);
+        $this->addSorting($searchRequest, $event->getCriteria());
 
         try {
             /** @var Xml21Response $response */
             $response = $this->sendRequest($searchRequest);
         } catch (ServiceNotAliveException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
+
             return;
         }
 
         $this->setSmartDidYouMeanExtension($event, $response, $request);
         $criteria = new Criteria($this->parseProductIdsFromResponse($response));
-
         $this->redirectOnLandingPage($response);
         $this->setPromotionExtension($event, $response);
 
