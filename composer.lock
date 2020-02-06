@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e65b75a82ea5f930778ce0f14de914cd",
+    "content-hash": "47869ee30c402fb562c5072e2de641cc",
     "packages": [
         {
             "name": "findologic/findologic-api",
-            "version": "v1.1.0",
+            "version": "dev-SW-381-product-sorting",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "d1aa7c5b587a86f1f8cb9bb6fab34292a49b0100"
+                "reference": "d13d49233abd567aececfae841ea42b54033ff2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/d1aa7c5b587a86f1f8cb9bb6fab34292a49b0100",
-                "reference": "d1aa7c5b587a86f1f8cb9bb6fab34292a49b0100",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/d13d49233abd567aececfae841ea42b54033ff2e",
+                "reference": "d13d49233abd567aececfae841ea42b54033ff2e",
                 "shasum": ""
             },
             "require": {
@@ -62,7 +62,7 @@
                 }
             ],
             "description": "Library for FINDOLOGIC API requests",
-            "time": "2020-01-22T11:45:55+00:00"
+            "time": "2020-02-03T06:41:22+00:00"
         },
         {
             "name": "findologic/libflexport",
@@ -522,16 +522,16 @@
     "packages-dev": [
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.5.3",
+            "version": "3.5.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "557a1fc7ac702c66b0bbfe16ab3d55839ef724cb"
+                "reference": "dceec07328401de6211037abbb18bda423677e26"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/557a1fc7ac702c66b0bbfe16ab3d55839ef724cb",
-                "reference": "557a1fc7ac702c66b0bbfe16ab3d55839ef724cb",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/dceec07328401de6211037abbb18bda423677e26",
+                "reference": "dceec07328401de6211037abbb18bda423677e26",
                 "shasum": ""
             },
             "require": {
@@ -569,12 +569,14 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2019-12-04T04:46:47+00:00"
+            "time": "2020-01-30T22:20:29+00:00"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "findologic/findologic-api": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

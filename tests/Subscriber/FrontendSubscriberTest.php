@@ -231,11 +231,11 @@ class FrontendSubscriberTest extends TestCase
                 'expectedOrder' => 'label DESC'
             ],
             'PriceSorting is ASC' => [
-                'fieldSorting' => new FieldSorting('product.listing', 'ASC'),
+                'fieldSorting' => new FieldSorting('product.listingPrices', 'ASC'),
                 'expectedOrder' => 'price ASC'
             ],
             'PriceSorting is DESC' => [
-                'fieldSorting' => new FieldSorting('product.listing', 'DESC'),
+                'fieldSorting' => new FieldSorting('product.listingPrices', 'DESC'),
                 'expectedOrder' => 'price DESC'
             ],
             'ScoreSorting is ASC' => [
@@ -248,11 +248,11 @@ class FrontendSubscriberTest extends TestCase
             ],
             'ReleaseDateSorting is ASC' => [
                 'fieldSorting' => new FieldSorting('product.dateadded', 'ASC'),
-                'expectedOrder' => 'dateadded ASC'
+                'expectedOrder' => '' // currently not supported by Shopware
             ],
             'ReleaseDateSorting is DESC' => [
                 'fieldSorting' => new FieldSorting('product.dateadded', 'DESC'),
-                'expectedOrder' => 'dateadded DESC'
+                'expectedOrder' => '' // currently not supported by Shopware
             ],
         ];
     }
@@ -277,8 +277,10 @@ class FrontendSubscriberTest extends TestCase
             $searchRequest
         ] = $this->setupProductSearchTest();
 
-        /** @var SearchRequest $searchRequest */
-        $searchRequest = $searchRequest->setOrder($expectedOrder);
+        if (!empty($expectedOrder)) {
+            /** @var SearchRequest $searchRequest */
+            $searchRequest = $searchRequest->setOrder($expectedOrder);
+        }
 
         $apiClientMock->expects($this->once())
             ->method('send')
