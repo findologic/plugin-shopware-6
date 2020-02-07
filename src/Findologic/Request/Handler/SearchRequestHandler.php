@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
+use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
@@ -52,6 +53,22 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $criteria->setTotalCountMode(Criteria::TOTAL_COUNT_MODE_NEXT_PAGES);
 
         $this->assignCriteriaToEvent($event, $criteria);
+    }
+
+    public function getFindologicResponse(ShopwareEvent $event): ?Response
+    {
+        $request = $event->getRequest();
+
+        /** @var SearchRequest $searchRequest */
+        $searchRequest = $this->findologicRequestFactory->getInstance($request);
+        $searchRequest->setQuery((string)$request->query->get('search'));
+        $this->setPaginationParams($event, $searchRequest);
+
+        try {
+            return $this->sendRequest($searchRequest);
+        } catch (ServiceNotAliveException $e) {
+            return null;
+        }
     }
 
     protected function redirectOnLandingPage(Xml21Response $response): void
