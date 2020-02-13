@@ -10,6 +10,11 @@ use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\PriceSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ProductNameSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ReleaseDateSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ScoreSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\SortingHandlerInterface;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
@@ -44,6 +49,11 @@ abstract class SearchNavigationRequestHandler
      */
     protected $findologicRequestFactory;
 
+    /**
+     * @var SortingHandlerInterface[]
+     */
+    protected $sortingHandlers;
+
     public function __construct(
         ServiceConfigResource $serviceConfigResource,
         FindologicRequestFactory $findologicRequestFactory,
@@ -56,6 +66,8 @@ abstract class SearchNavigationRequestHandler
         $this->apiConfig = $apiConfig;
         $this->apiClient = $apiClient;
         $this->findologicRequestFactory = $findologicRequestFactory;
+
+        $this->sortingHandlers = $this->getSortingHandler();
     }
 
     abstract public function handleRequest(ShopwareEvent $event): void;
@@ -94,5 +106,29 @@ abstract class SearchNavigationRequestHandler
     protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
     {
         $event->getCriteria()->assign($criteria->getVars());
+    }
+
+    /**
+     * @return SortingHandlerInterface[]
+     */
+    protected function getSortingHandler(): array
+    {
+        return [
+            new ScoreSortingHandler(),
+            new PriceSortingHandler(),
+            new ProductNameSortingHandler(),
+            new ReleaseDateSortingHandler()
+        ];
+    }
+
+    protected function addSorting(SearchNavigationRequest $searchNavigationRequest, Criteria $criteria): void
+    {
+        foreach ($this->sortingHandlers as $handler) {
+            foreach ($criteria->getSorting() as $fieldSorting) {
+                if ($handler->supportsSorting($fieldSorting)) {
+                    $handler->generateSorting($fieldSorting, $searchNavigationRequest);
+                }
+            }
+        }
     }
 }
