@@ -80,6 +80,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $categoryPath);
         $this->setPaginationParams($event, $navigationRequest);
+        $this->addSorting($navigationRequest, $event->getCriteria());
 
         try {
             $response = $this->sendRequest($navigationRequest);
