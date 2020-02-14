@@ -105,6 +105,11 @@ abstract class SearchNavigationRequestHandler
         );
     }
 
+    protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
+    {
+        $event->getCriteria()->assign($criteria->getVars());
+    }
+
     /**
      * @param ShopwareEvent|ProductListingCriteriaEvent $event
      * @param Criteria $criteria

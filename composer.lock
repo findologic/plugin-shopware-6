@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "60ec841068631a4d7397d7fd6ee6079c",
+    "content-hash": "b86dc21648e4eeb5d913342718bfbf6d",
     "packages": [
         {
             "name": "findologic/findologic-api",
-            "version": "dev-master",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "99e5a4f3c0179e25ca741d43268e0a2cf89acfa8"
+                "reference": "2d465c5d9d0a5e513e08a75542d27afab101152f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/99e5a4f3c0179e25ca741d43268e0a2cf89acfa8",
-                "reference": "99e5a4f3c0179e25ca741d43268e0a2cf89acfa8",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/2d465c5d9d0a5e513e08a75542d27afab101152f",
+                "reference": "2d465c5d9d0a5e513e08a75542d27afab101152f",
                 "shasum": ""
             },
             "require": {
@@ -40,24 +40,7 @@
                     "FINDOLOGIC\\Api\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "FINDOLOGIC\\Api\\Tests\\": "tests/Tests/"
-                }
-            },
-            "scripts": {
-                "lint": [
-                    "php-cs-fixer fix --dry-run --using-cache=no src",
-                    "php-cs-fixer fix --dry-run --using-cache=no tests"
-                ],
-                "fix": [
-                    "php-cs-fixer fix --using-cache=no src",
-                    "php-cs-fixer fix --using-cache=no tests"
-                ],
-                "test": [
-                    "phpunit --configuration phpunit.xml --coverage-text --coverage-clover=coverage.xml"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -79,11 +62,7 @@
                 }
             ],
             "description": "Library for FINDOLOGIC API requests",
-            "support": {
-                "source": "https://github.com/findologic/findologic-api/tree/v1.1.1",
-                "issues": "https://github.com/findologic/findologic-api/issues"
-            },
-            "time": "2020-02-07T10:07:59+00:00"
+            "time": "2020-02-12T09:13:48+00:00"
         },
         {
             "name": "findologic/libflexport",
@@ -595,9 +574,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "findologic/findologic-api": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
