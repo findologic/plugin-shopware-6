@@ -81,6 +81,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $navigationRequest->setSelected('cat', $categoryPath);
         $this->setPaginationParams($event, $navigationRequest);
         $this->addSorting($navigationRequest, $event->getCriteria());
+        $this->handleFilters($request, $navigationRequest);
 
         try {
             $response = $this->sendRequest($navigationRequest);

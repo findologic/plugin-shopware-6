@@ -93,4 +93,12 @@ class SearchRequestFactoryTest extends TestCase
         $this->assertSame($expectedAdapter, $params['outputAdapter']);
         $this->assertSame($expectedHost, $params['shopurl']);
     }
+
+    public function filterValuesProvider()
+    {
+        return [
+            'One category filter is set' => ['catFilter' => 'Freizeit & Elektro', 'attrib' => []],
+            'One attrib filter is set' => ['catFilter' => '', 'attrib' => ['vendor' => 'Shopware Freizeit']],
+        ];
+    }
 }

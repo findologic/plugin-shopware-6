@@ -21,6 +21,7 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class SearchNavigationRequestHandler
 {
@@ -71,6 +72,25 @@ abstract class SearchNavigationRequestHandler
     }
 
     abstract public function handleRequest(ShopwareEvent $event): void;
+
+    /**
+     * @param Request $request
+     * @param SearchNavigationRequest $searchNavigationRequest
+     */
+    public function handleFilters(Request $request, SearchNavigationRequest $searchNavigationRequest): void
+    {
+        $attrib = $request->get('attrib', []);
+        foreach ($attrib as $key => $attribute) {
+            foreach ($attribute as $value) {
+                $searchNavigationRequest->addAttribute($key, $value);
+            }
+        }
+
+        $cat = $request->get('catFilter');
+        if ($cat) {
+            $searchNavigationRequest->addAttribute('cat', $cat);
+        }
+    }
 
     /**
      * @throws ServiceNotAliveException

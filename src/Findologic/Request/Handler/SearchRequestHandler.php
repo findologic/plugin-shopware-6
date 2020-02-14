@@ -34,6 +34,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $searchRequest->setQuery((string)$request->query->get('search'));
         $this->setPaginationParams($event, $searchRequest);
         $this->addSorting($searchRequest, $event->getCriteria());
+        $this->handleFilters($request, $searchRequest);
 
         try {
             /** @var Xml21Response $response */
