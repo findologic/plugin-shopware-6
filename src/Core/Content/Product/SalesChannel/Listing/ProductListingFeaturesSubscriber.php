@@ -7,8 +7,8 @@ namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchResultEvent;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber
-    as ShopwareProductListingFeaturesSubscriber;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as
+    ShopwareProductListingFeaturesSubscriber;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSorting;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
