@@ -13,6 +13,13 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSub
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSorting;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\FilterAggregation;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\TermsAggregation;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Metric\EntityAggregation;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Metric\MaxAggregation;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Test\DataAbstractionLayer\Search\TestAggregation;
 use Symfony\Component\HttpFoundation\Request;
 
 class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSubscriber
@@ -70,7 +77,24 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
     {
         parent::handleListingRequest($event);
-        // TODO Add filters to criteria from FINDOLOGIC Response
+        $criteria = $event->getCriteria();
+        $request = $event->getRequest();
+
+        $criteria->addAggregation(
+            new FilterAggregation(
+                'test-filter',
+                new MaxAggregation('test', 'product.shippingFree'),
+                [new EqualsFilter('product.shippingFree', true)]
+            )
+        );
+
+        $filtered = $request->get('shipping-free');
+
+        if (!$filtered) {
+            return;
+        }
+
+        $criteria->addPostFilter(new EqualsFilter('product.shippingFree', true));
 
     }
 

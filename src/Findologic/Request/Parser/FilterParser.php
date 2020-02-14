@@ -2,7 +2,7 @@
 
 namespace FINDOLOGIC\FinSearch\Findologic\Request\Parser;
 
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Filter;
 
 class FilterParser
 {

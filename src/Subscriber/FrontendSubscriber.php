@@ -19,7 +19,6 @@ use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
-use Shopware\Core\Content\Product\ProductEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -92,8 +91,8 @@ class FrontendSubscriber implements EventSubscriberInterface
     {
         return [
             HeaderPageletLoadedEvent::class => 'onHeaderLoaded',
-            ProductEvents::PRODUCT_SEARCH_CRITERIA => 'onSearch',
-            ProductEvents::PRODUCT_LISTING_CRITERIA => 'onNavigation'
+            ProductSearchCriteriaEvent::class => 'onSearch',
+            ProductListingCriteriaEvent::class => 'onNavigation'
         ];
     }
 
