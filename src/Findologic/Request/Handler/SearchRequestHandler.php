@@ -9,6 +9,7 @@ use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -49,8 +50,13 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $this->redirectOnLandingPage($response);
         $this->setPromotionExtension($event, $response);
 
-        $criteria->setLimit($originalCriteria->getLimit());
-        $criteria->setOffset($originalCriteria->getOffset());
+        $this->setPagination(
+            $criteria,
+            $originalCriteria->getLimit(),
+            $originalCriteria->getOffset(),
+            $response->getResults()->getCount()
+        );
+
         $criteria->setTotalCountMode(Criteria::TOTAL_COUNT_MODE_NEXT_PAGES);
 
         $this->assignCriteriaToEvent($event, $criteria);

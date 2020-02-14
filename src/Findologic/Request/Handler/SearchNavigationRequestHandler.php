@@ -18,6 +18,8 @@ use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandle
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\Pagination;
+use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
@@ -103,6 +105,10 @@ abstract class SearchNavigationRequestHandler
         );
     }
 
+    /**
+     * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     * @param Criteria $criteria
+     */
     protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
     {
         $event->getCriteria()->assign($criteria->getVars());
@@ -130,5 +136,11 @@ abstract class SearchNavigationRequestHandler
                 }
             }
         }
+    }
+
+    protected function setPagination(Criteria $criteria, ?int $limit, ?int $offset, ?int $total): void
+    {
+        $pagination = new Pagination($limit, $offset, $total);
+        $criteria->addExtension('flPagination', $pagination);
     }
 }

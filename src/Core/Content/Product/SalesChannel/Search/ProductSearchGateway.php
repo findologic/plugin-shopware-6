@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search;
 
+use FINDOLOGIC\FinSearch\Struct\Pagination;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchResultEvent;
@@ -64,7 +65,15 @@ class ProductSearchGateway extends ShopwareProductSearchGateway
             ProductEvents::PRODUCT_SEARCH_CRITERIA
         );
 
+        // Pagination is handled by FINDOLOGIC.
+        $criteria->setLimit(24);
+        $criteria->setOffset(0);
         $result = $this->repository->search($criteria, $context);
+
+        /** @var Pagination $pagination */
+        $pagination = $criteria->getExtension('flPagination');
+        $criteria->setLimit($pagination->getLimit() ?? 24);
+        $criteria->setOffset($pagination->getOffset() ?? 0);
 
         $result = ProductListingResult::createFrom($result);
 

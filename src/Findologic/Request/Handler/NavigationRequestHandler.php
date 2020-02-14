@@ -8,10 +8,12 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
+use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Parser\NavigationCategoryParser;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\Pagination;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
@@ -83,6 +85,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $this->addSorting($navigationRequest, $event->getCriteria());
 
         try {
+            /** @var Xml21Response $response */
             $response = $this->sendRequest($navigationRequest);
         } catch (ServiceNotAliveException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
@@ -91,6 +94,13 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         /** @var Criteria $criteria */
         $criteria = $event->getCriteria();
+        $this->setPagination(
+            $criteria,
+            $originalCriteria->getLimit(),
+            $originalCriteria->getOffset(),
+            $response->getResults()->getCount()
+        );
+
         $criteria->setIds($this->parseProductIdsFromResponse($response));
     }
 
