@@ -92,8 +92,8 @@ class FrontendSubscriber implements EventSubscriberInterface
     {
         return [
             HeaderPageletLoadedEvent::class => 'onHeaderLoaded',
-            ProductEvents::PRODUCT_SEARCH_CRITERIA => 'onSearch',
-            ProductEvents::PRODUCT_LISTING_CRITERIA => 'onNavigation'
+            ProductSearchCriteriaEvent::class => 'onSearch',
+            ProductListingCriteriaEvent::class => 'onNavigation'
         ];
     }
 
