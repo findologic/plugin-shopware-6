@@ -20,32 +20,32 @@
             {% block page_search_headline_text %}
                 {% if context.context.extensions.flSmartDidYouMean == false
                     or context.context.extensions.flSmartDidYouMean.type == 'did-you-mean' %}
-                    {{ "search.headline"|trans({
+                    {{ 'search.headline'|trans({
                         '%searchTerm%': page.searchTerm,
-                        '%totalCount%': page.searchResult.total,
+                        '%totalCount%': page.searchResult.criteria.extensions.flPagination.total,
                     })|sw_sanitize }}
                 {% else %}
-                    {{ "finSearch.smartDidYouMean.searchHeadline"|trans({
+                    {{ 'finSearch.smartDidYouMean.searchHeadline'|trans({
                         '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
-                        '%articlesCount%': page.searchResult.total,
+                        '%articlesCount%': page.searchResult.criteria.extensions.flPagination.total,
                     })|sw_sanitize }}
                 {% endif %}
         </h1>
                 {% if context.context.extensions.flSmartDidYouMean %}
                     <p id="fl-smart-did-you-mean" class="search-headline">
                         {% if context.context.extensions.flSmartDidYouMean.type == 'did-you-mean' %}
-                            {{ "finSearch.smartDidYouMean.didYouMeanQuery"|trans({
+                            {{ 'finSearch.smartDidYouMean.didYouMeanQuery'|trans({
                                 '%link%': context.context.extensions.flSmartDidYouMean.link,
                                 '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery
                             })|sw_sanitize }}
                         {% elseif context.context.extensions.flSmartDidYouMean.type == 'improved' %}
-                            {{ "finSearch.smartDidYouMean.improvedQuery"|trans({
+                            {{ 'finSearch.smartDidYouMean.improvedQuery'|trans({
                                 '%link%': context.context.extensions.flSmartDidYouMean.link,
                                 '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
                                 '%originalQuery%': context.context.extensions.flSmartDidYouMean.originalQuery
                             })|sw_sanitize }}
                         {% elseif context.context.extensions.flSmartDidYouMean.type == 'corrected' %}
-                            {{ "finSearch.smartDidYouMean.correctedQuery"|trans({
+                            {{ 'finSearch.smartDidYouMean.correctedQuery'|trans({
                                 '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
                                 '%originalQuery%': context.context.extensions.flSmartDidYouMean.originalQuery
                             })|sw_sanitize }}
