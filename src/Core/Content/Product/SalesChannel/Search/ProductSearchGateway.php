@@ -68,7 +68,9 @@ class ProductSearchGateway extends ShopwareProductSearchGateway
         // Pagination is handled by FINDOLOGIC.
         $criteria->setLimit(24);
         $criteria->setOffset(0);
+
         $result = $this->repository->search($criteria, $context);
+        $result = $this->fixResultOrder($result, $criteria);
 
         /** @var Pagination $pagination */
         $pagination = $criteria->getExtension('flPagination');
@@ -83,6 +85,44 @@ class ProductSearchGateway extends ShopwareProductSearchGateway
         );
 
         $result->addCurrentFilter('search', $request->query->get('search'));
+
+        return $result;
+    }
+
+    protected function sortElementsByIdArray(array $elements, array $ids): array
+    {
+        $sorted = [];
+
+        foreach ($ids as $id) {
+            if (\is_array($id)) {
+                $id = implode('-', $id);
+            }
+
+            if (\array_key_exists($id, $elements)) {
+                $sorted[$id] = $elements[$id];
+            }
+        }
+
+        return $sorted;
+    }
+
+    /**
+     * When search results are fetched from the database, the ordering of the products is based on the
+     * database structure, which is not what we want. We manually re-order them by the ID, so the
+     * ordering matches the result that the FINDOLOGIC API returned.
+     *
+     * @param EntitySearchResult $result
+     * @param Criteria $criteria
+     * @return EntitySearchResult
+     */
+    protected function fixResultOrder(EntitySearchResult $result, Criteria $criteria): EntitySearchResult
+    {
+        $sortedElements = $this->sortElementsByIdArray($result->getElements(), $criteria->getIds());
+        $result->clear();
+
+        foreach ($sortedElements as $element) {
+            $result->add($element);
+        }
 
         return $result;
     }
