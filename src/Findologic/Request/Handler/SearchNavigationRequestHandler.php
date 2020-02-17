@@ -80,9 +80,12 @@ abstract class SearchNavigationRequestHandler
     public function handleFilters(Request $request, SearchNavigationRequest $searchNavigationRequest): void
     {
         $attrib = $request->get('attrib', []);
+
         if ($attrib) {
-            foreach ($attrib as $key => $value) {
-                $searchNavigationRequest->addAttribute($key, $value);
+            foreach ($attrib as $key => $attribute) {
+                foreach ($attribute as $value) {
+                    $searchNavigationRequest->addAttribute($key, $value);
+                }
             }
         }
 

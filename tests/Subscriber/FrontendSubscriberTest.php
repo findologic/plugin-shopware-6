@@ -508,11 +508,11 @@ class FrontendSubscriberTest extends BaseFrontendSubscriberTestCase
             ],
             'One attrib filter is set' => [
                 'catFilter' => [],
-                'attrib' => ['vendor' => 'Shopware Freizeit']
+                'attrib' => ['vendor' => ['Shopware Freizeit']]
             ],
             'Multiple attrib filter is set' => [
                 'catFilter' => [],
-                'attrib' => ['vendor' => 'Shopware Freizeit', 'color' => 'Red']
+                'attrib' => ['vendor' => ['Shopware Freizeit', 'Findologic']]
             ],
             'Multiple category filter is set' => [
                 'catFilter' => ['Freizeit & Elektro', 'Another Category'],
@@ -556,8 +556,10 @@ class FrontendSubscriberTest extends BaseFrontendSubscriberTestCase
             $searchRequest->addAttribute('cat', $cat);
         }
         if (!empty($attrib)) {
-            foreach ($attrib as $key => $value) {
-                $searchRequest->addAttribute($key, $value);
+            foreach ($attrib as $key => $attribute) {
+                foreach ($attribute as $value) {
+                    $searchRequest->addAttribute($key, $value);
+                }
             }
             $request->query->set('attrib', $attrib);
         }
