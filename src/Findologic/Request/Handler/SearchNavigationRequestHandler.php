@@ -73,10 +73,6 @@ abstract class SearchNavigationRequestHandler
 
     abstract public function handleRequest(ShopwareEvent $event): void;
 
-    /**
-     * @param Request $request
-     * @param SearchNavigationRequest $searchNavigationRequest
-     */
     public function handleFilters(Request $request, SearchNavigationRequest $searchNavigationRequest): void
     {
         $attrib = $request->get('attrib', []);
@@ -89,8 +85,8 @@ abstract class SearchNavigationRequestHandler
             }
         }
 
-        $cat = $request->get('catFilter');
-        if ($cat) {
+        $cat = $request->get('catFilter', '');
+        if (!empty($cat)) {
             if (is_array($cat)) {
                 $cat = end($cat);
             }
