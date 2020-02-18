@@ -9,10 +9,14 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
+use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Parser\NavigationCategoryParser;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValue;
+use FINDOLOGIC\FinSearch\Struct\Filter\LabelTextFilter;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -80,11 +84,14 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $this->setPaginationParams($event, $navigationRequest);
 
         try {
+            /** @var Xml21Response $response */
             $response = $this->sendRequest($navigationRequest);
         } catch (ServiceNotAliveException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
             return;
         }
+
+        $this->handleFilters($response, $event->getCriteria());
 
         /** @var Criteria $criteria */
         $criteria = $event->getCriteria();

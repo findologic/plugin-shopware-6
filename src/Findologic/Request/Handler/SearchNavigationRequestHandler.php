@@ -9,10 +9,18 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\DefaultItem;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\LabelTextFilter as ApiLabelTextFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
+use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
+use FINDOLOGIC\FinSearch\Struct\Filter\Filter;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValue;
+use FINDOLOGIC\FinSearch\Struct\Filter\LabelTextFilter;
+use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
@@ -94,5 +102,28 @@ abstract class SearchNavigationRequestHandler
     protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
     {
         $event->getCriteria()->assign($criteria->getVars());
+    }
+
+    /**
+     * @param Xml21Response $response
+     * @param Criteria $criteria
+     */
+    protected function handleFilters(Xml21Response $response, Criteria $criteria): void
+    {
+        $filters = array_merge($response->getMainFilters(), $response->getOtherFilters());
+
+        $customFilters = new CustomFilters();
+        foreach ($filters as $filter) {
+            $customFilter = Filter::getInstance($filter);
+
+            if ($customFilter) {
+                $customFilters->addFilter($customFilter);
+            }
+        }
+
+        $criteria->addExtension(
+            'flFilters',
+            $customFilters
+        );
     }
 }

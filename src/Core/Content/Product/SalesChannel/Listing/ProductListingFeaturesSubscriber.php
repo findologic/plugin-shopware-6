@@ -14,12 +14,8 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSorting;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\FilterAggregation;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\TermsAggregation;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Metric\EntityAggregation;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Metric\MaxAggregation;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Shopware\Core\Framework\Test\DataAbstractionLayer\Search\TestAggregation;
 use Symfony\Component\HttpFoundation\Request;
 
 class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSubscriber
@@ -87,6 +83,15 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
                 [new EqualsFilter('product.shippingFree', true)]
             )
         );
+
+        $criteria->addAggregation(
+            new FilterAggregation(
+                'specialProperties',
+                new MaxAggregation('test', 'product.shippingFree'),
+                [new EqualsFilter('product.shippingFree', true)]
+            )
+        );
+
 
         $filtered = $request->get('shipping-free');
 

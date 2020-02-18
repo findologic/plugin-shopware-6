@@ -114,5 +114,11 @@
             <tag name="shopware.snippet.file" />
         </service>
 
+        <service id="FINDOLOGIC\FinSearch\Utils\TwigExtension"
+                 class="FINDOLOGIC\FinSearch\Utils\TwigExtension"
+                 public="false">
+            <tag name="twig.extension" />
+        </service>
+
     </services>
 </container>

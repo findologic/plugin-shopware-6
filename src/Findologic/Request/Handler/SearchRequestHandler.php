@@ -10,6 +10,9 @@ use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValue;
+use FINDOLOGIC\FinSearch\Struct\Filter\LabelTextFilter;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -42,8 +45,11 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             return;
         }
 
+        $this->handleFilters($response, $event->getCriteria());
+
         $this->setSmartDidYouMeanExtension($event, $response, $request);
         $criteria = new Criteria($this->parseProductIdsFromResponse($response));
+        $criteria->addExtensions($event->getCriteria()->getExtensions());
 
         $this->redirectOnLandingPage($response);
         $this->setPromotionExtension($event, $response);
