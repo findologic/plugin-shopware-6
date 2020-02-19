@@ -29,17 +29,15 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
      */
     public function handleRequest(ShopwareEvent $event): void
     {
-        $originalCriteria = clone $event->getCriteria();
-        $request = $event->getRequest();
+        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
+            return;
+        }
 
-        /** @var SearchRequest $searchRequest */
-        $searchRequest = $this->findologicRequestFactory->getInstance($request);
-        $searchRequest->setQuery((string)$request->query->get('search'));
-        $this->setPaginationParams($event, $searchRequest);
+        $originalCriteria = clone $event->getCriteria();
 
         try {
             /** @var Xml21Response $response */
-            $response = $this->sendRequest($searchRequest);
+            $response = $this->doRequest($event);
         } catch (ServiceNotAliveException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
             return;
@@ -47,7 +45,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
 
         $this->handleFilters($response, $event->getCriteria());
 
-        $this->setSmartDidYouMeanExtension($event, $response, $request);
+        $this->setSmartDidYouMeanExtension($event, $response, $event->getRequest());
         $criteria = new Criteria($this->parseProductIdsFromResponse($response));
         $criteria->addExtensions($event->getCriteria()->getExtensions());
 
@@ -61,20 +59,26 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $this->assignCriteriaToEvent($event, $criteria);
     }
 
-    public function getFindologicResponse(ShopwareEvent $event): ?Response
+    /**
+     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
+     * @param int|null $limit
+     * @return Response|null
+     * @throws ServiceNotAliveException
+     */
+    public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response
     {
+        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
+            return null;
+        }
+
         $request = $event->getRequest();
 
         /** @var SearchRequest $searchRequest */
         $searchRequest = $this->findologicRequestFactory->getInstance($request);
         $searchRequest->setQuery((string)$request->query->get('search'));
-        $this->setPaginationParams($event, $searchRequest);
+        $this->setPaginationParams($event, $searchRequest, $limit);
 
-        try {
-            return $this->sendRequest($searchRequest);
-        } catch (ServiceNotAliveException $e) {
-            return null;
-        }
+        return $this->sendRequest($searchRequest);
     }
 
     protected function redirectOnLandingPage(Xml21Response $response): void

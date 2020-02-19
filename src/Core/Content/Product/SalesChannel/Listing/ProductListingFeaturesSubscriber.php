@@ -39,6 +39,10 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     {
         parent::handleResult($event);
 
+        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
+            return;
+        }
+
         $defaultSort = $event instanceof ProductSearchResultEvent ? self::DEFAULT_SEARCH_SORT : self::DEFAULT_SORT;
         $currentSorting = $this->getCurrentSorting($event->getRequest(), $defaultSort);
 
@@ -73,34 +77,6 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
     {
         parent::handleListingRequest($event);
-        $criteria = $event->getCriteria();
-        $request = $event->getRequest();
-
-        $criteria->addAggregation(
-            new FilterAggregation(
-                'test-filter',
-                new MaxAggregation('test', 'product.shippingFree'),
-                [new EqualsFilter('product.shippingFree', true)]
-            )
-        );
-
-        $criteria->addAggregation(
-            new FilterAggregation(
-                'specialProperties',
-                new MaxAggregation('test', 'product.shippingFree'),
-                [new EqualsFilter('product.shippingFree', true)]
-            )
-        );
-
-
-        $filtered = $request->get('shipping-free');
-
-        if (!$filtered) {
-            return;
-        }
-
-        $criteria->addPostFilter(new EqualsFilter('product.shippingFree', true));
-
     }
 
     public function handleSearchRequest(ProductSearchCriteriaEvent $event): void

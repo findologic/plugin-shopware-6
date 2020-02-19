@@ -12,6 +12,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use GuzzleHttp\Client;
@@ -151,6 +152,8 @@ class FrontendSubscriber implements EventSubscriberInterface
     }
 
     /**
+     * Checks if FINDOLOGIC should handle the request. Additionally may set configurations for future usage.
+     *
      * @throws InvalidArgumentException
      */
     private function allowRequest(ProductListingCriteriaEvent $event): bool
@@ -159,8 +162,13 @@ class FrontendSubscriber implements EventSubscriberInterface
             $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
         }
 
+        $findologicEnabled = new FindologicEnabled();
+        $event->getContext()->addExtension('flEnabled', $findologicEnabled);
         if (!$this->config->isActive()) {
+            $findologicEnabled->setDisabled();
             return false;
+        } else {
+            $findologicEnabled->setEnabled();
         }
 
         $shopkey = $this->config->getShopkey();

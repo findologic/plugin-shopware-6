@@ -20,6 +20,7 @@ use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
 use FINDOLOGIC\FinSearch\Struct\Filter\Filter;
 use FINDOLOGIC\FinSearch\Struct\Filter\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\Filter\LabelTextFilter;
+use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -69,6 +70,15 @@ abstract class SearchNavigationRequestHandler
     abstract public function handleRequest(ShopwareEvent $event): void;
 
     /**
+     * Sends a request to the FINDOLOGIC service based on the given event and the responsible request handler.
+     *
+     * @param ShopwareEvent $event
+     * @param int|null $limit Limited amount of products.
+     * @return Response|null
+     */
+    abstract public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response;
+
+    /**
      * @throws ServiceNotAliveException
      */
     public function sendRequest(SearchNavigationRequest $searchNavigationRequest): Response
@@ -79,11 +89,12 @@ abstract class SearchNavigationRequestHandler
     /**
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
      * @param SearchNavigationRequest $request
+     * @param int|null $limit
      */
-    protected function setPaginationParams(ShopwareEvent $event, SearchNavigationRequest $request): void
+    protected function setPaginationParams(ShopwareEvent $event, SearchNavigationRequest $request, ?int $limit): void
     {
         $request->setFirst($event->getCriteria()->getOffset());
-        $request->setCount($event->getCriteria()->getLimit());
+        $request->setCount($limit ?? $event->getCriteria()->getLimit());
     }
 
     /**

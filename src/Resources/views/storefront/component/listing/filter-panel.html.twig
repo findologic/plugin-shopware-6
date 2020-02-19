@@ -3,30 +3,36 @@
 {% block component_filter_panel_items_container %}
 
     {% block component_filter_panel_item_test_filter %}
-        {% set test = listing.aggregations.get('test') %}
-
-        {% sw_include '@Storefront/storefront/component/listing/filter/filter-boolean.html.twig' with {
-            name: 'test',
-            displayName: 'Test'
-        } %}
-
         {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
             {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
         {% else %}
             {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
         {% endif %}
 
-        {% for filter in filters %}
-            {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\LabelTextFilter") %}
-                {% sw_include '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' with {
-                    elements: filter.values,
-                    sidebar: sidebar,
-                    name: filter.id,
-                    displayName: filter.name,
-                    displayType: property.displayType,
-                    pluginSelector: 'filter-property-select'
-                } %}
-            {% endif %}
-        {% endfor %}
+        {% if filters %}
+            {% for filter in filters %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\LabelTextFilter") or filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\SelectDropdownFilter") %}
+                    {% sw_include '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' with {
+                        elements: filter.values,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        displayName: filter.name,
+                        displayType: property.displayType,
+                        pluginSelector: 'filter-property-select'
+                    } %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
     {% endblock %}
+
+    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
+        {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
+    {% else %}
+        {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
+    {% endif %}
+
+    {% if not filters %}
+        {{ parent() }}
+    {% endif %}
+
 {% endblock %}

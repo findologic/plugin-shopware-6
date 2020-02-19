@@ -26,6 +26,11 @@ abstract class Filter extends Struct
     /** @var FilterValue[] */
     private $values;
 
+    /**
+     * @param string $id
+     * @param string $name
+     * @param FilterValue[] $values
+     */
     public function __construct(string $id, string $name, array $values = [])
     {
         $this->id = $id;
