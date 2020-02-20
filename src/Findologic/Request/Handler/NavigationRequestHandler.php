@@ -14,6 +14,7 @@ use FINDOLOGIC\FinSearch\Exceptions\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Parser\NavigationCategoryParser;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
 use FINDOLOGIC\FinSearch\Struct\Filter\FilterValue;
@@ -67,8 +68,8 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $originalCriteria = clone $event->getCriteria();
 
         try {
-            /** @var Xml21Response $response */
             $response = $this->doRequest($event);
+            $responseParser = ResponseParser::getInstance($response);
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
             return;
@@ -78,7 +79,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         /** @var Criteria $criteria */
         $criteria = $event->getCriteria();
-        $criteria->setIds($this->parseProductIdsFromResponse($response));
+        $criteria->setIds($responseParser->getProductIds());
     }
 
     /**

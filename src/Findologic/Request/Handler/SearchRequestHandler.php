@@ -10,6 +10,7 @@ use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
 use FINDOLOGIC\FinSearch\Struct\Filter\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\Filter\LabelTextFilter;
@@ -36,8 +37,8 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $originalCriteria = clone $event->getCriteria();
 
         try {
-            /** @var Xml21Response $response */
             $response = $this->doRequest($event);
+            $responseParser = ResponseParser::getInstance($response);
         } catch (ServiceNotAliveException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
             return;
@@ -45,12 +46,16 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
 
         $this->handleFilters($response, $event->getCriteria());
 
-        $this->setSmartDidYouMeanExtension($event, $response, $event->getRequest());
-        $criteria = new Criteria($this->parseProductIdsFromResponse($response));
+        $event->getContext()->addExtension(
+            'flSmartDidYouMean',
+            $responseParser->getSmartDidYouMeanExtension($event->getRequest())
+        );
+
+        $criteria = new Criteria($responseParser->getProductIds());
         $criteria->addExtensions($event->getCriteria()->getExtensions());
 
-        $this->redirectOnLandingPage($response);
-        $this->setPromotionExtension($event, $response);
+        $this->redirectOnLandingPage($responseParser);
+        $this->setPromotionExtension($event, $responseParser);
 
         $criteria->setLimit($originalCriteria->getLimit());
         $criteria->setOffset($originalCriteria->getOffset());
@@ -81,11 +86,10 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         return $this->sendRequest($searchRequest);
     }
 
-    protected function redirectOnLandingPage(Xml21Response $response): void
+    protected function redirectOnLandingPage(ResponseParser $responseParser): void
     {
-        $landingPage = $response->getLandingPage();
-        if ($landingPage instanceof LandingPage) {
-            header('Location:' . $landingPage->getLink());
+        if ($landingPageUri = $responseParser->getLandingPageUri()) {
+            header('Location:' . $landingPageUri);
             exit;
         }
     }
@@ -93,12 +97,9 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
     /**
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
      */
-    protected function setPromotionExtension(ShopwareEvent $event, Xml21Response $response): void
+    protected function setPromotionExtension(ShopwareEvent $event, ResponseParser $responseParser): void
     {
-        $promotion = $response->getPromotion();
-
-        if ($promotion instanceof ApiPromotion) {
-            $promotion = new Promotion($promotion->getImage(), $promotion->getLink());
+        if ($promotion = $responseParser->getPromotionExtension()) {
             $event->getContext()->addExtension('flPromotion', $promotion);
         }
     }
