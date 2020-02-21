@@ -75,10 +75,15 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             return;
         }
 
-        $this->handleFilters($response, $event->getCriteria());
-
         /** @var Criteria $criteria */
         $criteria = $event->getCriteria();
+        $this->setPagination(
+            $criteria,
+            $responseParser,
+            $originalCriteria->getLimit(),
+            $originalCriteria->getOffset()
+        );
+
         $criteria->setIds($responseParser->getProductIds());
     }
 
@@ -119,6 +124,10 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $categoryPath);
         $this->setPaginationParams($event, $navigationRequest, $limit);
+        $this->addSorting($navigationRequest, $event->getCriteria());
+        if ($limit > 0 || $limit === null) {
+            $this->handleFilters($request, $navigationRequest);
+        }
 
         return $this->sendRequest($navigationRequest);
     }

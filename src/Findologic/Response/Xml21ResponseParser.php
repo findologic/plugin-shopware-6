@@ -5,14 +5,19 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
+use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
 use FINDOLOGIC\FinSearch\Struct\Filter\Filter;
+use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use Symfony\Component\HttpFoundation\Request;
 
 class Xml21ResponseParser extends ResponseParser
 {
+    /** @var Xml21Response */
+    protected $response;
+
     public function getProductIds(): array
     {
         return array_map(
@@ -63,5 +68,10 @@ class Xml21ResponseParser extends ResponseParser
         }
 
         return $customFilters;
+    }
+
+    public function getPaginationExtension(?int $limit, ?int $offset): Pagination
+    {
+        return new Pagination($limit, $offset, $this->response->getResults()->getCount());
     }
 }

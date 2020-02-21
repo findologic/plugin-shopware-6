@@ -44,8 +44,6 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             return;
         }
 
-        $this->handleFilters($response, $event->getCriteria());
-
         $event->getContext()->addExtension(
             'flSmartDidYouMean',
             $responseParser->getSmartDidYouMeanExtension($event->getRequest())
@@ -57,9 +55,12 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $this->redirectOnLandingPage($responseParser);
         $this->setPromotionExtension($event, $responseParser);
 
-        $criteria->setLimit($originalCriteria->getLimit());
-        $criteria->setOffset($originalCriteria->getOffset());
-        $criteria->setTotalCountMode(Criteria::TOTAL_COUNT_MODE_NEXT_PAGES);
+        $this->setPagination(
+            $criteria,
+            $responseParser,
+            $originalCriteria->getLimit(),
+            $originalCriteria->getOffset()
+        );
 
         $this->assignCriteriaToEvent($event, $criteria);
     }
@@ -82,6 +83,9 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $searchRequest = $this->findologicRequestFactory->getInstance($request);
         $searchRequest->setQuery((string)$request->query->get('search'));
         $this->setPaginationParams($event, $searchRequest, $limit);
+        $this->addSorting($searchRequest, $event->getCriteria());
+        $this->handleFilters($request, $searchRequest);
+
 
         return $this->sendRequest($searchRequest);
     }
@@ -102,16 +106,5 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         if ($promotion = $responseParser->getPromotionExtension()) {
             $event->getContext()->addExtension('flPromotion', $promotion);
         }
-    }
-
-    protected function setSmartDidYouMeanExtension(
-        ShopwareEvent $event,
-        Xml21Response $response,
-        Request $request
-    ): void {
-        $event->getContext()->addExtension(
-            'flSmartDidYouMean',
-            new SmartDidYouMean($response->getQuery(), $request->getRequestUri())
-        );
     }
 }

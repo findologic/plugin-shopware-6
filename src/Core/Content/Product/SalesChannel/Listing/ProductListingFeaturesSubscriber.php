@@ -7,13 +7,18 @@ namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
+use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
+use FINDOLOGIC\FinSearch\Exceptions\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use GuzzleHttp\Client;
+use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -32,6 +37,9 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     /** @var string FINDOLOGIC default sort for categories */
     public const DEFAULT_SORT = 'score';
 
+    /** @var int We do not need any products for a filter-only request. */
+    private const RESULT_LIMIT_FILTER = 0;
+
     /** @var ProductListingSortingRegistry */
     private $sortingRegistry;
 
@@ -49,9 +57,6 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
     /** @var ApiConfig */
     private $apiConfig;
-
-    /** @var ApiClient */
-    private $apiClient;
 
     /** @var ContainerInterface */
     private $container;
@@ -115,6 +120,11 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             return;
         }
 
+        $this->addTopResultSorting($event);
+    }
+
+    private function addTopResultSorting(ProductListingResultEvent $event): void
+    {
         $defaultSort = $event instanceof ProductSearchResultEvent ? self::DEFAULT_SEARCH_SORT : self::DEFAULT_SORT;
         $currentSorting = $this->getCurrentSorting($event->getRequest(), $defaultSort);
 
@@ -148,14 +158,74 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
     {
-
-
         parent::handleListingRequest($event);
+
+        if ($this->allowRequest($event)) {
+            $this->apiConfig->setServiceId($this->config->getShopkey());
+            $this->handleFilters($event);
+            $this->navigationRequestHandler->handleRequest($event);
+        }
+
     }
 
     public function handleSearchRequest(ProductSearchCriteriaEvent $event): void
     {
         parent::handleSearchRequest($event);
-        // TODO Add filters to criteria from FINDOLOGIC Response
+
+        if ($this->allowRequest($event)) {
+            $this->apiConfig->setServiceId($this->config->getShopkey());
+            $this->handleFilters($event);
+            $this->searchRequestHandler->handleRequest($event);
+        }
+
+    }
+
+    private function handleFilters(ProductListingCriteriaEvent $event)
+    {
+        try {
+            if ($event instanceof ProductSearchCriteriaEvent) {
+                $response = $this->searchRequestHandler->doRequest($event, self::RESULT_LIMIT_FILTER);
+            } else {
+                $response = $this->navigationRequestHandler->doRequest($event, self::RESULT_LIMIT_FILTER);
+            }
+            $responseParser = ResponseParser::getInstance($response);
+            $event->getCriteria()->addExtension('flFilters', $responseParser->getFilters());
+        } catch (ServiceNotAliveException | UnknownCategoryException $e) {
+            /** @var FindologicEnabled $flEnabled */
+            $flEnabled = $event->getContext()->getExtension('flEnabled');
+            $flEnabled->setDisabled();
+        }
+    }
+
+    /**
+     * Checks if FINDOLOGIC should handle the request. Additionally may set configurations for future usage.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function allowRequest(ProductListingCriteriaEvent $event): bool
+    {
+        if (!$this->config->isInitialized()) {
+            $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
+        }
+
+        $findologicEnabled = new FindologicEnabled();
+        $event->getContext()->addExtension('flEnabled', $findologicEnabled);
+
+        $findologicEnabled->setEnabled();
+        if (!$this->config->isActive()) {
+            $findologicEnabled->setDisabled();
+            return false;
+        }
+
+        $shopkey = $this->config->getShopkey();
+        $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
+        $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
+
+        // If it is direct integration or a staging shop, then we do not allow the request.
+        // TODO: Allow request if it is staging shop and the query parameter ?findologic=on is submitted.
+        $shouldHandleRequest = !($isDirectIntegration || $isStagingShop);
+        $shouldHandleRequest ? $findologicEnabled->setEnabled() : $findologicEnabled->setDisabled();
+
+        return $shouldHandleRequest;
     }
 }

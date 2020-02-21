@@ -51,38 +51,10 @@ class FrontendSubscriber implements EventSubscriberInterface
     public function __construct(
         SystemConfigService $systemConfigService,
         ServiceConfigResource $serviceConfigResource,
-        SearchRequestFactory $searchRequestFactory,
-        NavigationRequestFactory $navigationRequestFactory,
-        GenericPageLoader $genericPageLoader,
-        ContainerInterface $container,
-        ?Config $config = null,
-        ?ApiConfig $apiConfig = null,
-        ?ApiClient $apiClient = null
+        ?Config $config = null
     ) {
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
-        $this->apiConfig = $apiConfig ?? new ApiConfig();
-        $this->apiConfig->setHttpClient(new Client());
-        $apiClient = $apiClient ?? new ApiClient($this->apiConfig);
-        $this->container = $container;
-
-        $this->searchRequestHandler = new SearchRequestHandler(
-            $this->serviceConfigResource,
-            $searchRequestFactory,
-            $this->config,
-            $this->apiConfig,
-            $apiClient
-        );
-
-        $this->navigationRequestHandler = new NavigationRequestHandler(
-            $this->serviceConfigResource,
-            $navigationRequestFactory,
-            $this->config,
-            $this->apiConfig,
-            $apiClient,
-            $genericPageLoader,
-            $container
-        );
     }
 
     /**
@@ -91,9 +63,7 @@ class FrontendSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            HeaderPageletLoadedEvent::class => 'onHeaderLoaded',
-            ProductSearchCriteriaEvent::class => 'onSearch',
-            ProductListingCriteriaEvent::class => 'onNavigation'
+            HeaderPageletLoadedEvent::class => 'onHeaderLoaded'
         ];
     }
 
@@ -123,59 +93,5 @@ class FrontendSubscriber implements EventSubscriberInterface
 
         // Save the snippet for usage in template
         $event->getPagelet()->addExtension('flSnippet', $snippet);
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     * @throws CategoryNotFoundException
-     * @throws MissingRequestParameterException
-     * @throws InconsistentCriteriaIdsException
-     */
-    public function onNavigation(ProductListingCriteriaEvent $event): void
-    {
-        if ($this->allowRequest($event)) {
-            $this->apiConfig->setServiceId($this->config->getShopkey());
-            $this->navigationRequestHandler->handleRequest($event);
-        }
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     * @throws InconsistentCriteriaIdsException
-     */
-    public function onSearch(ProductSearchCriteriaEvent $event): void
-    {
-        if ($this->allowRequest($event)) {
-            $this->apiConfig->setServiceId($this->config->getShopkey());
-            $this->searchRequestHandler->handleRequest($event);
-        }
-    }
-
-    /**
-     * Checks if FINDOLOGIC should handle the request. Additionally may set configurations for future usage.
-     *
-     * @throws InvalidArgumentException
-     */
-    private function allowRequest(ProductListingCriteriaEvent $event): bool
-    {
-        if (!$this->config->isInitialized()) {
-            $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
-        }
-
-        $findologicEnabled = new FindologicEnabled();
-        $event->getContext()->addExtension('flEnabled', $findologicEnabled);
-        if (!$this->config->isActive()) {
-            $findologicEnabled->setDisabled();
-            return false;
-        } else {
-            $findologicEnabled->setEnabled();
-        }
-
-        $shopkey = $this->config->getShopkey();
-        $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
-        $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
-
-        // If it is direct integration or a staging shop, then we do not allow the request
-        return !($isDirectIntegration || $isStagingShop);
     }
 }

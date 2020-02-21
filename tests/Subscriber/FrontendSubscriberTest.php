@@ -33,6 +33,7 @@ use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -218,6 +219,97 @@ class FrontendSubscriberTest extends TestCase
         $this->assertSame($productIds, $event->getCriteria()->getIds());
     }
 
+    public function sortingProvider(): array
+    {
+        return [
+            'ProductNameSorting is ASC' => [
+                'fieldSorting' => new FieldSorting('product.name', 'ASC'),
+                'expectedOrder' => 'label ASC'
+            ],
+            'ProductNameSorting is DESC' => [
+                'fieldSorting' => new FieldSorting('product.name', 'DESC'),
+                'expectedOrder' => 'label DESC'
+            ],
+            'PriceSorting is ASC' => [
+                'fieldSorting' => new FieldSorting('product.listingPrices', 'ASC'),
+                'expectedOrder' => 'price ASC'
+            ],
+            'PriceSorting is DESC' => [
+                'fieldSorting' => new FieldSorting('product.listingPrices', 'DESC'),
+                'expectedOrder' => 'price DESC'
+            ],
+            'ScoreSorting is ASC' => [
+                'fieldSorting' => new FieldSorting('_score', 'ASC'),
+                'expectedOrder' => 'salesfrequency dynamic ASC'
+            ],
+            'ScoreSorting is DESC' => [
+                'fieldSorting' => new FieldSorting('_score', 'DESC'),
+                'expectedOrder' => 'salesfrequency dynamic DESC'
+            ],
+            'ReleaseDateSorting is ASC' => [
+                'fieldSorting' => new FieldSorting('product.dateadded', 'ASC'),
+                'expectedOrder' => '' // currently not supported by Shopware
+            ],
+            'ReleaseDateSorting is DESC' => [
+                'fieldSorting' => new FieldSorting('product.dateadded', 'DESC'),
+                'expectedOrder' => '' // currently not supported by Shopware
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider sortingProvider
+     * @throws InvalidArgumentException
+     * @throws InconsistentCriteriaIdsException
+     */
+    public function testProductSearchCriteriaWithSortings(FieldSorting $fieldSorting, string $expectedOrder): void
+    {
+        $response = new Xml21Response($this->getDemoXMLResponse());
+
+        [
+            $configServiceMock,
+            $serviceConfigResource,
+            $searchRequestFactory,
+            $navigationRequestFactory,
+            $apiConfig,
+            $apiClientMock,
+            $event,
+            $searchRequest
+        ] = $this->setupProductSearchTest();
+
+        if (!empty($expectedOrder)) {
+            /** @var SearchRequest $searchRequest */
+            $searchRequest = $searchRequest->setOrder($expectedOrder);
+        }
+
+        $apiClientMock->expects($this->once())
+            ->method('send')
+            ->with($searchRequest)
+            ->willReturn($response);
+
+        /** @var Config|MockObject $configMock */
+        $configMock = $this->getMockBuilder(Config::class)
+            ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
+            ->getMock();
+        $configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
+
+        $event->getCriteria()->addSorting($fieldSorting);
+
+        $frontendSubscriber = new FrontendSubscriber(
+            $configServiceMock,
+            $serviceConfigResource,
+            $searchRequestFactory,
+            $navigationRequestFactory,
+            $this->getContainer()->get(GenericPageLoader::class),
+            $this->getContainer(),
+            $configMock,
+            $apiConfig,
+            $apiClientMock
+        );
+        $frontendSubscriber->onSearch($event);
+    }
+
     /**
      * @dataProvider responseProvider
      *
@@ -270,7 +362,7 @@ class FrontendSubscriberTest extends TestCase
         $this->assertSame($productIds, $event->getCriteria()->getIds());
     }
 
-    public function eventTypeProvider()
+    public function eventTypeProvider(): array
     {
         return [
             'ServiceNotAliveException is caught for search' => [true],
@@ -484,7 +576,7 @@ class FrontendSubscriberTest extends TestCase
         ];
     }
 
-    public function testResponseHasPromotion()
+    public function testResponseHasPromotion(): void
     {
         $expectedExtension = new Promotion('https://promotion.com/promotion.png', 'https://promotion.com/');
 
@@ -495,7 +587,7 @@ class FrontendSubscriberTest extends TestCase
         $this->assertEquals($expectedExtension, $extensions['flPromotion']);
     }
 
-    public function testResponseDoesNotHavePromotion()
+    public function testResponseDoesNotHavePromotion(): void
     {
         $xml = $this->getDemoXML();
         unset($xml->promotion);
@@ -504,7 +596,7 @@ class FrontendSubscriberTest extends TestCase
         $this->assertArrayNotHasKey('flPromotion', $extensions);
     }
 
-    public function testResponseHasLandingPage()
+    public function testResponseHasLandingPage(): void
     {
         $this->markTestSkipped('Issue due to redirection');
         $xml = $this->getDemoXML();
@@ -514,7 +606,7 @@ class FrontendSubscriberTest extends TestCase
         $this->assertEmpty($extensions);
     }
 
-    public function testResponseContainsDidYouMeanQuery()
+    public function testResponseContainsDidYouMeanQuery(): void
     {
         $xml = $this->getDemoXML();
 
@@ -529,7 +621,7 @@ class FrontendSubscriberTest extends TestCase
         $this->assertSame('ps4', $smartDidYouMeanParameters['alternativeQuery']);
     }
 
-    public function testResponseContainsImprovedQuery()
+    public function testResponseContainsImprovedQuery(): void
     {
         $xml = $this->getDemoXML();
         unset($xml->query->didYouMeanQuery);
@@ -548,7 +640,7 @@ class FrontendSubscriberTest extends TestCase
         $this->assertSame('ps3', $smartDidYouMeanParameters['alternativeQuery']);
     }
 
-    public function testResponseContainsCorrectedQuery()
+    public function testResponseContainsCorrectedQuery(): void
     {
         $xml = $this->getDemoXML();
         unset($xml->query->didYouMeanQuery);

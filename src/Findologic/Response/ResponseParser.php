@@ -5,6 +5,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response;
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
+use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use InvalidArgumentException;
@@ -39,4 +40,6 @@ abstract class ResponseParser
     abstract public function getPromotionExtension(): ?Promotion;
 
     abstract public function getFilters(): CustomFilters;
+
+    abstract public function getPaginationExtension(?int $limit, ?int $offset): Pagination;
 }

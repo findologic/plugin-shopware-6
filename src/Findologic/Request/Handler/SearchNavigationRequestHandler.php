@@ -9,22 +9,21 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\DefaultItem;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\LabelTextFilter as ApiLabelTextFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\PriceSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ProductNameSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ReleaseDateSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ScoreSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\SortingHandlerInterface;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
-use FINDOLOGIC\FinSearch\Struct\Filter\Filter;
-use FINDOLOGIC\FinSearch\Struct\Filter\FilterValue;
-use FINDOLOGIC\FinSearch\Struct\Filter\LabelTextFilter;
-use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class SearchNavigationRequestHandler
 {
@@ -53,6 +52,11 @@ abstract class SearchNavigationRequestHandler
      */
     protected $findologicRequestFactory;
 
+    /**
+     * @var SortingHandlerInterface[]
+     */
+    protected $sortingHandlers;
+
     public function __construct(
         ServiceConfigResource $serviceConfigResource,
         FindologicRequestFactory $findologicRequestFactory,
@@ -65,6 +69,8 @@ abstract class SearchNavigationRequestHandler
         $this->apiConfig = $apiConfig;
         $this->apiClient = $apiClient;
         $this->findologicRequestFactory = $findologicRequestFactory;
+
+        $this->sortingHandlers = $this->getSortingHandler();
     }
 
     abstract public function handleRequest(ShopwareEvent $event): void;
@@ -86,6 +92,27 @@ abstract class SearchNavigationRequestHandler
         return $this->apiClient->send($searchNavigationRequest);
     }
 
+    protected function handleFilters(Request $request, SearchNavigationRequest $searchNavigationRequest): void
+    {
+        $attrib = $request->get('attrib', []);
+
+        if ($attrib) {
+            foreach ($attrib as $key => $attribute) {
+                foreach ($attribute as $value) {
+                    $searchNavigationRequest->addAttribute($key, $value);
+                }
+            }
+        }
+
+        $cat = $request->get('catFilter', '');
+        if (!empty($cat)) {
+            if (is_array($cat)) {
+                $cat = end($cat);
+            }
+            $searchNavigationRequest->addAttribute('cat', $cat);
+        }
+    }
+
     /**
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
      * @param SearchNavigationRequest $request
@@ -98,43 +125,45 @@ abstract class SearchNavigationRequestHandler
     }
 
     /**
-     * @return int[]
+     * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     * @param Criteria $criteria
      */
-    protected function parseProductIdsFromResponse(Response $response): array
-    {
-        return array_map(
-            static function (Product $product) {
-                return $product->getId();
-            },
-            $response->getProducts()
-        );
-    }
-
     protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
     {
         $event->getCriteria()->assign($criteria->getVars());
     }
 
     /**
-     * @param Xml21Response $response
-     * @param Criteria $criteria
+     * @return SortingHandlerInterface[]
      */
-    protected function handleFilters(Xml21Response $response, Criteria $criteria): void
+    protected function getSortingHandler(): array
     {
-        $filters = array_merge($response->getMainFilters(), $response->getOtherFilters());
+        return [
+            new ScoreSortingHandler(),
+            new PriceSortingHandler(),
+            new ProductNameSortingHandler(),
+            new ReleaseDateSortingHandler()
+        ];
+    }
 
-        $customFilters = new CustomFilters();
-        foreach ($filters as $filter) {
-            $customFilter = Filter::getInstance($filter);
-
-            if ($customFilter) {
-                $customFilters->addFilter($customFilter);
+    protected function addSorting(SearchNavigationRequest $searchNavigationRequest, Criteria $criteria): void
+    {
+        foreach ($this->sortingHandlers as $handler) {
+            foreach ($criteria->getSorting() as $fieldSorting) {
+                if ($handler->supportsSorting($fieldSorting)) {
+                    $handler->generateSorting($fieldSorting, $searchNavigationRequest);
+                }
             }
         }
+    }
 
-        $criteria->addExtension(
-            'flFilters',
-            $customFilters
-        );
+    protected function setPagination(
+        Criteria $criteria,
+        ResponseParser $responseParser,
+        ?int $limit,
+        ?int $offset
+    ): void {
+        $pagination = $responseParser->getPaginationExtension($limit, $offset);
+        $criteria->addExtension('flPagination', $pagination);
     }
 }
