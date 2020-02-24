@@ -23,7 +23,8 @@ use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchResultEvent;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as ShopwareProductListingFeaturesSubscriber;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber
+    as ShopwareProductListingFeaturesSubscriber;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSorting;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
@@ -165,7 +166,6 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $this->handleFilters($event);
             $this->navigationRequestHandler->handleRequest($event);
         }
-
     }
 
     public function handleSearchRequest(ProductSearchCriteriaEvent $event): void
@@ -177,7 +177,6 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $this->handleFilters($event);
             $this->searchRequestHandler->handleRequest($event);
         }
-
     }
 
     private function handleFilters(ProductListingCriteriaEvent $event)
