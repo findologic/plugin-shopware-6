@@ -37,7 +37,6 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 {
     /** @var string FINDOLOGIC default sort for categories */
     public const DEFAULT_SORT = 'score';
-
     /** @var int We do not need any products for a filter-only request. */
     private const RESULT_LIMIT_FILTER = 0;
 
@@ -213,6 +212,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $findologicEnabled->setEnabled();
         if (!$this->config->isActive()) {
             $findologicEnabled->setDisabled();
+
             return false;
         }
 

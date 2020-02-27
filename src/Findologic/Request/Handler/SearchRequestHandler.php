@@ -7,26 +7,18 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
-use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
-use FINDOLOGIC\FinSearch\Struct\Filter\FilterValue;
-use FINDOLOGIC\FinSearch\Struct\Filter\LabelTextFilter;
-use FINDOLOGIC\FinSearch\Struct\Promotion;
-use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
-use Symfony\Component\HttpFoundation\Request;
 
 class SearchRequestHandler extends SearchNavigationRequestHandler
 {
     /**
-     * @throws InconsistentCriteriaIdsException
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
+     *
+     * @throws InconsistentCriteriaIdsException
      */
     public function handleRequest(ShopwareEvent $event): void
     {
@@ -41,6 +33,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             $responseParser = ResponseParser::getInstance($response);
         } catch (ServiceNotAliveException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
+
             return;
         }
 
@@ -68,6 +61,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
     /**
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
      * @param int|null $limit
+     *
      * @return Response|null
      * @throws ServiceNotAliveException
      */
@@ -85,7 +79,6 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $this->setPaginationParams($event, $searchRequest, $limit);
         $this->addSorting($searchRequest, $event->getCriteria());
         $this->handleFilters($request, $searchRequest);
-
 
         return $this->sendRequest($searchRequest);
     }
