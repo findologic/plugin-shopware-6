@@ -54,7 +54,7 @@ abstract class Filter extends Struct
                 return static::handleLabelTextFilter($filter);
             case $filter instanceof ApiSelectDropdownFilter:
                 return static::handleSelectDropdownFilter($filter);
-            case $filter instanceof ApiRangeSliderFilter: // Shopware would support it - needs implementation.
+            case $filter instanceof ApiRangeSliderFilter:
                 return static::handleRangeSliderFilter($filter);
             case $filter instanceof ApiCategoryFilter: // Shopware does not have a category filter yet.
             case $filter instanceof ApiVendorImageFilter: // Needs manual implementation.
