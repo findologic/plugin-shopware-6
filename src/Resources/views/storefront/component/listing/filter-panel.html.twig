@@ -21,6 +21,19 @@
                         pluginSelector: 'filter-property-select'
                     } %}
                 {% endif %}
+
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\RangeSliderFilter") %}
+                    {% sw_include '@Storefront/storefront/component/listing/filter/filter-range.html.twig' with {
+                        elements: filter.values,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        displayName: filter.name,
+                        displayType: property.displayType,
+                        minKey: filter.minKey,
+                        maxKey: filter.maxKey,
+                        pluginSelector: 'filter-range-slider'
+                    } %}
+                {% endif %}
             {% endfor %}
         {% endif %}
     {% endblock %}

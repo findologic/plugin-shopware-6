@@ -9,7 +9,6 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\PriceSortingHandler;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ProductNameSortingHandler;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ReleaseDateSortingHandler;
@@ -80,6 +79,7 @@ abstract class SearchNavigationRequestHandler
      *
      * @param ShopwareEvent $event
      * @param int|null $limit Limited amount of products.
+     *
      * @return Response|null
      */
     abstract public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response;

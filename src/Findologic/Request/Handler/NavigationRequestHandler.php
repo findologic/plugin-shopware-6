@@ -9,16 +9,12 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Parser\NavigationCategoryParser;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
-use FINDOLOGIC\FinSearch\Struct\Filter\FilterValue;
-use FINDOLOGIC\FinSearch\Struct\Filter\LabelTextFilter;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -54,10 +50,11 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
     }
 
     /**
-     * @throws CategoryNotFoundException
+     * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     *
      * @throws MissingRequestParameterException
      * @throws InconsistentCriteriaIdsException
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     * @throws CategoryNotFoundException
      */
     public function handleRequest(ShopwareEvent $event): void
     {
@@ -72,6 +69,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             $responseParser = ResponseParser::getInstance($response);
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
+
             return;
         }
 
@@ -90,6 +88,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
     /**
      * @param ShopwareEvent|ProductListingCriteriaEvent $event
      * @param int|null $limit
+     *
      * @return Response|null
      * @throws CategoryNotFoundException
      * @throws InconsistentCriteriaIdsException

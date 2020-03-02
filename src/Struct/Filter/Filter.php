@@ -8,6 +8,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\CategoryFilter as ApiCatego
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\ColorPickerFilter as ApiColorPickerFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Filter as ApiFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\DefaultItem;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\RangeSliderItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\LabelTextFilter as ApiLabelTextFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\RangeSliderFilter as ApiRangeSliderFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\SelectDropdownFilter as ApiSelectDropdownFilter;
@@ -43,6 +44,7 @@ abstract class Filter extends Struct
      * filter types.
      *
      * @param ApiFilter $filter
+     *
      * @return Filter|null
      */
     public static function getInstance(ApiFilter $filter): ?Filter
@@ -52,8 +54,9 @@ abstract class Filter extends Struct
                 return static::handleLabelTextFilter($filter);
             case $filter instanceof ApiSelectDropdownFilter:
                 return static::handleSelectDropdownFilter($filter);
+            case $filter instanceof ApiRangeSliderFilter:
+                return static::handleRangeSliderFilter($filter);
             case $filter instanceof ApiCategoryFilter: // Shopware does not have a category filter yet.
-            case $filter instanceof ApiRangeSliderFilter: // Shopware would support it - needs implementation.
             case $filter instanceof ApiVendorImageFilter: // Needs manual implementation.
             case $filter instanceof ApiColorPickerFilter: // Shopware may support it.
                 return null;
@@ -79,6 +82,18 @@ abstract class Filter extends Struct
         $customFilter = new SelectDropdownFilter($filter->getName(), $filter->getDisplay());
 
         /** @var DefaultItem $item */
+        foreach ($filter->getItems() as $item) {
+            $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
+        }
+
+        return $customFilter;
+    }
+
+    private static function handleRangeSliderFilter(ApiRangeSliderFilter $filter): RangeSliderFilter
+    {
+        $customFilter = new RangeSliderFilter($filter->getName(), $filter->getDisplay());
+
+        /** @var RangeSliderItem $item */
         foreach ($filter->getItems() as $item) {
             $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
         }
