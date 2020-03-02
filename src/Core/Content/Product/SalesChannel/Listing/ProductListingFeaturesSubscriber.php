@@ -178,7 +178,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         }
     }
 
-    private function handleFilters(ProductListingCriteriaEvent $event)
+    private function handleFilters(ProductListingCriteriaEvent $event): void
     {
         try {
             if ($event instanceof ProductSearchCriteriaEvent) {
