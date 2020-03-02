@@ -141,6 +141,10 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $navigationCategoryParser = new NavigationCategoryParser($this->container, $this->genericPageLoader);
         $category = $navigationCategoryParser->parse($request, $salesChannelContext);
 
+        if (!$category) {
+            return null;
+        }
+
         return $this->buildCategoryPath($category->getBreadcrumb());
     }
 
