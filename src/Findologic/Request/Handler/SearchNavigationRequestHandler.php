@@ -14,6 +14,11 @@ use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandle
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ReleaseDateSortingHandler;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ScoreSortingHandler;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\SortingHandlerInterface;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\PriceSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ProductNameSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ReleaseDateSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ScoreSortingHandler;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\SortingHandlerInterface;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
@@ -165,5 +170,29 @@ abstract class SearchNavigationRequestHandler
     ): void {
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
         $criteria->addExtension('flPagination', $pagination);
+    }
+
+    /**
+     * @return SortingHandlerInterface[]
+     */
+    protected function getSortingHandler(): array
+    {
+        return [
+            new ScoreSortingHandler(),
+            new PriceSortingHandler(),
+            new ProductNameSortingHandler(),
+            new ReleaseDateSortingHandler()
+        ];
+    }
+
+    protected function addSorting(SearchNavigationRequest $searchNavigationRequest, Criteria $criteria): void
+    {
+        foreach ($this->sortingHandlers as $handler) {
+            foreach ($criteria->getSorting() as $fieldSorting) {
+                if ($handler->supportsSorting($fieldSorting)) {
+                    $handler->generateSorting($fieldSorting, $searchNavigationRequest);
+                }
+            }
+        }
     }
 }

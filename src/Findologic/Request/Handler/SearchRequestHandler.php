@@ -27,6 +27,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         }
 
         $originalCriteria = clone $event->getCriteria();
+        $this->addSorting($searchRequest, $event->getCriteria());
 
         try {
             $response = $this->doRequest($event);

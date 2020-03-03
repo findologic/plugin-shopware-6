@@ -122,10 +122,14 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         /** @var NavigationRequest $navigationRequest */
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $categoryPath);
-        $this->setPaginationParams($event, $navigationRequest, $limit);
+        $this->setPaginationParams($event, $navigationRequest);
         $this->addSorting($navigationRequest, $event->getCriteria());
-        if ($limit > 0 || $limit === null) {
-            $this->handleFilters($request, $navigationRequest);
+
+        try {
+            $response = $this->sendRequest($navigationRequest);
+        } catch (ServiceNotAliveException $e) {
+            $this->assignCriteriaToEvent($event, $originalCriteria);
+            return;
         }
 
         return $this->sendRequest($navigationRequest);
