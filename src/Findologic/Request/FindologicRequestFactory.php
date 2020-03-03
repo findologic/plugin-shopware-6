@@ -74,6 +74,9 @@ abstract class FindologicRequestFactory
         $searchNavigationRequest->setUserIp($this->fetchClientIp());
         $searchNavigationRequest->setRevision($this->getPluginVersion());
         $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
+        // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
+        //  Shopware themselves have it hardcoded at 24.
+        $searchNavigationRequest->setCount(24);
 
         if ($request->headers->get('referer')) {
             $searchNavigationRequest->setReferer($request->headers->get('referer'));
@@ -89,7 +92,7 @@ abstract class FindologicRequestFactory
         return $searchNavigationRequest;
     }
 
-    private function fetchClientIp()
+    private function fetchClientIp(): string
     {
         if (isset($_SERVER['HTTP_CLIENT_IP'])) {
             $ipAddress = $_SERVER['HTTP_CLIENT_IP'];
