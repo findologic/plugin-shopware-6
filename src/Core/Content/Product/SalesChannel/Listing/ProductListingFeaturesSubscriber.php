@@ -38,7 +38,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     /** @var string FINDOLOGIC default sort for categories */
     public const DEFAULT_SORT = 'score';
 
-    private const DEFAULT_SEARCH_SORT = 'score';
+    public const DEFAULT_SEARCH_SORT = 'score';
 
     /** @var int We do not need any products for a filter-only request. */
     private const RESULT_LIMIT_FILTER = 0;
