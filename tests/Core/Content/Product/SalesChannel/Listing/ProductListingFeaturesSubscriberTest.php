@@ -645,5 +645,4 @@ XML;
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
     }
-
 }
