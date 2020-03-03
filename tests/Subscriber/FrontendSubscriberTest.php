@@ -33,6 +33,7 @@ use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -137,16 +138,9 @@ class FrontendSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $searchRequestFactory = new SearchRequestFactory($cachePoolMock, $this->getContainer());
-        $navigationRequestFactory = new NavigationRequestFactory($cachePoolMock, $this->getContainer());
-
         $frontendSubscriber = new FrontendSubscriber(
             $configServiceMock,
-            $serviceConfigResource,
-            $searchRequestFactory,
-            $navigationRequestFactory,
-            $this->getContainer()->get(GenericPageLoader::class),
-            $this->getContainer()
+            $serviceConfigResource
         );
 
         $frontendSubscriber->onHeaderLoaded($headerPageletLoadedEventMock);
@@ -169,179 +163,6 @@ class FrontendSubscriberTest extends TestCase
                 'productIds' => $productIds
             ],
         ];
-    }
-
-    /**
-     * @dataProvider responseProvider
-     * @throws InvalidArgumentException
-     * @throws InconsistentCriteriaIdsException
-     */
-    public function testProductSearchCriteria(?Xml21Response $response, array $productIds): void
-    {
-        [
-            $configServiceMock,
-            $serviceConfigResource,
-            $searchRequestFactory,
-            $navigationRequestFactory,
-            $apiConfig,
-            $apiClientMock,
-            $event,
-            $searchRequest
-        ] = $this->setupProductSearchTest();
-
-        $apiClientMock->expects($this->once())
-            ->method('send')
-            ->with($searchRequest)
-            ->willReturn($response);
-
-        /** @var Config|MockObject $configMock */
-        $configMock = $this->getMockBuilder(Config::class)
-            ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
-            ->getMock();
-        $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
-
-        $frontendSubscriber = new FrontendSubscriber(
-            $configServiceMock,
-            $serviceConfigResource,
-            $searchRequestFactory,
-            $navigationRequestFactory,
-            $this->getContainer()->get(GenericPageLoader::class),
-            $this->getContainer(),
-            $configMock,
-            $apiConfig,
-            $apiClientMock
-        );
-        $frontendSubscriber->onSearch($event);
-
-        // Make sure that the product IDs are assigned correctly to the criteria after the onSearch event is triggered
-        $this->assertSame($productIds, $event->getCriteria()->getIds());
-    }
-
-    /**
-     * @dataProvider responseProvider
-     *
-     * @param int[] $productIds
-     *
-     * @throws InvalidArgumentException
-     * @throws MissingRequestParameterException
-     * @throws CategoryNotFoundException
-     * @throws InconsistentCriteriaIdsException
-     */
-    public function testProductListingCriteria(?Xml21Response $response, array $productIds): void
-    {
-        [
-            $configServiceMock,
-            $serviceConfigResource,
-            $searchRequestFactory,
-            $navigationRequestFactory,
-            $apiConfig,
-            $apiClientMock,
-            $event,
-            $navigationRequest
-        ] = $this->setupProductListingTest();
-
-        $apiClientMock->expects($this->once())
-            ->method('send')
-            ->with($navigationRequest)
-            ->willReturn($response);
-
-        /** @var Config|MockObject $configMock */
-        $configMock = $this->getMockBuilder(Config::class)
-            ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
-            ->getMock();
-        $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
-
-        $frontendSubscriber = new FrontendSubscriber(
-            $configServiceMock,
-            $serviceConfigResource,
-            $searchRequestFactory,
-            $navigationRequestFactory,
-            $this->getContainer()->get(GenericPageLoader::class),
-            $this->getContainer(),
-            $configMock,
-            $apiConfig,
-            $apiClientMock
-        );
-        $frontendSubscriber->onNavigation($event);
-
-        // Make sure that the product IDs are assigned correctly
-        $this->assertSame($productIds, $event->getCriteria()->getIds());
-    }
-
-    public function eventTypeProvider()
-    {
-        return [
-            'ServiceNotAliveException is caught for search' => [true],
-            'ServiceNotAliveException is caught for navigation' => [false],
-        ];
-    }
-
-    /**
-     * @dataProvider eventTypeProvider
-     * @throws InconsistentCriteriaIdsException
-     * @throws InvalidArgumentException
-     * @throws MissingRequestParameterException
-     * @throws CategoryNotFoundException
-     */
-    public function testServiceNotAliveExceptionsAreCaught(bool $isSearch): void
-    {
-        if ($isSearch) {
-            [
-                $configServiceMock,
-                $serviceConfigResource,
-                $searchRequestFactory,
-                $navigationRequestFactory,
-                $apiConfig,
-                $apiClientMock,
-                $event,
-                $searchRequest
-            ] = $this->setupProductSearchTest();
-        } else {
-            [
-                $configServiceMock,
-                $serviceConfigResource,
-                $searchRequestFactory,
-                $navigationRequestFactory,
-                $apiConfig,
-                $apiClientMock,
-                $event,
-                $searchRequest
-            ] = $this->setupProductListingTest();
-        }
-
-        $apiClientMock->expects($this->once())
-            ->method('send')
-            ->with($searchRequest)
-            ->willThrowException(new ServiceNotAliveException('Service responded with an error'));
-
-        /** @var Config|MockObject $configMock */
-        $configMock = $this->getMockBuilder(Config::class)
-            ->setConstructorArgs([$configServiceMock, $serviceConfigResource])
-            ->getMock();
-        $configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $configMock->expects($this->exactly(2))->method('getShopkey')->willReturn($this->getShopkey());
-
-        $frontendSubscriber = new FrontendSubscriber(
-            $configServiceMock,
-            $serviceConfigResource,
-            $searchRequestFactory,
-            $navigationRequestFactory,
-            $this->getContainer()->get(GenericPageLoader::class),
-            $this->getContainer(),
-            $configMock,
-            $apiConfig,
-            $apiClientMock
-        );
-
-        if ($isSearch) {
-            $frontendSubscriber->onSearch($event);
-        } else {
-            $frontendSubscriber->onNavigation($event);
-        }
-        // Make sure that the product IDs empty due to exception
-        $this->assertEmpty($event->getCriteria()->getIds());
     }
 
     private function setupProductListingTest(): array
@@ -482,86 +303,6 @@ class FrontendSubscriberTest extends TestCase
             $event,
             $searchRequest
         ];
-    }
-
-    public function testResponseHasPromotion()
-    {
-        $expectedExtension = new Promotion('https://promotion.com/promotion.png', 'https://promotion.com/');
-
-        $xml = $this->getDemoXML();
-        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
-
-        $this->assertArrayHasKey('flPromotion', $extensions);
-        $this->assertEquals($expectedExtension, $extensions['flPromotion']);
-    }
-
-    public function testResponseDoesNotHavePromotion()
-    {
-        $xml = $this->getDemoXML();
-        unset($xml->promotion);
-
-        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
-        $this->assertArrayNotHasKey('flPromotion', $extensions);
-    }
-
-    public function testResponseHasLandingPage()
-    {
-        $this->markTestSkipped('Issue due to redirection');
-        $xml = $this->getDemoXML();
-        $xml->addChild('landingPage')->addAttribute('link', 'https://www.landingpage.io/agb/');
-
-        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
-        $this->assertEmpty($extensions);
-    }
-
-    public function testResponseContainsDidYouMeanQuery()
-    {
-        $xml = $this->getDemoXML();
-
-        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
-        $this->assertNotEmpty($extensions);
-        $this->assertArrayHasKey('flSmartDidYouMean', $extensions);
-
-        $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
-        $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
-        $this->assertSame('did-you-mean', $smartDidYouMeanParameters['type']);
-        $this->assertSame('/findologic?search=ps4&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
-        $this->assertSame('ps4', $smartDidYouMeanParameters['alternativeQuery']);
-    }
-
-    public function testResponseContainsImprovedQuery()
-    {
-        $xml = $this->getDemoXML();
-        unset($xml->query->didYouMeanQuery);
-        unset($xml->query->queryString);
-
-        $xml->query->addChild('queryString', 'ps3')->addAttribute('type', 'improved');
-
-        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
-        $this->assertNotEmpty($extensions);
-        $this->assertArrayHasKey('flSmartDidYouMean', $extensions);
-
-        $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
-        $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
-        $this->assertSame('improved', $smartDidYouMeanParameters['type']);
-        $this->assertSame('/findologic?search=original query&forceOriginalQuery=1', $smartDidYouMeanParameters['link']);
-        $this->assertSame('ps3', $smartDidYouMeanParameters['alternativeQuery']);
-    }
-
-    public function testResponseContainsCorrectedQuery()
-    {
-        $xml = $this->getDemoXML();
-        unset($xml->query->didYouMeanQuery);
-
-        $extensions = $this->getSearchExtensionsFromFrontendSubscriber($xml);
-        $this->assertNotEmpty($extensions);
-        $this->assertArrayHasKey('flSmartDidYouMean', $extensions);
-
-        $smartDidYouMeanExtension = $extensions['flSmartDidYouMean'];
-        $smartDidYouMeanParameters = $smartDidYouMeanExtension->getVars();
-        $this->assertSame('corrected', $smartDidYouMeanParameters['type']);
-        $this->assertNull($smartDidYouMeanParameters['link']);
-        $this->assertSame('ps3', $smartDidYouMeanParameters['alternativeQuery']);
     }
 
     private function createDefaultSearchRequest(Request $request): SearchRequest

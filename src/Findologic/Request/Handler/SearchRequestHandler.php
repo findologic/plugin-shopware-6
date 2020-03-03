@@ -7,75 +7,86 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
-use FINDOLOGIC\FinSearch\Struct\Promotion;
-use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
+use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
-use Symfony\Component\HttpFoundation\Request;
 
 class SearchRequestHandler extends SearchNavigationRequestHandler
 {
     /**
-     * @throws InconsistentCriteriaIdsException
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
+     *
+     * @throws InconsistentCriteriaIdsException
      */
     public function handleRequest(ShopwareEvent $event): void
     {
-        $originalCriteria = clone $event->getCriteria();
-        $request = $event->getRequest();
-
-        /** @var SearchRequest $searchRequest */
-        $searchRequest = $this->findologicRequestFactory->getInstance($request);
-        $searchRequest->setQuery((string)$request->query->get('search'));
-        $this->setPaginationParams($event, $searchRequest);
-
-        try {
-            /** @var Xml21Response $response */
-            $response = $this->sendRequest($searchRequest);
-        } catch (ServiceNotAliveException $e) {
-            $this->assignCriteriaToEvent($event, $originalCriteria);
+        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
             return;
         }
 
-        $this->setSmartDidYouMeanExtension($event, $response, $request);
-        $criteria = new Criteria($this->parseProductIdsFromResponse($response));
+        $originalCriteria = clone $event->getCriteria();
 
-        $this->redirectOnLandingPage($response);
-        $this->setPromotionExtension($event, $response);
+        try {
+            $response = $this->doRequest($event);
+            $responseParser = ResponseParser::getInstance($response);
+        } catch (ServiceNotAliveException $e) {
+            $this->assignCriteriaToEvent($event, $originalCriteria);
 
-        $criteria->setLimit($originalCriteria->getLimit());
-        $criteria->setOffset($originalCriteria->getOffset());
-        $criteria->setTotalCountMode(Criteria::TOTAL_COUNT_MODE_NEXT_PAGES);
+            return;
+        }
+
+        $event->getContext()->addExtension(
+            'flSmartDidYouMean',
+            $responseParser->getSmartDidYouMeanExtension($event->getRequest())
+        );
+
+        $criteria = new Criteria($responseParser->getProductIds());
+        $criteria->addExtensions($event->getCriteria()->getExtensions());
+
+        $this->redirectOnLandingPage($responseParser);
+        $this->setPromotionExtension($event, $responseParser);
+
+        $this->setPagination(
+            $criteria,
+            $responseParser,
+            $originalCriteria->getLimit(),
+            $originalCriteria->getOffset()
+        );
 
         $this->assignCriteriaToEvent($event, $criteria);
     }
 
-    public function getFindologicResponse(ShopwareEvent $event): ?Response
+    /**
+     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
+     * @param int|null $limit
+     *
+     * @return Response|null
+     * @throws ServiceNotAliveException
+     */
+    public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response
     {
+        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
+            return null;
+        }
+
         $request = $event->getRequest();
 
         /** @var SearchRequest $searchRequest */
         $searchRequest = $this->findologicRequestFactory->getInstance($request);
         $searchRequest->setQuery((string)$request->query->get('search'));
-        $this->setPaginationParams($event, $searchRequest);
+        $this->setPaginationParams($event, $searchRequest, $limit);
+        $this->addSorting($searchRequest, $event->getCriteria());
+        $this->handleFilters($request, $searchRequest);
 
-        try {
-            return $this->sendRequest($searchRequest);
-        } catch (ServiceNotAliveException $e) {
-            return null;
-        }
+        return $this->sendRequest($searchRequest);
     }
 
-    protected function redirectOnLandingPage(Xml21Response $response): void
+    protected function redirectOnLandingPage(ResponseParser $responseParser): void
     {
-        $landingPage = $response->getLandingPage();
-        if ($landingPage instanceof LandingPage) {
-            header('Location:' . $landingPage->getLink());
+        if ($landingPageUri = $responseParser->getLandingPageUri()) {
+            header('Location:' . $landingPageUri);
             exit;
         }
     }
@@ -83,24 +94,10 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
     /**
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
      */
-    protected function setPromotionExtension(ShopwareEvent $event, Xml21Response $response): void
+    protected function setPromotionExtension(ShopwareEvent $event, ResponseParser $responseParser): void
     {
-        $promotion = $response->getPromotion();
-
-        if ($promotion instanceof ApiPromotion) {
-            $promotion = new Promotion($promotion->getImage(), $promotion->getLink());
+        if ($promotion = $responseParser->getPromotionExtension()) {
             $event->getContext()->addExtension('flPromotion', $promotion);
         }
-    }
-
-    protected function setSmartDidYouMeanExtension(
-        ShopwareEvent $event,
-        Xml21Response $response,
-        Request $request
-    ): void {
-        $event->getContext()->addExtension(
-            'flSmartDidYouMean',
-            new SmartDidYouMean($response->getQuery(), $request->getRequestUri())
-        );
     }
 }

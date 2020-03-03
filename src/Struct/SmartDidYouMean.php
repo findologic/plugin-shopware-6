@@ -21,7 +21,7 @@ class SmartDidYouMean extends Struct
     /** @var string */
     private $originalQuery;
 
-    public function __construct(Query $query, string $controllerPath)
+    public function __construct(?Query $query, ?string $controllerPath)
     {
         $this->type = $query->getDidYouMeanQuery() !== null ? 'did-you-mean' : $query->getQueryString()->getType();
         $this->alternativeQuery = htmlentities($query->getAlternativeQuery());
@@ -32,7 +32,7 @@ class SmartDidYouMean extends Struct
         $this->link = $this->createLink($controllerPath);
     }
 
-    private function createLink(string $controllerPath): ?string
+    private function createLink(?string $controllerPath): ?string
     {
         switch ($this->type) {
             case 'did-you-mean':

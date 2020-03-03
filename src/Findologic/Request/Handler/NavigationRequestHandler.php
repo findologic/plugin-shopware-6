@@ -9,9 +9,11 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
+use FINDOLOGIC\FinSearch\Exceptions\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Parser\NavigationCategoryParser;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
@@ -48,14 +50,57 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
     }
 
     /**
-     * @throws CategoryNotFoundException
+     * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     *
      * @throws MissingRequestParameterException
      * @throws InconsistentCriteriaIdsException
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     * @throws CategoryNotFoundException
      */
     public function handleRequest(ShopwareEvent $event): void
     {
+        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
+            return;
+        }
+
         $originalCriteria = clone $event->getCriteria();
+
+        try {
+            $response = $this->doRequest($event);
+            $responseParser = ResponseParser::getInstance($response);
+        } catch (ServiceNotAliveException | UnknownCategoryException $e) {
+            $this->assignCriteriaToEvent($event, $originalCriteria);
+
+            return;
+        }
+
+        /** @var Criteria $criteria */
+        $criteria = $event->getCriteria();
+        $this->setPagination(
+            $criteria,
+            $responseParser,
+            $originalCriteria->getLimit(),
+            $originalCriteria->getOffset()
+        );
+
+        $criteria->setIds($responseParser->getProductIds());
+    }
+
+    /**
+     * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     * @param int|null $limit
+     *
+     * @return Response|null
+     * @throws CategoryNotFoundException
+     * @throws InconsistentCriteriaIdsException
+     * @throws MissingRequestParameterException
+     * @throws ServiceNotAliveException
+     * @throws UnknownCategoryException
+     */
+    public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response
+    {
+        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
+            return null;
+        }
 
         // Prevent exception if someone really tried to order by score on a category page.
         if ($event->getRequest()->query->get('sort') === 'score') {
@@ -71,55 +116,19 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         // If we can't fetch the category path, we let Shopware handle the request.
         if (empty($categoryPath)) {
-            return;
+            throw new UnknownCategoryException();
         }
 
         /** @var NavigationRequest $navigationRequest */
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $categoryPath);
-        $this->setPaginationParams($event, $navigationRequest);
-
-        try {
-            $response = $this->sendRequest($navigationRequest);
-        } catch (ServiceNotAliveException $e) {
-            $this->assignCriteriaToEvent($event, $originalCriteria);
-            return;
+        $this->setPaginationParams($event, $navigationRequest, $limit);
+        $this->addSorting($navigationRequest, $event->getCriteria());
+        if ($limit > 0 || $limit === null) {
+            $this->handleFilters($request, $navigationRequest);
         }
 
-        /** @var Criteria $criteria */
-        $criteria = $event->getCriteria();
-        $criteria->setIds($this->parseProductIdsFromResponse($response));
-    }
-
-    /**
-     * @throws CategoryNotFoundException
-     * @throws InconsistentCriteriaIdsException
-     * @throws MissingRequestParameterException
-     */
-    public function getFindologicResponse(ShopwareEvent $event): ?Response
-    {
-        $request = $event->getRequest();
-
-        /** @var SalesChannelContext $salesChannelContext */
-        $salesChannelContext = $event->getSalesChannelContext();
-
-        $categoryPath = $this->fetchCategoryPath($request, $salesChannelContext);
-
-        // If we can't fetch the category path, we let Shopware handle the request.
-        if (empty($categoryPath)) {
-            return null;
-        }
-
-        /** @var NavigationRequest $navigationRequest */
-        $navigationRequest = $this->findologicRequestFactory->getInstance($request);
-        $navigationRequest->setSelected('cat', $categoryPath);
-        $this->setPaginationParams($event, $navigationRequest);
-
-        try {
-            return $this->sendRequest($navigationRequest);
-        } catch (ServiceNotAliveException $e) {
-            return null;
-        }
+        return $this->sendRequest($navigationRequest);
     }
 
     /**
@@ -131,6 +140,10 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
     {
         $navigationCategoryParser = new NavigationCategoryParser($this->container, $this->genericPageLoader);
         $category = $navigationCategoryParser->parse($request, $salesChannelContext);
+
+        if (!$category) {
+            return null;
+        }
 
         return $this->buildCategoryPath($category->getBreadcrumb());
     }
