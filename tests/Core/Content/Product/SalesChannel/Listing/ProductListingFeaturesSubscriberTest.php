@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 
 use Doctrine\DBAL\Connection;
@@ -138,7 +140,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     private function getRawResponse(string $file = 'demo.xml'): SimpleXMLElement
     {
-        return new SimpleXMLElement(file_get_contents(__DIR__ . sprintf('/../../../../../MockData/XMLResponse/%s', $file)));
+        return new SimpleXMLElement(file_get_contents(
+            __DIR__ . sprintf('/../../../../../MockData/XMLResponse/%s', $file)
+        ));
     }
 
     private function getDefaultResponse(): Xml21Response
