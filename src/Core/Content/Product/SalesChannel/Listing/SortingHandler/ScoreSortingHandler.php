@@ -16,6 +16,6 @@ class ScoreSortingHandler implements SortingHandlerInterface
 
     public function generateSorting(FieldSorting $fieldSorting, SearchNavigationRequest $searchNavigationRequest): void
     {
-        $searchNavigationRequest->setOrder('salesfrequency dynamic ' . $fieldSorting->getDirection());
+        // Here we do not do anything, because FINDOLOGIC automatically orders by relevance.
     }
 }

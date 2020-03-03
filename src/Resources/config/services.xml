@@ -13,6 +13,12 @@
             <argument type="service" id="Doctrine\DBAL\Connection"/>
             <argument type="service" id="property_group_option.repository"/>
             <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" />
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
+            <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
+            <argument type="service" id="Symfony\Component\DependencyInjection\ContainerInterface" />
         </service>
 
         <service id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"
@@ -51,10 +57,6 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <tag name="kernel.event_subscriber" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" />
-            <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
-            <argument type="service" id="Symfony\Component\DependencyInjection\ContainerInterface" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
@@ -112,6 +114,12 @@
 
         <service id="FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\de_DE\SnippetFile_de_DE" public="true">
             <tag name="shopware.snippet.file" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Utils\TwigExtension"
+                 class="FINDOLOGIC\FinSearch\Utils\TwigExtension"
+                 public="false">
+            <tag name="twig.extension" />
         </service>
 
     </services>
