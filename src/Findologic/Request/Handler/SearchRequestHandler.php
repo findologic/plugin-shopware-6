@@ -26,6 +26,11 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             return;
         }
 
+        $request = $event->getRequest();
+
+        /** @var SearchRequest $searchRequest */
+        $searchRequest = $this->findologicRequestFactory->getInstance($request);
+        $searchRequest->setQuery((string)$request->query->get('search'));
         $originalCriteria = clone $event->getCriteria();
         $this->addSorting($searchRequest, $event->getCriteria());
 
