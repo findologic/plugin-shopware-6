@@ -199,6 +199,66 @@ XML;
         return $element;
     }
 
+    /**
+     * @param Xml21Response|null $response
+     * @return MockObject|ProductSearchCriteriaEvent
+     */
+    private function setUpSearchRequestMocks(Xml21Response $response = null): ProductSearchCriteriaEvent
+    {
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        if ($response) {
+            $this->apiClientMock->expects($this->any())
+                ->method('send')
+                ->willReturn($this->getDefaultResponse());
+        }
+
+        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
+        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
+
+        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
+
+        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
+
+        return $eventMock;
+    }
+
+    private function setUpNavigationRequestMocks(): void
+    {
+        $headerMock = $this->getMockBuilder(HeaderPagelet::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // TODO: Make this injectable via constructor arguments if possible.
+        $pageMock = $this->getMockBuilder(Page::class)->disableOriginalConstructor()->getMock();
+        $pageMock->expects($this->any())->method('getHeader')->willReturn($headerMock);
+        $reflection = new ReflectionClass($pageMock);
+        $reflectionProperty = $reflection->getProperty('header');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($pageMock, $headerMock);
+        $this->genericPageLoaderMock->expects($this->any())->method('load')->willReturn($pageMock);
+
+        $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
+        $headerMock->expects($this->once())->method('getNavigation')->willReturn($categoryTreeMock);
+
+        $categoryEntityMock = $this->getMockBuilder(CategoryEntity::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $categoryTreeMock->expects($this->once())->method('getActive')->willReturn($categoryEntityMock);
+
+        $categoryEntityMock->expects($this->once())->method('getBreadcrumb')
+            ->willReturn(['Deutsch', 'Freizeit & Elektro']);
+    }
+
     public function requestProvider(): array
     {
         return [
@@ -229,24 +289,7 @@ XML;
      */
     public function testResponseMatchesProductIds(string $endpoint, array $expectedProducts, bool $isNavigationRequest)
     {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $this->apiClientMock->expects($this->any())->method('send')->willReturn($this->getDefaultResponse());
-
-        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
-
-        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
-
-        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
-        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
+        $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
@@ -272,30 +315,7 @@ XML;
         ]);
 
         if ($isNavigationRequest) {
-            $headerMock = $this->getMockBuilder(HeaderPagelet::class)
-                ->disableOriginalConstructor()
-                ->getMock();
-
-            // TODO: Make this injectable via constructor arguments if possible.
-            $pageMock = $this->getMockBuilder(Page::class)->disableOriginalConstructor()->getMock();
-            $pageMock->expects($this->any())->method('getHeader')->willReturn($headerMock);
-            $reflection = new ReflectionClass($pageMock);
-            $reflectionProperty = $reflection->getProperty('header');
-            $reflectionProperty->setAccessible(true);
-            $reflectionProperty->setValue($pageMock, $headerMock);
-            $this->genericPageLoaderMock->expects($this->any())->method('load')->willReturn($pageMock);
-
-            $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
-            $headerMock->expects($this->once())->method('getNavigation')->willReturn($categoryTreeMock);
-
-            $categoryEntityMock = $this->getMockBuilder(CategoryEntity::class)
-                ->disableOriginalConstructor()
-                ->getMock();
-
-            $categoryTreeMock->expects($this->once())->method('getActive')->willReturn($categoryEntityMock);
-
-            $categoryEntityMock->expects($this->once())->method('getBreadcrumb')
-                ->willReturn(['Deutsch', 'Freizeit & Elektro']);
+            $this->setUpNavigationRequestMocks();
         }
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
@@ -347,24 +367,7 @@ XML;
      */
     public function testSortingIsSubmitted(FieldSorting $fieldSorting, string $expectedOrder)
     {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $this->apiClientMock->expects($this->any())->method('send')->willReturn($this->getDefaultResponse());
-
-        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
-
-        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
-
-        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
-        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
+        $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
@@ -397,26 +400,11 @@ XML;
         array $expectedProducts,
         bool $isNavigationRequest
     ) {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $eventMock = $this->setUpSearchRequestMocks();
+
         $this->apiClientMock->expects($this->any())->method('send')->willThrowException(
             new ServiceNotAliveException('dead: This service is currently unreachable.')
         );
-
-        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
-
-        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
-
-        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
-        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         /** @var Criteria|MockObject $criteriaMock */
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
@@ -424,30 +412,7 @@ XML;
         $criteriaMock->expects($this->any())->method('assign')->with([]); // Should be empty.
 
         if ($isNavigationRequest) {
-            $headerMock = $this->getMockBuilder(HeaderPagelet::class)
-                ->disableOriginalConstructor()
-                ->getMock();
-
-            // TODO: Make this injectable via constructor arguments if possible.
-            $pageMock = $this->getMockBuilder(Page::class)->disableOriginalConstructor()->getMock();
-            $pageMock->expects($this->any())->method('getHeader')->willReturn($headerMock);
-            $reflection = new ReflectionClass($pageMock);
-            $reflectionProperty = $reflection->getProperty('header');
-            $reflectionProperty->setAccessible(true);
-            $reflectionProperty->setValue($pageMock, $headerMock);
-            $this->genericPageLoaderMock->expects($this->any())->method('load')->willReturn($pageMock);
-
-            $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
-            $headerMock->expects($this->once())->method('getNavigation')->willReturn($categoryTreeMock);
-
-            $categoryEntityMock = $this->getMockBuilder(CategoryEntity::class)
-                ->disableOriginalConstructor()
-                ->getMock();
-
-            $categoryTreeMock->expects($this->once())->method('getActive')->willReturn($categoryEntityMock);
-
-            $categoryEntityMock->expects($this->once())->method('getBreadcrumb')
-                ->willReturn(['Deutsch', 'Freizeit & Elektro']);
+            $this->setUpNavigationRequestMocks();
         }
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
@@ -456,15 +421,7 @@ XML;
 
     public function testResponseHasPromotion()
     {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
-        $this->apiClientMock->expects($this->any())->method('send')->willReturn($this->getDefaultResponse());
-
-        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
+        $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
 
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
@@ -493,16 +450,7 @@ XML;
         $response = $this->getRawResponse();
         unset($response->promotion);
 
-        $this->apiClientMock->expects($this->any())->method('send')->willReturn(
-            new Xml21Response($response->asXML())
-        );
-
-        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
+        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
 
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
@@ -529,16 +477,7 @@ XML;
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithDidYouMeanQuery.xml');
 
-        $this->apiClientMock->expects($this->any())->method('send')->willReturn(
-            new Xml21Response($response->asXML())
-        );
-
-        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
+        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
 
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
@@ -571,16 +510,7 @@ XML;
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithCorrectedQuery.xml');
 
-        $this->apiClientMock->expects($this->any())->method('send')->willReturn(
-            new Xml21Response($response->asXML())
-        );
-
-        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
+        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
 
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
@@ -613,16 +543,7 @@ XML;
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithImprovedQuery.xml');
 
-        $this->apiClientMock->expects($this->any())->method('send')->willReturn(
-            new Xml21Response($response->asXML())
-        );
-
-        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
+        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
 
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
