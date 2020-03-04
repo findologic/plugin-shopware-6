@@ -27,11 +27,6 @@ use Shopware\Core\Framework\Event\ShopwareEvent;
 
 abstract class SearchNavigationRequestHandler
 {
-    public const NOT_ALLOWED_FILTERS = [
-        'p',
-        'sort'
-    ];
-
     /**
      * @var ServiceConfigResource
      */
