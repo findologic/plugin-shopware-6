@@ -165,6 +165,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->method('getInt')
             ->willReturn(1);
         $queryMock->expects($this->any())->method('get')->willReturn('');
+        $queryMock->expects($this->any())->method('all')->willReturn([]);
 
         $requestMock->query = $queryMock;
 
