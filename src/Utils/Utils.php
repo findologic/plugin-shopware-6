@@ -6,6 +6,8 @@ namespace FINDOLOGIC\FinSearch\Utils;
 
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Kernel;
+use Symfony\Component\HttpFoundation\Request;
 
 class Utils
 {

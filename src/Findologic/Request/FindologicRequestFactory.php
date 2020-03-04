@@ -71,9 +71,12 @@ abstract class FindologicRequestFactory
         Request $request,
         SearchNavigationRequest $searchNavigationRequest
     ): SearchNavigationRequest {
-        $searchNavigationRequest->setUserIp($request->getClientIp());
+        $searchNavigationRequest->setUserIp($this->fetchClientIp());
         $searchNavigationRequest->setRevision($this->getPluginVersion());
         $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
+        // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
+        //  Shopware themselves have it hardcoded at 24.
+        $searchNavigationRequest->setCount(24);
 
         if ($request->headers->get('referer')) {
             $searchNavigationRequest->setReferer($request->headers->get('referer'));
@@ -87,5 +90,36 @@ abstract class FindologicRequestFactory
         }
 
         return $searchNavigationRequest;
+    }
+
+    private function fetchClientIp(): string
+    {
+        if (isset($_SERVER['HTTP_CLIENT_IP'])) {
+            $ipAddress = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            // Check for multiple IPs passing through proxy
+            $position = strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',');
+
+            // If multiple IPs are passed, extract the first one
+            if ($position !== false) {
+                $ipAddress = substr($_SERVER['HTTP_X_FORWARDED_FOR'], 0, $position);
+            } else {
+                $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            }
+        } elseif (isset($_SERVER['HTTP_X_FORWARDED'])) {
+            $ipAddress = $_SERVER['HTTP_X_FORWARDED'];
+        } elseif (isset($_SERVER['HTTP_FORWARDED_FOR'])) {
+            $ipAddress = $_SERVER['HTTP_FORWARDED_FOR'];
+        } elseif (isset($_SERVER['HTTP_FORWARDED'])) {
+            $ipAddress = $_SERVER['HTTP_FORWARDED'];
+        } elseif (isset($_SERVER['REMOTE_ADDR'])) {
+            $ipAddress = $_SERVER['REMOTE_ADDR'];
+        } else {
+            $ipAddress = 'UNKNOWN';
+        }
+
+        $ipAddress = implode(',', array_unique(array_map('trim', explode(',', $ipAddress))));
+
+        return $ipAddress;
     }
 }

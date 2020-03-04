@@ -1,0 +1,51 @@
+{% sw_extends '@Storefront/storefront/component/listing/filter-panel.html.twig' %}
+
+{% block component_filter_panel_items_container %}
+
+    {% block component_filter_panel_item_test_filter %}
+        {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
+            {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
+        {% else %}
+            {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
+        {% endif %}
+
+        {% if filters %}
+            {% for filter in filters %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\LabelTextFilter") or filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\SelectDropdownFilter") %}
+                    {% sw_include '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' with {
+                        elements: filter.values,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        displayName: filter.name,
+                        displayType: property.displayType,
+                        pluginSelector: 'filter-property-select'
+                    } %}
+                {% endif %}
+
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\RangeSliderFilter") %}
+                    {% sw_include '@Storefront/storefront/component/listing/filter/filter-range.html.twig' with {
+                        elements: filter.values,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        displayName: filter.name,
+                        displayType: property.displayType,
+                        minKey: filter.minKey,
+                        maxKey: filter.maxKey,
+                        pluginSelector: 'filter-range-slider'
+                    } %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endblock %}
+
+    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
+        {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
+    {% else %}
+        {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
+    {% endif %}
+
+    {% if not filters %}
+        {{ parent() }}
+    {% endif %}
+
+{% endblock %}
