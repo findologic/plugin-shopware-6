@@ -18,11 +18,12 @@ use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
+use FINDOLOGIC\FinSearch\Struct\Filter\Filter;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
-use Symfony\Component\HttpFoundation\Request;
 
 abstract class SearchNavigationRequestHandler
 {
@@ -97,8 +98,9 @@ abstract class SearchNavigationRequestHandler
         return $this->apiClient->send($searchNavigationRequest);
     }
 
-    protected function handleFilters(Request $request, SearchNavigationRequest $searchNavigationRequest): void
+    protected function handleFilters(ShopwareEvent $event, SearchNavigationRequest $searchNavigationRequest): void
     {
+        $request = $event->getRequest();
         $params = $request->query->all();
 
         if (array_key_exists('attrib', $params)) {
@@ -121,9 +123,11 @@ abstract class SearchNavigationRequestHandler
             unset($params['catFilter']);
         }
 
+        $availableFilters = $this->fetchAvailableFilters($event);
+
         // Add any additional parameters that are filterable in the request
         foreach ($params as $key => $param) {
-            if (!empty($param) && !in_array($key, self::NOT_ALLOWED_FILTERS, false)) {
+            if (!empty($param) && in_array($key, $availableFilters, false)) {
                 $searchNavigationRequest->addAttribute($key, $param);
             }
         }
@@ -181,5 +185,25 @@ abstract class SearchNavigationRequestHandler
     ): void {
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
         $criteria->addExtension('flPagination', $pagination);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function fetchAvailableFilters(ShopwareEvent $event): array
+    {
+        $availableFilters = [];
+
+        /** @var CustomFilters $customFilters */
+        $customFilters = $event->getCriteria()->getExtension('flFilters');
+
+        /** @var Filter[] $filters */
+        $filters = $customFilters->getFilters();
+
+        foreach ($filters as $filter) {
+            $availableFilters[] = $filter->getId();
+        }
+
+        return $availableFilters;
     }
 }
