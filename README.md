@@ -1,5 +1,19 @@
 # FINDOLOGIC Shopware 6 Plugin
 
+[![Build Status](https://travis-ci.com/findologic/plugin-shopware-6.svg?token=fG1Z4AFpYjQqPYU4kJVF&branch=master)](https://travis-ci.com/findologic/plugin-shopware-6)
+
+## Installation
+
+Installing the FINDOLOGIC plugin is as simple as installing any other plugin.
+
+1. Go to your shop administration (https://example.com/admin).
+1. Upload the FINDOLOGIC plugin in Settings > System > Plugins > Upload plugin.
+1. Install and activate the uploaded plugin.
+1. Open the plugin configuration and enter your "Shopkey".
+1. Start an import - or wait for a nightly import.
+1. Set the plugin in the plugin configuration to "Active".
+
+You may need to clear the cache after setting your configuration.
 
 ## Development
 
