@@ -26,15 +26,7 @@ Before starting the deployment make sure that a release is already created.
 
 1. Run `git fetch` and ensure that the release tag is available locally. Make sure
  that the file `composer.json` contains the correct version constraint.
-1. Remove the following folder/files:
-   1. `/vendor`
-   1. `/tests`
-   1. `.gitignore`
-   1. `.travis.yml`
-   1. `phpcs.xml`
-   1. `phpunit.xml.dist`
-1. Run `composer install --no-dev`.
-1. Create a zip file named `FinSearch-x.x.x.zip` and copy the entire folder in. Make sure to rename it to `FinSearch`.
+1. Run `./archive.sh`, which will build a release `FinSearch-x.x.x.zip` file.
 1. Upload this version to Google Drive `Development/Modul-Entwicklung/Unified Module/Shopware 6` and move the old
  version to `alte Versionen`.
 1. Go to https://account.shopware.com and login. Go to
