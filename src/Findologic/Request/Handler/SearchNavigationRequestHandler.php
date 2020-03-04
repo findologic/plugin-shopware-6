@@ -26,6 +26,11 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class SearchNavigationRequestHandler
 {
+    public const NOT_ALLOWED_FILTERS = [
+        'p',
+        'sort'
+    ];
+
     /**
      * @var ServiceConfigResource
      */
@@ -94,22 +99,33 @@ abstract class SearchNavigationRequestHandler
 
     protected function handleFilters(Request $request, SearchNavigationRequest $searchNavigationRequest): void
     {
-        $attrib = $request->get('attrib', []);
+        $params = $request->query->all();
 
-        if ($attrib) {
-            foreach ($attrib as $key => $attribute) {
+        if (array_key_exists('attrib', $params)) {
+            foreach ($params['attrib'] as $key => $attribute) {
                 foreach ($attribute as $value) {
                     $searchNavigationRequest->addAttribute($key, $value);
                 }
             }
+            unset($params['attrib']);
         }
 
-        $cat = $request->get('catFilter', '');
-        if (!empty($cat)) {
-            if (is_array($cat)) {
-                $cat = end($cat);
+        if (array_key_exists('catFilter', $params)) {
+            $cat = $params['catFilter'];
+            if (!empty($cat)) {
+                if (is_array($cat)) {
+                    $cat = end($cat);
+                }
+                $searchNavigationRequest->addAttribute('cat', $cat);
             }
-            $searchNavigationRequest->addAttribute('cat', $cat);
+            unset($params['catFilter']);
+        }
+
+        // Add any additional parameters that are filterable in the request
+        foreach ($params as $key => $param) {
+            if (!empty($param) && !in_array($key, self::NOT_ALLOWED_FILTERS, false)) {
+                $searchNavigationRequest->addAttribute($key, $param);
+            }
         }
     }
 
