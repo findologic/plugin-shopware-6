@@ -118,7 +118,7 @@ abstract class SearchNavigationRequestHandler
             unset($params['catFilter']);
         }
 
-        $availableFilters = $this->fetchAvailableFilters($event);
+        $availableFilters = $this->fetchAvailableFilterNames($event);
 
         // Add any additional parameters that are filterable in the request
         foreach ($params as $key => $param) {
@@ -185,7 +185,7 @@ abstract class SearchNavigationRequestHandler
     /**
      * @return string[]
      */
-    private function fetchAvailableFilters(ShopwareEvent $event): array
+    private function fetchAvailableFilterNames(ShopwareEvent $event): array
     {
         $availableFilters = [];
 
