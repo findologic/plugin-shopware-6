@@ -125,8 +125,8 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $this->setPaginationParams($event, $navigationRequest, $limit);
         $this->addSorting($navigationRequest, $event->getCriteria());
 
-        if ($limit > 0 || $limit === null) {
-            $this->handleFilters($request, $navigationRequest);
+        if ($event->getCriteria()->hasExtension('flFilters')) {
+            $this->handleFilters($event, $navigationRequest);
         }
 
         return $this->sendRequest($navigationRequest);

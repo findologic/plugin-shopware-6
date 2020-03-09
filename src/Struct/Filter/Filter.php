@@ -92,6 +92,7 @@ abstract class Filter extends Struct
     private static function handleRangeSliderFilter(ApiRangeSliderFilter $filter): RangeSliderFilter
     {
         $customFilter = new RangeSliderFilter($filter->getName(), $filter->getDisplay());
+        $customFilter->setUnit($filter->getAttributes()->getUnit());
 
         /** @var RangeSliderItem $item */
         foreach ($filter->getItems() as $item) {

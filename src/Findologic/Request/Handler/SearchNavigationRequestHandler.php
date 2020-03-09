@@ -18,6 +18,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -26,6 +27,13 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class SearchNavigationRequestHandler
 {
+    private const
+        MIN_PREFIX = 'min-',
+        MAX_PREFIX = 'max-';
+
+    private const
+        FILTER_DELIMITER = '|';
+
     /**
      * @var ServiceConfigResource
      */
@@ -92,24 +100,70 @@ abstract class SearchNavigationRequestHandler
         return $this->apiClient->send($searchNavigationRequest);
     }
 
-    protected function handleFilters(Request $request, SearchNavigationRequest $searchNavigationRequest): void
+    /**
+     * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     * @param SearchNavigationRequest $searchNavigationRequest
+     */
+    protected function handleFilters(ShopwareEvent $event, SearchNavigationRequest $searchNavigationRequest): void
     {
-        $attrib = $request->get('attrib', []);
+        $request = $event->getRequest();
+        $selectedFilters = $request->query->all();
+        $availableFilterNames = $this->fetchAvailableFilterNames($event);
 
-        if ($attrib) {
-            foreach ($attrib as $key => $attribute) {
-                foreach ($attribute as $value) {
-                    $searchNavigationRequest->addAttribute($key, $value);
+        if ($selectedFilters) {
+            foreach ($selectedFilters as $filterName => $filterValues) {
+                foreach ($this->getFilterValues($filterValues) as $filterValue) {
+                    $this->handleFilter($filterName, $filterValue, $searchNavigationRequest, $availableFilterNames);
                 }
             }
         }
+    }
 
-        $cat = $request->get('catFilter', '');
-        if (!empty($cat)) {
-            if (is_array($cat)) {
-                $cat = end($cat);
-            }
-            $searchNavigationRequest->addAttribute('cat', $cat);
+    private function isRangeSliderFilter(string $name): bool
+    {
+        if (substr($name, 0, strlen(self::MIN_PREFIX)) == self::MIN_PREFIX ||
+            substr($name, 0, strlen(self::MAX_PREFIX)) == self::MAX_PREFIX
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function handleFilter(
+        string $filterName,
+        string $filterValue,
+        SearchNavigationRequest $searchNavigationRequest,
+        array $availableFilterNames
+    ): void {
+        // Range Slider filters in Shopware are prefixed with min-/max-. We manually need to remove this and send
+        // the appropriate parameters to our API.
+        if ($this->isRangeSliderFilter($filterName)) {
+            $this->handleRangeSliderFilter($filterName, $filterValue, $searchNavigationRequest);
+            return;
+        }
+
+        if (in_array($filterName, $availableFilterNames, true)) {
+            $searchNavigationRequest->addAttribute($filterName, $filterValue);
+        }
+    }
+
+    /**
+     * @param string $filterName
+     * @param string|int|float $filterValue
+     * @param SearchNavigationRequest $searchNavigationRequest
+     */
+    private function handleRangeSliderFilter(
+        string $filterName,
+        $filterValue,
+        SearchNavigationRequest $searchNavigationRequest
+    ): void {
+        if (substr($filterName, 0, strlen(self::MIN_PREFIX)) == self::MIN_PREFIX) {
+            $filterName = substr($filterName, strlen(self::MIN_PREFIX));
+            $searchNavigationRequest->addAttribute($filterName, $filterValue, 'min');
+        } else {
+            $filterName = substr($filterName, strlen(self::MAX_PREFIX));
+            $searchNavigationRequest->addAttribute($filterName, $filterValue, 'max');
         }
     }
 
@@ -165,5 +219,30 @@ abstract class SearchNavigationRequestHandler
     ): void {
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
         $criteria->addExtension('flPagination', $pagination);
+    }
+
+    protected function getFilterValues(string $filterValues): array
+    {
+        return explode(self::FILTER_DELIMITER, $filterValues);
+    }
+
+    /**
+     * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     * @return string[]
+     */
+    private function fetchAvailableFilterNames(ShopwareEvent $event): array
+    {
+        $availableFilters = [];
+
+        /** @var CustomFilters $customFilters */
+        $customFilters = $event->getCriteria()->getExtension('flFilters');
+
+        $filters = $customFilters->getFilters();
+
+        foreach ($filters as $filter) {
+            $availableFilters[] = $filter->getId();
+        }
+
+        return $availableFilters;
     }
 }

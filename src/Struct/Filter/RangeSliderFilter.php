@@ -6,15 +6,14 @@ namespace FINDOLOGIC\FinSearch\Struct\Filter;
 
 class RangeSliderFilter extends Filter
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $minKey;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $maxKey;
+
+    /** @var string */
+    private $unit = '€';
 
     public function __construct(string $id, string $name, array $values = [])
     {
@@ -23,19 +22,25 @@ class RangeSliderFilter extends Filter
         $this->maxKey = sprintf('max-%s', $id);
     }
 
-    /**
-     * @return string
-     */
     public function getMinKey(): string
     {
         return $this->minKey;
     }
 
-    /**
-     * @return string
-     */
     public function getMaxKey(): string
     {
         return $this->maxKey;
+    }
+
+    public function setUnit(string $unit): self
+    {
+        $this->unit = $unit;
+
+        return $this;
+    }
+
+    public function getUnit(): string
+    {
+        return $this->unit;
     }
 }

@@ -42,9 +42,48 @@ class SearchController extends ShopwareSearchController
      */
     public function search(SalesChannelContext $context, Request $request): Response
     {
-        $page = $this->searchPageLoader->load($request, $context);
+        if ($response = $this->handleFindologicSearchParams($request)) {
+            return $response;
+        }
 
+        $page = $this->searchPageLoader->load($request, $context);
         return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
+    }
+
+    private function handleFindologicSearchParams(Request $request): ?Response
+    {
+        $queryParams = $request->query->all();
+        $mappedParams = [];
+
+        $attributes = $request->get('attrib');
+        if ($attributes) {
+            foreach ($attributes as $key => $attribute) {
+                foreach ($attribute as $value) {
+                    $mappedParams[$key] = $value;
+                }
+            }
+
+            unset($queryParams['attrib']);
+        }
+
+        $catFilter = $request->get('catFilter');
+        if ($catFilter) {
+            if (!empty($catFilter)) {
+                if (is_array($catFilter)) {
+                    $catFilter = end($catFilter);
+                }
+                $mappedParams['cat'] = $catFilter;
+            }
+
+            unset($queryParams['catFilter']);
+        }
+
+        if ($mappedParams === []) {
+            return null;
+        }
+
+        $params = array_merge($queryParams, $mappedParams);
+        return $this->redirect(sprintf('%s?%s', $request->getBasePath(), http_build_query($params, '', '&', PHP_QUERY_RFC3986)));
     }
 
     /**
