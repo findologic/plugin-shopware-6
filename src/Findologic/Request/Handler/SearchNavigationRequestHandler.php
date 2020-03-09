@@ -121,13 +121,17 @@ abstract class SearchNavigationRequestHandler
 
     private function isRangeSliderFilter(string $name): bool
     {
-        if (substr($name, 0, strlen(self::MIN_PREFIX)) == self::MIN_PREFIX ||
-            substr($name, 0, strlen(self::MAX_PREFIX)) == self::MAX_PREFIX
-        ) {
-            return true;
-        }
+        return $this->isMinRangeSlider($name) || $this->isMaxRangeSlider($name);
+    }
 
-        return false;
+    private function isMinRangeSlider(string $name): bool
+    {
+        return substr($name, 0, strlen(self::MIN_PREFIX)) == self::MIN_PREFIX;
+    }
+
+    private function isMaxRangeSlider(string $name): bool
+    {
+        return substr($name, 0, strlen(self::MAX_PREFIX)) == self::MAX_PREFIX;
     }
 
     private function handleFilter(

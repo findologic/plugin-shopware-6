@@ -83,7 +83,12 @@ class SearchController extends ShopwareSearchController
         }
 
         $params = array_merge($queryParams, $mappedParams);
-        return $this->redirect(sprintf('%s?%s', $request->getBasePath(), http_build_query($params, '', '&', PHP_QUERY_RFC3986)));
+
+        return $this->redirect(sprintf(
+            '%s?%s',
+            $request->getBasePath(),
+            http_build_query($params, '', '&', PHP_QUERY_RFC3986)
+        ));
     }
 
     /**
