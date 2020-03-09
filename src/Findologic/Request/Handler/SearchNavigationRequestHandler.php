@@ -27,13 +27,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class SearchNavigationRequestHandler
 {
-    private const
-        MIN_PREFIX = 'min-',
-        MAX_PREFIX = 'max-';
-
-    private const
-        FILTER_DELIMITER = '|';
-
     /**
      * @var ServiceConfigResource
      */
@@ -64,18 +57,23 @@ abstract class SearchNavigationRequestHandler
      */
     protected $sortingHandlers;
 
+    /** @var FilterHandler */
+    protected $filterHandler;
+
     public function __construct(
         ServiceConfigResource $serviceConfigResource,
         FindologicRequestFactory $findologicRequestFactory,
         Config $config,
         ApiConfig $apiConfig,
-        ApiClient $apiClient
+        ApiClient $apiClient,
+        ?FilterHandler $filterHandler = null
     ) {
         $this->serviceConfigResource = $serviceConfigResource;
+        $this->findologicRequestFactory = $findologicRequestFactory;
         $this->config = $config;
         $this->apiConfig = $apiConfig;
         $this->apiClient = $apiClient;
-        $this->findologicRequestFactory = $findologicRequestFactory;
+        $this->filterHandler = $filterHandler ?? new FilterHandler();
 
         $this->sortingHandlers = $this->getSortingHandler();
     }
@@ -98,77 +96,6 @@ abstract class SearchNavigationRequestHandler
     public function sendRequest(SearchNavigationRequest $searchNavigationRequest): Response
     {
         return $this->apiClient->send($searchNavigationRequest);
-    }
-
-    /**
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     * @param SearchNavigationRequest $searchNavigationRequest
-     */
-    protected function handleFilters(ShopwareEvent $event, SearchNavigationRequest $searchNavigationRequest): void
-    {
-        $request = $event->getRequest();
-        $selectedFilters = $request->query->all();
-        $availableFilterNames = $this->fetchAvailableFilterNames($event);
-
-        if ($selectedFilters) {
-            foreach ($selectedFilters as $filterName => $filterValues) {
-                foreach ($this->getFilterValues($filterValues) as $filterValue) {
-                    $this->handleFilter($filterName, $filterValue, $searchNavigationRequest, $availableFilterNames);
-                }
-            }
-        }
-    }
-
-    private function isRangeSliderFilter(string $name): bool
-    {
-        return $this->isMinRangeSlider($name) || $this->isMaxRangeSlider($name);
-    }
-
-    private function isMinRangeSlider(string $name): bool
-    {
-        return substr($name, 0, strlen(self::MIN_PREFIX)) == self::MIN_PREFIX;
-    }
-
-    private function isMaxRangeSlider(string $name): bool
-    {
-        return substr($name, 0, strlen(self::MAX_PREFIX)) == self::MAX_PREFIX;
-    }
-
-    private function handleFilter(
-        string $filterName,
-        string $filterValue,
-        SearchNavigationRequest $searchNavigationRequest,
-        array $availableFilterNames
-    ): void {
-        // Range Slider filters in Shopware are prefixed with min-/max-. We manually need to remove this and send
-        // the appropriate parameters to our API.
-        if ($this->isRangeSliderFilter($filterName)) {
-            $this->handleRangeSliderFilter($filterName, $filterValue, $searchNavigationRequest);
-            return;
-        }
-
-        if (in_array($filterName, $availableFilterNames, true)) {
-            $searchNavigationRequest->addAttribute($filterName, $filterValue);
-        }
-    }
-
-    /**
-     * @param string $filterName
-     * @param string|int|float $filterValue
-     * @param SearchNavigationRequest $searchNavigationRequest
-     */
-    private function handleRangeSliderFilter(
-        string $filterName,
-        $filterValue,
-        SearchNavigationRequest $searchNavigationRequest
-    ): void {
-        if (substr($filterName, 0, strlen(self::MIN_PREFIX)) == self::MIN_PREFIX) {
-            $filterName = substr($filterName, strlen(self::MIN_PREFIX));
-            $searchNavigationRequest->addAttribute($filterName, $filterValue, 'min');
-        } else {
-            $filterName = substr($filterName, strlen(self::MAX_PREFIX));
-            $searchNavigationRequest->addAttribute($filterName, $filterValue, 'max');
-        }
     }
 
     /**
@@ -223,30 +150,5 @@ abstract class SearchNavigationRequestHandler
     ): void {
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
         $criteria->addExtension('flPagination', $pagination);
-    }
-
-    protected function getFilterValues(string $filterValues): array
-    {
-        return explode(self::FILTER_DELIMITER, $filterValues);
-    }
-
-    /**
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     * @return string[]
-     */
-    private function fetchAvailableFilterNames(ShopwareEvent $event): array
-    {
-        $availableFilters = [];
-
-        /** @var CustomFilters $customFilters */
-        $customFilters = $event->getCriteria()->getExtension('flFilters');
-
-        $filters = $customFilters->getFilters();
-
-        foreach ($filters as $filter) {
-            $availableFilters[] = $filter->getId();
-        }
-
-        return $availableFilters;
     }
 }

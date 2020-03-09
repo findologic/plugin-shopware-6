@@ -126,7 +126,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $this->addSorting($navigationRequest, $event->getCriteria());
 
         if ($event->getCriteria()->hasExtension('flFilters')) {
-            $this->handleFilters($event, $navigationRequest);
+            $this->filterHandler->handleFilters($event, $navigationRequest);
         }
 
         return $this->sendRequest($navigationRequest);

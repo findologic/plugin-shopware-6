@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -27,12 +28,21 @@ class SearchController extends ShopwareSearchController
      */
     private $suggestPageLoader;
 
-    public function __construct(SearchPageLoader $searchPageLoader, SuggestPageLoader $suggestPageLoader)
-    {
+    /**
+     * @var FilterHandler
+     */
+    private $filterHandler;
+
+    public function __construct(
+        SearchPageLoader $searchPageLoader,
+        SuggestPageLoader $suggestPageLoader,
+        ?FilterHandler $filterHandler = null
+    ) {
         parent::__construct($searchPageLoader, $suggestPageLoader);
 
         $this->searchPageLoader = $searchPageLoader;
         $this->suggestPageLoader = $suggestPageLoader;
+        $this->filterHandler = $filterHandler ?? new FilterHandler();
     }
 
     /**
@@ -52,43 +62,11 @@ class SearchController extends ShopwareSearchController
 
     private function handleFindologicSearchParams(Request $request): ?Response
     {
-        $queryParams = $request->query->all();
-        $mappedParams = [];
-
-        $attributes = $request->get('attrib');
-        if ($attributes) {
-            foreach ($attributes as $key => $attribute) {
-                foreach ($attribute as $value) {
-                    $mappedParams[$key] = $value;
-                }
-            }
-
-            unset($queryParams['attrib']);
+        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
+            return $this->redirect($uri);
         }
 
-        $catFilter = $request->get('catFilter');
-        if ($catFilter) {
-            if (!empty($catFilter)) {
-                if (is_array($catFilter)) {
-                    $catFilter = end($catFilter);
-                }
-                $mappedParams['cat'] = $catFilter;
-            }
-
-            unset($queryParams['catFilter']);
-        }
-
-        if ($mappedParams === []) {
-            return null;
-        }
-
-        $params = array_merge($queryParams, $mappedParams);
-
-        return $this->redirect(sprintf(
-            '%s?%s',
-            $request->getBasePath(),
-            http_build_query($params, '', '&', PHP_QUERY_RFC3986)
-        ));
+        return null;
     }
 
     /**
