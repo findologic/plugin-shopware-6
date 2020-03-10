@@ -7,12 +7,16 @@ namespace FINDOLOGIC\FinSearch\Struct\Filter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\CategoryFilter as ApiCategoryFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\ColorPickerFilter as ApiColorPickerFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Filter as ApiFilter;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\ColorItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\DefaultItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\RangeSliderItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\LabelTextFilter as ApiLabelTextFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\RangeSliderFilter as ApiRangeSliderFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\SelectDropdownFilter as ApiSelectDropdownFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\VendorImageFilter as ApiVendorImageFilter;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\ColorImageFilterValue;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\FilterValueImageHandler;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\FilterValue;
 use InvalidArgumentException;
 use Shopware\Core\Framework\Struct\Struct;
 
@@ -56,9 +60,10 @@ abstract class Filter extends Struct
                 return static::handleSelectDropdownFilter($filter);
             case $filter instanceof ApiRangeSliderFilter:
                 return static::handleRangeSliderFilter($filter);
-            case $filter instanceof ApiCategoryFilter: // Shopware does not have a category filter yet.
+            case $filter instanceof ApiColorPickerFilter:
+                return static::handleColorPickerFilter($filter);
             case $filter instanceof ApiVendorImageFilter: // Needs manual implementation.
-            case $filter instanceof ApiColorPickerFilter: // Shopware may support it.
+            case $filter instanceof ApiCategoryFilter: // Shopware does not have a category filter yet.
                 return null;
             default:
                 throw new InvalidArgumentException('The submitted filter is unknown.');
@@ -97,6 +102,36 @@ abstract class Filter extends Struct
         /** @var RangeSliderItem $item */
         foreach ($filter->getItems() as $item) {
             $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
+        }
+
+        return $customFilter;
+    }
+
+    private static function handleColorPickerFilter(ApiColorPickerFilter $filter): ColorPickerFilter
+    {
+        $customFilter = new ColorPickerFilter($filter->getName(), $filter->getDisplay());
+
+        $urls = [];
+        /** @var ColorItem $item */
+        foreach ($filter->getItems() as $item) {
+            $urls[$item->getName()] = $item->getImage();
+
+            $filterValue = new ColorImageFilterValue($item->getName(), $item->getName());
+            $filterValue->setColorHexCode($item->getColor());
+
+            $media = new Media($item->getImage());
+            $filterValue->setMedia($media);
+
+            $customFilter->addValue($filterValue);
+        }
+
+        $filterImageHandler = new FilterValueImageHandler($urls);
+        $validImages = $filterImageHandler->getValidImageUrls();
+
+        foreach ($customFilter->getValues() as $filterValue) {
+            if (isset($validImages[$filterValue->getName()])) {
+                $filterValue->setDisplayType('media');
+            }
         }
 
         return $customFilter;

@@ -11,7 +11,8 @@
 
         {% if filters %}
             {% for filter in filters %}
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\LabelTextFilter") or filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\SelectDropdownFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\LabelTextFilter") or
+                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\SelectDropdownFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
@@ -33,6 +34,17 @@
                         maxKey: filter.maxKey,
                         pluginSelector: 'filter-range-slider',
                         currencySymbol: filter.unit
+                    } %}
+                {% endif %}
+
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\ColorPickerFilter") %}
+                    {% sw_include '@Storefront/storefront/component/listing/filter/filter-property-select.html.twig' with {
+                        elements: filter.values,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        displayName: filter.name,
+                        displayType: 'color',
+                        pluginSelector: 'filter-property-select'
                     } %}
                 {% endif %}
             {% endfor %}
