@@ -125,11 +125,11 @@ abstract class Filter extends Struct
             $customFilter->addValue($filterValue);
         }
 
-        $filterImageHandler = new FilterValueImageHandler($urls);
-        $validImages = $filterImageHandler->getValidImageUrls();
+        $filterImageHandler = new FilterValueImageHandler();
+        $validImages = $filterImageHandler->getValidImageUrls($urls);
 
         foreach ($customFilter->getValues() as $filterValue) {
-            if (isset($validImages[$filterValue->getName()])) {
+            if (in_array($filterValue->getMedia()->getUrl(), $validImages)) {
                 $filterValue->setDisplayType('media');
             }
         }
