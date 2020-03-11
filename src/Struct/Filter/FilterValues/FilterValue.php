@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Struct\Filter;
+namespace FINDOLOGIC\FinSearch\Struct\Filter\FilterValues;
 
+use FINDOLOGIC\FinSearch\Struct\Filter\TranslatedName;
 use Shopware\Core\Framework\Struct\Struct;
 
 class FilterValue extends Struct
