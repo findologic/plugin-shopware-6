@@ -20,6 +20,7 @@ class ColorImageFilterValue extends FilterValue
 
     /** @var string */
     private $displayType = 'color';
+
     /**
      * @return string|null
      */

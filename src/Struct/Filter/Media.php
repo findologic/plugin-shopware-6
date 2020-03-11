@@ -16,9 +16,6 @@ class Media extends Struct
         $this->url = $url;
     }
 
-    /**
-     * @return string|null
-     */
     public function getUrl(): ?string
     {
         return $this->url;
