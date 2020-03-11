@@ -2,13 +2,14 @@
 
 {% block component_filter_panel_items_container %}
 
-    {% block component_filter_panel_item_test_filter %}
-        {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
-            {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
-        {% else %}
-            {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
-        {% endif %}
+    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
+        {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
+    {% else %}
+        {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
+    {% endif %}
 
+    {% block component_filter_panel_item_test_filter %}
+       
         {% if filters %}
             {% for filter in filters %}
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\LabelTextFilter") or
@@ -52,12 +53,6 @@
             {% endfor %}
         {% endif %}
     {% endblock %}
-
-    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
-        {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
-    {% else %}
-        {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
-    {% endif %}
 
     {% if not filters %}
         {{ parent() }}
