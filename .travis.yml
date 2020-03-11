@@ -26,10 +26,10 @@ install:
   - composer install
 
 before_script:
-  - git clone https://github.com/shopware/development.git ${SHOPWARE_DIR} --branch ${SHOPWARE_VERSION}
-  - cd ${SHOPWARE_DIR}
   - mysql -u root -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app'"
   - mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'app'@'localhost';"
+  - git clone https://github.com/shopware/development.git ${SHOPWARE_DIR} --branch ${SHOPWARE_VERSION}
+  - cd ${SHOPWARE_DIR}
   - ./psh.phar init
   - mkdir ${PLUGIN_DIR}/${PLUGIN_NAME}
   - mv ${TRAVIS_BUILD_DIR}/* ${PLUGIN_DIR}/${PLUGIN_NAME}
