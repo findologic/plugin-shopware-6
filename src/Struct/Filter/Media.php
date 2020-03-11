@@ -20,4 +20,12 @@ class Media extends Struct
     {
         return $this->url;
     }
+
+    /**
+     * @param string $url
+     */
+    public function setUrl(string $url): void
+    {
+        $this->url = $url;
+    }
 }

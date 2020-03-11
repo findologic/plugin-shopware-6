@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Struct\Filter\FilterValues;
 
 use FINDOLOGIC\FinSearch\Struct\Filter\Media;
 
-class ColorImageFilterValue extends FilterValue
+class ImageColorFilterValue extends FilterValue
 {
     /**
      * @var string|null

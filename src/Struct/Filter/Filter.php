@@ -10,13 +10,14 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Filter as ApiFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\ColorItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\DefaultItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\RangeSliderItem;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\VendorImageItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\LabelTextFilter as ApiLabelTextFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\RangeSliderFilter as ApiRangeSliderFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\SelectDropdownFilter as ApiSelectDropdownFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\VendorImageFilter as ApiVendorImageFilter;
-use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\ColorImageFilterValue;
-use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\FilterValueImageHandler;
 use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\FilterValue;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\FilterValueImageHandler;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\ImageColorFilterValue;
 use InvalidArgumentException;
 use Shopware\Core\Framework\Struct\Struct;
 
@@ -62,7 +63,8 @@ abstract class Filter extends Struct
                 return static::handleRangeSliderFilter($filter);
             case $filter instanceof ApiColorPickerFilter:
                 return static::handleColorPickerFilter($filter);
-            case $filter instanceof ApiVendorImageFilter: // Needs manual implementation.
+            case $filter instanceof ApiVendorImageFilter:
+                return static::handleVendorImageFilter($filter);
             case $filter instanceof ApiCategoryFilter: // Shopware does not have a category filter yet.
                 return null;
             default:
@@ -110,13 +112,13 @@ abstract class Filter extends Struct
     private static function handleColorPickerFilter(ApiColorPickerFilter $filter): ColorPickerFilter
     {
         $customFilter = new ColorPickerFilter($filter->getName(), $filter->getDisplay());
-
         $urls = [];
+
         /** @var ColorItem $item */
         foreach ($filter->getItems() as $item) {
             $urls[$item->getName()] = $item->getImage();
 
-            $filterValue = new ColorImageFilterValue($item->getName(), $item->getName());
+            $filterValue = new ImageColorFilterValue($item->getName(), $item->getName());
             $filterValue->setColorHexCode($item->getColor());
 
             $media = new Media($item->getImage());
@@ -129,8 +131,35 @@ abstract class Filter extends Struct
         $validImages = $filterImageHandler->getValidImageUrls($urls);
 
         foreach ($customFilter->getValues() as $filterValue) {
-            if (in_array($filterValue->getMedia()->getUrl(), $validImages)) {
+            if (in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
                 $filterValue->setDisplayType('media');
+            }
+        }
+
+        return $customFilter;
+    }
+
+    private static function handleVendorImageFilter(ApiVendorImageFilter $filter): VendorImageFilter
+    {
+        $customFilter = new VendorImageFilter($filter->getName(), $filter->getDisplay());
+        $urls = [];
+
+        /** @var VendorImageItem $item */
+        foreach ($filter->getItems() as $item) {
+            $urls[$item->getName()] = $item->getImage();
+            $filterValue = new ImageColorFilterValue($item->getName(), $item->getName());
+            $media = new Media($item->getImage());
+            $filterValue->setMedia($media);
+            $filterValue->setDisplayType('media');
+            $customFilter->addValue($filterValue);
+        }
+
+        $filterImageHandler = new FilterValueImageHandler();
+        $validImages = $filterImageHandler->getValidImageUrls($urls);
+
+        foreach ($customFilter->getValues() as $filterValue) {
+            if (!in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
+                $filterValue->setDisplayType('none');
             }
         }
 
