@@ -6,4 +6,6 @@ namespace FINDOLOGIC\FinSearch\Struct\Filter;
 
 class ColorPickerFilter extends Filter
 {
+    /** @var string */
+    protected $displayType = 'color';
 }

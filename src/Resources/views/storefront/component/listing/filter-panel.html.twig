@@ -9,7 +9,7 @@
     {% endif %}
 
     {% block component_filter_panel_item_test_filter %}
-       
+
         {% if filters %}
             {% for filter in filters %}
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\LabelTextFilter") or
@@ -45,7 +45,7 @@
                         sidebar: sidebar,
                         name: filter.id,
                         displayName: filter.name,
-                        displayType: 'media',
+                        displayType: filter.displayType,
                         pluginSelector: 'filter-property-select'
                     } %}
                 {% endif %}

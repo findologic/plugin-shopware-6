@@ -6,4 +6,6 @@ namespace FINDOLOGIC\FinSearch\Struct\Filter;
 
 class VendorImageFilter extends Filter
 {
+    /** @var string */
+    protected $displayType = 'media';
 }

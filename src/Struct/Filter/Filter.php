@@ -15,14 +15,18 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\LabelTextFilter as ApiLabel
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\RangeSliderFilter as ApiRangeSliderFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\SelectDropdownFilter as ApiSelectDropdownFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\VendorImageFilter as ApiVendorImageFilter;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\ColorFilterValue;
 use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\FilterValueImageHandler;
-use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\ImageColorFilterValue;
+use FINDOLOGIC\FinSearch\Struct\Filter\FilterValues\ImageFilterValue;
 use InvalidArgumentException;
 use Shopware\Core\Framework\Struct\Struct;
 
 abstract class Filter extends Struct
 {
+    /** @var string|null */
+    protected $displayType;
+
     /** @var string */
     private $id;
 
@@ -112,13 +116,13 @@ abstract class Filter extends Struct
     private static function handleColorPickerFilter(ApiColorPickerFilter $filter): ColorPickerFilter
     {
         $customFilter = new ColorPickerFilter($filter->getName(), $filter->getDisplay());
-        $urls = [];
+        $imageUrls = [];
 
         /** @var ColorItem $item */
         foreach ($filter->getItems() as $item) {
-            $urls[$item->getName()] = $item->getImage();
+            $imageUrls[$item->getName()] = $item->getImage();
 
-            $filterValue = new ImageColorFilterValue($item->getName(), $item->getName());
+            $filterValue = new ColorFilterValue($item->getName(), $item->getName());
             $filterValue->setColorHexCode($item->getColor());
 
             $media = new Media($item->getImage());
@@ -128,7 +132,7 @@ abstract class Filter extends Struct
         }
 
         $filterImageHandler = new FilterValueImageHandler();
-        $validImages = $filterImageHandler->getValidImageUrls($urls);
+        $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
 
         foreach ($customFilter->getValues() as $filterValue) {
             if (in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
@@ -142,20 +146,19 @@ abstract class Filter extends Struct
     private static function handleVendorImageFilter(ApiVendorImageFilter $filter): VendorImageFilter
     {
         $customFilter = new VendorImageFilter($filter->getName(), $filter->getDisplay());
-        $urls = [];
+        $imageUrls = [];
 
         /** @var VendorImageItem $item */
         foreach ($filter->getItems() as $item) {
-            $urls[$item->getName()] = $item->getImage();
-            $filterValue = new ImageColorFilterValue($item->getName(), $item->getName());
+            $imageUrls[$item->getName()] = $item->getImage();
+            $filterValue = new ImageFilterValue($item->getName(), $item->getName());
             $media = new Media($item->getImage());
             $filterValue->setMedia($media);
-            $filterValue->setDisplayType('media');
             $customFilter->addValue($filterValue);
         }
 
         $filterImageHandler = new FilterValueImageHandler();
-        $validImages = $filterImageHandler->getValidImageUrls($urls);
+        $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
 
         foreach ($customFilter->getValues() as $filterValue) {
             if (!in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
@@ -189,5 +192,15 @@ abstract class Filter extends Struct
         $this->values[] = $filterValue;
 
         return $this;
+    }
+
+    public function getDisplayType(): ?string
+    {
+        return $this->displayType;
+    }
+
+    public function setDisplayType(?string $displayType): void
+    {
+        $this->displayType = $displayType;
     }
 }
