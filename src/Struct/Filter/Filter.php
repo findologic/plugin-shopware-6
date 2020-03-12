@@ -198,9 +198,4 @@ abstract class Filter extends Struct
     {
         return $this->displayType;
     }
-
-    public function setDisplayType(?string $displayType): void
-    {
-        $this->displayType = $displayType;
-    }
 }
