@@ -61,6 +61,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             $originalCriteria->getOffset()
         );
 
+        $this->setQueryInfoMessage($event, $responseParser->getQuery());
         $this->assignCriteriaToEvent($event, $criteria);
     }
 

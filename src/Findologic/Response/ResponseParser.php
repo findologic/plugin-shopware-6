@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
 use FINDOLOGIC\Api\Responses\Response;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
@@ -44,4 +45,6 @@ abstract class ResponseParser
     abstract public function getFilters(): CustomFilters;
 
     abstract public function getPaginationExtension(?int $limit, ?int $offset): Pagination;
+
+    abstract public function getQuery(): Query;
 }

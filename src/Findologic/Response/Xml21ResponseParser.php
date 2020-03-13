@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
 use FINDOLOGIC\FinSearch\Struct\Filter\Filter;
@@ -75,5 +76,10 @@ class Xml21ResponseParser extends ResponseParser
     public function getPaginationExtension(?int $limit, ?int $offset): Pagination
     {
         return new Pagination($limit, $offset, $this->response->getResults()->getCount());
+    }
+
+    public function getQuery(): Query
+    {
+        return $this->response->getQuery();
     }
 }

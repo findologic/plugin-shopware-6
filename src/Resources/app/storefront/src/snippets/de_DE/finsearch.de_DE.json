@@ -5,6 +5,12 @@
       "improvedQuery": "Ergebnisse für \"%alternativeQuery%\" werden angezeigt. Alternativ nach \"<a href='%link%'>%originalQuery%</a>\" suchen",
       "correctedQuery": "Keine Ergebnisse für \"%originalQuery%\". Zeige stattdessen \"%alternativeQuery%\"",
       "searchHeadline": "Zu \"%alternativeQuery%\" wurden <span class=\"headline--product-count\">%articlesCount%</span> Artikel gefunden!"
+    },
+    "queryInfoMessage": {
+      "cat": "Suchergebnisse für kategorie \"%cat%\" (<strong>%hits%</strong> Treffer)",
+      "vendor": "Suchergebnisse für hersteller \"%vendor%\" (<strong>%hits%</strong> Treffer)",
+      "query": "Suchergebnisse für \"%query%\" (<strong>%hits%</strong> Treffer)",
+      "default": "Suchergebnisse (<strong>%hits%</strong> Treffer)"
     }
   }
 }

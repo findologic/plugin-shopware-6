@@ -16,44 +16,60 @@
         or page.header.extensions.flConfig.directIntegration is constant('\\FINDOLOGIC\\FinSearch\\Findologic\\IntegrationType::DI') %}
         {{ parent() }}
     {% else %}
-        <h1 class="search-headline">
-            {% block page_search_headline_text %}
-                {% if context.context.extensions.flSmartDidYouMean == false
-                    or context.context.extensions.flSmartDidYouMean.type == 'did-you-mean' %}
-                    {{ 'search.headline'|trans({
-                        '%searchTerm%': page.searchTerm,
-                        '%totalCount%': page.searchResult.criteria.extensions.flPagination.total,
-                    })|sw_sanitize }}
+        {% block page_search_headline_text %}
+            <h1 class="search-headline">
+                {% if context.context.extensions.flQueryInfoMessage %}
+                    {% set queryInfoMessage = context.context.extensions.flQueryInfoMessage %}
+                    {% if queryInfoMessage.snippetType == 'query' %}
+                        {{ 'finSearch.queryInfoMessage.query'|trans({
+                            '%query%': page.searchTerm,
+                            '%hits%': page.searchResult.criteria.extensions.flPagination.total
+                        })|sw_sanitize }}
+                    {% elseif queryInfoMessage.snippetType == 'cat' %}
+                        {{ 'finSearch.queryInfoMessage.cat'|trans({
+                            '%cat%': queryInfoMessage.category,
+                            '%hits%': page.searchResult.criteria.extensions.flPagination.total
+                        })|sw_sanitize }}
+                    {% elseif queryInfoMessage.snippetType == 'vendor' %}
+                        {{ 'finSearch.queryInfoMessage.vendor'|trans({
+                            '%vendor%': queryInfoMessage.vendor,
+                            '%hits%': page.searchResult.criteria.extensions.flPagination.total
+                        })|sw_sanitize }}
+                    {% else %}
+                        {{ 'finSearch.queryInfoMessage.default'|trans({
+                            '%hits%': page.searchResult.criteria.extensions.flPagination.total
+                        })|sw_sanitize }}
+                    {% endif %}
                 {% else %}
                     {{ 'finSearch.smartDidYouMean.searchHeadline'|trans({
                         '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
                         '%articlesCount%': page.searchResult.criteria.extensions.flPagination.total,
                     })|sw_sanitize }}
                 {% endif %}
-        </h1>
-                {% if context.context.extensions.flSmartDidYouMean %}
-                    <p id="fl-smart-did-you-mean" class="search-headline">
-                        {% if context.context.extensions.flSmartDidYouMean.type == 'did-you-mean' %}
-                            {{ 'finSearch.smartDidYouMean.didYouMeanQuery'|trans({
-                                '%link%': context.context.extensions.flSmartDidYouMean.link,
-                                '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery
-                            })|sw_sanitize }}
-                        {% elseif context.context.extensions.flSmartDidYouMean.type == 'improved' %}
-                            {{ 'finSearch.smartDidYouMean.improvedQuery'|trans({
-                                '%link%': context.context.extensions.flSmartDidYouMean.link,
-                                '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
-                                '%originalQuery%': context.context.extensions.flSmartDidYouMean.originalQuery
-                            })|sw_sanitize }}
-                        {% elseif context.context.extensions.flSmartDidYouMean.type == 'corrected' %}
-                            {{ 'finSearch.smartDidYouMean.correctedQuery'|trans({
-                                '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
-                                '%originalQuery%': context.context.extensions.flSmartDidYouMean.originalQuery
-                            })|sw_sanitize }}
-                        {% else %}
-                            {# Nothing to render here #}
-                        {% endif %}
-                    </p>
-                {% endif %}
-            {% endblock %}
+            </h1>
+            {% if context.context.extensions.flSmartDidYouMean %}
+                <p id="fl-smart-did-you-mean" class="search-headline">
+                    {% if context.context.extensions.flSmartDidYouMean.type == 'did-you-mean' %}
+                        {{ 'finSearch.smartDidYouMean.didYouMeanQuery'|trans({
+                            '%link%': context.context.extensions.flSmartDidYouMean.link,
+                            '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery
+                        })|sw_sanitize }}
+                    {% elseif context.context.extensions.flSmartDidYouMean.type == 'improved' %}
+                        {{ 'finSearch.smartDidYouMean.improvedQuery'|trans({
+                            '%link%': context.context.extensions.flSmartDidYouMean.link,
+                            '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
+                            '%originalQuery%': context.context.extensions.flSmartDidYouMean.originalQuery
+                        })|sw_sanitize }}
+                    {% elseif context.context.extensions.flSmartDidYouMean.type == 'corrected' %}
+                        {{ 'finSearch.smartDidYouMean.correctedQuery'|trans({
+                            '%alternativeQuery%': context.context.extensions.flSmartDidYouMean.alternativeQuery,
+                            '%originalQuery%': context.context.extensions.flSmartDidYouMean.originalQuery
+                        })|sw_sanitize }}
+                    {% else %}
+                        {# Nothing to render here #}
+                    {% endif %}
+                </p>
+            {% endif %}
+        {% endblock %}
     {% endif %}
 {% endblock %}

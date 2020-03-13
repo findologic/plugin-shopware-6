@@ -9,6 +9,7 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\PriceSortingHandler;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ProductNameSortingHandler;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ReleaseDateSortingHandler;
@@ -18,12 +19,11 @@ use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
-use Symfony\Component\HttpFoundation\Request;
 
 abstract class SearchNavigationRequestHandler
 {
@@ -150,5 +150,12 @@ abstract class SearchNavigationRequestHandler
     ): void {
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
         $criteria->addExtension('flPagination', $pagination);
+    }
+
+    protected function setQueryInfoMessage(ShopwareEvent $event, Query $query): void
+    {
+        $queryInfoMessage = new QueryInfoMessage($event, $query);
+
+        $event->getContext()->addExtension('flQueryInfoMessage', $queryInfoMessage);
     }
 }
