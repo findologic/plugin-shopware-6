@@ -83,8 +83,6 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         );
 
         $criteria->setIds($responseParser->getProductIds());
-        $this->setQueryInfoMessage($event, $responseParser->getQuery());
-        $this->assignCriteriaToEvent($event, $criteria);
     }
 
     /**
