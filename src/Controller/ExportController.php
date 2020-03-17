@@ -11,6 +11,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
+use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
@@ -52,18 +53,18 @@ class ExportController extends AbstractController implements EventSubscriberInte
     private $router;
 
     /**
-     * @var FindologicHeaderHandler
+     * @var HeaderHandler
      */
-    private $findologicHeaderHandler;
+    private $headerHandler;
 
     public function __construct(
         LoggerInterface $logger,
         Router $router,
-        FindologicHeaderHandler $headerHandler
+        HeaderHandler $headerHandler
     ) {
         $this->logger = $logger;
         $this->router = $router;
-        $this->findologicHeaderHandler = $headerHandler;
+        $this->headerHandler = $headerHandler;
     }
 
     public static function getSubscribedEvents(): array
@@ -106,13 +107,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $totalProductCount
         );
 
-        $headers[FindologicHeaderHandler::CONTENT_TYPE] = $this->findologicHeaderHandler->getContentType();
-        $headers[FindologicHeaderHandler::SHOPWARE_HEADER] = $this->findologicHeaderHandler->getShopwareHeaderValue();
-        $headers[FindologicHeaderHandler::PLUGIN_HEADER] = $this->findologicHeaderHandler->getPluginHeaderValue();
-        $headers[FindologicHeaderHandler::EXTENSION_HEADER] =
-            $this->findologicHeaderHandler->getExtensionPluginHeaderValue();
-
-        return new Response($response, 200, $headers);
+        return new Response($response, 200, $this->headerHandler->getHeaders());
     }
 
     private function validateParams(Request $request): void

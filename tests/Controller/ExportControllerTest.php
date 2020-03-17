@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
 use FINDOLOGIC\FinSearch\Controller\ExportController;
-use FINDOLOGIC\FinSearch\Controller\FindologicHeaderHandler;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -70,7 +70,7 @@ class ExportControllerTest extends TestCase
         $this->exportController = new ExportController(
             $this->loggerMock,
             $this->router,
-            $this->getContainer()->get(FindologicHeaderHandler::class)
+            $this->getContainer()->get(HeaderHandler::class)
         );
         $this->defaultContext = Context::createDefaultContext();
     }
@@ -460,19 +460,13 @@ class ExportControllerTest extends TestCase
      */
     public function exportHeaderProvider(): array
     {
-        $headers[FindologicHeaderHandler::CONTENT_TYPE] = ['text/xml'];
-        $headers[FindologicHeaderHandler::SHOPWARE_HEADER] = ['Shopware/6.1.3'];
-        $headers[FindologicHeaderHandler::PLUGIN_HEADER] = ['Plugin-Shopware-6/0.1.0'];
-        $headers[FindologicHeaderHandler::EXTENSION_HEADER] = ['Plugin-Shopware-6-Extension/1.0.1'];
+        $headers['content-type'] = ['text/xml'];
+        $headers['x-findologic-platform'] = ['Shopware/6.1.3'];
+        $headers['x-findologic-plugin'] = ['Plugin-Shopware-6/0.1.0'];
+        $headers['x-findologic-extension-plugin'] = ['Plugin-Shopware-6-Extension/1.0.1'];
 
         return [
             'Correct headers values with correct versions are returned' => [
-                'headerValueMethods' => [
-                    'getContentType',
-                    'getShopwareHeaderValue',
-                    'getPluginHeaderValue',
-                    'getExtensionPluginHeaderValue'
-                ],
                 'expectedHeaders' => $headers,
             ]
         ];
@@ -483,19 +477,13 @@ class ExportControllerTest extends TestCase
      */
     public function exportHeaderWithoutExtensionPluginProvider(): array
     {
-        $headers[FindologicHeaderHandler::CONTENT_TYPE] = ['text/xml'];
-        $headers[FindologicHeaderHandler::SHOPWARE_HEADER] = ['Shopware/6.1.3'];
-        $headers[FindologicHeaderHandler::PLUGIN_HEADER] = ['Plugin-Shopware-6/0.1.0'];
-        $headers[FindologicHeaderHandler::EXTENSION_HEADER] = ['none'];
+        $headers['content-type'] = ['text/xml'];
+        $headers['x-findologic-platform'] = ['Shopware/6.1.3'];
+        $headers['x-findologic-plugin'] = ['Plugin-Shopware-6/0.1.0'];
+        $headers['x-findologic-extension-plugin'] = ['none'];
 
         return [
             'Correct headers values are returned when there is no extension plugin installed' => [
-                'headerValueMethods' => [
-                    'getContentType',
-                    'getShopwareHeaderValue',
-                    'getPluginHeaderValue',
-                    'getExtensionPluginHeaderValue'
-                ],
                 'expectedHeaders' => $headers,
             ]
         ];
@@ -505,13 +493,12 @@ class ExportControllerTest extends TestCase
      * @dataProvider exportHeaderProvider
      * @dataProvider exportHeaderWithoutExtensionPluginProvider
      *
-     * @param string[] $headerValueMethods
      * @param string[] $expectedHeaders
      *
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
-    public function testExportHeaders(array $headerValueMethods, array $expectedHeaders): void
+    public function testExportHeaders(array $expectedHeaders): void
     {
         $salesChannelId = Defaults::SALES_CHANNEL;
 
@@ -665,19 +652,21 @@ class ExportControllerTest extends TestCase
 
         /** @var Container|MockObject $symfonyContainerMock */
         $symfonyContainerMock = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
-        $symfonyContainerMock->method('getParameter')->with('kernel.shopware_version')->willReturn('6.1.3');
-        $symfonyContainerMock->method('get')->with('plugin.repository')->willReturn($pluginRepositoryMock);
+        $symfonyContainerMock->expects($this->once())->method('getParameter')
+            ->with('kernel.shopware_version')
+            ->willReturn('6.1.3');
+        $symfonyContainerMock->expects($this->once())->method('get')
+            ->with('plugin.repository')
+            ->willReturn($pluginRepositoryMock);
 
-        /** @var FindologicHeaderHandler|MockObject $findologicHeaderHandler */
-        $findologicHeaderHandler = $this->getMockBuilder(FindologicHeaderHandler::class)
+        /** @var HeaderHandler|MockObject $headerHandler */
+        $headerHandler = $this->getMockBuilder(HeaderHandler::class)
             ->setConstructorArgs([$symfonyContainerMock])
             ->getMock();
 
-        $i = 0;
-        foreach ($expectedHeaders as $value) {
-            $findologicHeaderHandler->method($headerValueMethods[$i++])->willReturn(current($value));
-        }
-        $this->exportController = new ExportController($this->loggerMock, $this->router, $findologicHeaderHandler);
+        $headerHandler->expects($this->once())->method('getHeaders')->willReturn($expectedHeaders);
+
+        $this->exportController = new ExportController($this->loggerMock, $this->router, $headerHandler);
         $this->exportController->setContainer($containerMock);
         $result = $this->exportController->export($request, $salesChannelContextMock);
 

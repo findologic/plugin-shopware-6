@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Controller;
+namespace FINDOLOGIC\FinSearch\Export;
 
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -11,18 +11,18 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class FindologicHeaderHandler
+class HeaderHandler
 {
-    public const
+    private const
         SHOPWARE_HEADER = 'x-findologic-platform',
         PLUGIN_HEADER = 'x-findologic-plugin',
         EXTENSION_HEADER = 'x-findologic-extension-plugin',
-        CONTENT_TYPE = 'content-type';
-    private const
-        SHOPWARE_HEADER_VALUE = 'Shopware/%s',
-        PLUGIN_HEADER_VALUE = 'Plugin-Shopware-6/%s',
-        EXTENSION_HEADER_VALUE = 'Plugin-Shopware-6-Extension/%s',
-        CONTENT_TYPE_HEADER_VALUE = 'text/xml';
+        CONTENT_TYPE_HEADER = 'content-type',
+
+        SHOPWARE_VERSION = 'Shopware/%s',
+        PLUGIN_VERSION = 'Plugin-Shopware-6/%s',
+        EXTENSION_PLUGIN_VERSION = 'Plugin-Shopware-6-Extension/%s',
+        CONTENT_TYPE = 'text/xml';
 
     /**
      * @var ContainerInterface
@@ -42,17 +42,22 @@ class FindologicHeaderHandler
     /**
      * @var string
      */
-    private $shopwareHeaderValue = 'none';
+    private $shopwareVersion;
 
     /**
      * @var string
      */
-    private $pluginHeaderValue = 'none';
+    private $pluginVersion;
 
     /**
      * @var string
      */
-    private $extensionPluginHeaderValue = 'none';
+    private $extensionPluginVersion;
+
+    /**
+     * @var string
+     */
+    private $contentType;
 
     public function __construct(ContainerInterface $container)
     {
@@ -60,18 +65,20 @@ class FindologicHeaderHandler
         $this->context = Context::createDefaultContext();
         $this->repository = $container->get('plugin.repository');
 
-        $this->setShopwareVersionHeader();
-        $this->setPluginVersionHeader();
-        $this->setExtensionPluginHeader();
+        $this->shopwareVersion = $this->fetchShopwareVersion();
+        $this->pluginVersion = $this->fetchPluginVersion();
+        $this->extensionPluginVersion = $this->fetchExtensionPluginVersion();
+        $this->contentType = self::CONTENT_TYPE;
     }
 
-    private function setShopwareVersionHeader(): void
+    private function fetchShopwareVersion(): string
     {
         $shopwareVersion = $this->container->getParameter('kernel.shopware_version');
-        $this->shopwareHeaderValue = sprintf(self::SHOPWARE_HEADER_VALUE, $shopwareVersion);
+
+        return sprintf(self::SHOPWARE_VERSION, $shopwareVersion);
     }
 
-    private function setPluginVersionHeader(): void
+    private function fetchPluginVersion(): string
     {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'FinSearch'));
@@ -79,11 +86,13 @@ class FindologicHeaderHandler
         /** @var PluginEntity $plugin */
         $plugin = $this->repository->search($criteria, $this->context)->getEntities()->first();
         if ($plugin !== null && $plugin->getActive()) {
-            $this->pluginHeaderValue = sprintf(self::PLUGIN_HEADER_VALUE, $plugin->getVersion());
+            return sprintf(self::PLUGIN_VERSION, $plugin->getVersion());
         }
+
+        return 'none';
     }
 
-    private function setExtensionPluginHeader(): void
+    private function fetchExtensionPluginVersion(): string
     {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
@@ -91,27 +100,33 @@ class FindologicHeaderHandler
         /** @var PluginEntity $plugin */
         $plugin = $this->repository->search($criteria, $this->context)->getEntities()->first();
         if ($plugin !== null && $plugin->getActive()) {
-            $this->extensionPluginHeaderValue = sprintf(self::EXTENSION_HEADER_VALUE, $plugin->getVersion());
+            return sprintf(self::EXTENSION_PLUGIN_VERSION, $plugin->getVersion());
         }
+
+        return 'none';
     }
 
-    public function getShopwareHeaderValue(): string
+    /**
+     * @return string[]
+     */
+    public function getHeaders(): array
     {
-        return $this->shopwareHeaderValue;
+        $headers = [];
+        $headers[self::CONTENT_TYPE_HEADER] = $this->contentType;
+        $headers[self::SHOPWARE_HEADER] = $this->shopwareVersion;
+        $headers[self::PLUGIN_HEADER] = $this->pluginVersion;
+        $headers[self::EXTENSION_HEADER] = $this->extensionPluginVersion;
+
+        return $headers;
     }
 
-    public function getPluginHeaderValue(): string
+    public function getHeader(string $key): ?string
     {
-        return $this->pluginHeaderValue;
-    }
+        $headers = $this->getHeaders();
+        if (array_key_exists($key, $headers)) {
+            return $headers[$key];
+        }
 
-    public function getExtensionPluginHeaderValue(): string
-    {
-        return $this->extensionPluginHeaderValue;
-    }
-
-    public function getContentType(): string
-    {
-        return self::CONTENT_TYPE_HEADER_VALUE;
+        return null;
     }
 }
