@@ -59,11 +59,11 @@ class ExportController extends AbstractController implements EventSubscriberInte
     public function __construct(
         LoggerInterface $logger,
         Router $router,
-        FindologicHeaderHandler $findologicHeaderHandler
+        FindologicHeaderHandler $headerHandler
     ) {
         $this->logger = $logger;
         $this->router = $router;
-        $this->findologicHeaderHandler = $findologicHeaderHandler;
+        $this->findologicHeaderHandler = $headerHandler;
     }
 
     public static function getSubscribedEvents(): array
@@ -109,7 +109,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $headers[FindologicHeaderHandler::CONTENT_TYPE] = $this->findologicHeaderHandler->getContentType();
         $headers[FindologicHeaderHandler::SHOPWARE_HEADER] = $this->findologicHeaderHandler->getShopwareHeaderValue();
         $headers[FindologicHeaderHandler::PLUGIN_HEADER] = $this->findologicHeaderHandler->getPluginHeaderValue();
-        $headers[FindologicHeaderHandler::EXTENSION_HEADER] = $this->findologicHeaderHandler->getExtensionPluginHeaderValue();
+        $headers[FindologicHeaderHandler::EXTENSION_HEADER] =
+            $this->findologicHeaderHandler->getExtensionPluginHeaderValue();
 
         return new Response($response, 200, $headers);
     }

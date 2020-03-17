@@ -1,15 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
-use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
-use Psr\Container\ContainerInterface;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
-use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class FindologicHeaderHandler
 {
@@ -54,7 +54,7 @@ class FindologicHeaderHandler
      */
     private $extensionPluginHeaderValue = 'none';
 
-    public function __construct(Container $container)
+    public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
         $this->context = Context::createDefaultContext();
@@ -95,33 +95,21 @@ class FindologicHeaderHandler
         }
     }
 
-    /**
-     * @return string
-     */
     public function getShopwareHeaderValue(): string
     {
         return $this->shopwareHeaderValue;
     }
 
-    /**
-     * @return string
-     */
     public function getPluginHeaderValue(): string
     {
         return $this->pluginHeaderValue;
     }
 
-    /**
-     * @return string
-     */
     public function getExtensionPluginHeaderValue(): string
     {
         return $this->extensionPluginHeaderValue;
     }
 
-    /**
-     * @return string
-     */
     public function getContentType(): string
     {
         return self::CONTENT_TYPE_HEADER_VALUE;

@@ -15,7 +15,7 @@ use InvalidArgumentException;
 use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -37,6 +37,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigEntity;
 use Shopware\Storefront\Framework\Routing\Router;
 use SimpleXMLElement;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class ExportControllerTest extends TestCase
@@ -64,10 +65,13 @@ class ExportControllerTest extends TestCase
     {
         parent::setUp();
 
-        $findologicHeaderHandler = new FindologicHeaderHandler($this->getContainer());
         $this->router = $this->getContainer()->get('router');
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
-        $this->exportController = new ExportController($this->loggerMock, $this->router, $findologicHeaderHandler);
+        $this->exportController = new ExportController(
+            $this->loggerMock,
+            $this->router,
+            $this->getContainer()->get(FindologicHeaderHandler::class)
+        );
         $this->defaultContext = Context::createDefaultContext();
     }
 
@@ -193,8 +197,9 @@ class ExportControllerTest extends TestCase
         /** @var Request $request */
         $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
 
-        /** @var ContainerInterface|MockObject $containerMock */
-        $containerMock = $this->getMockBuilder(ContainerInterface::class)->disableOriginalConstructor()->getMock();
+        /** @var PsrContainerInterface|MockObject $containerMock */
+        $containerMock =
+            $this->getMockBuilder(PsrContainerInterface::class)->disableOriginalConstructor()->getMock();
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
@@ -334,8 +339,9 @@ class ExportControllerTest extends TestCase
         /** @var Request $request */
         $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
 
-        /** @var ContainerInterface|MockObject $containerMock */
-        $containerMock = $this->getMockBuilder(ContainerInterface::class)->disableOriginalConstructor()->getMock();
+        /** @var PsrContainerInterface|MockObject $containerMock */
+        $containerMock =
+            $this->getMockBuilder(PsrContainerInterface::class)->disableOriginalConstructor()->getMock();
 
         /** @var EntityRepository|MockObject $productRepositoryMock */
         $productRepositoryMock =
@@ -449,7 +455,10 @@ class ExportControllerTest extends TestCase
         $this->exportController->export($request, $salesChannelContextMock);
     }
 
-    public function exportHeaderProvider()
+    /**
+     * @return string[]
+     */
+    public function exportHeaderProvider(): array
     {
         $headers[FindologicHeaderHandler::CONTENT_TYPE] = ['text/xml'];
         $headers[FindologicHeaderHandler::SHOPWARE_HEADER] = ['Shopware/6.1.3'];
@@ -469,7 +478,10 @@ class ExportControllerTest extends TestCase
         ];
     }
 
-    public function exportHeaderWithoutExtensionPluginProvider()
+    /**
+     * @return string[]
+     */
+    public function exportHeaderWithoutExtensionPluginProvider(): array
     {
         $headers[FindologicHeaderHandler::CONTENT_TYPE] = ['text/xml'];
         $headers[FindologicHeaderHandler::SHOPWARE_HEADER] = ['Shopware/6.1.3'];
@@ -521,8 +533,9 @@ class ExportControllerTest extends TestCase
         /** @var Request $request */
         $request = new Request(['shopkey' => $this->validShopkey, 'start' => 0, 'count' => 20]);
 
-        /** @var Container|MockObject $containerMock */
-        $containerMock = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
+        /** @var PsrContainerInterface|MockObject $containerMock */
+        $containerMock = $this->getMockBuilder(PsrContainerInterface::class)
+            ->disableOriginalConstructor()->getMock();
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
@@ -606,7 +619,6 @@ class ExportControllerTest extends TestCase
         $pluginEntity = $this->getMockBuilder(PluginEntity::class)->disableOriginalConstructor()->getMock();
         $pluginEntity->method('getVersion')->willReturn('0.1.0');
 
-        /** @var PluginCollection() $pluginCollection */
         $pluginCollection = new PluginCollection([$pluginEntity]);
 
         /** @var EntitySearchResult $productEntitySearchResult */
@@ -621,7 +633,6 @@ class ExportControllerTest extends TestCase
         $extensionPluginEntity = $this->getMockBuilder(PluginEntity::class)->disableOriginalConstructor()->getMock();
         $extensionPluginEntity->method('getVersion')->willReturn('1.0.1');
 
-        /** @var PluginCollection() $extensionPluginCollection */
         $extensionPluginCollection = new PluginCollection([$extensionPluginEntity]);
 
         /** @var EntitySearchResult $productEntitySearchResult */
@@ -648,15 +659,18 @@ class ExportControllerTest extends TestCase
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['product.repository', $productRepositoryMock],
-            ['plugin.repository', $pluginRepositoryMock],
             [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
-        $containerMock->method('getParameter')->with('kernel.shopware_version')->willReturn('6.1.3');
+
+        /** @var Container|MockObject $symfonyContainerMock */
+        $symfonyContainerMock = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
+        $symfonyContainerMock->method('getParameter')->with('kernel.shopware_version')->willReturn('6.1.3');
+        $symfonyContainerMock->method('get')->with('plugin.repository')->willReturn($pluginRepositoryMock);
 
         /** @var FindologicHeaderHandler|MockObject $findologicHeaderHandler */
         $findologicHeaderHandler = $this->getMockBuilder(FindologicHeaderHandler::class)
-            ->setConstructorArgs([$containerMock])
+            ->setConstructorArgs([$symfonyContainerMock])
             ->getMock();
 
         $i = 0;
@@ -669,7 +683,9 @@ class ExportControllerTest extends TestCase
 
         $headers = $result->headers->all();
 
+        // Remove unwanted headers for testing only implemented header values
         unset($headers['cache-control'], $headers['date']);
+
         $this->assertEquals($expectedHeaders, $headers);
     }
 }

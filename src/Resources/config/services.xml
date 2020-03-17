@@ -132,7 +132,7 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\FindologicHeaderHandler" public="true">
-            <argument id="service_container" type="service" />
+            <argument id="service_container" type="service"/>
         </service>
 
     </services>
