@@ -22,7 +22,7 @@
                     {% set queryInfoMessage = context.context.extensions.flQueryInfoMessage %}
                     {% if queryInfoMessage.snippetType == 'query' %}
                         {{ 'finSearch.queryInfoMessage.query'|trans({
-                            '%query%': queryInfoMessage.smartQuery,
+                            '%query%': queryInfoMessage.searchTerm,
                             '%hits%': page.searchResult.criteria.extensions.flPagination.total
                         })|sw_sanitize }}
                     {% elseif queryInfoMessage.snippetType == 'cat' %}

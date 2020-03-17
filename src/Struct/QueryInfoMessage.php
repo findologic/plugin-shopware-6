@@ -25,7 +25,7 @@ class QueryInfoMessage extends Struct
     /**
      * @var string
      */
-    private $smartQuery;
+    private $searchTerm;
 
     /**
      * @var string
@@ -81,14 +81,14 @@ class QueryInfoMessage extends Struct
         $this->category = $category;
     }
 
-    public function getSmartQuery(): string
+    public function getSearchTerm(): string
     {
-        return $this->smartQuery;
+        return $this->searchTerm;
     }
 
-    public function setSmartQuery(string $smartQuery): void
+    public function setSearchTerm(string $searchTerm): void
     {
-        $this->smartQuery = $smartQuery;
+        $this->searchTerm = $searchTerm;
     }
 
     public function getSnippetType(): string
@@ -123,10 +123,10 @@ class QueryInfoMessage extends Struct
 
         if (!empty($queryString) && (($queryStringType === 'corrected') || ($queryStringType === 'improved'))) {
             $this->setSnippetType('query');
-            $this->setSmartQuery($flSmartDidYouMean->getAlternativeQuery());
+            $this->setSearchTerm($flSmartDidYouMean->getAlternativeQuery());
         } elseif (!empty($queryString)) {
             $this->setSnippetType('query');
-            $this->setSmartQuery($queryString);
+            $this->setSearchTerm($queryString);
         } elseif (isset($params['cat']) && !empty($params['cat'])) {
             $this->setFilterName($this->filters['cat']->getDisplay());
             $categories = explode('_', $params['cat']);
