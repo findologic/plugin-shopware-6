@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use InvalidArgumentException;
+use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
 
 abstract class ResponseParser
@@ -46,5 +47,5 @@ abstract class ResponseParser
 
     abstract public function getPaginationExtension(?int $limit, ?int $offset): Pagination;
 
-    abstract public function getQuery(): Query;
+    abstract public function getQueryInfoMessage(ShopwareEvent $event): QueryInfoMessage;
 }

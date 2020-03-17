@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
 
+use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
+use FINDOLOGIC\FinSearch\Struct\Filter\Filter;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\Framework\Struct\Struct;
 
@@ -36,80 +38,77 @@ class QueryInfoMessage extends Struct
     private $query;
 
     /**
+     * @var string
+     */
+    private $filterName;
+
+    /**
      * @var ShopwareEvent
      */
     private $event;
 
-    public function __construct(ShopwareEvent $event, Query $query)
+    /**
+     * @var Filter[]
+     */
+    private $filters;
+
+    public function __construct(ShopwareEvent $event, Response $response)
     {
-        $this->query = $query;
+        $this->query = $response->getQuery();
         $this->event = $event;
+        $this->filters = array_merge($response->getMainFilters(), $response->getOtherFilters());
 
         $this->parse();
     }
 
-    /**
-     * @return string
-     */
     public function getVendor(): string
     {
         return $this->vendor;
     }
 
-    /**
-     * @param string $vendor
-     */
     public function setVendor(string $vendor): void
     {
         $this->vendor = $vendor;
     }
 
-    /**
-     * @return string
-     */
     public function getCategory(): string
     {
         return $this->category;
     }
 
-    /**
-     * @param string $category
-     */
     public function setCategory(string $category): void
     {
         $this->category = $category;
     }
 
-    /**
-     * @return string
-     */
     public function getSmartQuery(): string
     {
         return $this->smartQuery;
     }
 
-    /**
-     * @param string $smartQuery
-     */
     public function setSmartQuery(string $smartQuery): void
     {
         $this->smartQuery = $smartQuery;
     }
 
-    /**
-     * @return string
-     */
     public function getSnippetType(): string
     {
         return $this->snippetType;
     }
 
-    /**
-     * @param string $snippetType
-     */
     public function setSnippetType(string $snippetType): void
     {
         $this->snippetType = $snippetType;
+    }
+
+    public function getFilterName(): string
+    {
+        return $this->filterName;
+    }
+
+    public function setFilterName(string $filterName): void
+    {
+        $this->filterName = $filterName;
     }
 
     private function parse(): void
@@ -129,10 +128,12 @@ class QueryInfoMessage extends Struct
             $this->setSnippetType('query');
             $this->setSmartQuery($queryString);
         } elseif (isset($params['cat']) && !empty($params['cat'])) {
+            $this->setFilterName($this->filters['cat']->getDisplay());
             $categories = explode('_', $params['cat']);
             $this->setCategory(end($categories));
             $this->setSnippetType('cat');
         } elseif (isset($params['vendor']) && !empty($params['vendor'])) {
+            $this->setFilterName($this->filters['vendor']->getDisplay());
             $this->setVendor($params['vendor']);
             $this->setSnippetType('vendor');
         } else {

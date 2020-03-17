@@ -7,18 +7,21 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
 use FINDOLOGIC\FinSearch\Struct\Filter\Filter;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
+use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
 
 class Xml21ResponseParser extends ResponseParser
 {
-    /** @var Xml21Response */
+    /**
+     * @var Xml21Response
+     */
     protected $response;
 
     public function getProductIds(): array
@@ -78,8 +81,8 @@ class Xml21ResponseParser extends ResponseParser
         return new Pagination($limit, $offset, $this->response->getResults()->getCount());
     }
 
-    public function getQuery(): Query
+    public function getQueryInfoMessage(ShopwareEvent $event): QueryInfoMessage
     {
-        return $this->response->getQuery();
+        return new QueryInfoMessage($event, $this->response);
     }
 }

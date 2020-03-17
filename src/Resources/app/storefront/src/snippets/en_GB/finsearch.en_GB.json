@@ -3,12 +3,12 @@
     "smartDidYouMean": {
       "didYouMeanQuery": "Did you mean \"<a href='%link%'>%alternativeQuery%</a>\"?",
       "improvedQuery": "Showing results for \"%alternativeQuery%\". Search instead for \"<a href='%link%'>%originalQuery%</a>\"?",
-      "correctedQuery": "No result for \"%originalQuery%\". Showing results for \"%alternativeQuery%\" instead",
+      "correctedQuery": "No results for \"%originalQuery%\". Showing results for \"%alternativeQuery%\" instead",
       "searchHeadline": "The following products have been found matching your search \"%alternativeQuery%\": <span class='headline--product-count'>%articlesCount%</span>"
     },
     "queryInfoMessage": {
-      "cat": "Search results for category \"%cat%\" (<strong>%hits%</strong> hits)",
-      "vendor": "Search results for manufacturer \"%vendor%\" (<strong>%hits%</strong> hits)",
+      "cat": "Search results for %filterName% \"%cat%\" (<strong>%hits%</strong> hits)",
+      "vendor": "Search results for %filterName% \"%vendor%\" (<strong>%hits%</strong> hits)",
       "query": "Search results for \"%query%\" (<strong>%hits%</strong> hits)",
       "default": "Search results (<strong>%hits%</strong> hits)"
     }

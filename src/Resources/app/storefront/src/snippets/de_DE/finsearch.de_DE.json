@@ -7,8 +7,8 @@
       "searchHeadline": "Zu \"%alternativeQuery%\" wurden <span class=\"headline--product-count\">%articlesCount%</span> Artikel gefunden!"
     },
     "queryInfoMessage": {
-      "cat": "Suchergebnisse für kategorie \"%cat%\" (<strong>%hits%</strong> Treffer)",
-      "vendor": "Suchergebnisse für hersteller \"%vendor%\" (<strong>%hits%</strong> Treffer)",
+      "cat": "Suchergebnisse für %filterName% \"%cat%\" (<strong>%hits%</strong> Treffer)",
+      "vendor": "Suchergebnisse für %filterName% \"%vendor%\" (<strong>%hits%</strong> Treffer)",
       "query": "Suchergebnisse für \"%query%\" (<strong>%hits%</strong> Treffer)",
       "default": "Suchergebnisse (<strong>%hits%</strong> Treffer)"
     }
