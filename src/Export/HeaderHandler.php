@@ -18,7 +18,6 @@ class HeaderHandler
         PLUGIN_HEADER = 'x-findologic-plugin',
         EXTENSION_HEADER = 'x-findologic-extension-plugin',
         CONTENT_TYPE_HEADER = 'content-type',
-
         SHOPWARE_VERSION = 'Shopware/%s',
         PLUGIN_VERSION = 'Plugin-Shopware-6/%s',
         EXTENSION_PLUGIN_VERSION = 'Plugin-Shopware-6-Extension/%s',
