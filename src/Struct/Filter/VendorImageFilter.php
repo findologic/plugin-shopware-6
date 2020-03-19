@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct\Filter;
 
-class ColorPickerFilter extends Filter
+class VendorImageFilter extends Filter
 {
     /** @var string */
-    protected $displayType = 'color';
+    protected $displayType = 'media';
 }

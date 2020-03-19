@@ -2,12 +2,13 @@
 
 {% block component_filter_panel_items_container %}
 
+    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
+        {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
+    {% else %}
+        {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
+    {% endif %}
+
     {% block component_filter_panel_item_test_filter %}
-        {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
-            {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
-        {% else %}
-            {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
-        {% endif %}
 
         {% if filters %}
             {% for filter in filters %}
@@ -44,25 +45,21 @@
                     } %}
                 {% endif %}
 
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\ColorPickerFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\ColorPickerFilter") or
+                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\VendorImageFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-property-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
                         displayName: filter.name,
-                        displayType: 'color',
+                        displayType: filter.displayType,
                         pluginSelector: 'filter-property-select'
                     } %}
                 {% endif %}
+
             {% endfor %}
         {% endif %}
     {% endblock %}
-
-    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
-        {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
-    {% else %}
-        {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
-    {% endif %}
 
     {% if not filters %}
         {{ parent() }}
