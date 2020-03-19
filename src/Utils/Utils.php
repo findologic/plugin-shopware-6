@@ -29,8 +29,12 @@ class Utils
         return trim($string);
     }
 
-    public static function removeControlCharacters(string $string): string
+    public static function removeControlCharacters(?string $string): string
     {
+        if ($string === null) {
+            return '';
+        }
+
         $result = preg_replace('/[\x{0000}-\x{001F}]|[\x{007F}]|[\x{0080}-\x{009F}]/u', '', $string);
 
         return $result ?? $string;
@@ -62,7 +66,7 @@ class Utils
             'children.properties.productConfiguratorSettings',
             'children.properties.productConfiguratorSettings.option',
             'children.properties.productConfiguratorSettings.option.group',
-            'children.properties.productConfiguratorSettings.option.group.translations'
+            'children.properties.productConfiguratorSettings.option.group.translations',
         ];
 
         foreach ($associations as $association) {
