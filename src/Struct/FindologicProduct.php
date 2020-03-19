@@ -572,10 +572,18 @@ class FindologicProduct extends Struct
 
             foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
                 $group = $setting->getOption()->getGroup();
-                if ($group && $setting->getOption() && $group->getTranslation('name') && $setting->getOption()->getTranslation('name')) {
+                $settingOption = $setting->getOption();
+
+                if (!$group || !$settingOption) {
+                    continue;
+                }
+
+                $groupName = $group->getTranslation('name');
+                $optionName = $settingOption->getTranslation('name');
+                if ($groupName && $optionName) {
                     $configAttrib = new Attribute(
-                        Utils::removeControlCharacters($setting->getOption()->getGroup()->getTranslation('name')),
-                        [Utils::removeControlCharacters($setting->getOption()->getTranslation('name'))]
+                        Utils::removeControlCharacters($groupName),
+                        [Utils::removeControlCharacters($optionName)]
                     );
 
                     $attributes[] = $configAttrib;
