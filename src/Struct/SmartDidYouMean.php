@@ -21,7 +21,7 @@ class SmartDidYouMean extends Struct
     /** @var string */
     private $originalQuery;
 
-    public function __construct(?Query $query, ?string $controllerPath)
+    public function __construct(Query $query, ?string $controllerPath)
     {
         $this->type = $query->getDidYouMeanQuery() !== null ? 'did-you-mean' : $query->getQueryString()->getType();
         $this->alternativeQuery = htmlentities($query->getAlternativeQuery());

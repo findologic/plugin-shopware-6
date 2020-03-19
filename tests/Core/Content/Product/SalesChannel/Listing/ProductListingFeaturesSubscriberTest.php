@@ -140,9 +140,11 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     private function getRawResponse(string $file = 'demo.xml'): SimpleXMLElement
     {
-        return new SimpleXMLElement(file_get_contents(
-            __DIR__ . sprintf('/../../../../../MockData/XMLResponse/%s', $file)
-        ));
+        return new SimpleXMLElement(
+            file_get_contents(
+                __DIR__ . sprintf('/../../../../../MockData/XMLResponse/%s', $file)
+            )
+        );
     }
 
     private function getDefaultResponse(): Xml21Response
@@ -201,31 +203,46 @@ XML;
 
     /**
      * @param Xml21Response|null $response
+     * @param Request|null $request
+     *
      * @return MockObject|ProductSearchCriteriaEvent
      */
-    private function setUpSearchRequestMocks(Xml21Response $response = null): ProductSearchCriteriaEvent
-    {
+    private function setUpSearchRequestMocks(
+        Xml21Response $response = null,
+        Request $request = null
+    ): ProductSearchCriteriaEvent {
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
-        if ($response) {
-            $this->apiClientMock->expects($this->any())
-                ->method('send')
-                ->willReturn($this->getDefaultResponse());
+        if ($response === null) {
+            $response = $this->getDefaultResponse();
         }
+
+        $this->apiClientMock->expects($this->any())
+            ->method('send')
+            ->willReturn($response);
 
         /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
         $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($this->getDefaultRequestMock());
+        if ($request === null) {
+            $request = $this->getDefaultRequestMock();
+        }
+        $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
 
-        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
+        $findologicEnabled = new FindologicEnabled();
+        $smartDidYouMean = new SmartDidYouMean($response->getQuery(), null);
+        $defaultExtensionMap = [
+            ['flEnabled', $findologicEnabled],
+            ['flSmartDidYouMean', $smartDidYouMean]
+        ];
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
+            ['flEnabled', $findologicEnabled],
+            ['flSmartDidYouMean', $smartDidYouMean]
+        );
+        $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
         $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         return $eventMock;
@@ -272,10 +289,7 @@ XML;
             ],
             'navigation request' => [
                 'endpoint' => 'handleListingRequest',
-                'expectedProducts' => [
-                    '019111105-37900' => '019111105-37900',
-                    '029214085-37860' => '029214085-37860'
-                ],
+                'expectedProducts' => [],
                 'isNavigationRequest' => true
             ]
         ];
@@ -283,36 +297,43 @@ XML;
 
     /**
      * @dataProvider requestProvider
+     *
      * @param string $endpoint
      * @param array $expectedProducts
      * @param bool $isNavigationRequest
      */
-    public function testResponseMatchesProductIds(string $endpoint, array $expectedProducts, bool $isNavigationRequest)
-    {
+    public function testResponseMatchesProductIds(
+        string $endpoint,
+        array $expectedProducts,
+        bool $isNavigationRequest
+    ): void {
         $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
-        $criteriaMock->expects($this->any())->method('assign')->with([
-            'source' => null,
-            'sorting' => [],
-            'filters' => [],
-            'postFilters' => [],
-            'aggregations' => [],
-            'queries' => [],
-            'groupFields' => [],
-            'offset' => null,
-            'limit' => null,
-            'totalCountMode' => 0,
-            'associations' => [],
-            'ids' => $expectedProducts,
-            'states' => [],
-            'inherited' => false,
-            'term' => null,
-            'extensions' => [
-                'flPagination' => new Pagination(24, 0, 1808)
+        $criteriaMock->expects($this->any())->method('assign')->with(
+            [
+                'source' => null,
+                'sorting' => [],
+                'filters' => [],
+                'postFilters' => [],
+                'aggregations' => [],
+                'queries' => [],
+                'groupFields' => [],
+                'offset' => null,
+                'limit' => null,
+                'totalCountMode' => 0,
+                'associations' => [],
+                'ids' => $expectedProducts,
+                'states' => [],
+                'inherited' => false,
+                'term' => null,
+                'extensions' => [
+                    'flPagination' => new Pagination(24, 0, 1808)
+                ]
             ]
-        ]);
+        );
+
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         if ($isNavigationRequest) {
             $this->setUpNavigationRequestMocks();
@@ -362,10 +383,11 @@ XML;
 
     /**
      * @dataProvider sortingProvider
+     *
      * @param FieldSorting $fieldSorting
      * @param string $expectedOrder
      */
-    public function testSortingIsSubmitted(FieldSorting $fieldSorting, string $expectedOrder)
+    public function testSortingIsSubmitted(FieldSorting $fieldSorting, string $expectedOrder): void
     {
         $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
 
@@ -391,6 +413,7 @@ XML;
 
     /**
      * @dataProvider requestProvider
+     *
      * @param string $endpoint
      * @param array $expectedProducts
      * @param bool $isNavigationRequest
@@ -399,7 +422,7 @@ XML;
         string $endpoint,
         array $expectedProducts,
         bool $isNavigationRequest
-    ) {
+    ): void {
         $eventMock = $this->setUpSearchRequestMocks();
 
         $this->apiClientMock->expects($this->any())->method('send')->willThrowException(
@@ -411,15 +434,11 @@ XML;
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
         $criteriaMock->expects($this->any())->method('assign')->with([]); // Should be empty.
 
-        if ($isNavigationRequest) {
-            $this->setUpNavigationRequestMocks();
-        }
-
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->{$endpoint}($eventMock);
     }
 
-    public function testResponseHasPromotion()
+    public function testResponseHasPromotion(): void
     {
         $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
 
@@ -444,7 +463,7 @@ XML;
         $subscriber->handleSearchRequest($eventMock);
     }
 
-    public function testResponseHasNoPromotion()
+    public function testResponseHasNoPromotion(): void
     {
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse();
@@ -472,7 +491,7 @@ XML;
         $subscriber->handleSearchRequest($eventMock);
     }
 
-    public function testContainsDidYouMeanQuery()
+    public function testContainsDidYouMeanQuery(): void
     {
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithDidYouMeanQuery.xml');
@@ -505,7 +524,7 @@ XML;
         $subscriber->handleSearchRequest($eventMock);
     }
 
-    public function testContainsCorrectedQuery()
+    public function testContainsCorrectedQuery(): void
     {
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithCorrectedQuery.xml');
@@ -538,7 +557,7 @@ XML;
         $subscriber->handleSearchRequest($eventMock);
     }
 
-    public function testContainsImprovedQuery()
+    public function testContainsImprovedQuery(): void
     {
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithImprovedQuery.xml');
@@ -566,6 +585,100 @@ XML;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
+
+        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber->handleSearchRequest($eventMock);
+    }
+
+    public function queryInfoMessageProvider()
+    {
+        return [
+            'Submitting an empty search' => [
+                'queryString' => '',
+                'queryStringType' => null,
+                'params' => ['cat' => '', 'vendor' => ''],
+                'alternativeQuery' => ''
+            ],
+            'Submitting an empty search with a selected category' => [
+                'queryString' => '',
+                'queryStringType' => null,
+                'params' => ['cat' => 'Genusswelten', 'vendor' => ''],
+                'alternativeQuery' => ''
+            ],
+            'Submitting an empty search with a selected sub-category' => [
+                'queryString' => '',
+                'queryStringType' => null,
+                'params' => ['cat' => 'Genusswelten_Tees', 'vendor' => ''],
+                'alternativeQuery' => ''
+            ],
+            'Submitting an empty search with a selected vendor' => [
+                'queryString' => '',
+                'queryStringType' => null,
+                'params' => ['cat' => '', 'vendor' => 'Shopware Food'],
+                'alternativeQuery' => ''
+            ],
+            'Submitting a search with some query' => [
+                'queryString' => 'some query',
+                'queryStringType' => null,
+                'params' => ['cat' => '', 'vendor' => ''],
+                'alternativeQuery' => 'some query'
+            ],
+            'Submitting a search with some query and a selected category and vendor filter' => [
+                'queryString' => 'some query',
+                'queryStringType' => null,
+                'params' => ['cat' => 'Genusswelten', 'vendor' => 'Shopware Food'],
+                'alternativeQuery' => 'some query'
+            ],
+            'Submitting a search where the response will have an improved query' => [
+                'queryString' => 'special',
+                'queryStringType' => 'improved',
+                'params' => ['cat' => '', 'vendor' => ''],
+                'alternativeQuery' => 'very special'
+            ],
+            'Submitting a search where the response will have a corrected query' => [
+                'queryString' => 'standord',
+                'queryStringType' => 'improved',
+                'params' => ['cat' => '', 'vendor' => ''],
+                'alternativeQuery' => 'standard'
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider queryInfoMessageProvider
+     * @param string[] $params
+     */
+    public function testQueryInfoMessage(
+        string $queryString,
+        ?string $queryStringType,
+        array $params,
+        string $alternativeQuery
+    ): void {
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $xmlResponse = clone $this->getRawResponse();
+        unset($xmlResponse->query);
+
+        $query = $xmlResponse->addChild('query');
+        $limit = $query->addChild('limit');
+        $limit->addAttribute('first', '0');
+        $limit->addAttribute('count', '24');
+        $queryStringXml = $query->addChild('queryString', $queryString);
+        if ($queryStringType !== null) {
+            $queryStringXml->addAttribute('type', $queryStringType);
+        }
+
+        $request = new Request();
+        foreach ($params as $key => $param) {
+            $request->query->set($key, $param);
+        }
+
+        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($xmlResponse->asXML()), $request);
+        $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
+        $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
+
+        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);

@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Response;
+use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -35,6 +36,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $this->addSorting($searchRequest, $event->getCriteria());
 
         try {
+            /** @var Xml21Response $response */
             $response = $this->doRequest($event);
             $responseParser = ResponseParser::getInstance($response);
         } catch (ServiceNotAliveException $e) {
@@ -61,6 +63,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             $originalCriteria->getOffset()
         );
 
+        $this->setQueryInfoMessage($event, $responseParser->getQueryInfoMessage($event));
         $this->assignCriteriaToEvent($event, $criteria);
     }
 
