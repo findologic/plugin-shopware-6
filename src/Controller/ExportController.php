@@ -11,6 +11,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
+use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
@@ -51,10 +52,19 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /** @var Router */
     private $router;
 
-    public function __construct(LoggerInterface $logger, Router $router)
-    {
+    /**
+     * @var HeaderHandler
+     */
+    private $headerHandler;
+
+    public function __construct(
+        LoggerInterface $logger,
+        Router $router,
+        HeaderHandler $headerHandler
+    ) {
         $this->logger = $logger;
         $this->router = $router;
+        $this->headerHandler = $headerHandler;
     }
 
     public static function getSubscribedEvents(): array
@@ -97,7 +107,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $totalProductCount
         );
 
-        return new Response($response, 200, ['Content-Type' => 'text/xml']);
+        return new Response($response, 200, $this->headerHandler->getHeaders());
     }
 
     private function validateParams(Request $request): void
@@ -111,9 +121,11 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $shopkey,
             [
                 new NotBlank(),
-                new Assert\Regex([
-                    'pattern' => '/^[A-F0-9]{32}$/'
-                ])
+                new Assert\Regex(
+                    [
+                        'pattern' => '/^[A-F0-9]{32}$/'
+                    ]
+                )
             ]
         );
         if (count($shopkeyViolations) > 0) {
@@ -128,14 +140,18 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $startViolations = $validator->validate(
             $start,
             [
-                new Assert\Type([
-                    'type' => 'numeric',
-                    'message' => 'The value {{ value }} is not a valid {{ type }}',
-                ]),
-                new Assert\GreaterThanOrEqual([
-                    'value' => 0,
-                    'message' => 'The value {{ value }} is not greater than or equal to zero'
-                ])
+                new Assert\Type(
+                    [
+                        'type' => 'numeric',
+                        'message' => 'The value {{ value }} is not a valid {{ type }}',
+                    ]
+                ),
+                new Assert\GreaterThanOrEqual(
+                    [
+                        'value' => 0,
+                        'message' => 'The value {{ value }} is not greater than or equal to zero'
+                    ]
+                )
             ]
         );
         if (count($startViolations) > 0) {
@@ -145,14 +161,18 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $countViolations = $validator->validate(
             $count,
             [
-                new Assert\Type([
-                    'type' => 'numeric',
-                    'message' => 'The value {{ value }} is not a valid {{ type }}',
-                ]),
-                new Assert\GreaterThan([
-                    'value' => 0,
-                    'message' => 'The value {{ value }} is not greater than zero'
-                ])
+                new Assert\Type(
+                    [
+                        'type' => 'numeric',
+                        'message' => 'The value {{ value }} is not a valid {{ type }}',
+                    ]
+                ),
+                new Assert\GreaterThan(
+                    [
+                        'value' => 0,
+                        'message' => 'The value {{ value }} is not greater than zero'
+                    ]
+                )
             ]
         );
         if (count($countViolations) > 0) {
@@ -213,10 +233,12 @@ class ExportController extends AbstractController implements EventSubscriberInte
     ): EntitySearchResult {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('parent.id', null));
-        $criteria->addFilter(new ProductAvailableFilter(
-            $salesChannelContext->getSalesChannel()->getId(),
-            ProductVisibilityDefinition::VISIBILITY_SEARCH
-        ));
+        $criteria->addFilter(
+            new ProductAvailableFilter(
+                $salesChannelContext->getSalesChannel()->getId(),
+                ProductVisibilityDefinition::VISIBILITY_SEARCH
+            )
+        );
 
         $criteria = Utils::addProductAssociations($criteria);
 
