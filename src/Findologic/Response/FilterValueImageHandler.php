@@ -2,13 +2,17 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Struct\Filter\FilterValues;
+namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
+/**
+ * Sends requests to a customer's directory, to check whether images are available or not.
+ * This may only be relevant for vendor image and color filters.
+ */
 class FilterValueImageHandler
 {
     /** @var Client */

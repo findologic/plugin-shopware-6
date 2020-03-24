@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Struct\Filter\FilterValues;
+namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values;
 
 class ColorFilterValue extends ColorImageFilterValue
 {
@@ -22,11 +22,10 @@ class ColorFilterValue extends ColorImageFilterValue
         return $this->colorHexCode;
     }
 
-    /**
-     * @param string|null $colorHexCode
-     */
-    public function setColorHexCode(?string $colorHexCode): void
+    public function setColorHexCode(?string $colorHexCode): self
     {
         $this->colorHexCode = $colorHexCode;
+
+        return $this;
     }
 }

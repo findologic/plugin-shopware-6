@@ -12,8 +12,8 @@
 
         {% if filters %}
             {% for filter in filters %}
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\LabelTextFilter") or
-                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\SelectDropdownFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\LabelTextFilter") or
+                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\SelectDropdownFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
@@ -31,7 +31,7 @@
                  #}
                 {% set filterRangeActiveMinLabel = 'detail.priceDataInfoFrom'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
                 {% set filterRangeActiveMaxLabel = 'detail.priceDataInfoUntil'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\RangeSliderFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RangeSliderFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-range.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
@@ -45,8 +45,8 @@
                     } %}
                 {% endif %}
 
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\ColorPickerFilter") or
-                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\VendorImageFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\ColorPickerFilter") or
+                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\VendorImageFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-property-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,

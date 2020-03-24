@@ -8,12 +8,13 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
-use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
-use FINDOLOGIC\FinSearch\Struct\Filter\Filter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
+use FINDOLOGIC\FinSearch\Struct\CustomFilters;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
+use GuzzleHttp\Client;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -60,7 +61,7 @@ class Xml21ResponseParser extends ResponseParser
         return null;
     }
 
-    public function getFilters(): CustomFilters
+    public function getFilters(?Client $client = null): CustomFilters
     {
         $filters = array_merge($this->response->getMainFilters(), $this->response->getOtherFilters());
 
@@ -68,7 +69,7 @@ class Xml21ResponseParser extends ResponseParser
         foreach ($filters as $filter) {
             $customFilter = Filter::getInstance($filter);
 
-            if ($customFilter) {
+            if ($customFilter && count($customFilter->getValues()) >= 1) {
                 $customFilters->addFilter($customFilter);
             }
         }

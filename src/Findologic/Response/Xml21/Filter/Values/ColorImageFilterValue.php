@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Struct\Filter\FilterValues;
+namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values;
 
-use FINDOLOGIC\FinSearch\Struct\Filter\Media;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
 
 abstract class ColorImageFilterValue extends FilterValue
 {
@@ -21,9 +21,11 @@ abstract class ColorImageFilterValue extends FilterValue
         return $this->media;
     }
 
-    public function setMedia(?Media $media): void
+    public function setMedia(?Media $media): self
     {
         $this->media = $media;
+
+        return $this;
     }
 
     public function getDisplayType(): string
@@ -31,8 +33,10 @@ abstract class ColorImageFilterValue extends FilterValue
         return $this->displayType;
     }
 
-    public function setDisplayType(string $displayType): void
+    public function setDisplayType(string $displayType): self
     {
         $this->displayType = $displayType;
+
+        return $this;
     }
 }
