@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
 
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use Shopware\Core\Framework\Struct\Struct;
 
 class SmartDidYouMean extends Struct
 {
+    protected const
+        DID_YOU_MEAN = 'did-you-mean',
+        IMPROVED = 'improved';
+
     /** @var null|string */
     private $type;
 
@@ -21,13 +24,16 @@ class SmartDidYouMean extends Struct
     /** @var string */
     private $originalQuery;
 
-    public function __construct(Query $query, ?string $controllerPath)
-    {
-        $this->type = $query->getDidYouMeanQuery() !== null ? 'did-you-mean' : $query->getQueryString()->getType();
-        $this->alternativeQuery = htmlentities($query->getAlternativeQuery());
-
-        $originalQuery = $query->getOriginalQuery() !== null ? $query->getOriginalQuery()->getValue() : '';
-        $this->originalQuery = $this->type === 'did-you-mean' ? '' : htmlentities($originalQuery);
+    public function __construct(
+        ?string $originalQuery,
+        ?string $alternativeQuery,
+        ?string $didYouMeanQuery,
+        ?string $type,
+        ?string $controllerPath
+    ) {
+        $this->type = $didYouMeanQuery !== null ? self::DID_YOU_MEAN : $type;
+        $this->alternativeQuery = htmlentities($alternativeQuery ?? '');
+        $this->originalQuery = $this->type === self::DID_YOU_MEAN ? '' : htmlentities($originalQuery);
 
         $this->link = $this->createLink($controllerPath);
     }
@@ -35,13 +41,13 @@ class SmartDidYouMean extends Struct
     private function createLink(?string $controllerPath): ?string
     {
         switch ($this->type) {
-            case 'did-you-mean':
+            case self::DID_YOU_MEAN:
                 return sprintf(
                     '%s?search=%s&forceOriginalQuery=1',
                     $controllerPath,
                     $this->alternativeQuery
                 );
-            case 'improved':
+            case self::IMPROVED:
                 return sprintf(
                     '%s?search=%s&forceOriginalQuery=1',
                     $controllerPath,

@@ -7,7 +7,7 @@ namespace FINDOLOGIC\FinSearch\Struct;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use Shopware\Core\Framework\Struct\Struct;
 
-class CustomFilters extends Struct
+class FiltersExtension extends Struct
 {
     /** @var BaseFilter[] */
     private $filters;

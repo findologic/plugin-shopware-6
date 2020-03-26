@@ -190,7 +190,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
                 $response = $this->navigationRequestHandler->doRequest($event, self::RESULT_LIMIT_FILTER);
             }
             $responseParser = ResponseParser::getInstance($response);
-            $event->getCriteria()->addExtension('flFilters', $responseParser->getFilters());
+            $event->getCriteria()->addExtension('flFilters', $responseParser->getFiltersExtension());
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
             /** @var FindologicEnabled $flEnabled */
             $flEnabled = $event->getContext()->getExtension('flEnabled');

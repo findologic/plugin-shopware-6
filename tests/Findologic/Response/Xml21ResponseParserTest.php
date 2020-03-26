@@ -16,13 +16,24 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValu
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\VendorImageFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\DefaultInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
 class Xml21ResponseParserTest extends TestCase
 {
     use MockResponseHelper;
+    use ExtensionHelper;
 
     public function productIdsResponseProvider(): array
     {
@@ -230,8 +241,8 @@ class Xml21ResponseParserTest extends TestCase
     {
         $responseParser = new Xml21ResponseParser($response);
 
-        $customFilters = $responseParser->getFilters();
-        $filters = $customFilters->getFilters();
+        $filtersExtension = $responseParser->getFiltersExtension();
+        $filters = $filtersExtension->getFilters();
 
         $this->assertEquals($expectedFilters, $filters);
     }
@@ -284,5 +295,99 @@ class Xml21ResponseParserTest extends TestCase
         $this->assertEquals($expectedTotal, $pagination->getTotal());
         $this->assertEquals($expectedOffset, $pagination->getOffset());
         $this->assertEquals($expectedLimit, $pagination->getLimit());
+    }
+
+    public function queryInfoMessageResponseProvider(): array
+    {
+        return [
+            'alternative query is used' => [
+                'response' => new Xml21Response($this->getMockResponse()),
+                'request' => new Request(),
+                'expectedInstance' => SearchTermQueryInfoMessage::class,
+                'expectedVars' => [
+                    'query' => 'ps4',
+                    'extensions' => []
+                ]
+            ],
+            'no alternative query - search query is used' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithoutAlternativeQuery.xml')
+                ),
+                'request' => new Request(),
+                'expectedInstance' => SearchTermQueryInfoMessage::class,
+                'expectedVars' => [
+                    'query' => 'ps3',
+                    'extensions' => []
+                ]
+            ],
+            'no search query but selected category' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                ),
+                'request' => new Request(['cat' => 'Shoes & More']),
+                'expectedInstance' => CategoryInfoMessage::class,
+                'expectedVars' => [
+                    'filterName' => 'Kategorie',
+                    'filterValue' => 'Shoes & More',
+                    'extensions' => []
+                ]
+            ],
+            'no search query but selected vendor' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                ),
+                'request' => new Request(['vendor' => 'Blubbergurken inc.']),
+                'expectedInstance' => VendorInfoMessage::class,
+                'expectedVars' => [
+                    'filterName' => 'Hersteller',
+                    'filterValue' => 'Blubbergurken inc.',
+                    'extensions' => []
+                ]
+            ],
+            'no query and no selected filters' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                ),
+                'request' => new Request(),
+                'expectedInstance' => DefaultInfoMessage::class,
+                'expectedVars' => [
+                    'extensions' => []
+                ]
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider queryInfoMessageResponseProvider
+     */
+    public function testQueryInfoMessageExtensionIsReturnedAsExpected(
+        Xml21Response $response,
+        Request $request,
+        string $expectedInstance,
+        array $expectedVars
+    ): void {
+        $responseParser = new Xml21ResponseParser($response);
+
+        $contextMock = $this->getMockBuilder(Context::class)
+            ->onlyMethods(['getExtension'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock->expects($this->any())
+            ->method('getExtension')
+            ->willReturn($this->getDefaultSmartDidYouMeanExtension());
+
+        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
+        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
+            ->onlyMethods(['getContext'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $salesChannelContextMock->expects($this->any())->method('getContext')->willReturn($contextMock);
+        $event = new ProductListingCriteriaEvent($request, new Criteria(), $salesChannelContextMock);
+
+        $queryInfoMessage = $responseParser->getQueryInfoMessage($event);
+        $this->assertInstanceOf($expectedInstance, $queryInfoMessage);
+        $this->assertEquals($expectedVars, $queryInfoMessage->getVars());
     }
 }

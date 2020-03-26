@@ -20,6 +20,7 @@ use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -45,6 +46,8 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class ProductListingFeaturesSubscriberTest extends TestCase
 {
+    use ExtensionHelper;
+
     /** @var Connection|MockObject */
     private $connectionMock;
 
@@ -209,7 +212,8 @@ XML;
      */
     private function setUpSearchRequestMocks(
         Xml21Response $response = null,
-        Request $request = null
+        Request $request = null,
+        bool $withSmartDidYouMean = true
     ): ProductSearchCriteriaEvent {
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         if ($response === null) {
@@ -231,17 +235,24 @@ XML;
         $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
 
         $findologicEnabled = new FindologicEnabled();
-        $smartDidYouMean = new SmartDidYouMean($response->getQuery(), null);
+        $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
         $defaultExtensionMap = [
             ['flEnabled', $findologicEnabled],
             ['flSmartDidYouMean', $smartDidYouMean]
         ];
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-            ['flEnabled', $findologicEnabled],
-            ['flSmartDidYouMean', $smartDidYouMean]
-        );
+
+        if ($withSmartDidYouMean) {
+            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
+                ['flEnabled', $findologicEnabled],
+                ['flSmartDidYouMean', $smartDidYouMean]
+            );
+        } else {
+            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
+                ['flEnabled', $findologicEnabled]
+            );
+        }
         $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
         $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
@@ -509,10 +520,7 @@ XML;
             ['flEnabled'],
             [
                 'flSmartDidYouMean',
-                new SmartDidYouMean(
-                    new Query($this->buildSmartDidYouMeanQueryElement('ps4')),
-                    null
-                )
+                $this->getDefaultSmartDidYouMeanExtension('ps4', null, 'ps4')
             ]
         );
         $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
@@ -529,7 +537,7 @@ XML;
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithCorrectedQuery.xml');
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
+        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
 
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
@@ -542,10 +550,7 @@ XML;
             ['flEnabled'],
             [
                 'flSmartDidYouMean',
-                new SmartDidYouMean(
-                    new Query($this->buildSmartDidYouMeanQueryElement(null, null, 'ps4')),
-                    null
-                )
+                $this->getDefaultSmartDidYouMeanExtension('', 'ps4', null, 'corrected')
             ]
         );
         $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
@@ -562,7 +567,7 @@ XML;
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithImprovedQuery.xml');
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
+        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
 
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
@@ -575,10 +580,7 @@ XML;
             ['flEnabled'],
             [
                 'flSmartDidYouMean',
-                new SmartDidYouMean(
-                    new Query($this->buildSmartDidYouMeanQueryElement(null, 'ps4')),
-                    null
-                )
+                $this->getDefaultSmartDidYouMeanExtension('', 'ps4', null, 'improved')
             ]
         );
         $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
@@ -672,7 +674,7 @@ XML;
             $request->query->set($key, $param);
         }
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($xmlResponse->asXML()), $request);
+        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($xmlResponse->asXML()), $request, false);
         $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
