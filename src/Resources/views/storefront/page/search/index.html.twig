@@ -20,21 +20,16 @@
             <h1 class="search-headline">
                 {% if context.context.extensions.flQueryInfoMessage %}
                     {% set queryInfoMessage = context.context.extensions.flQueryInfoMessage %}
-                    {% if queryInfoMessage.snippetType == 'query' %}
+                    {% if queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\SearchTermQueryInfoMessage") %}
                         {{ 'finSearch.queryInfoMessage.query'|trans({
-                            '%query%': queryInfoMessage.searchTerm,
+                            '%query%': queryInfoMessage.query,
                             '%hits%': page.searchResult.criteria.extensions.flPagination.total
                         })|sw_sanitize }}
-                    {% elseif queryInfoMessage.snippetType == 'cat' %}
-                        {{ 'finSearch.queryInfoMessage.cat'|trans({
+                    {% elseif queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\CategoryInfoMessage") or
+                        queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\VendorInfoMessage") %}
+                        {{ 'finSearch.queryInfoMessage.filter'|trans({
                             '%filterName%': queryInfoMessage.filterName,
-                            '%cat%': queryInfoMessage.category,
-                            '%hits%': page.searchResult.criteria.extensions.flPagination.total
-                        })|sw_sanitize }}
-                    {% elseif queryInfoMessage.snippetType == 'vendor' %}
-                        {{ 'finSearch.queryInfoMessage.vendor'|trans({
-                            '%filterName%': queryInfoMessage.filterName,
-                            '%vendor%': queryInfoMessage.vendor,
+                            '%filterValue%': queryInfoMessage.filterValue,
                             '%hits%': page.searchResult.criteria.extensions.flPagination.total
                         })|sw_sanitize }}
                     {% else %}
