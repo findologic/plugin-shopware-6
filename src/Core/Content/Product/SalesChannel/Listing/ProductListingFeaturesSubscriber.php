@@ -23,11 +23,11 @@ use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchResultEvent;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber
-    as ShopwareProductListingFeaturesSubscriber;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as ShopwareProductListingFeaturesSubscriber;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSorting;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -37,9 +37,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 {
     /** @var string FINDOLOGIC default sort for categories */
     public const DEFAULT_SORT = 'score';
-
     public const DEFAULT_SEARCH_SORT = 'score';
-
     /** @var int We do not need any products for a filter-only request. */
     private const RESULT_LIMIT_FILTER = 0;
 
@@ -222,12 +220,36 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $shopkey = $this->config->getShopkey();
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
+        $isStagingSession = $this->isStagingSession($event);
 
-        // If it is direct integration or a staging shop, then we do not allow the request.
-        // TODO: Allow request if it is staging shop and the query parameter ?findologic=on is submitted.
-        $shouldHandleRequest = !($isDirectIntegration || $isStagingShop);
+        $shouldHandleRequest = !$isDirectIntegration && (!$isStagingShop || ($isStagingShop && $isStagingSession));
         $shouldHandleRequest ? $findologicEnabled->setEnabled() : $findologicEnabled->setDisabled();
 
         return $shouldHandleRequest;
+    }
+
+    private function isStagingSession(ShopwareEvent $event): bool
+    {
+        $request = $event->getRequest();
+
+        $findologic = $request->get('findologic');
+
+        if ($findologic === 'on') {
+            $request->getSession()->set('stagingFlag', true);
+
+            return true;
+        }
+
+        if ($findologic === 'off' || $findologic === 'disabled') {
+            $request->getSession()->set('stagingFlag', false);
+
+            return false;
+        }
+
+        if ($request->getSession()->get('stagingFlag') === true) {
+            return true;
+        }
+
+        return false;
     }
 }
