@@ -228,11 +228,11 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
         if (!$isDirectIntegration && $allowRequestForStaging) {
             $shouldHandleRequest = true;
+            $findologicEnabled->setEnabled();
         } else {
             $shouldHandleRequest = false;
+            $findologicEnabled->setDisabled();
         }
-
-        $shouldHandleRequest ? $findologicEnabled->setEnabled() : $findologicEnabled->setDisabled();
 
         return $shouldHandleRequest;
     }
