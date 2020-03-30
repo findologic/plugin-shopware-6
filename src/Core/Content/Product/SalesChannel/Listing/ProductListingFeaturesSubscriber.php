@@ -223,7 +223,15 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
         $isStagingSession = $this->isStagingSession($event);
 
-        $shouldHandleRequest = !$isDirectIntegration && (!$isStagingShop || ($isStagingShop && $isStagingSession));
+        // Allow request if shop is not staging or is staging with findologic=on flag set
+        $allowRequestForStaging = (!$isStagingShop || ($isStagingShop && $isStagingSession));
+
+        if (!$isDirectIntegration && $allowRequestForStaging) {
+            $shouldHandleRequest = true;
+        } else {
+            $shouldHandleRequest = false;
+        }
+
         $shouldHandleRequest ? $findologicEnabled->setEnabled() : $findologicEnabled->setDisabled();
 
         return $shouldHandleRequest;
