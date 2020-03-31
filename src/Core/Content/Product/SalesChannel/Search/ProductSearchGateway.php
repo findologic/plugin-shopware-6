@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search;
 
+use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -67,29 +68,7 @@ class ProductSearchGateway extends ShopwareProductSearchGateway
             ProductEvents::PRODUCT_SEARCH_CRITERIA
         );
 
-        // Pagination is handled by FINDOLOGIC.
-        $criteria->setLimit(24);
-        $criteria->setOffset(0);
-
-        if (empty($criteria->getIds())) {
-            $result = new EntitySearchResult(
-                0,
-                new EntityCollection(),
-                new AggregationResultCollection(),
-                $criteria,
-                $context->getContext()
-            );
-        } else {
-            $result = $this->repository->search($criteria, $context);
-            $result = $this->fixResultOrder($result, $criteria);
-        }
-
-        /** @var Pagination $pagination */
-        $pagination = $criteria->getExtension('flPagination');
-        if ($pagination) {
-            $criteria->setLimit($pagination->getLimit() ?? 24);
-            $criteria->setOffset($pagination->getOffset() ?? 0);
-        }
+        $result = $this->doSearch($criteria, $context);
 
         $result = ProductListingResult::createFrom($result);
 
@@ -139,5 +118,42 @@ class ProductSearchGateway extends ShopwareProductSearchGateway
         }
 
         return $result;
+    }
+
+    protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
+    {
+        /** @var FindologicEnabled $findologicEnabled */
+        $findologicEnabled = $context->getContext()->getExtension('flEnabled');
+        $isFindologicEnabled = $findologicEnabled ? $findologicEnabled->getEnabled() : false;
+
+        if (!$isFindologicEnabled) {
+            return $this->repository->search($criteria, $context);
+        }
+
+        if (empty($criteria->getIds())) {
+            // Return an empty response, as Shopware would search for all products if no explicit
+            // product ids are submitted.
+            return new EntitySearchResult(
+                0,
+                new EntityCollection(),
+                new AggregationResultCollection(),
+                $criteria,
+                $context->getContext()
+            );
+        }
+
+        // Pagination is handled by FINDOLOGIC.
+        $criteria->setLimit(24);
+        $criteria->setOffset(0);
+
+        /** @var Pagination $pagination */
+        $pagination = $criteria->getExtension('flPagination');
+        if ($pagination) {
+            $criteria->setLimit($pagination->getLimit() ?? 24);
+            $criteria->setOffset($pagination->getOffset() ?? 0);
+        }
+
+        $result = $this->repository->search($criteria, $context);
+        return $this->fixResultOrder($result, $criteria);
     }
 }

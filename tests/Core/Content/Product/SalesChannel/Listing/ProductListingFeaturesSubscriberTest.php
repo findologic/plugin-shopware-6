@@ -9,7 +9,6 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
@@ -19,11 +18,11 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
-use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionObject;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Tree\Tree;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -40,6 +39,7 @@ use SimpleXMLElement;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * Tests in this test class act more like integration tests, as they mock the whole search stack.
@@ -161,6 +161,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $requestMock = $this->getMockBuilder(Request::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $sessionMock = $this->getDefaultSessionMock();
+        $requestMock->expects($this->any())->method('getSession')->willReturn($sessionMock);
 
         $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
         $queryMock->expects($this->at(0))
@@ -648,6 +650,7 @@ XML;
 
     /**
      * @dataProvider queryInfoMessageProvider
+     *
      * @param string[] $params
      */
     public function testQueryInfoMessage(
@@ -674,6 +677,7 @@ XML;
             $request->query->set($key, $param);
         }
 
+        $request->setSession($this->getDefaultSessionMock());
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($xmlResponse->asXML()), $request, false);
         $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
@@ -684,5 +688,107 @@ XML;
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
+    }
+
+    public function stagingQueryParameterProvider()
+    {
+        return [
+            'Shop is not staging and no query parameter was submitted' => [
+                'isStaging' => false,
+                'stagingFlag' => false,
+                'stagingParam' => null,
+                'isFindologicEnabled' => true
+            ],
+            'Shop is not staging and query parameter is findologic=off' => [
+                'isStaging' => false,
+                'stagingFlag' => false,
+                'stagingParam' => 'off',
+                'isFindologicEnabled' => true
+            ],
+            'Shop is not staging and query parameter is findologic=disabled' => [
+                'isStaging' => false,
+                'stagingFlag' => false,
+                'stagingParam' => 'disabled',
+                'isFindologicEnabled' => true
+            ],
+            'Shop is not staging and query parameter is findologic=on' => [
+                'isStaging' => false,
+                'stagingFlag' => true,
+                'stagingParam' => 'on',
+                'isFindologicEnabled' => true
+            ],
+            'Shop is staging and no query parameter was submitted' => [
+                'isStaging' => true,
+                'stagingFlag' => false,
+                'stagingParam' => null,
+                'isFindologicEnabled' => false
+            ],
+            'Shop is staging and query parameter is findologic=off' => [
+                'isStaging' => true,
+                'stagingFlag' => false,
+                'stagingParam' => 'off',
+                'isFindologicEnabled' => false
+            ],
+            'Shop is staging and query parameter is findologic=disabled' => [
+                'isStaging' => true,
+                'stagingFlag' => false,
+                'stagingParam' => 'disabled',
+                'isFindologicEnabled' => false
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider stagingQueryParameterProvider
+     */
+    public function testStagingQueryParameterWorksAsExpected(
+        bool $isStaging,
+        bool $stagingFlag,
+        ?string $stagingParam,
+        bool $isFindologicEnabled
+    ): void {
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $this->serviceConfigResourceMock->expects($this->any())->method('isStaging')->willReturn($isStaging);
+        $this->serviceConfigResourceMock->expects($this->any())->method('isDirectIntegration')->willReturn(false);
+
+        $sessionMock = $this->getMockBuilder(SessionInterface::class)->disableOriginalConstructor()->getMock();
+
+        if ($stagingParam === null) {
+            $sessionMock->expects($this->once())->method('get')->with('stagingFlag')->willReturn($stagingFlag);
+            $invokeCount = $this->never();
+        } else {
+            $invokeCount = $this->once();
+        }
+
+        $sessionMock->expects($invokeCount)->method('set')->with('stagingFlag', $stagingFlag);
+
+        $request = new Request();
+        $request->query->set('findologic', $stagingParam);
+        $request->setSession($sessionMock);
+
+        $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse(), $request, false);
+        $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
+        $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
+
+        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
+
+        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+
+        $reflector = new ReflectionObject($subscriber);
+        $method = $reflector->getMethod('allowRequest');
+        $method->setAccessible(true);
+        $isEnabled = $method->invoke($subscriber, $eventMock);
+        $this->assertSame($isFindologicEnabled, $isEnabled);
+    }
+
+    private function getDefaultSessionMock(): SessionInterface
+    {
+        /** @var SessionInterface|MockObject $sessionMock */
+        $sessionMock = $this->getMockBuilder(SessionInterface::class)->disableOriginalConstructor()->getMock();
+        $sessionMock->expects($this->any())->method('get')->with('stagingFlag')->willReturn(false);
+
+        return $sessionMock;
     }
 }
