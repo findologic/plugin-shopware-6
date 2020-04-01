@@ -210,9 +210,10 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
         $findologicEnabled = new FindologicEnabled();
         $event->getContext()->addExtension('flEnabled', $findologicEnabled);
-
         $findologicEnabled->setEnabled();
-        if (!$this->config->isActive()) {
+
+        $isCategoryPage = !($event instanceof ProductSearchCriteriaEvent);
+        if (!$this->config->isActive() || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
             $findologicEnabled->setDisabled();
 
             return false;
