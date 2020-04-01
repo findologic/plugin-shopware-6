@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<searchResult xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/findologic/xml-response-schema/master/schema.xsd">
+    <servers>
+        <frontend>martell.frontend.findologic.com</frontend>
+        <backend>hydra.backend.findologic.com</backend>
+    </servers>
+    <query>
+        <limit first="0" count="24" />
+        <queryString>no-results</queryString>
+    </query>
+    <results>
+        <count>0</count>
+    </results>
+    <products/>
+    <filters>
+        <main>
+            <filter>
+                <itemCount>2</itemCount>
+                <cssClass>testing-filter-class-from-fd</cssClass>
+                <noAvailableFiltersText>No Manufacturer Available</noAvailableFiltersText>
+                <name>vendor</name>
+                <display>Manufacturer</display>
+                <select>multiple</select>
+                <type>select</type>
+                <items/>
+            </filter>
+            <filter>
+                <itemCount>6</itemCount>
+                <noAvailableFiltersText>No category available</noAvailableFiltersText>
+                <name>cat</name>
+                <display>Catego</display>
+                <select>single</select>
+                <type>select</type>
+                <items/>
+            </filter>
+        </main>
+        <other>
+            <filter>
+                <noAvailableFiltersText>No Color Available</noAvailableFiltersText>
+                <name>Color</name>
+                <display>Color</display>
+                <select>multiselect</select>
+                <selectedItems>0</selectedItems>
+                <type>color</type>
+                <items/>
+            </filter>
+            <filter>
+                <itemCount>1</itemCount>
+                <noAvailableFiltersText>No Test Available</noAvailableFiltersText>
+                <name>Test</name>
+                <display>Test</display>
+                <select>multiple</select>
+                <type>select</type>
+                <items/>
+            </filter>
+            <filter>
+                <itemCount>6</itemCount>
+                <noAvailableFiltersText>No Test Group Available</noAvailableFiltersText>
+                <name>Test Group</name>
+                <display>Test Group</display>
+                <select>multiple</select>
+                <type>select</type>
+                <items/>
+            </filter>
+            <filter>
+                <itemCount>6</itemCount>
+                <noAvailableFiltersText>No Description Available</noAvailableFiltersText>
+                <name>Description</name>
+                <display>Description</display>
+                <select>multiple</select>
+                <type>select</type>
+                <items/>
+            </filter>
+        </other>
+    </filters>
+</searchResult>

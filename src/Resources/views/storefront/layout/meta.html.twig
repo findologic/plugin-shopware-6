@@ -9,11 +9,13 @@
             (document,'{{ page.header.extensions.flSnippet.hashedShopkey }}','{{ page.header.extensions.flSnippet.userGroupHash }}','.{{ page.header.extensions.flSnippet.navigationResultContainer }}','fl-reveal',3000,'.3s','//cdn.findologic.com',window,'.{{ page.header.extensions.flSnippet.searchResultContainer }}');
         </script>
 
-        <style>
-            .search-suggest.js-search-result {
-                display: none;
-            }
-        </style>
+        {% if not page.header.extensions.flConfig.staging %}
+            <style>
+                .search-suggest.js-search-result {
+                    display: none;
+                }
+            </style>
+        {% endif %}
     {% endif %}
 
     {{ parent() }}

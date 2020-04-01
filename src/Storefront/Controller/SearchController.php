@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -27,12 +28,21 @@ class SearchController extends ShopwareSearchController
      */
     private $suggestPageLoader;
 
-    public function __construct(SearchPageLoader $searchPageLoader, SuggestPageLoader $suggestPageLoader)
-    {
+    /**
+     * @var FilterHandler
+     */
+    private $filterHandler;
+
+    public function __construct(
+        SearchPageLoader $searchPageLoader,
+        SuggestPageLoader $suggestPageLoader,
+        ?FilterHandler $filterHandler = null
+    ) {
         parent::__construct($searchPageLoader, $suggestPageLoader);
 
         $this->searchPageLoader = $searchPageLoader;
         $this->suggestPageLoader = $suggestPageLoader;
+        $this->filterHandler = $filterHandler ?? new FilterHandler();
     }
 
     /**
@@ -42,9 +52,21 @@ class SearchController extends ShopwareSearchController
      */
     public function search(SalesChannelContext $context, Request $request): Response
     {
-        $page = $this->searchPageLoader->load($request, $context);
+        if ($response = $this->handleFindologicSearchParams($request)) {
+            return $response;
+        }
 
+        $page = $this->searchPageLoader->load($request, $context);
         return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
+    }
+
+    private function handleFindologicSearchParams(Request $request): ?Response
+    {
+        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
+            return $this->redirect($uri);
+        }
+
+        return null;
     }
 
     /**

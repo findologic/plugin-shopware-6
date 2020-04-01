@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b86dc21648e4eeb5d913342718bfbf6d",
+    "content-hash": "7796977f63d3da2763792185351e53b5",
     "packages": [
         {
             "name": "findologic/findologic-api",
-            "version": "v1.1.1",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "2d465c5d9d0a5e513e08a75542d27afab101152f"
+                "reference": "1386b54b1471790bd81871e2ed9b190a724b891c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/2d465c5d9d0a5e513e08a75542d27afab101152f",
-                "reference": "2d465c5d9d0a5e513e08a75542d27afab101152f",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/1386b54b1471790bd81871e2ed9b190a724b891c",
+                "reference": "1386b54b1471790bd81871e2ed9b190a724b891c",
                 "shasum": ""
             },
             "require": {
@@ -62,7 +62,7 @@
                 }
             ],
             "description": "Library for FINDOLOGIC API requests",
-            "time": "2020-02-12T09:13:48+00:00"
+            "time": "2020-03-24T14:27:58+00:00"
         },
         {
             "name": "findologic/libflexport",

@@ -22,8 +22,7 @@ class SmartDidYouMeanTest extends TestCase
                 'originalQuery' => '',
                 'type' => '',
                 'controllerPath' => 'https://localhost/findologic',
-                'expectedLink' => 'https://localhost/findologic?search=alternativeQuery&forceOriginalQuery=1',
-                'invokeCount' => 0
+                'expectedLink' => 'https://localhost/findologic?search=alternativeQuery&forceOriginalQuery=1'
             ],
             'Query type is "improved"' => [
                 'didYouMeanQuery' => null,
@@ -31,8 +30,7 @@ class SmartDidYouMeanTest extends TestCase
                 'originalQuery' => 'originalQuery',
                 'type' => 'improved',
                 'controllerPath' => 'https://localhost/findologic',
-                'expectedLink' => 'https://localhost/findologic?search=originalQuery&forceOriginalQuery=1',
-                'invokeCount' => 1
+                'expectedLink' => 'https://localhost/findologic?search=originalQuery&forceOriginalQuery=1'
             ],
             'Query type is "corrected"' => [
                 'didYouMeanQuery' => null,
@@ -40,8 +38,7 @@ class SmartDidYouMeanTest extends TestCase
                 'originalQuery' => 'originalQuery',
                 'type' => 'corrected',
                 'controllerPath' => 'https://localhost/findologic',
-                'expectedLink' => null,
-                'invokeCount' => 1
+                'expectedLink' => null
             ],
             'Query type is "blubbergurken"' => [
                 'didYouMeanQuery' => null,
@@ -49,8 +46,7 @@ class SmartDidYouMeanTest extends TestCase
                 'originalQuery' => 'originalQuery',
                 'type' => 'blubbergurken',
                 'controllerPath' => 'https://localhost/findologic',
-                'expectedLink' => null,
-                'invokeCount' => 1
+                'expectedLink' => null
             ],
         ];
     }
@@ -64,23 +60,15 @@ class SmartDidYouMeanTest extends TestCase
         string $originalQuery,
         string $type,
         string $controllerPath,
-        ?string $expectedLink,
-        int $invokeCount
+        ?string $expectedLink
     ): void {
-        $originalQueryMock = $this->getMockBuilder(OriginalQuery::class)->disableOriginalConstructor()->getMock();
-        $originalQueryMock->expects($this->once())->method('getValue')->willReturn($originalQuery);
-
-        $queryStringMock = $this->getMockBuilder(QueryString::class)->disableOriginalConstructor()->getMock();
-        $queryStringMock->expects($this->exactly($invokeCount))->method('getType')->willReturn($type);
-
-        /** @var Query|MockObject $mockQuery */
-        $mockQuery = $this->getMockBuilder(Query::class)->disableOriginalConstructor()->getMock();
-        $mockQuery->expects($this->once())->method('getDidYouMeanQuery')->willReturn($didYouMeanQuery);
-        $mockQuery->expects($this->exactly($invokeCount))->method('getQueryString')->willReturn($queryStringMock);
-        $mockQuery->expects($this->exactly(2))->method('getOriginalQuery')->willReturn($originalQueryMock);
-        $mockQuery->expects($this->once())->method('getAlternativeQuery')->willReturn($alternativeQuery);
-
-        $smartDidYouMean = new SmartDidYouMean($mockQuery, $controllerPath);
+        $smartDidYouMean = new SmartDidYouMean(
+            $originalQuery,
+            $alternativeQuery,
+            $didYouMeanQuery,
+            $type,
+            $controllerPath
+        );
         $parameters = $smartDidYouMean->getVars();
 
         $this->assertNotEmpty($parameters);

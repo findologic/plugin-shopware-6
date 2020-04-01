@@ -1,0 +1,6 @@
+{% sw_extends '@Storefront/storefront/component/listing/filter/filter-property-select.html.twig' %}
+
+{% block component_filter_property_select_preview %}
+    {% set displayType = element.displayType %}
+    {{ parent() }}
+{% endblock %}

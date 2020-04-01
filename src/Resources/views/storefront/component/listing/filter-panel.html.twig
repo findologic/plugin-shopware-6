@@ -2,16 +2,18 @@
 
 {% block component_filter_panel_items_container %}
 
+    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
+        {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
+    {% else %}
+        {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
+    {% endif %}
+
     {% block component_filter_panel_item_test_filter %}
-        {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
-            {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
-        {% else %}
-            {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
-        {% endif %}
 
         {% if filters %}
             {% for filter in filters %}
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\LabelTextFilter") or filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\SelectDropdownFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\LabelTextFilter") or
+                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\SelectDropdownFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
@@ -22,7 +24,14 @@
                     } %}
                 {% endif %}
 
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\Filter\\RangeSliderFilter") %}
+                {#
+                    Shopware only considers price filters and they programatically always show "Price from" instead
+                    of taking the actual filter name. To prevent this we manually override the label that is
+                    responsible for that translation.
+                 #}
+                {% set filterRangeActiveMinLabel = 'detail.priceDataInfoFrom'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
+                {% set filterRangeActiveMaxLabel = 'detail.priceDataInfoUntil'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RangeSliderFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-range.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
@@ -31,18 +40,26 @@
                         displayType: property.displayType,
                         minKey: filter.minKey,
                         maxKey: filter.maxKey,
-                        pluginSelector: 'filter-range-slider'
+                        pluginSelector: 'filter-range-slider',
+                        currencySymbol: filter.unit
                     } %}
                 {% endif %}
+
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\ColorPickerFilter") or
+                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\VendorImageFilter") %}
+                    {% sw_include '@Storefront/storefront/component/listing/filter/filter-property-select.html.twig' with {
+                        elements: filter.values,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        displayName: filter.name,
+                        displayType: filter.displayType,
+                        pluginSelector: 'filter-property-select'
+                    } %}
+                {% endif %}
+
             {% endfor %}
         {% endif %}
     {% endblock %}
-
-    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
-        {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
-    {% else %}
-        {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
-    {% endif %}
 
     {% if not filters %}
         {{ parent() }}

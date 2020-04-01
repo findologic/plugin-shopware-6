@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Struct\Filter;
+namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter;
 
 use Shopware\Core\Framework\Struct\Struct;
 

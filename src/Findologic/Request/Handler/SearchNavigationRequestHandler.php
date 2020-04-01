@@ -18,11 +18,11 @@ use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\QueryInfoMessage;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
-use Symfony\Component\HttpFoundation\Request;
 
 abstract class SearchNavigationRequestHandler
 {
@@ -56,18 +56,23 @@ abstract class SearchNavigationRequestHandler
      */
     protected $sortingHandlers;
 
+    /** @var FilterHandler */
+    protected $filterHandler;
+
     public function __construct(
         ServiceConfigResource $serviceConfigResource,
         FindologicRequestFactory $findologicRequestFactory,
         Config $config,
         ApiConfig $apiConfig,
-        ApiClient $apiClient
+        ApiClient $apiClient,
+        ?FilterHandler $filterHandler = null
     ) {
         $this->serviceConfigResource = $serviceConfigResource;
+        $this->findologicRequestFactory = $findologicRequestFactory;
         $this->config = $config;
         $this->apiConfig = $apiConfig;
         $this->apiClient = $apiClient;
-        $this->findologicRequestFactory = $findologicRequestFactory;
+        $this->filterHandler = $filterHandler ?? new FilterHandler();
 
         $this->sortingHandlers = $this->getSortingHandler();
     }
@@ -90,27 +95,6 @@ abstract class SearchNavigationRequestHandler
     public function sendRequest(SearchNavigationRequest $searchNavigationRequest): Response
     {
         return $this->apiClient->send($searchNavigationRequest);
-    }
-
-    protected function handleFilters(Request $request, SearchNavigationRequest $searchNavigationRequest): void
-    {
-        $attrib = $request->get('attrib', []);
-
-        if ($attrib) {
-            foreach ($attrib as $key => $attribute) {
-                foreach ($attribute as $value) {
-                    $searchNavigationRequest->addAttribute($key, $value);
-                }
-            }
-        }
-
-        $cat = $request->get('catFilter', '');
-        if (!empty($cat)) {
-            if (is_array($cat)) {
-                $cat = end($cat);
-            }
-            $searchNavigationRequest->addAttribute('cat', $cat);
-        }
     }
 
     /**
@@ -165,5 +149,10 @@ abstract class SearchNavigationRequestHandler
     ): void {
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
         $criteria->addExtension('flPagination', $pagination);
+    }
+
+    protected function setQueryInfoMessage(ShopwareEvent $event, QueryInfoMessage $queryInfoMessage): void
+    {
+        $event->getContext()->addExtension('flQueryInfoMessage', $queryInfoMessage);
     }
 }

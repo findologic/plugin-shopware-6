@@ -77,7 +77,7 @@ class FindologicProductTest extends TestCase
         }
 
         $productEntity = $this->createTestProduct();
-        $productEntity->setName($name);
+        $productEntity->setTranslated(['name' => $name]);
 
         $findologicProductFactory = new FindologicProductFactory();
 

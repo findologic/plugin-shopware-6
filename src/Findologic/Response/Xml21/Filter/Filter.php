@@ -1,0 +1,168 @@
+<?php
+
+declare(strict_types=1);
+
+namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter;
+
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\CategoryFilter as ApiCategoryFilter;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\ColorPickerFilter as ApiColorPickerFilter;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Filter as ApiFilter;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\ColorItem;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\DefaultItem;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\RangeSliderItem;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\VendorImageItem;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\LabelTextFilter as ApiLabelTextFilter;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\RangeSliderFilter as ApiRangeSliderFilter;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\SelectDropdownFilter as ApiSelectDropdownFilter;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\VendorImageFilter as ApiVendorImageFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\FilterValueImageHandler;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
+use GuzzleHttp\Client;
+use InvalidArgumentException;
+
+abstract class Filter extends BaseFilter
+{
+    /** @var FilterValue[] */
+    protected $values;
+
+    /**
+     * Builds a new filter instance. May return null for unsupported filter types. Throws an exception for unknown
+     * filter types.
+     *
+     * @param ApiFilter $filter
+     * @param Client|null $client Used to fetch images from vendor image or color filters. If not set a new client
+     * instance will be created internally.
+     *
+     * @return Filter|null
+     */
+    public static function getInstance(ApiFilter $filter, ?Client $client = null): ?Filter
+    {
+        switch (true) {
+            case $filter instanceof ApiLabelTextFilter:
+                return static::handleLabelTextFilter($filter);
+            case $filter instanceof ApiSelectDropdownFilter:
+                return static::handleSelectDropdownFilter($filter);
+            case $filter instanceof ApiRangeSliderFilter:
+                return static::handleRangeSliderFilter($filter);
+            case $filter instanceof ApiColorPickerFilter:
+                return static::handleColorPickerFilter($filter, $client);
+            case $filter instanceof ApiVendorImageFilter:
+                return static::handleVendorImageFilter($filter, $client);
+            case $filter instanceof ApiCategoryFilter: // Shopware does not have a category filter yet.
+                return null;
+            default:
+                throw new InvalidArgumentException('The submitted filter is unknown.');
+        }
+    }
+
+    private static function handleLabelTextFilter(ApiLabelTextFilter $filter): LabelTextFilter
+    {
+        $customFilter = new LabelTextFilter($filter->getName(), $filter->getDisplay());
+
+        /** @var DefaultItem $item */
+        foreach ($filter->getItems() as $item) {
+            $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
+        }
+
+        return $customFilter;
+    }
+
+    private static function handleSelectDropdownFilter(ApiSelectDropdownFilter $filter): SelectDropdownFilter
+    {
+        $customFilter = new SelectDropdownFilter($filter->getName(), $filter->getDisplay());
+
+        /** @var DefaultItem $item */
+        foreach ($filter->getItems() as $item) {
+            $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
+        }
+
+        return $customFilter;
+    }
+
+    private static function handleRangeSliderFilter(ApiRangeSliderFilter $filter): RangeSliderFilter
+    {
+        $customFilter = new RangeSliderFilter($filter->getName(), $filter->getDisplay());
+        $customFilter->setUnit($filter->getAttributes()->getUnit());
+
+        /** @var RangeSliderItem $item */
+        foreach ($filter->getItems() as $item) {
+            $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
+        }
+
+        return $customFilter;
+    }
+
+    private static function handleColorPickerFilter(ApiColorPickerFilter $filter, ?Client $client): ColorPickerFilter
+    {
+        $customFilter = new ColorPickerFilter($filter->getName(), $filter->getDisplay());
+        $imageUrls = [];
+
+        /** @var ColorItem $item */
+        foreach ($filter->getItems() as $item) {
+            $imageUrls[$item->getName()] = $item->getImage();
+
+            $filterValue = new ColorFilterValue($item->getName(), $item->getName());
+            $filterValue->setColorHexCode($item->getColor());
+
+            $media = new Media($item->getImage());
+            $filterValue->setMedia($media);
+
+            $customFilter->addValue($filterValue);
+        }
+
+        $filterImageHandler = new FilterValueImageHandler($client);
+        $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
+
+        foreach ($customFilter->getValues() as $filterValue) {
+            if (in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
+                $filterValue->setDisplayType('media');
+            }
+        }
+
+        return $customFilter;
+    }
+
+    private static function handleVendorImageFilter(ApiVendorImageFilter $filter, ?Client $client): VendorImageFilter
+    {
+        $customFilter = new VendorImageFilter($filter->getName(), $filter->getDisplay());
+        $imageUrls = [];
+
+        /** @var VendorImageItem $item */
+        foreach ($filter->getItems() as $item) {
+            $imageUrls[$item->getName()] = $item->getImage();
+            $filterValue = new ImageFilterValue($item->getName(), $item->getName());
+            $media = new Media($item->getImage());
+            $filterValue->setMedia($media);
+            $customFilter->addValue($filterValue);
+        }
+
+        $filterImageHandler = new FilterValueImageHandler($client);
+        $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
+
+        foreach ($customFilter->getValues() as $filterValue) {
+            if (!in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
+                $filterValue->setDisplayType('none');
+            }
+        }
+
+        return $customFilter;
+    }
+
+    /**
+     * @return FilterValue[]
+     */
+    public function getValues(): array
+    {
+        return $this->values;
+    }
+
+    public function addValue(FilterValue $filterValue): self
+    {
+        $this->values[] = $filterValue;
+
+        return $this;
+    }
+}

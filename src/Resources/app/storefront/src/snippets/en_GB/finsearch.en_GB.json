@@ -5,6 +5,11 @@
       "improvedQuery": "Showing results for \"%alternativeQuery%\". Search instead for \"<a href='%link%'>%originalQuery%</a>\"?",
       "correctedQuery": "No results for \"%originalQuery%\". Showing results for \"%alternativeQuery%\" instead",
       "searchHeadline": "The following products have been found matching your search \"%alternativeQuery%\": <span class='headline--product-count'>%articlesCount%</span>"
+    },
+    "queryInfoMessage": {
+      "filter": "Search results for %filterName% \"%filterValue%\" (<strong>%hits%</strong> hits)",
+      "query": "Search results for \"%query%\" (<strong>%hits%</strong> hits)",
+      "default": "Search results (<strong>%hits%</strong> hits)"
     }
   }
 }

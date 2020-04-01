@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Struct\Filter;
+namespace FINDOLOGIC\FinSearch\Struct;
 
+use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use Shopware\Core\Framework\Struct\Struct;
 
-class CustomFilters extends Struct
+class FiltersExtension extends Struct
 {
-    /** @var Filter[] */
+    /** @var BaseFilter[] */
     private $filters;
 
     public function __construct(array $filters = [])
@@ -16,7 +17,7 @@ class CustomFilters extends Struct
         $this->filters = $filters;
     }
 
-    public function addFilter(Filter $filter): self
+    public function addFilter(BaseFilter $filter): self
     {
         $this->filters[] = $filter;
 
@@ -24,7 +25,7 @@ class CustomFilters extends Struct
     }
 
     /**
-     * @return Filter[]
+     * @return BaseFilter[]
      */
     public function getFilters(): array
     {

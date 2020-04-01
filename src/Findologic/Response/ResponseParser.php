@@ -6,11 +6,14 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
-use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
+use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\QueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
+use GuzzleHttp\Client;
 use InvalidArgumentException;
+use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
 
 abstract class ResponseParser
@@ -41,7 +44,9 @@ abstract class ResponseParser
 
     abstract public function getPromotionExtension(): ?Promotion;
 
-    abstract public function getFilters(): CustomFilters;
+    abstract public function getFiltersExtension(?Client $client = null): FiltersExtension;
 
     abstract public function getPaginationExtension(?int $limit, ?int $offset): Pagination;
+
+    abstract public function getQueryInfoMessage(ShopwareEvent $event): QueryInfoMessage;
 }
