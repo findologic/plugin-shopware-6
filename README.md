@@ -1,5 +1,50 @@
 # FINDOLOGIC Shopware 6 Plugin
 
+[![Build Status](https://travis-ci.com/findologic/plugin-shopware-6.svg?token=fG1Z4AFpYjQqPYU4kJVF&branch=master)](https://travis-ci.com/findologic/plugin-shopware-6)
+
+## Table of Contents
+
+1. [Installation](#installation)
+1. [Libraries](#libraries)
+1. [Export customization](#export-customization)
+1. [Development](#development)
+   1. [Running tests locally](#running-tests-locally)
+1. [Deployment and Release](#deployment-and-release)
+
+## Installation
+
+Installing the FINDOLOGIC plugin is as simple as installing any other plugin.
+
+1. Go to your shop administration (https://example.com/admin).
+1. Upload the FINDOLOGIC plugin in Settings > System > Plugins > Upload plugin.
+1. Install and activate the uploaded plugin.
+1. Open the plugin configuration and enter your "Shopkey".
+1. Start an import - or wait for a nightly import.
+1. Set the plugin in the plugin configuration to "Active".
+
+You may need to clear the cache after setting your configuration.
+
+## Libraries
+
+We are using some of our libraries that are especially relevant for this and other plugins.
+Note that these libraries already come with the plugin itself, so you do not need to
+install them yourself.
+
+* [findologic/libflexport](https://github.com/findologic/libflexport) Helps generating
+ the shop's data feed aka. export. We use it to generate an XML based on the product data
+ of the shop.
+* [findologic/findologic-api](https://github.com/findologic/findologic-api) Handles requests
+ to FINDOLOGIC. This includes everything from sending query parameters like selected filters,
+ output attributes, to parsing the response with response objects.
+
+## Export customization
+
+In some cases you may want to export additional, custom export data. To still provide you
+plugin updates, we have an extension plugin. It overrides logic of the base plugin to reflect
+your own logic.
+
+Use the [FINDOLOGIC Shopware 6 extension plugin](https://github.com/findologic/plugin-shopware-6-extension) to customize your export. There are already pre-defined examples, that
+guide you on how you can customize certain entities, like attributes or properties.
 
 ## Development
 
@@ -26,15 +71,7 @@ Before starting the deployment make sure that a release is already created.
 
 1. Run `git fetch` and ensure that the release tag is available locally. Make sure
  that the file `composer.json` contains the correct version constraint.
-1. Remove the following folder/files:
-   1. `/vendor`
-   1. `/tests`
-   1. `.gitignore`
-   1. `.travis.yml`
-   1. `phpcs.xml`
-   1. `phpunit.xml.dist`
-1. Run `composer install --no-dev`.
-1. Create a zip file named `FinSearch-x.x.x.zip` and copy the entire folder in. Make sure to rename it to `FinSearch`.
+1. Run `./archive.sh`, which will build a release `FinSearch-x.x.x.zip` file.
 1. Upload this version to Google Drive `Development/Modul-Entwicklung/Unified Module/Shopware 6` and move the old
  version to `alte Versionen`.
 1. Go to https://account.shopware.com and login. Go to
@@ -44,10 +81,3 @@ Before starting the deployment make sure that a release is already created.
  required checkboxes.
 1. Once the release is available require an *automatic code review*.
 1. Notify everyone at Basecamp that the new release is available.
-
-## Export customization
-Use the FINDOLOGIC Shopware 6 extension plugin to customize your export. There are already pre-defined examples, that 
-guide you on how you can customize certain entities, like attributes or properties. 
-
-Further information can be found in the 
-[repository of the extension plugin](https://github.com/findologic/plugin-shopware-6-extension).
