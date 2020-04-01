@@ -134,11 +134,11 @@ class FindologicProduct extends Struct
      */
     protected function setName(): void
     {
-        if (empty($this->product->getName())) {
+        if (empty($this->product->getTranslation('name'))) {
             throw new ProductHasNoNameException();
         }
 
-        $this->name = Utils::removeControlCharacters($this->product->getName());
+        $this->name = Utils::removeControlCharacters($this->product->getTranslation('name'));
     }
 
     /**
@@ -353,8 +353,8 @@ class FindologicProduct extends Struct
 
     protected function setDescription(): void
     {
-        if (!$this->product->getDescription()) {
-            $this->description = Utils::cleanString($this->product->getDescription());
+        if ($this->product->getTranslation('description')) {
+            $this->description = Utils::cleanString($this->product->getTranslation('description'));
         }
     }
 
@@ -541,10 +541,10 @@ class FindologicProduct extends Struct
 
     protected function setVendors(): void
     {
-        if ($this->product->getManufacturer() && $this->product->getManufacturer()->getName()) {
+        if ($this->product->getManufacturer() && $this->product->getManufacturer()->getTranslation('name')) {
             $vendorAttribute = new Attribute(
                 'vendor',
-                [Utils::removeControlCharacters($this->product->getManufacturer()->getName())]
+                [Utils::removeControlCharacters($this->product->getManufacturer()->getTranslation('name'))]
             );
 
             $this->attributes[] = $vendorAttribute;
@@ -561,10 +561,10 @@ class FindologicProduct extends Struct
 
         foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {
             $group = $propertyGroupOptionEntity->getGroup();
-            if ($group && $propertyGroupOptionEntity->getName() && $group->getName()) {
+            if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
                 $properyGroupAttrib = new Attribute(
-                    Utils::removeControlCharacters($group->getName()),
-                    [Utils::removeControlCharacters($propertyGroupOptionEntity->getName())]
+                    Utils::removeControlCharacters($group->getTranslation('name')),
+                    [Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))]
                 );
 
                 $attributes[] = $properyGroupAttrib;
@@ -572,10 +572,18 @@ class FindologicProduct extends Struct
 
             foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
                 $group = $setting->getOption()->getGroup();
-                if ($group && $setting->getOption() && $group->getName() && $setting->getOption()->getName()) {
+                $settingOption = $setting->getOption();
+
+                if (!$group || !$settingOption) {
+                    continue;
+                }
+
+                $groupName = $group->getTranslation('name');
+                $optionName = $settingOption->getTranslation('name');
+                if ($groupName && $optionName) {
                     $configAttrib = new Attribute(
-                        Utils::removeControlCharacters($setting->getOption()->getGroup()->getName()),
-                        [Utils::removeControlCharacters($setting->getOption()->getName())]
+                        Utils::removeControlCharacters($groupName),
+                        [Utils::removeControlCharacters($optionName)]
                     );
 
                     $attributes[] = $configAttrib;
