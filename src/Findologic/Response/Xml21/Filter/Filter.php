@@ -85,8 +85,10 @@ abstract class Filter extends BaseFilter
     private static function handleRangeSliderFilter(ApiRangeSliderFilter $filter): RangeSliderFilter
     {
         $customFilter = new RangeSliderFilter($filter->getName(), $filter->getDisplay());
-        $customFilter->setUnit($filter->getAttributes()->getUnit());
-
+        $unit = $filter->getAttributes()->getUnit();
+        if ($unit !== null) {
+            $customFilter->setUnit($unit);
+        }
         /** @var RangeSliderItem $item */
         foreach ($filter->getItems() as $item) {
             $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));

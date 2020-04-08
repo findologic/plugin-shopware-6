@@ -605,6 +605,8 @@ class FindologicProduct extends Struct
     protected function setAdditionalAttributes(): void
     {
         $this->attributes[] = new Attribute('shipping_free', [$this->product->getShippingFree() ? 1 : 0]);
+        $rating = $this->product->getRatingAverage() ?? 0.0;
+        $this->attributes[] = new Attribute('rating', [$rating]);
     }
 
     protected function setUserGroups(): void
