@@ -109,7 +109,7 @@ trait ProductHelper
         }
     }
 
-    public function createReview(string $id, float $points, string $productId, bool $active): void
+    public function createProductReview(string $id, float $points, string $productId, bool $active): void
     {
         $customerId = Uuid::randomHex();
         $this->createCustomer($customerId);
