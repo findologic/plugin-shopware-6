@@ -338,7 +338,7 @@ class FindologicProductTest extends TestCase
 
         foreach ($ratings as $rating) {
             $reviewAId = Uuid::randomHex();
-            $this->createReview($reviewAId, $rating, $productEntity->getId(), true);
+            $this->createProductReview($reviewAId, $rating, $productEntity->getId(), true);
         }
 
         $criteria = new Criteria([$productEntity->getId()]);
