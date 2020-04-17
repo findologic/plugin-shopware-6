@@ -1,0 +1,27 @@
+.filter-category-select-list {
+    width: 375px;
+}
+
+.custom-checkbox {
+    .custom-control-label{
+        &:before {
+            border-radius: 3px;
+        }
+    }
+
+    &:before {
+        border-left: 1px solid;
+        content: "";
+        position: absolute;
+        left: 7px;
+        top: 17px;
+        height: -webkit-fill-available;
+        margin: 10px 0;
+    }
+
+    &.sub-item{
+        &:before {
+            //display: none;
+        }
+    }
+}
