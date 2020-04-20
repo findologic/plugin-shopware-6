@@ -120,6 +120,7 @@ abstract class Filter extends BaseFilter
         $filterImageHandler = new FilterValueImageHandler($client);
         $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
 
+        /** @var ColorFilterValue $filterValue */
         foreach ($customFilter->getValues() as $filterValue) {
             if (in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
                 $filterValue->setDisplayType('media');
@@ -146,6 +147,7 @@ abstract class Filter extends BaseFilter
         $filterImageHandler = new FilterValueImageHandler($client);
         $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
 
+        /** @var ImageFilterValue $filterValue */
         foreach ($customFilter->getValues() as $filterValue) {
             if (!in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
                 $filterValue->setDisplayType('none');
@@ -163,6 +165,7 @@ abstract class Filter extends BaseFilter
         foreach ($filter->getItems() as $item) {
             $filterValue = new CategoryFilterValue($item->getName(), $item->getName());
             $filterValue->setSelected($item->isSelected());
+            $filterValue->setFrequency($item->getFrequency());
             self::parseSubFilters($filterValue, $item->getItems());
 
             $customFilter->addValue($filterValue);
@@ -179,18 +182,11 @@ abstract class Filter extends BaseFilter
         foreach ($items as $item) {
             $filter = new CategoryFilterValue($item->getName(), $item->getName());
             $filter->setSelected($item->isSelected());
+            $filter->setFrequency($item->getFrequency());
             self::parseSubFilters($filter, $item->getItems());
 
             $filterValue->addValue($filter);
         }
-    }
-
-    /**
-     * @return FilterValue[]
-     */
-    public function getValues(): array
-    {
-        return $this->values;
     }
 
     public function addValue(FilterValue $filterValue): self

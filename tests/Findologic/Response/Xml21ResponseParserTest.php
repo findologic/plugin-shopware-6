@@ -6,10 +6,12 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Response;
 
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\SelectDropdownFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
@@ -156,7 +158,14 @@ class Xml21ResponseParserTest extends TestCase
 
     public function filterResponseProvider(): array
     {
-        // TODO: Add category filter once it is implemented.
+        $expectedCategoryFilter = new CategoryFilter('cat', 'Kategorie');
+        $expectedCategoryFilter->addValue(
+            (new CategoryFilterValue('Buch', 'Buch'))
+                ->setFrequency(5)
+            ->addValue(
+                (new CategoryFilterValue('Beste Bücher', 'Beste Bücher'))
+            )
+        );
 
         $expectedVendorFilter = new VendorImageFilter('vendor', 'Hersteller');
         $expectedVendorFilter->addValue(
@@ -213,6 +222,7 @@ class Xml21ResponseParserTest extends TestCase
                     $this->getMockResponse('XMLResponse/demoResponseWithAllFilterTypes.xml')
                 ),
                 'expectedFilters' => [
+                    $expectedCategoryFilter,
                     $expectedVendorFilter,
                     $expectedPriceFilter,
                     $expectedColorFilter,

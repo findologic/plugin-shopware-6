@@ -12,6 +12,8 @@ class CategoryFilterValue extends FilterValue
     /** @var CategoryFilterValue[] */
     private $values;
 
+    /** @var int */
+    private $frequency = 0;
     /**
      * @return bool
      */
@@ -21,11 +23,13 @@ class CategoryFilterValue extends FilterValue
     }
 
     /**
-     * @param bool $selected
+     * @return CategoryFilterValue
      */
-    public function setSelected(bool $selected): void
+    public function setSelected(bool $selected): CategoryFilterValue
     {
         $this->selected = $selected;
+
+        return $this;
     }
 
     /**
@@ -41,10 +45,30 @@ class CategoryFilterValue extends FilterValue
     }
 
     /**
-     * @param CategoryFilterValue $filter
+     * @return CategoryFilterValue
      */
-    public function addValue(CategoryFilterValue $filter): void
+    public function addValue(CategoryFilterValue $filter): CategoryFilterValue
     {
         $this->values[] = $filter;
+
+        return $this;
+    }
+
+    /**
+     * @param int $frequency
+     * @return CategoryFilterValue
+     */
+    public function setFrequency(int $frequency): CategoryFilterValue
+    {
+        $this->frequency = $frequency;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFrequency(): int
+    {
+        return $this->frequency;
     }
 }
