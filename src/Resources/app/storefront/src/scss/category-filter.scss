@@ -3,7 +3,7 @@
 }
 
 .custom-checkbox {
-    .custom-control-label{
+    .custom-control-label {
         &:before {
             border-radius: 3px;
         }
@@ -14,14 +14,13 @@
         content: "";
         position: absolute;
         left: 7px;
-        top: 17px;
+        top: 16px;
         height: -webkit-fill-available;
-        margin: 10px 0;
-    }
+        margin: 0;
 
-    &.sub-item{
-        &:before {
-            //display: none;
+        &:last-child {
+            display: none;
         }
     }
+
 }

@@ -4,12 +4,13 @@
         {% block component_filter_multi_select_list_item_value %}
             <div class="custom-control custom-checkbox sub-item">
                 {% set id = element.id %}
+                {% set filterValue = filterValue ~ '_' ~ element.id %}
                 {% set name = element.translated.name %}
                 {% block component_filter_multi_select_list_item_value_checkbox_input %}
                     <input type="checkbox"
                            class="custom-control-input filter-multi-select-checkbox filter-category-select-checkbox"
                            data-label="{{ name }}"
-                           value="{{ id }}"
+                           value="{{ filterValue }}"
                            id="{{ id }}">
                 {% endblock %}
 
@@ -23,7 +24,8 @@
 
                 {% if element.values %}
                     {% sw_include '@FinSearch/storefront/component/listing/filter/filter-category-select-list-item-value.html.twig' with {
-                        values: element.values
+                        values: element.values,
+                        filterValue: filterValue
                     } %}
                 {% endif %}
             </div>

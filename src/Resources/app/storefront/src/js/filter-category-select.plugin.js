@@ -36,24 +36,16 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     getValues()
     {
-        let selection = [];
-        let names = [];
-        const activeParents = DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:indeterminate`, false);
-        if (activeParents) {
-            Iterator.iterate(activeParents, (checkbox) => {
-                names.push(checkbox.id);
-            });
-        }
-
         const checkedCheckboxes =
             DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:checked`, false);
 
+        let selection = [];
+
         if (checkedCheckboxes) {
             Iterator.iterate(checkedCheckboxes, (checkbox) => {
-                selection.push(checkbox.id);
+                selection.push(checkbox.value);
             });
         } else {
-            names = [];
             selection = [];
         }
 
@@ -61,7 +53,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         this._updateCount();
 
         const values = {};
-        values[this.options.name] = names.concat(selection);
+        values[this.options.name] = selection;
 
         return values;
     }
@@ -208,7 +200,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             checkboxEl.disabled = false;
             checkboxEl.checked = true;
             checkboxEl.indeterminate = false;
-            this.selection.push(checkboxEl.id);
+            this.selection.push(checkboxEl.value);
         }
     }
 
