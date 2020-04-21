@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
+use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
@@ -106,5 +107,67 @@ trait ProductHelper
         } catch (InconsistentCriteriaIdsException $e) {
             return null;
         }
+    }
+
+    public function createProductReview(string $id, float $points, string $productId, bool $active): void
+    {
+        $customerId = Uuid::randomHex();
+        $this->createCustomer($customerId);
+        $salesChannelId = Defaults::SALES_CHANNEL;
+        $languageId = Defaults::LANGUAGE_SYSTEM;
+        $title = 'foo';
+
+        $data = [
+            'id' => $id,
+            'productId' => $productId,
+            'customerId' => $customerId,
+            'salesChannelId' => $salesChannelId,
+            'languageId' => $languageId,
+            'status' => $active,
+            'points' => $points,
+            'title' => $title,
+        ];
+
+        $this->getContainer()->get('product_review.repository')->upsert([$data], $this->defaultContext);
+    }
+
+    public function createCustomer(string $customerID): void
+    {
+        $password = 'foo';
+        $email = 'foo@bar.de';
+        $addressId = Uuid::randomHex();
+
+        $this->getContainer()->get('customer.repository')->upsert(
+            [
+                [
+                    'id' => $customerID,
+                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'defaultShippingAddress' => [
+                        'id' => $addressId,
+                        'firstName' => 'Max',
+                        'lastName' => 'Mustermann',
+                        'street' => 'Musterstraße 1',
+                        'city' => 'Schoöppingen',
+                        'zipcode' => '12345',
+                        'salutationId' => $this->getValidSalutationId(),
+                        'country' => ['name' => 'Germany'],
+                    ],
+                    'defaultBillingAddressId' => $addressId,
+                    'defaultPaymentMethod' => [
+                        'name' => 'Invoice',
+                        'description' => 'Default payment method',
+                        'handlerIdentifier' => SyncTestPaymentHandler::class,
+                    ],
+                    'groupId' => Defaults::FALLBACK_CUSTOMER_GROUP,
+                    'email' => $email,
+                    'password' => $password,
+                    'firstName' => 'Max',
+                    'lastName' => 'Mustermann',
+                    'salutationId' => $this->getValidSalutationId(),
+                    'customerNumber' => '12345',
+                ],
+            ],
+            Context::createDefaultContext()
+        );
     }
 }

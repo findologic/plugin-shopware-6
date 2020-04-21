@@ -309,6 +309,65 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($properties, $findologicProduct->getProperties());
     }
 
+    public function ratingProvider(): array
+    {
+        $multipleRatings = [2.0, 4.0, 5.0, 1.0];
+        $average = array_sum($multipleRatings) / count($multipleRatings);
+
+        return [
+            'No rating is provided' => ['ratings' => [], 'expectedRating' => 0.0],
+            'Single rating is provided' => ['ratings' => [2.0], 'expectedRating' => 2.0],
+            'Multiple ratings is provided' => ['ratings' => $multipleRatings, 'expectedRating' => $average]
+        ];
+    }
+
+    /**
+     * @dataProvider ratingProvider
+     *
+     * @param float[] $ratings
+     *
+     * @throws AccessEmptyPropertyException
+     * @throws InconsistentCriteriaIdsException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
+     */
+    public function testProductRatings(array $ratings, float $expectedRating): void
+    {
+        $productEntity = $this->createTestProduct();
+
+        foreach ($ratings as $rating) {
+            $reviewAId = Uuid::randomHex();
+            $this->createProductReview($reviewAId, $rating, $productEntity->getId(), true);
+        }
+
+        $criteria = new Criteria([$productEntity->getId()]);
+        $criteria = Utils::addProductAssociations($criteria);
+
+        $productEntity = $this->getContainer()->get('product.repository')->search($criteria, $this->defaultContext)
+            ->get($productEntity->getId());
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->defaultContext)
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->defaultContext,
+            $this->shopkey,
+            $customerGroupEntities
+        );
+
+        $attributes = $findologicProduct->getAttributes();
+        $ratingAttribute = end($attributes);
+        $this->assertSame('rating', $ratingAttribute->getKey());
+        $this->assertEquals($expectedRating, current($ratingAttribute->getValues()));
+    }
+
     /**
      * @return Property[]
      */
@@ -483,6 +542,8 @@ class FindologicProductTest extends TestCase
             ]
         );
         $attributes[] = new Attribute('shipping_free', [$productEntity->getShippingFree() ? 1 : 0]);
+        $rating = $productEntity->getRatingAverage() ?? 0.0;
+        $attributes[] = new Attribute('rating', [$rating]);
 
         return $attributes;
     }
