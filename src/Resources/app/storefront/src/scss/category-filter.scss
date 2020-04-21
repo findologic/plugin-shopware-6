@@ -1,26 +1,30 @@
 .filter-category-select-list {
-    width: 375px;
-}
 
-.custom-checkbox {
-    .custom-control-label {
+    .custom-checkbox {
+        .custom-control-label {
+            &:before {
+                border-radius: 4px;
+            }
+        }
+
         &:before {
-            border-radius: 3px;
+            border-left: 0.75px solid #bcc1c7;
+            content: "";
+            position: absolute;
+            left: -17px;
+            top: 5px;
+            height: -webkit-fill-available;
+            margin: 0;
+
+            &:last-child {
+                display: none;
+            }
         }
+
     }
-
-    &:before {
-        border-left: 1px solid;
-        content: "";
-        position: absolute;
-        left: 7px;
-        top: 16px;
-        height: -webkit-fill-available;
-        margin: 0;
-
-        &:last-child {
-            display: none;
-        }
-    }
-
 }
+
+.filter-category-select-item-label {
+    margin-bottom: 0.5em;
+}
+

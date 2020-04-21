@@ -48,6 +48,24 @@ guide you on how you can customize certain entities, like attributes or properti
 
 ## Development
 
+### Creating custom JavaScript plugins
+Check out this 
+[offical guide](https://docs.shopware.com/en/shopware-platform-dev-en/how-to/extend-core-js-storefront-plugin)
+on how to extend js storefront plugin.
+
+Create your plugin files inside `src/Resources/app/storefront/src/js/[your-plugin-name].plugin.js`
+
+Create a `main.js` file in `src/Resources/app/storefront/src/main.js` 
+where you will need to register your plugin. 
+
+For a development build, use `./psh.phar storefront:dev`
+
+For a production build, use `./psh.phar storefront:build`
+
+The build commands will create a minified JS file in the 
+`src/Resources/app/storefront/dist/storefront/js/[plugin-name].js`. 
+Make sure to deploy that file with the plugin and `commit` to `git` as well.
+
 ### Running Tests locally
 
 In order to run tests locally you first need to clone the official

@@ -36,13 +36,12 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     getValues()
     {
-        const checkedCheckboxes =
-            DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:checked`, false);
+        const activeCheckboxes = this.getSelected();
 
         let selection = [];
 
-        if (checkedCheckboxes) {
-            Iterator.iterate(checkedCheckboxes, (checkbox) => {
+        if (activeCheckboxes) {
+            Iterator.iterate(activeCheckboxes, (checkbox) => {
                 selection.push(checkbox.value);
             });
         } else {
@@ -64,10 +63,9 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     getLabels()
     {
-        const activeCheckboxes =
-            DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:checked`, false);
-
         let labels = [];
+
+        const activeCheckboxes = this.getSelected();
 
         if (activeCheckboxes) {
             Iterator.iterate(activeCheckboxes, (checkbox) => {
@@ -83,6 +81,10 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         return labels;
     }
 
+    /**
+     * @public
+     * @param params
+     */
     setValuesFromUrl(params)
     {
         let stateChanged = false;
@@ -91,8 +93,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
                 stateChanged = true;
                 const ids = params[key].split('_');
 
-                this._disableAllCheckbox()
-
+                this._disableAll();
                 this._setCurrentCategoryAsSelected(ids);
             }
         });
@@ -111,13 +112,12 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     _onChangeFilter()
     {
-        const activeCheckboxes = DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:checked`, false);
+        const activeCheckboxes = this.getSelected();
 
         if (!activeCheckboxes.length) {
             this.resetAll();
         } else {
-            this._disableAllCheckbox();
-            this._updateParentProperty(activeCheckboxes[0]);
+            this._disableAll();
             activeCheckboxes[0].disabled = false;
             activeCheckboxes[0].checked = true;
         }
@@ -126,15 +126,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     }
 
     /**
-     * @param id
      * @public
      */
-    reset(id)
+    reset()
     {
-        const checkboxEl = DomAccess.querySelector(this.el, `[id = "${id}"]`, false);
-        if (checkboxEl) {
-            this.resetAll();
-        }
+        this.resetAll();
     }
 
     /**
@@ -144,7 +140,13 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     {
         this.selection.filter = [];
 
-        this._resetCheckboxes();
+        const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
+
+        Iterator.iterate(checkboxes, (checkbox) => {
+            checkbox.checked = false;
+            checkbox.disabled = false;
+            checkbox.indeterminate = false;
+        });
     }
 
     /**
@@ -152,10 +154,13 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     _updateCount()
     {
-        this.counter.innerText = this.selection.length ? `(${this.selection.length})` : '';
+        this.counter.innerText = '';
     }
 
-    _disableAllCheckbox()
+    /**
+     * @private
+     */
+    _disableAll()
     {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
 
@@ -166,52 +171,28 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         });
     }
 
-    // Propagate change upwards
-    _updateParentProperty(current, prop = 'indeterminate')
-    {
-        const parent = current.closest('li');
-
-        const parsed = parent.querySelectorAll('.filter-category-select-checkbox:' + prop)
-
-        if (parsed.length === 0) {
-            const child = parent.querySelector('.filter-category-select-checkbox');
-            if (child) {
-                child[prop] = true;
-            }
-            this._updateParentProperty(parent);
-        }
-    }
-
+    /**
+     * @param ids
+     * @private
+     */
     _setCurrentCategoryAsSelected(ids)
     {
         const selectedCategory = ids.pop();
-
-        // Parent categories of selected category
-        ids.forEach(id => {
-            const checkboxEl = DomAccess.querySelector(this.el, `[id = "${id}"]`, false);
-            if (checkboxEl) {
-                this._updateParentProperty(checkboxEl);
-            }
-        });
 
         // Selected category
         const checkboxEl = DomAccess.querySelector(this.el, `[id = "${selectedCategory}"]`, false);
         if (checkboxEl) {
             checkboxEl.disabled = false;
             checkboxEl.checked = true;
-            checkboxEl.indeterminate = false;
             this.selection.push(checkboxEl.value);
         }
     }
 
-    _resetCheckboxes()
+    /**
+     * @public
+     */
+    getSelected()
     {
-        const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
-
-        Iterator.iterate(checkboxes, (checkbox) => {
-            checkbox.checked = false;
-            checkbox.disabled = false;
-            checkbox.indeterminate = false;
-        });
+        return DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:checked`, false);
     }
 }
