@@ -1,8 +1,13 @@
 .filter-category-select-list {
+  width: 300px;
 
   .custom-checkbox {
     .custom-control-label {
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: super;
+      display: inline;
 
       &:before {
         border-radius: 4px;
@@ -14,8 +19,11 @@
       content: "";
       position: absolute;
       left: -17px;
-      top: 5px;
-      height: -webkit-fill-available;
+      top: -5px;
+      height: -moz-available; /* WebKit-based browsers will ignore this. */
+      height: -webkit-fill-available; /* Mozilla-based browsers will ignore this. */
+      height: fill-available;
+      height: 30px;
       margin: 0;
 
       &:last-child {
