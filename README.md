@@ -59,10 +59,9 @@ on how to extend js storefront plugin.
 - For a production build, use `./psh.phar storefront:build`
 
 ##### Note: 
-The build commands will create a minified JS file in 
-`src/Resources/app/storefront/dist/storefront/js/[plugin-name].js`. 
-
-Before committing ensure that all files were built and added to your commit. Make sure to also commit the minified JavaScript files.
+The build commands will create a minified JS file in `src/Resources/app/storefront/dist/storefront/js/[plugin-name].js`. 
+Before committing ensure that all files were built and added to your commit. Make sure to also commit the minified
+ JavaScript files.
 
 ### Running Tests locally
 
