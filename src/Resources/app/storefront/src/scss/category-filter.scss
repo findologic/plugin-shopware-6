@@ -1,13 +1,13 @@
 .filter-category-select-list {
-  width: 300px;
+  width: 310px;
 
   .custom-checkbox {
-    .custom-control-label {
+    .custom-control-label span {
+      display: block;
       white-space: nowrap;
-
-      &:before {
-        border-radius: 4px;
-      }
+      text-overflow: ellipsis;
+      overflow: hidden;
+      max-width: 300px;
     }
 
     &:before {
