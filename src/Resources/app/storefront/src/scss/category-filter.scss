@@ -4,10 +4,6 @@
   .custom-checkbox {
     .custom-control-label {
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      vertical-align: super;
-      display: inline;
 
       &:before {
         border-radius: 4px;
@@ -23,12 +19,8 @@
       height: -moz-available; /* WebKit-based browsers will ignore this. */
       height: -webkit-fill-available; /* Mozilla-based browsers will ignore this. */
       height: fill-available;
-      height: 30px;
+      height: 100%;
       margin: 0;
-
-      &:last-child {
-        display: none;
-      }
     }
 
   }
