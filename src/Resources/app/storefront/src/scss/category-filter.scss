@@ -1,13 +1,16 @@
 .filter-category-select-list {
   width: 310px;
+  line-height: 1.7;
 
   .custom-checkbox {
+    max-width: 290px;
+
     .custom-control-label span {
       display: block;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
-      max-width: 300px;
+      max-width: 290px;
     }
 
     &:before {
@@ -16,9 +19,9 @@
       position: absolute;
       left: -17px;
       top: -5px;
+      height: fill-available;
       height: -moz-available; /* WebKit-based browsers will ignore this. */
       height: -webkit-fill-available; /* Mozilla-based browsers will ignore this. */
-      height: fill-available;
       height: 100%;
       margin: 0;
     }
