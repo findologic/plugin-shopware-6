@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
+use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
@@ -103,7 +104,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $response = $xmlExporter->serializeItems(
             $items,
             $start,
-            $count,
+            count($items),
             $totalProductCount
         );
 
@@ -281,7 +282,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @param CustomerGroupEntity[] $customerGroups
      *
-     * @return XmlProduct[]
+     * @return Item[]
      */
     private function buildXmlProducts(
         EntitySearchResult $productEntities,
