@@ -87,7 +87,7 @@ Before starting the deployment make sure that a release is already created.
 1. Run `git fetch` and ensure that the release tag is available locally. Make sure
  that the file `composer.json` contains the correct version constraint.
 1. Run `./archive.sh`, which will build a release `FinSearch-x.x.x.zip` file.
-1. Upload this version to Google Drive `Development/Modul-Entwicklung/Unified Module/Shopware 6` and move the old
+1. Upload this version to Google Drive `Development/Plugins/Shopware/Shopware 6 DI & API Plugin` and move the old
  version to `alte Versionen`.
 1. Go to https://account.shopware.com and login. Go to
  `Manufacturer area > Plugins > Shopware 6 plugins > FINDOLOGIC Search & Navigation` and select *Versions*. Click
