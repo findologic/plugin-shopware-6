@@ -142,15 +142,12 @@ class ProductSearchGateway extends ShopwareProductSearchGateway
             );
         }
 
-        // Pagination is handled by FINDOLOGIC.
-        $criteria->setLimit(24);
-        $criteria->setOffset(0);
-
         /** @var Pagination $pagination */
         $pagination = $criteria->getExtension('flPagination');
         if ($pagination) {
-            $criteria->setLimit($pagination->getLimit() ?? 24);
-            $criteria->setOffset($pagination->getOffset() ?? 0);
+            // Pagination is handled by FINDOLOGIC.
+            $criteria->setLimit(24);
+            $criteria->setOffset(0);
         }
 
         $result = $this->repository->search($criteria, $context);

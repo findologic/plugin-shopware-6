@@ -477,7 +477,7 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            $this->images[] = new Image($mediaEntity->getMedia()->getUrl());
+            $this->images[] = new Image($this->getEncodedUrl($mediaEntity->getMedia()->getUrl()));
 
             $thumbnails = $mediaEntity->getMedia()->getThumbnails();
             if (!$thumbnails) {
@@ -486,9 +486,28 @@ class FindologicProduct extends Struct
 
             /** @var MediaThumbnailEntity $thumbnailEntity */
             foreach ($thumbnails as $thumbnailEntity) {
-                $this->images[] = new Image($thumbnailEntity->getUrl(), Image::TYPE_THUMBNAIL);
+                $this->images[] = new Image($this->getEncodedUrl($thumbnailEntity->getUrl()), Image::TYPE_THUMBNAIL);
             }
         }
+    }
+
+    /**
+     * Takes invalid URLs that contain special characters such as umlauts, or special UTF-8 characters and
+     * encodes them.
+     *
+     * @param string $url
+     * @return string
+     */
+    private function getEncodedUrl(string $url): string
+    {
+        $parsedUrl = parse_url($url);
+
+        $parsedUrl['path'] = implode('/', array_map(
+            '\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode',
+            explode('/', $parsedUrl['path'])
+        ));
+
+        return Utils::buildUrl($parsedUrl);
     }
 
     /**
