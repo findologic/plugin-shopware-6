@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
-use FINDOLOGIC\FinSearch\Struct\Filter\CustomFilters;
+use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
@@ -148,10 +148,10 @@ class FilterHandler
     protected function fetchAvailableFilterNames(ShopwareEvent $event): array
     {
         $availableFilters = [];
-        /** @var CustomFilters $customFilters */
-        $customFilters = $event->getCriteria()->getExtension('flFilters');
+        /** @var FiltersExtension $filtersExtension */
+        $filtersExtension = $event->getCriteria()->getExtension('flFilters');
 
-        $filters = $customFilters->getFilters();
+        $filters = $filtersExtension->getFilters();
         foreach ($filters as $filter) {
             $availableFilters[] = $filter->getId();
         }

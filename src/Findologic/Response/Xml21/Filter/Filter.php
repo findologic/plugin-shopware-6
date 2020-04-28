@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\CategoryFilter as ApiCategoryFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\ColorPickerFilter as ApiColorPickerFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Filter as ApiFilter;
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\CategoryItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\ColorItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\DefaultItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\RangeSliderItem;
@@ -17,6 +18,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\SelectDropdownFilter as Api
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\VendorImageFilter as ApiVendorImageFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\FilterValueImageHandler;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
@@ -51,8 +53,8 @@ abstract class Filter extends BaseFilter
                 return static::handleColorPickerFilter($filter, $client);
             case $filter instanceof ApiVendorImageFilter:
                 return static::handleVendorImageFilter($filter, $client);
-            case $filter instanceof ApiCategoryFilter: // Shopware does not have a category filter yet.
-                return null;
+            case $filter instanceof ApiCategoryFilter:
+                return static::handleCategoryFilter($filter);
             default:
                 throw new InvalidArgumentException('The submitted filter is unknown.');
         }
@@ -118,6 +120,7 @@ abstract class Filter extends BaseFilter
         $filterImageHandler = new FilterValueImageHandler($client);
         $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
 
+        /** @var ColorFilterValue $filterValue */
         foreach ($customFilter->getValues() as $filterValue) {
             if (in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
                 $filterValue->setDisplayType('media');
@@ -144,6 +147,7 @@ abstract class Filter extends BaseFilter
         $filterImageHandler = new FilterValueImageHandler($client);
         $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
 
+        /** @var ImageFilterValue $filterValue */
         foreach ($customFilter->getValues() as $filterValue) {
             if (!in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
                 $filterValue->setDisplayType('none');
@@ -153,12 +157,36 @@ abstract class Filter extends BaseFilter
         return $customFilter;
     }
 
-    /**
-     * @return FilterValue[]
-     */
-    public function getValues(): array
+    private static function handleCategoryFilter(ApiCategoryFilter $filter): CategoryFilter
     {
-        return $this->values;
+        $customFilter = new CategoryFilter($filter->getName(), $filter->getDisplay());
+
+        /** @var CategoryItem $item */
+        foreach ($filter->getItems() as $item) {
+            $filterValue = new CategoryFilterValue($item->getName(), $item->getName());
+            $filterValue->setSelected($item->isSelected());
+            $filterValue->setFrequency($item->getFrequency());
+            self::parseSubFilters($filterValue, $item->getItems());
+
+            $customFilter->addValue($filterValue);
+        }
+
+        return $customFilter;
+    }
+
+    /**
+     * @param CategoryItem[] $items
+     */
+    private static function parseSubFilters(CategoryFilterValue $filterValue, array $items)
+    {
+        foreach ($items as $item) {
+            $filter = new CategoryFilterValue($item->getName(), $item->getName());
+            $filter->setSelected($item->isSelected());
+            $filter->setFrequency($item->getFrequency());
+            self::parseSubFilters($filter, $item->getItems());
+
+            $filterValue->addValue($filter);
+        }
     }
 
     public function addValue(FilterValue $filterValue): self

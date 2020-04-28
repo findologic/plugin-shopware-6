@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response\Filter;
 
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
+
 abstract class BaseFilter
 {
     /** @var string|null */
@@ -15,7 +17,7 @@ abstract class BaseFilter
     /** @var string */
     protected $name;
 
-    /** @var array */
+    /** @var FilterValue[] */
     protected $values;
 
     /**

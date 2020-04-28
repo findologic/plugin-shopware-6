@@ -57,6 +57,17 @@
                     } %}
                 {% endif %}
 
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\CategoryFilter") %}
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-category-select.html.twig' with {
+                        elements: filter.values,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        displayName: filter.name,
+                        displayType: property.displayType,
+                        pluginSelector: 'filter-category-select'
+                    } %}
+                {% endif %}
+
             {% endfor %}
         {% endif %}
     {% endblock %}
