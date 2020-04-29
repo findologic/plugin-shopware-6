@@ -10,6 +10,7 @@
     <exclude-pattern>tests/TestBootstrap.php</exclude-pattern>
     <exclude-pattern>*/Resources/app/storefront/src/snippets/*</exclude-pattern>
     <exclude-pattern>*/Resources/app/storefront/dist/*</exclude-pattern>
+    <exclude-pattern>*/Resources/public/administration/*</exclude-pattern>
 
 
     <arg name="colors"/>

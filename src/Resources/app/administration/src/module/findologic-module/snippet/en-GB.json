@@ -1,0 +1,52 @@
+{
+  "findologic": {
+    "header": "FINDOLOGIC",
+    "general": {
+      "mainMenuDescription": "FINDOLOGIC plugin for Shopware 6 e-commerce system"
+    },
+    "fieldRequired": "Shopkey is required",
+    "invalidShopkey": "Invalid Shopkey",
+    "settingForm": {
+      "save": "Save",
+      "testButton": "FINDOLOGIC Test",
+      "config": {
+        "title": "Configuration",
+        "shopkey": {
+          "label": "Shopkey",
+          "tooltipText": "FINDOLOGIC shopkey"
+        },
+        "active": {
+          "label": "Active",
+          "tooltipText": "Activate the FINDOLOGIC search provider."
+        },
+        "activeOnCategoryPages": {
+          "label": "Active on category pages",
+          "tooltipText": "Activate the FINDOLOGIC search provider for category pages."
+        },
+        "searchResultContainer": {
+          "label": "CSS class for main container",
+          "placeholder": "e.g fl-result",
+          "tooltipText": "To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main container of the shop."
+        },
+        "navigationResultContainer": {
+          "label": "CSS class for main container",
+          "placeholder": "e.g fl-navigation",
+          "tooltipText": "To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main container of the shop."
+        },
+        "integrationType": {
+          "label": "Integration (read-only)",
+          "tooltipText": "Currently used integration type. Either one of Direct Integration or API."
+        },
+        "isStaging": {
+          "label": "Staging active? (read-only)",
+          "tooltipText": "Indicates if the shop is a staging shop or live shop."
+        }
+      },
+      "titleSuccess": "Success",
+      "titleError": "Error"
+    },
+    "error": {
+      "title": "Error"
+    }
+  }
+}
