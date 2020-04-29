@@ -1,14 +1,14 @@
 {
   "finSearch": {
     "smartDidYouMean": {
-      "didYouMeanQuery": "Meinten Sie \"<a href='%link%'>%alternativeQuery%</a>\"?",
-      "improvedQuery": "Ergebnisse für \"%alternativeQuery%\" werden angezeigt. Alternativ nach \"<a href='%link%'>%originalQuery%</a>\" suchen",
-      "correctedQuery": "Keine Ergebnisse für \"%originalQuery%\". Zeige stattdessen \"%alternativeQuery%\"",
-      "searchHeadline": "Zu \"%alternativeQuery%\" wurden <span class=\"headline--product-count\">%articlesCount%</span> Artikel gefunden!"
+      "didYouMeanQuery": "Meinten Sie <a href='%link%'>%alternativeQuery%</a>?",
+      "improvedQuery": "Ergebnisse für <strong>%alternativeQuery%</strong> werden angezeigt. Alternativ nach <a href='%link%'>%originalQuery%</a> suchen",
+      "correctedQuery": "Keine Ergebnisse für <strong>%originalQuery%</strong>. Zeige stattdessen <strong>%alternativeQuery%</strong>",
+      "searchHeadline": "Zu <strong>%alternativeQuery%</strong> wurden <span class=\"headline--product-count\">%articlesCount%</span> Artikel gefunden!"
     },
     "queryInfoMessage": {
-      "filter": "Suchergebnisse für %filterName% \"%filterValue%\" (<strong>%hits%</strong> Treffer)",
-      "query": "Suchergebnisse für \"%query%\" (<strong>%hits%</strong> Treffer)",
+      "filter": "Suchergebnisse für %filterName% <strong>%filterValue%</strong> (<strong>%hits%</strong> Treffer)",
+      "query": "Suchergebnisse für <strong>%query%</strong> (<strong>%hits%</strong> Treffer)",
       "default": "Suchergebnisse (<strong>%hits%</strong> Treffer)"
     }
   }

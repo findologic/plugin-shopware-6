@@ -1,14 +1,14 @@
 {
   "finSearch": {
     "smartDidYouMean": {
-      "didYouMeanQuery": "Did you mean \"<a href='%link%'>%alternativeQuery%</a>\"?",
-      "improvedQuery": "Showing results for \"%alternativeQuery%\". Search instead for \"<a href='%link%'>%originalQuery%</a>\"?",
-      "correctedQuery": "No results for \"%originalQuery%\". Showing results for \"%alternativeQuery%\" instead",
-      "searchHeadline": "The following products have been found matching your search \"%alternativeQuery%\": <span class='headline--product-count'>%articlesCount%</span>"
+      "didYouMeanQuery": "Did you mean <a href='%link%'>%alternativeQuery%</a>?",
+      "improvedQuery": "Showing results for <strong>%alternativeQuery%</strong>. Search instead for <a href='%link%'>%originalQuery%</a>?",
+      "correctedQuery": "No results for <strong>%originalQuery%</strong>. Showing results for <strong>%alternativeQuery%</strong> instead",
+      "searchHeadline": "The following products have been found matching your search <strong>%alternativeQuery%</strong>: <span class='headline--product-count'>%articlesCount%</span>"
     },
     "queryInfoMessage": {
-      "filter": "Search results for %filterName% \"%filterValue%\" (<strong>%hits%</strong> hits)",
-      "query": "Search results for \"%query%\" (<strong>%hits%</strong> hits)",
+      "filter": "Search results for %filterName% <strong>%filterValue%</strong> (<strong>%hits%</strong> hits)",
+      "query": "Search results for <strong>%query%</strong> (<strong>%hits%</strong> hits)",
       "default": "Search results (<strong>%hits%</strong> hits)"
     }
   }
