@@ -26,9 +26,20 @@
                 :isLoading="isLoading"
                 :disabled="isLoading"
                 variant="primary"
+                :title="$tc('global.default.save')"
+                :aria-label="$tc('global.default.save')"
                 v-model="isSaveSuccessful"
-                @click="onSave">
-            {{ $tc('findologic.settingForm.save') }}
+                @click="onSave"
+        >
+            {{ $tc('global.default.save') }}
+        </sw-button>
+        {% endblock %}
+
+        {% block findologic_actions_cancel %}
+        <sw-button :routerLink="{ name: 'sw.dashboard.index' }"
+                   :title="$tc('global.default.cancel')"
+                   :aria-label="$tc('global.default.cancel')">
+            {{ $tc('global.default.cancel') }}
         </sw-button>
         {% endblock %}
     </template>
@@ -66,6 +77,7 @@
                         <findologic-config
                                 :actualConfigData="actualConfigData"
                                 :allConfigs="allConfigs"
+                                :shopkeyErrorState="shopkeyErrorState"
                                 :selectedSalesChannelId="selectedSalesChannelId"></findologic-config>
                         {% endblock %}
                     </div>

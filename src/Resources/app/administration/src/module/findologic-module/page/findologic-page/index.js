@@ -45,25 +45,17 @@ Component.register('findologic-page', {
                     this.isActive = !!this.config['FinSearch.config.active'] || !!defaultConfig['FinSearch.config.active']
                 }
 
-                let regex = /^[A-F0-9]{32}$/;
-                this.isValidShopkey = regex.test(this.config['FinSearch.config.shopkey']) !== false;
+                // Check if shopkey is entered
                 if (this.shopkeyAvailable) {
-                    let hashedShopkey = Utils.format.md5(this.config['FinSearch.config.shopkey']).toUpperCase();
+                    let shopkey = this.getValidShopkey();
                     if (this.isValidShopkey) {
-                        this.httpClient
-                            .get(`https://cdn.findologic.com/static/${ hashedShopkey }/config.json`)
-                            .then((response) => {
-                                if (!response.data.isStagingShop) {
-                                    this.isStagingShop = true;
-                                }
-                            })
-                            .catch((error) => {
-                                this.isStagingShop = false;
-                            });
+                        let hashedShopkey = Utils.format.md5(shopkey).toUpperCase();
+                        this.isStagingRequest(hashedShopkey);
                     }
                 }
             },
-            deep: true
+            deep: true,
+
         }
     },
     computed: {
@@ -71,10 +63,37 @@ Component.register('findologic-page', {
             return this.repositoryFactory.create('sales_channel');
         },
         showTestButton() {
-            return this.isActive && this.isValidShopkey && this.isStagingShop;
+            return this.isActive && this.shopkeyAvailable && this.isValidShopkey && this.isStagingShop;
         }
     },
     methods: {
+        getValidShopkey() {
+            const defaultConfig = this.$refs.configComponent.allConfigs.null;
+            // Validate the shopkey
+            let regex = /^[A-F0-9]{32}$/;
+            let shopkey = this.config['FinSearch.config.shopkey'];
+            let hasShopkey = !!shopkey;
+            // If shopkey is not entered, we check for default config in case of "inherited" shopkey
+            if (!hasShopkey) {
+                shopkey = defaultConfig['FinSearch.config.shopkey'];
+                this.isValidShopkey = regex.test(shopkey) !== false;
+            } else {
+                this.isValidShopkey = regex.test(shopkey) !== false;
+            }
+            return shopkey;
+        },
+        isStagingRequest(hashedShopkey) {
+            this.httpClient
+                .get('https://cdn.findologic.com/static/' + hashedShopkey + '/config.json')
+                .then((response) => {
+                    if (response.data.isStagingShop) {
+                        this.isStagingShop = true;
+                    }
+                })
+                .catch((error) => {
+                    this.isStagingShop = false;
+                });
+        },
         openSalesChannelDomain() {
             if (this.$refs.configComponent.selectedSalesChannelId !== null) {
                 const criteria = new Criteria();
@@ -84,66 +103,71 @@ Component.register('findologic-page', {
                 criteria.setLimit(1);
                 criteria.addAssociation('domains');
                 this.salesChannelRepository.search(criteria, Shopware.Context.api).then((searchresult) => {
-                    let url = searchresult.first().domains.first().url.replace(/\/$/, '');
-                    window.open(`${ url }?findologic=on`, "_blank");
+                    let domain = searchresult.first().domains.first();
+                    this.openDomainUrl(domain);
                 });
             } else {
-                let url = window.location.origin.replace(/\/$/, '');
-                window.open(`${ url }?findologic=on`, "_blank");
+                this.openDefaultUrl();
             }
         },
         onSave() {
-            if (!this.shopkeyAvailable) {
-                this.setErrorStates();
-                this.createNotificationError({
-                    title: this.$tc('findologic.settingForm.titleError'),
-                    message: this.$tc('findologic.fieldRequired'),
-                });
-
-                return;
-            }
-
-            if (!this.isValidShopkey) {
-                this.setErrorStates();
-                this.createNotificationError({
-                    title: this.$tc('findologic.settingForm.titleError'),
-                    message: this.$tc('findologic.invalidShopkey'),
-                });
-
+            this.setErrorStates();
+            if (!this.shopkeyAvailable || !this.isValidShopkey) {
                 return;
             }
 
             this.save();
         },
-
         save() {
             this.isLoading = true;
 
             this.$refs.configComponent.save().then((res) => {
                 this.isLoading = false;
                 this.isSaveSuccessful = true;
-
-                if (res) {
-                    this.config = res;
-                }
+                this.createNotificationSuccess({
+                    title: this.$tc('findologic.settingForm.titleSuccess'),
+                    message: this.$tc('findologic.settingForm.configSaved')
+                });
+            if (res) {
+                this.config = res;
+            }
             }).catch(() => {
                 this.isLoading = false;
             });
         },
-
         setErrorStates() {
             if (!this.shopkeyAvailable) {
+                this.createNotificationError({
+                    title: this.$tc('findologic.settingForm.titleError'),
+                    message: this.$tc('findologic.fieldRequired'),
+                });
                 this.shopkeyErrorState = {
                     code: 1,
                     detail: this.$tc('findologic.fieldRequired')
                 };
             } else if (!this.isValidShopkey) {
+                this.createNotificationError({
+                    title: this.$tc('findologic.settingForm.titleError'),
+                    message: this.$tc('findologic.invalidShopkey'),
+                });
                 this.shopkeyErrorState = {
                     code: 1,
                     detail: this.$tc('findologic.invalidShopkey')
                 };
             } else {
                 this.shopkeyErrorState = null;
+            }
+        },
+        openDefaultUrl() {
+            let url = window.location.origin + '?findologic=on';
+            window.open(url, '_blank');
+        },
+        openDomainUrl(domain) {
+            if (domain) {
+                let url = domain.url + '?findologic=on';
+                window.open(url, '_blank');
+            } else {
+                this.openDefaultUrl();
             }
         }
     }

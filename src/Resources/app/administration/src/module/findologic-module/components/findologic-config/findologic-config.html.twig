@@ -18,6 +18,7 @@
                                                    :helpText="$tc('findologic.settingForm.config.shopkey.tooltipText')"
                                                    :disabled="props.isInherited"
                                                    :required="true"
+                                                   :error="shopkeyErrorState"
                                                    :value="props.currentValue"
                                                    @change="props.updateCurrentValue">
                                     </sw-text-field>
@@ -140,7 +141,7 @@
                                                    :label="$tc('findologic.settingForm.config.isStaging.label')"
                                                    :helpText="$tc('findologic.settingForm.config.isStaging.tooltipText')"
                                                    :disabled="true"
-                                                   :value="props.currentValue ? 'Staging' : 'Live'"
+                                                   :value="props.currentValue ? 'Staging-Shop' : 'Live-Shop'"
                                     >
                                     </sw-text-field>
                                 </template>

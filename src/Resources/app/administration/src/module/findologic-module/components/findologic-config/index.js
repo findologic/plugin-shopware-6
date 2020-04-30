@@ -15,6 +15,9 @@ Component.register('findologic-config', {
             type: Object,
             required: true
         },
+        shopkeyErrorState: {
+            required: true
+        },
         selectedSalesChannelId: {
             type: String,
             required: false,

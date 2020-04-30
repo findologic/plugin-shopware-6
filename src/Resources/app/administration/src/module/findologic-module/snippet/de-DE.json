@@ -7,7 +7,7 @@
     "fieldRequired": "Shopkey ist erforderlich",
     "invalidShopkey": "Ungültiger Shopkey",
     "settingForm": {
-      "save": "Speichern",
+      "configSaved": "Konfiguration gespeichert",
       "testButton": "FINDOLOGIC Test",
       "config": {
         "title": "Konfiguration",
@@ -38,7 +38,7 @@
           "tooltipText": "Die aktuell verwendete Integrationsart. Entweder Direct Integration oder API."
         },
         "isStaging": {
-          "label": "Staging aktiv? (schreibgeschützt)",
+          "label": "Staging / Live? (schreibgeschützt)",
           "tooltipText": "Gibt an, ob es sich bei dem Shop um einen Staging-Shop oder Live-Shop handelt."
         }
       },
