@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel;
 
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingGateway;
@@ -60,7 +62,7 @@ abstract class FindologicProductListingSearchGateway implements ShopwareProductL
         }
     }
 
-    public abstract function search(Request $request, SalesChannelContext $salesChannelContext): EntitySearchResult;
+    abstract public function search(Request $request, SalesChannelContext $salesChannelContext): EntitySearchResult;
 
     protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
