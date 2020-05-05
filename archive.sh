@@ -47,14 +47,15 @@ cd /tmp/FinSearch
 
 echo "Running composer install..."
 # Install dependencies
-composer install --no-dev --optimize-autoloader
+composer install --no-dev --optimize-autoloader --prefer-dist
 
 cd /tmp
 
 ZIP_FILE="${ROOT_DIR}/FinSearch-${VERSION}.zip"
 # Run archive command to create the zip in the root directory
-zip -r9 ${ZIP_FILE} FinSearch -x FinSearch/phpunit.xml.dist \
-FinSearch/phpcs.xml FinSearch/tests/\* FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip
+zip -r9 ${ZIP_FILE} FinSearch -x FinSearch/phpunit.xml.dist FinSearch/phpcs.xml FinSearch/tests/\* \
+ FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip \
+ FinSearch/composer.lock FinSearch/README.md FinSearch/vendor/\*
 
 # Delete the directory after script execution
 rm -rf '/tmp/FinSearch'
