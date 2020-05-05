@@ -68,4 +68,4 @@ if [[ ${STASH} != 'No local changes to save' ]]; then
     git stash pop
 fi
 
-echo -e "${GREEN}Release was successfully created! Location: '${ZIP_FILE_STORE}'"
+echo -e "${GREEN}Release was successfully created! Location: '${ZIP_FILE}'"

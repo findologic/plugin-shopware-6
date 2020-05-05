@@ -87,7 +87,7 @@ Before starting the deployment make sure that a release is already created.
 1. Run `git fetch` and ensure that the release tag is available locally. Make sure
  that the file `composer.json` contains the correct version constraint.
 1. Run `./archive.sh`, which will build a release `FinSearch-x.x.x.zip` file.
-1. **Manually edit** the `composer.json` file to include the following dependencies (Version may differ
+1. **Manually edit** the `composer.json` file to include the following dependencies (the version may differ
  depending on the compatibility of the plugin):
     1. `"shopware/core": "^6.1`
     1. `"shopware/storefront": "^6.1`
