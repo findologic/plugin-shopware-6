@@ -22,22 +22,22 @@ Component.register('findologic-config', {
             type: String,
             required: false,
             default: null
-                }
-                },
+        }
+    },
 
-                methods: {
-                    checkTextFieldInheritance(value) {
-                        if (typeof value !== 'string') {
-                            return true;
-                        }
+    methods: {
+        checkTextFieldInheritance(value) {
+            if (typeof value !== 'string') {
+                return true;
+            }
 
-                        return value.length <= 0;
-                    },
+            return value.length <= 0;
+        },
 
-                    checkBoolFieldInheritance(value) {
-                        return typeof value !== 'boolean';
+        checkBoolFieldInheritance(value) {
+            return typeof value !== 'boolean';
 
 
-                    }
-                }
-                });
+        }
+    }
+});

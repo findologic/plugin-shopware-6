@@ -13,7 +13,7 @@
         {% block findologic_actions_test %}
         <sw-button
                 v-show="showTestButton"
-                @click="openSalesChannelDomain"
+                @click="openSalesChannelUrl"
                 variant="contrast"
         >
             {{ $tc('findologic.settingForm.testButton') }}
@@ -36,9 +36,10 @@
         {% endblock %}
 
         {% block findologic_actions_cancel %}
-        <sw-button :routerLink="{ name: 'sw.dashboard.index' }"
-                   :title="$tc('global.default.cancel')"
-                   :aria-label="$tc('global.default.cancel')">
+        <sw-button
+                :routerLink="{ name: 'sw.dashboard.index' }"
+                :title="$tc('global.default.cancel')"
+                :aria-label="$tc('global.default.cancel')">
             {{ $tc('global.default.cancel') }}
         </sw-button>
         {% endblock %}
@@ -50,19 +51,21 @@
         {% block findologic_content_card %}
         <sw-card-view>
             {% block findologic_content_card_channel_config %}
-            <sw-sales-channel-config ref="configComponent"
-                                     domain="FinSearch.config"
-                                     v-model="config">
+            <sw-sales-channel-config
+                    ref="configComponent"
+                    domain="FinSearch.config"
+                    v-model="config">
                 {% block findologic_content_card_channel_config_sales_channel %}
                 <template #select="{ onInput, selectedSalesChannelId, salesChannel }">
                     {% block findologic_content_card_channel_config_sales_channel_card %}
                     <sw-card title="Sales Channel">
                         {% block findologic_content_card_channel_config_sales_channel_card_title %}
-                        <sw-single-select :options="salesChannel"
-                                          v-model="selectedSalesChannelId"
-                                          labelProperty="translated.name"
-                                          valueProperty="id"
-                                          @input="onInput">
+                        <sw-single-select
+                                :options="salesChannel"
+                                v-model="selectedSalesChannelId"
+                                labelProperty="translated.name"
+                                valueProperty="id"
+                                @input="onInput">
                         </sw-single-select>
                         {% endblock %}
                     </sw-card>

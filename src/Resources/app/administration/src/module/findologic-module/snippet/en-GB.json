@@ -36,10 +36,6 @@
         "integrationType": {
           "label": "Integration (read-only)",
           "tooltipText": "Currently used integration type. Either one of Direct Integration or API."
-        },
-        "isStaging": {
-          "label": "Staging / Live? (read-only)",
-          "tooltipText": "Indicates if the shop is a staging shop or live shop."
         }
       },
       "titleSuccess": "Success",

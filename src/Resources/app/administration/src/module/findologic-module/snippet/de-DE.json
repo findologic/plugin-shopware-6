@@ -36,13 +36,9 @@
         "integrationType": {
           "label": "Integration (schreibgeschützt)",
           "tooltipText": "Die aktuell verwendete Integrationsart. Entweder Direct Integration oder API."
-        },
-        "isStaging": {
-          "label": "Staging / Live? (schreibgeschützt)",
-          "tooltipText": "Gibt an, ob es sich bei dem Shop um einen Staging-Shop oder Live-Shop handelt."
         }
       },
-      "titleSuccess": "Erfolg",
+      "titleSuccess": "Erfolgreich",
       "titleError": "Fehler"
     },
     "error": {

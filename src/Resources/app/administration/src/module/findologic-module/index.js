@@ -11,8 +11,6 @@ Module.register('findologic-module', {
     name: 'FinSearch',
     title: 'findologic.header',
     description: 'findologic.general.mainMenuDescription',
-    version: '1.0.0',
-    targetVersion: '1.0.0',
     color: '#f7ff0f',
     icon: 'small-search',
 
@@ -25,17 +23,17 @@ Module.register('findologic-module', {
         index: {
             components: {
                 default: 'findologic-page'
-                    },
-                    path: 'index'
-                    }
-                    },
+            },
+            path: 'index'
+        }
+    },
 
-                    navigation: [{
-                        id: 'findologic-module',
-                        label: 'findologic.header',
-                        color: '#f7ff0f',
-                        path: 'findologic.module.index',
-                        icon: 'small-search',
-                        position: 100
-                    }]
-                    });
+    navigation: [{
+        id: 'findologic-module',
+        label: 'findologic.header',
+        color: '#f7ff0f',
+        path: 'findologic.module.index',
+        icon: 'small-search',
+        position: 100
+    }]
+});

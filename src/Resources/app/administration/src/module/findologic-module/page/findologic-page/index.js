@@ -34,7 +34,7 @@ Component.register('findologic-page', {
     watch: {
         config: {
             handler() {
-                const defaultConfig = this.$refs.configComponent.allConfigs.null;
+                const defaultConfig = this.$refs.configComponent.allConfigs['null'];
                 const salesChannelId = this.$refs.configComponent.selectedSalesChannelId;
 
                 if (salesChannelId === null) {
@@ -47,42 +47,61 @@ Component.register('findologic-page', {
 
                 // Check if shopkey is entered
                 if (this.shopkeyAvailable) {
-                    let shopkey = this.getValidShopkey();
-                    if (this.isValidShopkey) {
+                    let shopkey = this._getValidShopkey();
+                    if (this._isShopkeyValid(shopkey)) {
                         let hashedShopkey = Utils.format.md5(shopkey).toUpperCase();
-                        this.isStagingRequest(hashedShopkey);
+                        this._isStagingRequest(hashedShopkey);
                     }
                 }
             },
-            deep: true,
-
+            deep: true
         }
     },
     computed: {
         salesChannelRepository() {
             return this.repositoryFactory.create('sales_channel');
         },
+        /**
+         * @public
+         * @returns {boolean}
+         */
         showTestButton() {
             return this.isActive && this.shopkeyAvailable && this.isValidShopkey && this.isStagingShop;
         }
     },
     methods: {
-        getValidShopkey() {
-            const defaultConfig = this.$refs.configComponent.allConfigs.null;
+        /**
+         * @param shopkey
+         * @returns {boolean}
+         * @private
+         */
+        _isShopkeyValid(shopkey) {
             // Validate the shopkey
             let regex = /^[A-F0-9]{32}$/;
+            this.isValidShopkey = regex.test(shopkey) !== false;
+
+            return this.isValidShopkey;
+        },
+        /**
+         *
+         * @private
+         */
+        _getValidShopkey() {
+            const defaultConfig = this.$refs.configComponent.allConfigs['null'];
             let shopkey = this.config['FinSearch.config.shopkey'];
             let hasShopkey = !!shopkey;
             // If shopkey is not entered, we check for default config in case of "inherited" shopkey
             if (!hasShopkey) {
                 shopkey = defaultConfig['FinSearch.config.shopkey'];
-                this.isValidShopkey = regex.test(shopkey) !== false;
-            } else {
-                this.isValidShopkey = regex.test(shopkey) !== false;
             }
+
             return shopkey;
         },
-        isStagingRequest(hashedShopkey) {
+        /**
+         * @param hashedShopkey
+         * @private
+         */
+        _isStagingRequest(hashedShopkey) {
             this.httpClient
                 .get('https://cdn.findologic.com/static/' + hashedShopkey + '/config.json')
                 .then((response) => {
@@ -94,7 +113,10 @@ Component.register('findologic-page', {
                     this.isStagingShop = false;
                 });
         },
-        openSalesChannelDomain() {
+        /**
+         * @public
+         */
+        openSalesChannelUrl() {
             if (this.$refs.configComponent.selectedSalesChannelId !== null) {
                 const criteria = new Criteria();
                 criteria.addFilter(
@@ -104,21 +126,27 @@ Component.register('findologic-page', {
                 criteria.addAssociation('domains');
                 this.salesChannelRepository.search(criteria, Shopware.Context.api).then((searchresult) => {
                     let domain = searchresult.first().domains.first();
-                    this.openDomainUrl(domain);
+                    this._openStagingUrl(domain);
                 });
             } else {
-                this.openDefaultUrl();
+                this._openDefaultUrl();
             }
         },
+        /**
+         * @public
+         */
         onSave() {
-            this.setErrorStates();
+            this._setErrorStates();
             if (!this.shopkeyAvailable || !this.isValidShopkey) {
                 return;
             }
 
-            this.save();
+            this._save();
         },
-        save() {
+        /**
+         * @private
+         */
+        _save() {
             this.isLoading = true;
 
             this.$refs.configComponent.save().then((res) => {
@@ -128,14 +156,17 @@ Component.register('findologic-page', {
                     title: this.$tc('findologic.settingForm.titleSuccess'),
                     message: this.$tc('findologic.settingForm.configSaved')
                 });
-            if (res) {
-                this.config = res;
-            }
+                if (res) {
+                    this.config = res;
+                }
             }).catch(() => {
                 this.isLoading = false;
             });
         },
-        setErrorStates() {
+        /**
+         * @private
+         */
+        _setErrorStates() {
             if (!this.shopkeyAvailable) {
                 this.createNotificationError({
                     title: this.$tc('findologic.settingForm.titleError'),
@@ -158,16 +189,23 @@ Component.register('findologic-page', {
                 this.shopkeyErrorState = null;
             }
         },
-        openDefaultUrl() {
+        /**
+         * @private
+         */
+        _openDefaultUrl() {
             let url = window.location.origin + '?findologic=on';
             window.open(url, '_blank');
         },
-        openDomainUrl(domain) {
+        /**
+         * @param domain
+         * @private
+         */
+        _openStagingUrl(domain) {
             if (domain) {
                 let url = domain.url + '?findologic=on';
                 window.open(url, '_blank');
             } else {
-                this.openDefaultUrl();
+                this._openDefaultUrl();
             }
         }
     }
