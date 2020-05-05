@@ -11,9 +11,7 @@
   ],
   "require": {
     "findologic/libflexport": "^2.5",
-    "findologic/findologic-api": "dev-findologic_guzzle#8039b894e8ecb7fdfeefbe71b8b315df7261644c",
-    "shopware/core": "^6.1",
-    "shopware/storefront": "^6.1"
+    "findologic/findologic-api": "dev-findologic_guzzle#8039b894e8ecb7fdfeefbe71b8b315df7261644c"
   },
   "extra": {
     "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
