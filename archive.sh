@@ -51,11 +51,19 @@ composer install --no-dev --optimize-autoloader --prefer-dist
 
 cd /tmp
 
-ZIP_FILE="${ROOT_DIR}/FinSearch-${VERSION}.zip"
+ZIP_FILE_STORE="${ROOT_DIR}/FinSearch-${VERSION}-store.zip"
+ZIP_FILE_MANUAL_INSTALL="${ROOT_DIR}/FinSearch-${VERSION}-manual-install.zip"
 # Run archive command to create the zip in the root directory
-zip -r9 ${ZIP_FILE} FinSearch -x FinSearch/phpunit.xml.dist FinSearch/phpcs.xml FinSearch/tests/\* \
+zip -r9 ${ZIP_FILE_STORE} FinSearch -x FinSearch/phpunit.xml.dist FinSearch/phpcs.xml FinSearch/tests/\* \
  FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip \
  FinSearch/composer.lock FinSearch/README.md FinSearch/vendor/\*
+
+# Remove dependencies that are not required for a normal build.
+composer remove shopware/core shopware/storefront
+
+zip -r9 ${ZIP_FILE_MANUAL_INSTALL} FinSearch -x FinSearch/phpunit.xml.dist FinSearch/phpcs.xml FinSearch/tests/\* \
+ FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip \
+ FinSearch/composer.lock
 
 # Delete the directory after script execution
 rm -rf '/tmp/FinSearch'
