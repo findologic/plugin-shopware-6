@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "d5a9c6b6726125f55a6a9a54172c91c53c4f1d8c"
+                "reference": "a1e5d3d1d017ca7cc6df2a2cf2f69963a6f2263b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/d5a9c6b6726125f55a6a9a54172c91c53c4f1d8c",
-                "reference": "d5a9c6b6726125f55a6a9a54172c91c53c4f1d8c",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/a1e5d3d1d017ca7cc6df2a2cf2f69963a6f2263b",
+                "reference": "a1e5d3d1d017ca7cc6df2a2cf2f69963a6f2263b",
                 "shasum": ""
             },
             "require": {
@@ -62,7 +62,7 @@
                 }
             ],
             "description": "Library for FINDOLOGIC API requests",
-            "time": "2020-05-05T13:24:41+00:00"
+            "time": "2020-05-05T15:42:09+00:00"
         },
         {
             "name": "findologic/guzzle",

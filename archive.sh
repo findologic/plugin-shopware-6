@@ -54,17 +54,6 @@ zip -r9 ${ZIP_FILE} FinSearch -x FinSearch/phpunit.xml.dist FinSearch/phpcs.xml 
  FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip \
  FinSearch/composer.lock
 
-echo "Requiring 'shopware/core' and 'shopware/storefront' for the shopware store..."
-cd /tmp/FinSearch
-# The store needs to know which shopware dependencies are required.
-#composer require shopware/core:"^6.1" shopware/storefront:"^6.1"
-cd /tmp
-
-ZIP_FILE_STORE="${ROOT_DIR}/FinSearch-${VERSION}-store.zip"
-zip -r9 ${ZIP_FILE_STORE} FinSearch -x FinSearch/phpunit.xml.dist FinSearch/phpcs.xml FinSearch/tests/\* \
- FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip \
- FinSearch/composer.lock FinSearch/README.md
-
 # Delete the directory after script execution.
 rm -rf '/tmp/FinSearch'
 
