@@ -13,6 +13,7 @@ services:
 env:
   matrix:
     - SHOPWARE_VERSION="6.1"
+    - SHOPWARE_VERSION="6.2"
   global:
     - PLUGIN_NAME=FinSearch
     - SHOPWARE_DIR=${HOME}/shopware
