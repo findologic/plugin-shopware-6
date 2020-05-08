@@ -124,6 +124,7 @@ trait ProductHelper
             'salesChannelId' => $salesChannelId,
             'languageId' => $languageId,
             'status' => $active,
+            'content' => 'this is a great product',
             'points' => $points,
             'title' => $title,
         ];

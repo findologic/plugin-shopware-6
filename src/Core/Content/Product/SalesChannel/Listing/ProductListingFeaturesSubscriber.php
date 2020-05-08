@@ -34,6 +34,8 @@ use Shopware\Storefront\Page\GenericPageLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
+use function get_class;
+
 class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSubscriber
 {
     /** @var string FINDOLOGIC default sort for categories */

@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Storefront\Page\Search;
 
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
-use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchGatewayInterface;
+use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
-use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Page\StorefrontSearchResult;
 use Shopware\Storefront\Page\GenericPageLoader;
@@ -25,7 +24,7 @@ class SearchPageLoader extends ShopwareSearchPageLoader
     private $genericLoader;
 
     /**
-     * @var ProductSearchGatewayInterface
+     * @var AbstractProductSearchRoute
      */
     private $searchGateway;
 
@@ -36,7 +35,7 @@ class SearchPageLoader extends ShopwareSearchPageLoader
 
     public function __construct(
         GenericPageLoader $genericLoader,
-        ProductSearchGatewayInterface $searchGateway,
+        AbstractProductSearchRoute $searchGateway,
         EventDispatcherInterface $eventDispatcher
     ) {
         parent::__construct($genericLoader, $searchGateway, $eventDispatcher);
@@ -53,15 +52,14 @@ class SearchPageLoader extends ShopwareSearchPageLoader
     {
         $page = $this->genericLoader->load($request, $salesChannelContext);
         $page = SearchPage::createFrom($page);
-
-        $result = $this->searchGateway->search($request, $salesChannelContext);
-
-        $page->setListing($result);
-        $page->setSearchResult(StorefrontSearchResult::createFrom($result));
-
         $page->setSearchTerm(
-            (string) $request->query->get('search')
+            (string)$request->query->get('search')
         );
+        $result = $this->searchGateway->load($request, $salesChannelContext);
+
+        $listing = $result->getListingResult();
+        $page->setListing($listing);
+        $page->setSearchResult(StorefrontSearchResult::createFrom($listing));
 
         $this->eventDispatcher->dispatch(
             new SearchPageLoadedEvent($page, $salesChannelContext, $request)
