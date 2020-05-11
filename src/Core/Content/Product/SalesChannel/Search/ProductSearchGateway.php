@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search;
 
+use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -96,18 +97,26 @@ class ProductSearchGateway extends AbstractProductSearchRoute
 
         $result = $this->doSearch($criteria, $context);
         $result = ProductListingResult::createFrom($result);
+        $result->addCurrentFilter('search', $request->query->get('search'));
 
         $this->eventDispatcher->dispatch(
             new ProductSearchResultEvent($request, $result, $context)
         );
 
-        $result->addCurrentFilter('search', $request->query->get('search'));
 
         return new ProductSearchRouteResponse($result);
     }
 
     protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
+        /** @var FindologicEnabled $findologicEnabled */
+        $findologicEnabled = $context->getContext()->getExtension('flEnabled');
+        $isFindologicEnabled = $findologicEnabled ? $findologicEnabled->getEnabled() : false;
+
+        if (!$isFindologicEnabled) {
+            return $this->productRepository->search($criteria, $context->getContext());
+        }
+
         if (empty($criteria->getIds())) {
             // Return an empty response, as Shopware would search for all products if no explicit
             // product ids are submitted.

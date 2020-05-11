@@ -74,12 +74,10 @@ class ExportControllerTest extends TestCase
 
         $this->router = $this->getContainer()->get('router');
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
-        $this->eventDispatcherMock = $this->getMockBuilder(EventDispatcherInterface::class)->getMock();
         $this->exportController = new ExportController(
             $this->loggerMock,
             $this->router,
-            $this->getContainer()->get(HeaderHandler::class),
-            $this->eventDispatcherMock
+            $this->getContainer()->get(HeaderHandler::class)
         );
         $this->defaultContext = Context::createDefaultContext();
     }
@@ -676,8 +674,7 @@ class ExportControllerTest extends TestCase
 
         $headerHandler->expects($this->once())->method('getHeaders')->willReturn($expectedHeaders);
 
-        $this->exportController =
-            new ExportController($this->loggerMock, $this->router, $headerHandler, $this->eventDispatcherMock);
+        $this->exportController = new ExportController($this->loggerMock, $this->router, $headerHandler);
         $this->exportController->setContainer($containerMock);
         $result = $this->exportController->export($request, $salesChannelContextMock);
 
