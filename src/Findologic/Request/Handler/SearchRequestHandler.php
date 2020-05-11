@@ -72,10 +72,6 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
      */
     public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response
     {
-        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
-            return null;
-        }
-
         $request = $event->getRequest();
 
         /** @var SearchRequest $searchRequest */
