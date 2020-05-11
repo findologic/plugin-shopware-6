@@ -1,3 +1,4 @@
+import './extension/sw-plugin';
 import './page/findologic-page';
 import './components/findologic-config';
 
@@ -21,19 +22,11 @@ Module.register('findologic-module', {
 
     routes: {
         index: {
-            components: {
-                default: 'findologic-page'
-            },
-            path: 'index'
+            component: 'findologic-page',
+            path: 'index',
+            meta: {
+                parentPath: 'sw.settings.index'
+            }
         }
-    },
-
-    navigation: [{
-        id: 'findologic-module',
-        label: 'findologic.header',
-        color: '#f7ff0f',
-        path: 'findologic.module.index',
-        icon: 'small-search',
-        position: 100
-    }]
+    }
 });
