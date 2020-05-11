@@ -36,6 +36,11 @@
             <argument type="service" id="event_dispatcher" />
         </service>
 
+        <service id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingGateway">
+            <argument type="service" id="sales_channel.product.repository" />
+            <argument type="service" id="event_dispatcher" />
+        </service>
+
         <service id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader" public="true">
             <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
             <argument type="service"
@@ -53,6 +58,15 @@
             <call method="setContainer">
                 <argument type="service" id="service_container" />
             </call>
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Core\Content\Product\Cms\ProductListingCmsElementResolver"
+                decorates="Shopware\Core\Content\Product\Cms\ProductListingCmsElementResolver"
+                public="true"
+        >
+            <argument type="service" id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingGateway" />
+            <tag name="shopware.cms.data_resolver" />
         </service>
 
         <service
