@@ -13,7 +13,6 @@ Module.register('findologic-module', {
     title: 'findologic.header',
     description: 'findologic.general.mainMenuDescription',
     color: '#f7ff0f',
-    icon: 'small-search',
 
     snippets: {
         'de-DE': deDE,

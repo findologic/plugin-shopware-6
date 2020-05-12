@@ -36,8 +36,6 @@ Component.register('findologic-config', {
 
         checkBoolFieldInheritance(value) {
             return typeof value !== 'boolean';
-
-
         }
     }
 });

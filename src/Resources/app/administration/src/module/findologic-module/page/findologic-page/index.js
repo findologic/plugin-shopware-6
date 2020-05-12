@@ -1,5 +1,4 @@
 import template from './findologic-page.html.twig';
-import './findologic-page.scss';
 
 const { Component, Mixin, Application, Utils } = Shopware;
 const { Criteria } = Shopware.Data;
@@ -71,7 +70,7 @@ Component.register('findologic-page', {
     },
     methods: {
         /**
-         * @param shopkey
+         * @param {String} shopkey
          * @returns {boolean}
          * @private
          */
@@ -82,8 +81,9 @@ Component.register('findologic-page', {
 
             return this.isValidShopkey;
         },
+
         /**
-         *
+         * @returns {String}
          * @private
          */
         _getValidShopkey() {
@@ -97,22 +97,24 @@ Component.register('findologic-page', {
 
             return shopkey;
         },
+
         /**
-         * @param hashedShopkey
+         * @param {String} hashedShopkey
          * @private
          */
         _isStagingRequest(hashedShopkey) {
             this.httpClient
-                .get('https://cdn.findologic.com/static/' + hashedShopkey + '/config.json')
-                .then((response) => {
-                    if (response.data.isStagingShop) {
-                        this.isStagingShop = true;
-                    }
-                })
-                .catch((error) => {
-                    this.isStagingShop = false;
-                });
+            .get('https://cdn.findologic.com/static/' + hashedShopkey + '/config.json')
+            .then((response) => {
+                if (response.data.isStagingShop) {
+                    this.isStagingShop = true;
+                }
+            })
+            .catch((error) => {
+                this.isStagingShop = false;
+            });
         },
+
         /**
          * @public
          */
@@ -132,6 +134,7 @@ Component.register('findologic-page', {
                 this._openDefaultUrl();
             }
         },
+
         /**
          * @public
          */
@@ -143,6 +146,7 @@ Component.register('findologic-page', {
 
             this._save();
         },
+
         /**
          * @private
          */
@@ -163,6 +167,7 @@ Component.register('findologic-page', {
                 this.isLoading = false;
             });
         },
+
         /**
          * @private
          */
@@ -170,7 +175,7 @@ Component.register('findologic-page', {
             if (!this.shopkeyAvailable) {
                 this.createNotificationError({
                     title: this.$tc('findologic.settingForm.titleError'),
-                    message: this.$tc('findologic.fieldRequired'),
+                    message: this.$tc('findologic.fieldRequired')
                 });
                 this.shopkeyErrorState = {
                     code: 1,
@@ -179,7 +184,7 @@ Component.register('findologic-page', {
             } else if (!this.isValidShopkey) {
                 this.createNotificationError({
                     title: this.$tc('findologic.settingForm.titleError'),
-                    message: this.$tc('findologic.invalidShopkey'),
+                    message: this.$tc('findologic.invalidShopkey')
                 });
                 this.shopkeyErrorState = {
                     code: 1,
@@ -189,6 +194,7 @@ Component.register('findologic-page', {
                 this.shopkeyErrorState = null;
             }
         },
+
         /**
          * @private
          */
@@ -196,8 +202,9 @@ Component.register('findologic-page', {
             let url = window.location.origin + '?findologic=on';
             window.open(url, '_blank');
         },
+
         /**
-         * @param domain
+         * @param {Object} domain
          * @private
          */
         _openStagingUrl(domain) {
@@ -209,5 +216,4 @@ Component.register('findologic-page', {
             }
         }
     }
-
 });

@@ -8,7 +8,7 @@
     "invalidShopkey": "Ungültiger Shopkey",
     "settingForm": {
       "configSaved": "Konfiguration gespeichert",
-      "testButton": "FINDOLOGIC Test",
+      "testButton": "Findologic Test",
       "config": {
         "title": "Konfiguration",
         "shopkey": {
