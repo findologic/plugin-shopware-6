@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Storefront\Page\Search\FindologicSearchPageLoader;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
+use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Storefront\Framework\Cache\Annotation\HttpCache;
 use Shopware\Storefront\Page\Suggest\SuggestPageLoader;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +35,7 @@ class SearchController extends ShopwareSearchController
     private $filterHandler;
 
     public function __construct(
-        SearchPageLoader $searchPageLoader,
+        FindologicSearchPageLoader $searchPageLoader,
         SuggestPageLoader $suggestPageLoader,
         ?FilterHandler $filterHandler = null
     ) {
@@ -57,6 +58,7 @@ class SearchController extends ShopwareSearchController
         }
 
         $page = $this->searchPageLoader->load($request, $context);
+
         return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
     }
 
@@ -86,9 +88,7 @@ class SearchController extends ShopwareSearchController
 
     /**
      * @HttpCache()
-     *
      * Route to load the listing filters
-     *
      * @RouteScope(scopes={"storefront"})
      * @Route("/widgets/search/{search}", name="widgets.search.pagelet", methods={"GET", "POST"},
      *     defaults={"XmlHttpRequest"=true})

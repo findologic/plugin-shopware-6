@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Page\Legacy\Search;
 
+use FINDOLOGIC\FinSearch\Storefront\Page\Search\FindologicSearchPageLoader;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchGatewayInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -12,11 +13,10 @@ use Shopware\Storefront\Framework\Page\StorefrontSearchResult;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Page\Search\SearchPage;
 use Shopware\Storefront\Page\Search\SearchPageLoadedEvent;
-use Shopware\Storefront\Page\Search\SearchPageLoader as ShopwareSearchPageLoader;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-class SearchPageLoader extends ShopwareSearchPageLoader
+class SearchPageLoader extends FindologicSearchPageLoader
 {
     /**
      * @var GenericPageLoader
