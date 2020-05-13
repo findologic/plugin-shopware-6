@@ -11,9 +11,42 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\Loader\DelegatingLoader;
+use Symfony\Component\Config\Loader\LoaderResolver;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+
+use function version_compare;
 
 class FinSearch extends Plugin
 {
+    public function build(ContainerBuilder $container): void
+    {
+        $fileLocator = new FileLocator($this->getPath());
+        $loaderResolver = new LoaderResolver(
+            [
+                new XmlFileLoader($container, $fileLocator),
+                new YamlFileLoader($container, $fileLocator),
+            ]
+        );
+        $delegatingLoader = new DelegatingLoader($loaderResolver);
+
+        $shopwareVersion = $container->getParameter('kernel.shopware_version');
+        if (version_compare($shopwareVersion, '6.2', '<')) {
+            $services = 'services_compat';
+        } else {
+            $services = 'services';
+        }
+
+        foreach (glob(sprintf('%s/%s/%s.*', $this->getPath(), 'Resources/config/services', $services)) as $path) {
+            $delegatingLoader->load($path);
+        }
+
+        parent::build($container);
+    }
+
     public function uninstall(UninstallContext $uninstallContext): void
     {
         $activePlugins = $this->container->getParameter('kernel.active_plugins');
@@ -40,6 +73,7 @@ class FinSearch extends Plugin
 // phpcs:disable
 /**
  * Shopware themselves use this method to autoload their libraries inside of plugins.
+ *
  * @see https://github.com/shopware-blog/shopware-fastbill-connector/blob/development/src/FastBillConnector.php#L47
  */
 $loader = require_once __DIR__ . '/../vendor/autoload.php';

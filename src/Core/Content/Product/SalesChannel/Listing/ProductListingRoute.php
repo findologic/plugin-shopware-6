@@ -25,7 +25,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-class ProductListingGateway extends AbstractProductListingRoute
+class ProductListingRoute extends AbstractProductListingRoute
 {
     /**
      * @var EventDispatcherInterface
