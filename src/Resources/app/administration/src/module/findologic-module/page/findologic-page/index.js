@@ -104,15 +104,15 @@ Component.register('findologic-page', {
          */
         _isStagingRequest(hashedShopkey) {
             this.httpClient
-            .get('https://cdn.findologic.com/static/' + hashedShopkey + '/config.json')
-            .then((response) => {
-                if (response.data.isStagingShop) {
-                    this.isStagingShop = true;
-                }
-            })
-            .catch((error) => {
-                this.isStagingShop = false;
-            });
+                .get('https://cdn.findologic.com/static/' + hashedShopkey + '/config.json')
+                .then((response) => {
+                    if (response.data.isStagingShop) {
+                        this.isStagingShop = true;
+                    }
+                })
+                .catch((error) => {
+                    this.isStagingShop = false;
+                });
         },
 
         /**
