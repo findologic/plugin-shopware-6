@@ -30,8 +30,7 @@ class FindologicProductSearchGateway extends FindologicProductListingSearchGatew
         $this->searchBuilder->build($request, $criteria, $context);
 
         $this->eventDispatcher->dispatch(
-            new ProductSearchCriteriaEvent($request, $criteria, $context),
-            ProductEvents::PRODUCT_SEARCH_CRITERIA
+            new ProductSearchCriteriaEvent($request, $criteria, $context)
         );
 
         $result = $this->doSearch($criteria, $context);
@@ -39,8 +38,7 @@ class FindologicProductSearchGateway extends FindologicProductListingSearchGatew
         $result = ProductListingResult::createFrom($result);
 
         $this->eventDispatcher->dispatch(
-            new ProductSearchResultEvent($request, $result, $context),
-            ProductEvents::PRODUCT_SEARCH_RESULT
+            new ProductSearchResultEvent($request, $result, $context)
         );
 
         $result->addCurrentFilter('search', $request->query->get('search'));

@@ -11,38 +11,16 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Config\Loader\DelegatingLoader;
-use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-
-use function version_compare;
 
 class FinSearch extends Plugin
 {
     public function build(ContainerBuilder $container): void
     {
-        $fileLocator = new FileLocator($this->getPath());
-        $loaderResolver = new LoaderResolver(
-            [
-                new XmlFileLoader($container, $fileLocator),
-                new YamlFileLoader($container, $fileLocator),
-            ]
-        );
-        $delegatingLoader = new DelegatingLoader($loaderResolver);
-
-        $shopwareVersion = $container->getParameter('kernel.shopware_version');
-        if (version_compare($shopwareVersion, '6.2', '<')) {
-            $services = 'services_compat';
-        } else {
-            $services = 'services';
-        }
-
-        foreach (glob(sprintf('%s/%s/%s.*', $this->getPath(), 'Resources/config/services', $services)) as $path) {
-            $delegatingLoader->load($path);
-        }
+        // For maintaining compatibility with Shopware 6.1.x we load a different `services.xml` due to several
+        // breaking changes introduced in Shopware 6.2
+        // @link https://github.com/shopware/platform/blob/master/UPGRADE-6.2.md
+        $this->loadServiceXml($this->getServiceXml($container));
 
         parent::build($container);
     }
@@ -67,6 +45,26 @@ class FinSearch extends Plugin
         }
 
         parent::uninstall($uninstallContext);
+    }
+
+    private function getServiceXml(ContainerBuilder $container): string
+    {
+        $shopwareVersion = $container->getParameter('kernel.shopware_version');
+        if (version_compare($shopwareVersion, '6.2', '>=')) {
+            $file = 'services';
+        } else {
+            $file = 'services_legacy';
+        }
+
+        return $file;
+    }
+
+    private function loadServiceXml(string $file): void
+    {
+        // We copy the correct `services.xml` file in the config directory so that Shopware can load it.
+        $source = sprintf('%s/%s/%s.xml', $this->getPath(), 'Resources/config/services', $file);
+        $destination = sprintf('%s/%s/services.xml', $this->getPath(), 'Resources/config');
+        copy($source, $destination);
     }
 }
 

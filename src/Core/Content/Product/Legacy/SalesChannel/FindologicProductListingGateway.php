@@ -27,8 +27,9 @@ class FindologicProductListingGateway extends FindologicProductListingSearchGate
             )
         );
 
+        $categoryId = $this->getNavigationId($request, $salesChannelContext);
         $criteria->addFilter(
-            new EqualsFilter('product.categoriesRo.id', $this->getNavigationId($request, $salesChannelContext))
+            new EqualsFilter('product.categoriesRo.id', $categoryId)
         );
         $this->eventDispatcher->dispatch(
             new ProductListingCriteriaEvent($request, $criteria, $salesChannelContext)
@@ -38,7 +39,7 @@ class FindologicProductListingGateway extends FindologicProductListingSearchGate
 
         $result = ProductListingResult::createFrom($result);
 
-        $result->addCurrentFilter('navigationId', $this->getNavigationId($request, $salesChannelContext));
+        $result->addCurrentFilter('navigationId', $categoryId);
 
         $this->eventDispatcher->dispatch(
             new ProductListingResultEvent($request, $result, $salesChannelContext)

@@ -114,7 +114,12 @@ abstract class SearchNavigationRequestHandler
      */
     protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
     {
-        $event->getCriteria()->assign($criteria->getVars());
+        $vars = $criteria->getVars();
+        // `includes` is added in Shopware >= 6.2, so we need this check for compatibility with Shopware 6.1.x
+        if (!empty($vars) && !array_key_exists('includes', $vars)) {
+            $vars['includes'] = null;
+        }
+        $event->getCriteria()->assign($vars);
     }
 
     /**
