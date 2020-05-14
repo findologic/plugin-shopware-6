@@ -6,11 +6,13 @@ namespace FINDOLOGIC\FinSearch;
 
 use Composer\Autoload\ClassLoader;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
+use PackageVersions\Versions;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
+use Shopware\Core\Kernel;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class FinSearch extends Plugin
@@ -50,6 +52,9 @@ class FinSearch extends Plugin
     private function getServiceXml(ContainerBuilder $container): string
     {
         $shopwareVersion = $container->getParameter('kernel.shopware_version');
+        if ($shopwareVersion === Kernel::SHOPWARE_FALLBACK_VERSION) {
+            $shopwareVersion = Versions::getVersion('shopware/platform');
+        }
         if (version_compare($shopwareVersion, '6.2', '>=')) {
             $file = 'services';
         } else {
