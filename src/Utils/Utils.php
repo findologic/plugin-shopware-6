@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Utils;
 
+use PackageVersions\Versions;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Kernel;
-use Symfony\Component\HttpFoundation\Request;
 
 class Utils
 {
@@ -99,5 +98,15 @@ class Utils
             (isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '') .
             (isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '') .
             (isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : '');
+    }
+
+    public static function versionLowerThan(string $version): bool
+    {
+        $shopwareVersion = Versions::getVersion('shopware/platform');
+        if (version_compare($shopwareVersion, $version, '<')) {
+            return true;
+        }
+
+        return false;
     }
 }

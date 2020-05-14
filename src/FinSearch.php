@@ -6,13 +6,12 @@ namespace FINDOLOGIC\FinSearch;
 
 use Composer\Autoload\ClassLoader;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
-use PackageVersions\Versions;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
-use Shopware\Core\Kernel;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class FinSearch extends Plugin
@@ -22,7 +21,7 @@ class FinSearch extends Plugin
         // For maintaining compatibility with Shopware 6.1.x we load a different `services.xml` due to several
         // breaking changes introduced in Shopware 6.2
         // @link https://github.com/shopware/platform/blob/master/UPGRADE-6.2.md
-        $this->loadServiceXml($this->getServiceXml($container));
+        $this->loadServiceXml($this->getServiceXml());
 
         parent::build($container);
     }
@@ -49,16 +48,12 @@ class FinSearch extends Plugin
         parent::uninstall($uninstallContext);
     }
 
-    private function getServiceXml(ContainerBuilder $container): string
+    private function getServiceXml(): string
     {
-        $shopwareVersion = $container->getParameter('kernel.shopware_version');
-        if ($shopwareVersion === Kernel::SHOPWARE_FALLBACK_VERSION) {
-            $shopwareVersion = Versions::getVersion('shopware/platform');
-        }
-        if (version_compare($shopwareVersion, '6.2', '>=')) {
-            $file = 'services';
-        } else {
+        if (Utils::versionLowerThan('6.2')) {
             $file = 'services_legacy';
+        } else {
+            $file = 'services';
         }
 
         return $file;
