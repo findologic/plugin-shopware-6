@@ -47,6 +47,22 @@ cd /tmp/FinSearch
 
 echo "Installing dependencies with 'composer install' ..."
 composer install --no-dev --optimize-autoloader --prefer-dist
+
+echo "Adding shopware/core and shopware/storefront to composer.json"
+
+composerDest='composer.json'
+node > out_${composerDest} <<EOF
+//Read data
+var data = require('./${composerDest}');
+
+data.require['shopware/core'] = '^6.1';
+data.require['shopware/storefront'] = '^6.1';
+
+//Output data
+console.log(JSON.stringify(data));
+
+EOF
+
 cd /tmp
 # Run archive command to create the zip in the root directory
 ZIP_FILE="${ROOT_DIR}/FinSearch-${VERSION}.zip"
