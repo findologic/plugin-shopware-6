@@ -10,15 +10,15 @@ const COMPOSER_JSON_DEST = __DIR__ . '/../composer.json';
 const SYS_TMP_DIR = '/tmp';
 const TMP_DIR = SYS_TMP_DIR . '/FinSearch';
 const IGNORED = [
-    'FinSearch/phpunit.xml.dist',
-    'FinSearch/phpcs.xml',
-    'FinSearch/tests/\*',
-    'FinSearch/archive.sh',
-    'FinSearch/composer.lock',
-    'FinSearch/.gitignore',
-    'FinSearch/.travis.yml',
-    'FinSearch/.idea/\*',
     'FinSearch/.git/\*',
+    'FinSearch/.gitignore',
+    'FinSearch/.idea/\*',
+    'FinSearch/.travis.yml',
+    'FinSearch/bin/\*',
+    'FinSearch/composer.lock',
+    'FinSearch/phpcs.xml',
+    'FinSearch/phpunit.xml.dist',
+    'FinSearch/tests/\*',
     '*.zip',
 ];
 
@@ -55,7 +55,10 @@ exec('composer install --no-dev --optimize-autoloader --prefer-dist');
 $logger->info('Adding shopware/core and shopware/storefront to the composer.json.');
 $composerJsonData['require']['shopware/core'] = '^6.1';
 $composerJsonData['require']['shopware/storefront'] = '^6.1';
-file_put_contents(TMP_DIR . '/composer.json', json_encode($composerJsonData, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
+file_put_contents(
+    TMP_DIR . '/composer.json',
+    json_encode($composerJsonData, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)
+);
 
 chdir(SYS_TMP_DIR);
 
@@ -68,7 +71,7 @@ chdir(__DIR__ . '/..');
 $logger->info('Restoring work in progress ...');
 exec(sprintf('git checkout %s', $workingBranch));
 
-if ($stash) {
+if ($stash !== 'No local changes to save') {
     exec('git stash pop');
 }
 

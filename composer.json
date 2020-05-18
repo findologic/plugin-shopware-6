@@ -47,6 +47,7 @@
   "scripts": {
     "lint": "./vendor/bin/phpcs --standard=phpcs.xml .",
     "fix": "./vendor/bin/phpcbf --standard=phpcs.xml .",
-    "test": "../../../vendor/bin/phpunit -c phpunit.xml.dist --colors=always"
+    "test": "../../../vendor/bin/phpunit -c phpunit.xml.dist --colors=always",
+    "release": "bin/release"
   }
 }
