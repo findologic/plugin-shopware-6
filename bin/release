@@ -27,7 +27,6 @@ $logger->pushHandler(new StreamHandler('php://stdout'));
 
 $composerJsonData = json_decode(file_get_contents(COMPOSER_JSON_DEST), true);
 $version = $composerJsonData['version'];
-cd('..');
 
 $logger->info(sprintf('Creating a release for version %s', $version));
 $logger->info('The zip can be uploaded directly to the Shopware Store.');
@@ -48,23 +47,19 @@ exec(sprintf('git checkout tags/%s', $tag));
 
 $logger->info('Copying files...');
 exec(sprintf('cp -rf . %s', TMP_DIR));
-cd(TMP_DIR);
 
 $logger->info('Installing dependencies...');
-exec('composer install --no-dev --optimize-autoloader --prefer-dist');
+exec(sprintf('composer install -d=%s --no-dev --optimize-autoloader --prefer-dist', TMP_DIR));
 
 $logger->info('Adding shopware/core and shopware/storefront to the composer.json.');
 $composerJsonData['require']['shopware/core'] = '^6.1';
 $composerJsonData['require']['shopware/storefront'] = '^6.1';
-file_put_contents(json_encode($composerJsonData, JSON_PRETTY_PRINT), TMP_DIR . '/composer.json');
-
-cd(SYS_TMP_DIR);
+file_put_contents(TMP_DIR . '/composer.json', json_encode($composerJsonData, JSON_PRETTY_PRINT));
 
 $zipFileDest = sprintf('%s/FinSearch-%s.zip', __DIR__, $version);
-exec(sprintf('zip -r9 %s FinSearch -x %s', $zipFileDest, implode(' ', IGNORED)));
+exec(sprintf('zip -r9 %s %s -x %s', $zipFileDest, TMP_DIR, implode(' ', IGNORED)));
 
 exec('rm -rf "/tmp/FinSearch"');
-cd(__DIR__ . '/..');
 
 $logger->info('Restoring work in progress ...');
 exec(sprintf('get checkout %s', $workingBranch));
