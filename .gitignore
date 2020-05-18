@@ -1,6 +1,3 @@
 /vendor/
 /.idea/
 *.zip
-# We ignore this file in git because we create dynamic `services.xml` based on the Shopware version
-# in order to make the plugin compatible with older versions.
-/src/Resources/config/services.xml

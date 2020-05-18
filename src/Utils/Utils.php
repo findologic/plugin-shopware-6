@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Utils;
 
+use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use PackageVersions\Versions;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class Utils
 {
@@ -103,10 +105,18 @@ class Utils
     public static function versionLowerThan(string $version): bool
     {
         $shopwareVersion = Versions::getVersion('shopware/platform');
-        if (version_compare($shopwareVersion, $version, '<')) {
-            return true;
-        }
 
-        return false;
+        return version_compare($shopwareVersion, $version, '<');
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isFindologicEnabled(SalesChannelContext $context)
+    {
+        /** @var FindologicEnabled $findologicEnabled */
+        $findologicEnabled = $context->getContext()->getExtension('flEnabled');
+
+        return $findologicEnabled ? $findologicEnabled->getEnabled() : false;
     }
 }

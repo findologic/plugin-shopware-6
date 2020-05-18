@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
 
-use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
+use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
@@ -27,6 +28,8 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class ProductListingRoute extends AbstractProductListingRoute
 {
+    use SearchResultHelper;
+
     /**
      * @var EventDispatcherInterface
      */
@@ -107,81 +110,19 @@ class ProductListingRoute extends AbstractProductListingRoute
             new ProductListingResultEvent($request, $result, $salesChannelContext)
         );
 
-
         return new ProductListingRouteResponse($result);
     }
 
     protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
-        /** @var FindologicEnabled $findologicEnabled */
-        $findologicEnabled = $context->getContext()->getExtension('flEnabled');
-        $isFindologicEnabled = $findologicEnabled ? $findologicEnabled->getEnabled() : false;
-
-        if (!$isFindologicEnabled) {
+        if (!Utils::isFindologicEnabled($context)) {
             return $this->productRepository->search($criteria, $context->getContext());
         }
 
         if (empty($criteria->getIds())) {
-            // Return an empty response, as Shopware would search for all products if no explicit
-            // product ids are submitted.
-            return new EntitySearchResult(
-                0,
-                new EntityCollection(),
-                new AggregationResultCollection(),
-                $criteria,
-                $context->getContext()
-            );
+            return $this->createEmptySearchResult($criteria, $context);
         }
 
-        /** @var Pagination $pagination */
-        $pagination = $criteria->getExtension('flPagination');
-        if ($pagination) {
-            // Pagination is handled by FINDOLOGIC.
-            $criteria->setLimit(24);
-            $criteria->setOffset(0);
-        }
-
-        $result = $this->productRepository->search($criteria, $context->getContext());
-
-        return $this->fixResultOrder($result, $criteria);
-    }
-
-    /**
-     * When search results are fetched from the database, the ordering of the products is based on the
-     * database structure, which is not what we want. We manually re-order them by the ID, so the
-     * ordering matches the result that the FINDOLOGIC API returned.
-     *
-     * @param EntitySearchResult $result
-     * @param Criteria $criteria
-     *
-     * @return EntitySearchResult
-     */
-    private function fixResultOrder(EntitySearchResult $result, Criteria $criteria): EntitySearchResult
-    {
-        $sortedElements = $this->sortElementsByIdArray($result->getElements(), $criteria->getIds());
-        $result->clear();
-
-        foreach ($sortedElements as $element) {
-            $result->add($element);
-        }
-
-        return $result;
-    }
-
-    private function sortElementsByIdArray(array $elements, array $ids): array
-    {
-        $sorted = [];
-
-        foreach ($ids as $id) {
-            if (\is_array($id)) {
-                $id = implode('-', $id);
-            }
-
-            if (\array_key_exists($id, $elements)) {
-                $sorted[$id] = $elements[$id];
-            }
-        }
-
-        return $sorted;
+        return $this->fetchProductsWithPagination($criteria, $context);
     }
 }

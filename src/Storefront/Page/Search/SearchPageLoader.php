@@ -12,10 +12,11 @@ use Shopware\Storefront\Framework\Page\StorefrontSearchResult;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Page\Search\SearchPage;
 use Shopware\Storefront\Page\Search\SearchPageLoadedEvent;
+use Shopware\Storefront\Page\Search\SearchPageLoader as ShopwareSearchPageLoader;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-class SearchPageLoader extends FindologicSearchPageLoader
+class SearchPageLoader extends ShopwareSearchPageLoader
 {
     /**
      * @var GenericPageLoader
@@ -51,14 +52,12 @@ class SearchPageLoader extends FindologicSearchPageLoader
     {
         $page = $this->genericLoader->load($request, $salesChannelContext);
         $page = SearchPage::createFrom($page);
-        $page->setSearchTerm(
-            (string)$request->query->get('search')
-        );
         $result = $this->searchGateway->load($request, $salesChannelContext);
 
         $listing = $result->getListingResult();
         $page->setListing($listing);
         $page->setSearchResult(StorefrontSearchResult::createFrom($listing));
+        $page->setSearchTerm((string)$request->query->get('search'));
 
         $this->eventDispatcher->dispatch(
             new SearchPageLoadedEvent($page, $salesChannelContext, $request)

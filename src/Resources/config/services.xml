@@ -30,45 +30,6 @@
             <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel\Search\ProductSearchGateway">
-            <argument type="service" id="sales_channel.product.repository" />
-            <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface" />
-            <argument type="service" id="event_dispatcher" />
-        </service>
-
-        <service id="FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel\Listing\ProductListingGateway">
-            <argument type="service" id="sales_channel.product.repository" />
-            <argument type="service" id="event_dispatcher" />
-        </service>
-
-        <service id="FINDOLOGIC\FinSearch\Storefront\Page\Legacy\Search\SearchPageLoader" public="true">
-            <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
-            <argument type="service"
-                      id="FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel\Search\ProductSearchGateway" />
-            <argument type="service" id="event_dispatcher" />
-        </service>
-
-        <service
-            id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController"
-            decorates="Shopware\Storefront\Controller\SearchController"
-            public="true"
-        >
-            <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Page\Legacy\Search\SearchPageLoader" />
-            <argument type="service" id="Shopware\Storefront\Page\Suggest\SuggestPageLoader" />
-            <call method="setContainer">
-                <argument type="service" id="service_container" />
-            </call>
-        </service>
-
-        <service
-            id="FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\Cms\ProductListingCmsElementResolver"
-            decorates="Shopware\Core\Content\Product\Cms\ProductListingCmsElementResolver"
-            public="true"
-        >
-            <argument type="service" id="FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel\Listing\ProductListingGateway" />
-            <tag name="shopware.cms.data_resolver" />
-        </service>
-
         <service
             id="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"
             class="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"
@@ -146,7 +107,7 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\HeaderHandler" public="true">
-            <argument id="service_container" type="service"/>
+            <argument id="service_container" type="service" />
         </service>
 
     </services>

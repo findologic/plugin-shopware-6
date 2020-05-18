@@ -12,16 +12,18 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 class FinSearch extends Plugin
 {
     public function build(ContainerBuilder $container): void
     {
-        // For maintaining compatibility with Shopware 6.1.x we load a different `services.xml` due to several
+        // For maintaining compatibility with Shopware 6.1.x we load relevant services due to several
         // breaking changes introduced in Shopware 6.2
         // @link https://github.com/shopware/platform/blob/master/UPGRADE-6.2.md
-        $this->loadServiceXml($this->getServiceXml());
+        $this->loadServiceXml($container, $this->getServiceXml());
 
         parent::build($container);
     }
@@ -51,7 +53,7 @@ class FinSearch extends Plugin
     private function getServiceXml(): string
     {
         if (Utils::versionLowerThan('6.2')) {
-            $file = 'services_legacy';
+            $file = 'sw61_services';
         } else {
             $file = 'services';
         }
@@ -59,12 +61,13 @@ class FinSearch extends Plugin
         return $file;
     }
 
-    private function loadServiceXml(string $file): void
+    private function loadServiceXml($container, string $file): void
     {
-        // We copy the correct `services.xml` file in the config directory so that Shopware can load it.
-        $source = sprintf('%s/%s/%s.xml', $this->getPath(), 'Resources/config/services', $file);
-        $destination = sprintf('%s/%s/services.xml', $this->getPath(), 'Resources/config');
-        copy($source, $destination);
+        $loader = new XmlFileLoader(
+            $container,
+            new FileLocator($this->getPath() . '/Resources/config/services')
+        );
+        $loader->load(sprintf('%s.xml', $file));
     }
 }
 
