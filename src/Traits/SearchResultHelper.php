@@ -74,7 +74,7 @@ trait SearchResultHelper
             $criteria->setLimit(24);
             $criteria->setOffset(0);
         }
-        $result = $this->productRepository->search($criteria, $context);
+        $result = $this->productRepository->search($criteria, $context->getContext());
 
         return $this->fixResultOrder($result, $criteria);
     }
