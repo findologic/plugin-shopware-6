@@ -47,25 +47,29 @@ exec(sprintf('git checkout tags/%s', $tag));
 
 $logger->info('Copying files...');
 exec(sprintf('cp -rf . %s', TMP_DIR));
+chdir(TMP_DIR);
 
 $logger->info('Installing dependencies...');
-exec(sprintf('composer install -d=%s --no-dev --optimize-autoloader --prefer-dist', TMP_DIR));
+exec('composer install --no-dev --optimize-autoloader --prefer-dist');
 
 $logger->info('Adding shopware/core and shopware/storefront to the composer.json.');
 $composerJsonData['require']['shopware/core'] = '^6.1';
 $composerJsonData['require']['shopware/storefront'] = '^6.1';
-file_put_contents(TMP_DIR . '/composer.json', json_encode($composerJsonData, JSON_PRETTY_PRINT));
+file_put_contents(TMP_DIR . '/composer.json', json_encode($composerJsonData, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
 
-$zipFileDest = sprintf('%s/FinSearch-%s.zip', __DIR__, $version);
-exec(sprintf('zip -r9 %s %s -x %s', $zipFileDest, TMP_DIR, implode(' ', IGNORED)));
+chdir(SYS_TMP_DIR);
+
+$zipFileDest = sprintf('%s/FinSearch-%s.zip', __DIR__ . '/..', $version);
+exec(sprintf('zip -r9 %s FinSearch -x %s', $zipFileDest, implode(' ', IGNORED)));
 
 exec('rm -rf "/tmp/FinSearch"');
+chdir(__DIR__ . '/..');
 
 $logger->info('Restoring work in progress ...');
-exec(sprintf('get checkout %s', $workingBranch));
+exec(sprintf('git checkout %s', $workingBranch));
 
 if ($stash) {
     exec('git stash pop');
 }
 
-$logger->info(sprintf('The release was successfully created! You can find it in %s', $zipFileDest));
+$logger->info(sprintf('The release was successfully created! You can find it in %s', realpath($zipFileDest)));
