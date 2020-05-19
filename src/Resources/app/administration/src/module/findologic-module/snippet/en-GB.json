@@ -27,12 +27,12 @@
         "searchResultContainer": {
           "label": "CSS class for search result",
           "placeholder": "fl-result",
-          "tooltipText": "To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main container of the shop."
+          "tooltipText": "This option has an effect for Direct Integration only, when empty fl-result is used."
         },
         "navigationResultContainer": {
           "label": "CSS class for navigation",
-          "placeholder": "fl-navigation",
-          "tooltipText": "To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main container of the shop."
+          "placeholder": "fl-navigation-result",
+          "tooltipText": "This option has an effect for Direct Integration only, when empty fl-navigation-result is used."
         },
         "integrationType": {
           "label": "Integration (read-only)",
