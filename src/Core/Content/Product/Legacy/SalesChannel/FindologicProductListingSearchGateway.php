@@ -6,7 +6,8 @@ namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel;
 
 use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingGatewayInterface as ShopwareProductListingGatewayInterface;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingGatewayInterface
+    as ShopwareProductListingGatewayInterface;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
