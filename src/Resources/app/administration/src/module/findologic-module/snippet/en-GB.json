@@ -4,11 +4,12 @@
     "general": {
       "mainMenuDescription": "FINDOLOGIC plugin for Shopware 6 e-commerce system"
     },
-    "fieldRequired": "Shopkey is required",
-    "invalidShopkey": "Invalid Shopkey",
+    "fieldRequired": "Shopkey is required.",
+    "invalidShopkey": "Invalid Shopkey.",
+    "notRegisteredShopkey": "The given shopkey is not associated to any known service.",
     "settingForm": {
-      "configSaved": "Configuration saved",
-      "testButton": "Findologic Test",
+      "configSaved": "Configuration saved.",
+      "testButton": "Test mode",
       "config": {
         "title": "Configuration",
         "shopkey": {
@@ -25,12 +26,12 @@
         },
         "searchResultContainer": {
           "label": "CSS class for main container",
-          "placeholder": "e.g fl-result",
+          "placeholder": "fl-result",
           "tooltipText": "To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main container of the shop."
         },
         "navigationResultContainer": {
           "label": "CSS class for main container",
-          "placeholder": "e.g fl-navigation",
+          "placeholder": "fl-navigation",
           "tooltipText": "To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main container of the shop."
         },
         "integrationType": {

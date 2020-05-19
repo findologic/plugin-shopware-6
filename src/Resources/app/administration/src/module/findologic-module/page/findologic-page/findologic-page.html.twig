@@ -12,16 +12,6 @@
 
     {% block findologic_actions %}
     <template slot="smart-bar-actions">
-        {% block findologic_actions_test %}
-        <sw-button
-                v-show="showTestButton"
-                @click="openSalesChannelUrl"
-                variant="contrast"
-        >
-            {{ $tc('findologic.settingForm.testButton') }}
-        </sw-button>
-        {% endblock %}
-
         {% block findologic_actions_save %}
         <sw-button
                 class="sw-settings-login-registration__save-action"
@@ -63,10 +53,10 @@
                     <sw-card title="Sales Channel">
                         {% block findologic_content_card_channel_config_sales_channel_card_title %}
                         <sw-single-select
-                                :options="salesChannel"
                                 v-model="selectedSalesChannelId"
                                 labelProperty="translated.name"
                                 valueProperty="id"
+                                :options="salesChannel"
                                 @input="onInput">
                         </sw-single-select>
                         {% endblock %}
@@ -80,6 +70,10 @@
                     <div v-if="actualConfigData">
                         {% block findologic_content_card_channel_config_credentials_card %}
                         <findologic-config
+                                :isActive="isActive"
+                                :shopkeyAvailable="shopkeyAvailable"
+                                :isValidShopkey="isValidShopkey"
+                                :isStagingShop="isStagingShop"
                                 :actualConfigData="actualConfigData"
                                 :allConfigs="allConfigs"
                                 :shopkeyErrorState="shopkeyErrorState"
