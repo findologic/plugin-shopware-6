@@ -25,12 +25,12 @@
           "tooltipText": "Aktiviert die FINDOLOGIC Suche für Kategorieseiten."
         },
         "searchResultContainer": {
-          "label": "CSS-Klasse für Hauptcontainer",
+          "label": "CSS-Klasse für Suchresultat",
           "placeholder": "fl-result",
           "tooltipText": "Damit die Direct Integration einwandfrei funktioniert, muss sie Zugriff auf den Hauptcontainer des Shops haben."
         },
         "navigationResultContainer": {
-          "label": "CSS-Klasse für Hauptcontainer",
+          "label": "CSS-Klasse für Navigation",
           "placeholder": "fl-navigation",
           "tooltipText": "Damit die Direct Integration einwandfrei funktioniert, muss sie Zugriff auf den Hauptcontainer des Shops haben."
         },

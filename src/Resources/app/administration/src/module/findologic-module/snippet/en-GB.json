@@ -25,12 +25,12 @@
           "tooltipText": "Activate the FINDOLOGIC search provider for category pages."
         },
         "searchResultContainer": {
-          "label": "CSS class for main container",
+          "label": "CSS class for search result",
           "placeholder": "fl-result",
           "tooltipText": "To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main container of the shop."
         },
         "navigationResultContainer": {
-          "label": "CSS class for main container",
+          "label": "CSS class for navigation",
           "placeholder": "fl-navigation",
           "tooltipText": "To ensure proper functionality, the FINDOLOGIC Direct Integration must have access to the main container of the shop."
         },
