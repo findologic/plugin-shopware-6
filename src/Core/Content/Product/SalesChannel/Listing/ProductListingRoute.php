@@ -116,10 +116,12 @@ class ProductListingRoute extends AbstractProductListingRoute
             return $this->productRepository->search($criteria, $context->getContext());
         }
 
+        $this->assignPaginationToCriteria($criteria);
+
         if (empty($criteria->getIds())) {
             return $this->createEmptySearchResult($criteria, $context);
         }
 
-        return $this->fetchProductsWithPagination($criteria, $context);
+        return $this->fetchProducts($criteria, $context);
     }
 }

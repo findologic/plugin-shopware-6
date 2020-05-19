@@ -52,7 +52,7 @@ trait SearchResultHelper
         return $sorted;
     }
 
-    public function createEmptySearchResult(Criteria $criteria, SalesChannelContext $context)
+    public function createEmptySearchResult(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
         // Return an empty response, as Shopware would search for all products if no explicit
         // product ids are submitted.
@@ -65,7 +65,7 @@ trait SearchResultHelper
         );
     }
 
-    public function fetchProductsWithPagination(Criteria $criteria, SalesChannelContext $context)
+    public function assignPaginationToCriteria(Criteria $criteria): void
     {
         /** @var Pagination $pagination */
         $pagination = $criteria->getExtension('flPagination');
@@ -74,6 +74,10 @@ trait SearchResultHelper
             $criteria->setLimit(24);
             $criteria->setOffset(0);
         }
+    }
+
+    public function fetchProducts(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
+    {
         $result = $this->productRepository->search($criteria, $context->getContext());
 
         return $this->fixResultOrder($result, $criteria);

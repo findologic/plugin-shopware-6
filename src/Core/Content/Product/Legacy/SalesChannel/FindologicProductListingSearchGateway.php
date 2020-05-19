@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel;
 
-use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingGatewayInterface
-    as ShopwareProductListingGatewayInterface;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingGatewayInterface as ShopwareProductListingGatewayInterface;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
@@ -70,10 +66,12 @@ abstract class FindologicProductListingSearchGateway implements ShopwareProductL
             return $this->productRepository->search($criteria, $context);
         }
 
+        $this->assignPaginationToCriteria($criteria);
+
         if (empty($criteria->getIds())) {
             return $this->createEmptySearchResult($criteria, $context);
         }
 
-        return $this->fetchProductsWithPagination($criteria, $context);
+        return $this->fetchProducts($criteria, $context);
     }
 }
