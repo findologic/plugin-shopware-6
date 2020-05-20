@@ -83,7 +83,7 @@ Component.register('findologic-config', {
                 criteria.setLimit(1);
                 criteria.addAssociation('domains');
                 this.salesChannelRepository.search(criteria, Shopware.Context.api).then((searchresult) => {
-                    let domain = searchresult.first().domains.first();
+                    const domain = searchresult.first().domains.first();
                     this._openStagingUrl(domain);
                 });
             } else {
@@ -95,7 +95,7 @@ Component.register('findologic-config', {
          * @private
          */
         _openDefaultUrl() {
-            let url = window.location.origin + '?findologic=on';
+            const url = `${window.location.origin}?findologic=on`;
             window.open(url, '_blank');
         },
 
@@ -105,7 +105,7 @@ Component.register('findologic-config', {
          */
         _openStagingUrl(domain) {
             if (domain) {
-                let url = domain.url + '?findologic=on';
+                const url = `${domain.url}?findologic=on`;
                 window.open(url, '_blank');
             } else {
                 this._openDefaultUrl();

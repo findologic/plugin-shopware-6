@@ -1,11 +1,11 @@
-{% block findologic_content_card_channel_config_credentials %}
+{% block findologic_credentials %}
 <sw-card class="sw-card--grid" :title="$tc('findologic.settingForm.config.title')"
 >
-    {% block findologic_content_card_channel_config_credentials_card_container %}
+    {% block findologic_credentials_card_container %}
     <sw-container>
-        {% block findologic_content_card_channel_config_credentials_card_container_settings %}
+        {% block findologic_credentials_settings %}
         <div class="findologic-settings-credentials-fields" v-if="actualConfigData">
-            {% block findologic_content_card_channel_config_credentials_card_container_settings_shopkey %}
+            {% block findologic_credentials_settings_shopkey %}
                 <sw-inherit-wrapper
                         v-model="actualConfigData['FinSearch.config.shopkey']"
                         :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.shopkey']"
@@ -27,7 +27,7 @@
                 </sw-inherit-wrapper>
             {% endblock %}
 
-            {% block findologic_content_card_channel_config_credentials_card_container_settings_active %}
+            {% block findologic_credentials_settings_active %}
                 <sw-inherit-wrapper
                         v-model="actualConfigData['FinSearch.config.active']"
                         :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.active']"
@@ -48,8 +48,7 @@
                 </sw-inherit-wrapper>
             {% endblock %}
 
-            {% block
-                findologic_content_card_channel_config_credentials_card_container_settings_active_on_category_pages %}
+            {% block findologic_credentials_settings_active_on_category_pages %}
                 <sw-inherit-wrapper
                         v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
                         :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.activeOnCategoryPages']"
@@ -70,16 +69,17 @@
                 </sw-inherit-wrapper>
             {% endblock %}
 
-            {% block findologic_content_card_channel_config_credentials_card_container_settings_test_mode %}
-                <sw-button
-                        v-show="showTestButton"
-                        @click="openSalesChannelUrl"
-                >
-                    {{ $tc('findologic.settingForm.testButton') }}
-                </sw-button>
-            {% endblock %}
+            {% block findologic_credentials_settings_test_mode %}
+            <sw-button
+                    v-show="showTestButton"
+                    @click="openSalesChannelUrl"
+            >
+                {{ $tc('findologic.settingForm.testButton') }}
+            </sw-button>
             <span class="divider"></span>
-            {% block findologic_content_card_channel_config_credentials_card_container_settings_search_result_container %}
+            {% endblock %}
+
+            {% block findologic_credentials_settings_search_result_container %}
             <sw-inherit-wrapper
                     v-model="actualConfigData['FinSearch.config.searchResultContainer']"
                     :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.searchResultContainer']"
@@ -100,8 +100,7 @@
             </sw-inherit-wrapper>
             {% endblock %}
 
-            {% block
-            findologic_content_card_channel_config_credentials_card_container_settings_navigation_result_container %}
+            {% block findologic_credentials_settings_navigation_result_container %}
             <sw-inherit-wrapper
                     v-model="actualConfigData['FinSearch.config.navigationResultContainer']"
                     :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.navigationResultContainer']"
@@ -122,8 +121,7 @@
             </sw-inherit-wrapper>
             {% endblock %}
 
-            {% block
-            findologic_content_card_channel_config_credentials_card_container_settings_integration_type %}
+            {% block findologic_credentials_settings_integration_type %}
             <sw-inherit-wrapper
                     v-model="actualConfigData['FinSearch.config.integrationType']"
                     :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.integrationType']"

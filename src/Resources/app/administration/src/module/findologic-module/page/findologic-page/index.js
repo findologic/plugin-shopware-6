@@ -32,7 +32,7 @@ Component.register('findologic-page', {
     watch: {
         config: {
             handler() {
-                const defaultConfig = this.$refs.configComponent.allConfigs['null'];
+                const defaultConfig = this.$refs.configComponent.allConfigs.null;
                 const salesChannelId = this.$refs.configComponent.selectedSalesChannelId;
 
                 if (salesChannelId === null) {
@@ -40,15 +40,15 @@ Component.register('findologic-page', {
                     this.isActive = !!this.config['FinSearch.config.active'];
                 } else {
                     this.shopkeyAvailable = !!this.config['FinSearch.config.shopkey'] || !!defaultConfig['FinSearch.config.shopkey'];
-                    this.isActive = !!this.config['FinSearch.config.active'] || !!defaultConfig['FinSearch.config.active']
+                    this.isActive = !!this.config['FinSearch.config.active'] || !!defaultConfig['FinSearch.config.active'];
                 }
 
                 // Check if shopkey is entered and according to schema
                 if (this.shopkeyAvailable) {
-                    let shopkey = this._getShopkey();
+                    const shopkey = this._getShopkey();
                     if (this._isShopkeyValid(shopkey)) {
                         this.shopkeyErrorState = null;
-                        let hashedShopkey = Utils.format.md5(shopkey).toUpperCase();
+                        const hashedShopkey = Utils.format.md5(shopkey).toUpperCase();
                         this._isStagingRequest(hashedShopkey);
                     }
                 }
@@ -66,7 +66,7 @@ Component.register('findologic-page', {
          */
         _isShopkeyValid(shopkey) {
             // Validate the shopkey
-            let regex = /^[A-F0-9]{32}$/;
+            const regex = /^[A-F0-9]{32}$/;
             this.isValidShopkey = regex.test(shopkey) !== false;
 
             return this.isValidShopkey;
@@ -77,9 +77,9 @@ Component.register('findologic-page', {
          * @private
          */
         _getShopkey() {
-            const defaultConfig = this.$refs.configComponent.allConfigs['null'];
+            const defaultConfig = this.$refs.configComponent.allConfigs.null;
             let shopkey = this.config['FinSearch.config.shopkey'];
-            let hasShopkey = !!shopkey;
+            const hasShopkey = !!shopkey;
             // If shopkey is not entered, we check for default config in case of "inherited" shopkey
             if (!hasShopkey) {
                 shopkey = defaultConfig['FinSearch.config.shopkey'];
@@ -94,7 +94,7 @@ Component.register('findologic-page', {
          */
         _isStagingRequest(hashedShopkey) {
             this.httpClient
-                .get('https://cdn.findologic.com/static/' + hashedShopkey + '/config.json')
+                .get(`https://cdn.findologic.com/static/${hashedShopkey}/config.json`)
                 .then((response) => {
                     if (response.data.isStagingShop) {
                         this.isStagingShop = true;
@@ -124,7 +124,6 @@ Component.register('findologic-page', {
                 }
                 this._save();
             });
-
         },
 
         /**
@@ -207,14 +206,14 @@ Component.register('findologic-page', {
         _validateShopkeyFromService() {
             this.isLoading = true;
             return this.httpClient
-                       .get('https://account.findologic.com/api/v1/shopkey/validate/' + this._getShopkey())
-                       .then((response) => {
-                           let status = String(response.status);
-                           return status.startsWith('2');
-                       })
-                       .catch(() => {
-                           return false;
-                       });
+                .get(`https://account.findologic.com/api/v1/shopkey/validate/${this._getShopkey()}`)
+                .then((response) => {
+                    const status = String(response.status);
+                    return status.startsWith('2');
+                })
+                .catch(() => {
+                    return false;
+                });
         }
     }
 });
