@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response;
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
+use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\QueryInfoMessage;
@@ -40,7 +41,7 @@ abstract class ResponseParser
 
     abstract public function getSmartDidYouMeanExtension(Request $request): SmartDidYouMean;
 
-    abstract public function getLandingPageUri(): ?string;
+    abstract public function getLandingPageExtension(): ?LandingPage;
 
     abstract public function getPromotionExtension(): ?Promotion;
 

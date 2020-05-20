@@ -134,7 +134,7 @@ class Xml21ResponseParserTest extends TestCase
         $response = new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithLandingPage.xml'));
         $responseParser = new Xml21ResponseParser($response);
 
-        $this->assertEquals('https://blubbergurken.io', $responseParser->getLandingPageUri());
+        $this->assertEquals('https://blubbergurken.io', $responseParser->getLandingPageExtension()->getLink());
     }
 
     public function testNoLandingPageIsReturnedIfResponseDoesNotHaveALandingPage(): void
@@ -142,7 +142,7 @@ class Xml21ResponseParserTest extends TestCase
         $response = new Xml21Response($this->getMockResponse());
         $responseParser = new Xml21ResponseParser($response);
 
-        $this->assertNull($responseParser->getLandingPageUri());
+        $this->assertNull($responseParser->getLandingPageExtension());
     }
 
     public function testPromotionExtensionIsReturned(): void

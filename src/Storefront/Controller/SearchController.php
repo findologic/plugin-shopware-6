@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
+use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
@@ -57,6 +58,12 @@ class SearchController extends ShopwareSearchController
         }
 
         $page = $this->searchPageLoader->load($request, $context);
+
+        /** @var LandingPage|null $landingPage */
+        if ($landingPage = $context->getContext()->getExtension('flLandingPage')) {
+            return $this->redirect($landingPage->getLink(), 301);
+        }
+
         return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
     }
 
