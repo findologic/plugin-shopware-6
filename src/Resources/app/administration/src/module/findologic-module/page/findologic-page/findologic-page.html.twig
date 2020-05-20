@@ -1,0 +1,99 @@
+{% block findologic %}
+<sw-page class="findologic">
+    {% block findologic_header %}
+    <template slot="smart-bar-header">
+        <h2>
+            {{ $tc('sw-settings.index.title') }}
+            <sw-icon name="small-arrow-medium-right" small></sw-icon>
+            {{ $tc('findologic.header') }}
+        </h2>
+    </template>
+    {% endblock %}
+
+    {% block findologic_actions %}
+    <template slot="smart-bar-actions">
+        {% block findologic_actions_save %}
+        <sw-button
+                class="sw-settings-login-registration__save-action"
+                :isLoading="isLoading"
+                :disabled="isLoading"
+                variant="primary"
+                :title="$tc('global.default.save')"
+                :aria-label="$tc('global.default.save')"
+                v-model="isSaveSuccessful"
+                @click="onSave"
+        >
+            {{ $tc('global.default.save') }}
+        </sw-button>
+        {% endblock %}
+
+        {% block findologic_actions_cancel %}
+        <sw-button
+                :routerLink="{ name: 'sw.settings.index' }"
+                :title="$tc('global.default.cancel')"
+                :aria-label="$tc('global.default.cancel')">
+            {{ $tc('global.default.cancel') }}
+        </sw-button>
+        {% endblock %}
+    </template>
+    {% endblock %}
+
+    {% block findologic_content %}
+    <template slot="content">
+        {% block findologic_content_card %}
+        <sw-card-view>
+            {% block findologic_content_card_channel_config %}
+            <sw-sales-channel-config
+                    ref="configComponent"
+                    domain="FinSearch.config"
+                    v-model="config">
+                {% block findologic_content_card_channel_config_sales_channel %}
+                <template #select="{ onInput, selectedSalesChannelId, salesChannel }">
+                    {% block findologic_content_card_channel_config_sales_channel_card %}
+                    <sw-card title="Sales Channel">
+                        {% block findologic_content_card_channel_config_sales_channel_card_title %}
+                        <sw-single-select
+                                class="fl-sales-channel-field"
+                                v-model="selectedSalesChannelId"
+                                labelProperty="translated.name"
+                                valueProperty="id"
+                                :options="salesChannel"
+                                @input="onInput">
+                        </sw-single-select>
+                        {% endblock %}
+                    </sw-card>
+                    {% endblock %}
+                </template>
+                {% endblock %}
+
+                {% block findologic_content_card_channel_config_cards %}
+                <template #content="{ actualConfigData, allConfigs, selectedSalesChannelId }">
+                    <div v-if="actualConfigData">
+                        {% block findologic_content_card_channel_config_credentials_card %}
+                        <findologic-config
+                                :isActive="isActive"
+                                :shopkeyAvailable="shopkeyAvailable"
+                                :isValidShopkey="isValidShopkey"
+                                :isStagingShop="isStagingShop"
+                                :actualConfigData="actualConfigData"
+                                :allConfigs="allConfigs"
+                                :shopkeyErrorState="shopkeyErrorState"
+                                :selectedSalesChannelId="selectedSalesChannelId"></findologic-config>
+                        {% endblock %}
+                    </div>
+                    <sw-loader v-if="!actualConfigData"></sw-loader>
+                </template>
+                {% endblock %}
+            </sw-sales-channel-config>
+            {% endblock %}
+
+            {% block findologic_content_card_loading %}
+            <sw-loader v-if="isLoading">
+            </sw-loader>
+            {% endblock %}
+        </sw-card-view>
+        {% endblock %}
+    </template>
+    {% endblock %}
+</sw-page>
+{% endblock %}

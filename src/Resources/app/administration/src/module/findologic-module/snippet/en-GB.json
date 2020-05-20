@@ -1,0 +1,49 @@
+{
+  "findologic": {
+    "header": "FINDOLOGIC",
+    "general": {
+      "mainMenuDescription": "FINDOLOGIC plugin for Shopware 6 e-commerce system"
+    },
+    "fieldRequired": "Shopkey is required.",
+    "invalidShopkey": "Invalid Shopkey.",
+    "notRegisteredShopkey": "The given shopkey is not associated to any known service.",
+    "settingForm": {
+      "configSaved": "Configuration saved.",
+      "testButton": "Test mode",
+      "config": {
+        "title": "Configuration",
+        "shopkey": {
+          "label": "Shopkey",
+          "tooltipText": "FINDOLOGIC shopkey"
+        },
+        "active": {
+          "label": "Active",
+          "tooltipText": "Activate the FINDOLOGIC search provider."
+        },
+        "activeOnCategoryPages": {
+          "label": "Active on category pages",
+          "tooltipText": "Activate the FINDOLOGIC search provider for category pages."
+        },
+        "searchResultContainer": {
+          "label": "CSS class for search result",
+          "placeholder": "fl-result",
+          "tooltipText": "This option has an effect for Direct Integration only, when empty fl-result is used."
+        },
+        "navigationResultContainer": {
+          "label": "CSS class for navigation",
+          "placeholder": "fl-navigation-result",
+          "tooltipText": "This option has an effect for Direct Integration only, when empty fl-navigation-result is used."
+        },
+        "integrationType": {
+          "label": "Integration (read-only)",
+          "tooltipText": "Currently used integration type. Either one of Direct Integration or API."
+        }
+      },
+      "titleSuccess": "Success",
+      "titleError": "Error"
+    },
+    "error": {
+      "title": "Error"
+    }
+  }
+}
