@@ -4,10 +4,9 @@ import FilterBasePlugin from 'src/plugin/listing/filter-base.plugin';
 import deepmerge from 'deepmerge';
 
 export default class FilterCategorySelectPlugin extends FilterBasePlugin {
-
     static options = deepmerge(FilterBasePlugin.options, {
         checkboxSelector: '.filter-category-select-checkbox',
-        countSelector: '.filter-multi-select-count',
+        countSelector: '.filter-multi-select-count'
     });
 
     init()
@@ -71,7 +70,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             Iterator.iterate(activeCheckboxes, (checkbox) => {
                 labels.push({
                     label: checkbox.dataset.label,
-                    id: checkbox.id,
+                    id: checkbox.id
                 });
             });
         } else {

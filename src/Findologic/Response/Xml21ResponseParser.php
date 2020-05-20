@@ -106,15 +106,21 @@ class Xml21ResponseParser extends ResponseParser
             $smartDidYouMean = $event->getContext()->getExtension('flSmartDidYouMean');
 
             return $this->buildSearchTermQueryInfoMessage($smartDidYouMean->getAlternativeQuery());
-        } elseif ($this->hasQuery($queryString)) {
-            return $this->buildSearchTermQueryInfoMessage($queryString);
-        } elseif ($this->isFilterSet($params, 'cat')) {
-            return $this->buildCategoryQueryInfoMessage($params);
-        } elseif ($this->isFilterSet($params, 'vendor')) {
-            return $this->buildVendorQueryInfoMessage($params);
-        } else {
-            return QueryInfoMessage::buildInstance(QueryInfoMessage::TYPE_DEFAULT);
         }
+
+        if ($this->hasQuery($queryString)) {
+            return $this->buildSearchTermQueryInfoMessage($queryString);
+        }
+
+        if ($this->isFilterSet($params, 'cat')) {
+            return $this->buildCategoryQueryInfoMessage($params);
+        }
+
+        if ($this->isFilterSet($params, 'vendor')) {
+            return $this->buildVendorQueryInfoMessage($params);
+        }
+
+        return QueryInfoMessage::buildInstance(QueryInfoMessage::TYPE_DEFAULT);
     }
 
     private function buildSearchTermQueryInfoMessage(string $query): SearchTermQueryInfoMessage

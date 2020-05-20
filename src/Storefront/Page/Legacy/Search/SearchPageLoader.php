@@ -59,7 +59,7 @@ class SearchPageLoader extends ShopwareSearchPageLoader
         $page->setSearchResult(StorefrontSearchResult::createFrom($result));
 
         $page->setSearchTerm(
-            (string)$request->query->get('search')
+            (string) $request->query->get('search')
         );
 
         $this->eventDispatcher->dispatch(

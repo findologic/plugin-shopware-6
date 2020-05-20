@@ -86,9 +86,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
     /**
      * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     * @param int|null $limit
      *
-     * @return Response|null
      * @throws CategoryNotFoundException
      * @throws InconsistentCriteriaIdsException
      * @throws MissingRequestParameterException

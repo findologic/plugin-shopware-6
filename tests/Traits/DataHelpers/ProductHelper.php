@@ -100,7 +100,6 @@ trait ProductHelper
             $criteria = new Criteria([$id]);
             $criteria = Utils::addProductAssociations($criteria);
 
-            /** @var ProductEntity $product */
             $productEntity = $container->get('product.repository')->search($criteria, $context)->get($id);
 
             return $productEntity;

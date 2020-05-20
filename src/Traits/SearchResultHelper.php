@@ -13,45 +13,6 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 trait SearchResultHelper
 {
-    /**
-     * When search results are fetched from the database, the ordering of the products is based on the
-     * database structure, which is not what we want. We manually re-order them by the ID, so the
-     * ordering matches the result that the FINDOLOGIC API returned.
-     *
-     * @param EntitySearchResult $result
-     * @param Criteria $criteria
-     *
-     * @return EntitySearchResult
-     */
-    private function fixResultOrder(EntitySearchResult $result, Criteria $criteria): EntitySearchResult
-    {
-        $sortedElements = $this->sortElementsByIdArray($result->getElements(), $criteria->getIds());
-        $result->clear();
-
-        foreach ($sortedElements as $element) {
-            $result->add($element);
-        }
-
-        return $result;
-    }
-
-    private function sortElementsByIdArray(array $elements, array $ids): array
-    {
-        $sorted = [];
-
-        foreach ($ids as $id) {
-            if (is_array($id)) {
-                $id = implode('-', $id);
-            }
-
-            if (array_key_exists($id, $elements)) {
-                $sorted[$id] = $elements[$id];
-            }
-        }
-
-        return $sorted;
-    }
-
     public function createEmptySearchResult(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
         // Return an empty response, as Shopware would search for all products if no explicit
@@ -81,5 +42,39 @@ trait SearchResultHelper
         $result = $this->productRepository->search($criteria, $context->getContext());
 
         return $this->fixResultOrder($result, $criteria);
+    }
+
+    /**
+     * When search results are fetched from the database, the ordering of the products is based on the
+     * database structure, which is not what we want. We manually re-order them by the ID, so the
+     * ordering matches the result that the FINDOLOGIC API returned.
+     */
+    private function fixResultOrder(EntitySearchResult $result, Criteria $criteria): EntitySearchResult
+    {
+        $sortedElements = $this->sortElementsByIdArray($result->getElements(), $criteria->getIds());
+        $result->clear();
+
+        foreach ($sortedElements as $element) {
+            $result->add($element);
+        }
+
+        return $result;
+    }
+
+    private function sortElementsByIdArray(array $elements, array $ids): array
+    {
+        $sorted = [];
+
+        foreach ($ids as $id) {
+            if (is_array($id)) {
+                $id = implode('-', $id);
+            }
+
+            if (array_key_exists($id, $elements)) {
+                $sorted[$id] = $elements[$id];
+            }
+        }
+
+        return $sorted;
     }
 }

@@ -83,6 +83,7 @@ class FindologicRequestFactoryTest extends TestCase
     /**
      * @dataProvider ipAddressProvider
      * @dataProvider reverseProxyIpAddressProvider
+     *
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
      */
@@ -102,12 +103,12 @@ class FindologicRequestFactoryTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cachePoolMock->expects($this->never())->method('save');
-        $cacheItemMock->expects($this->exactly(2))
+        $cachePoolMock->expects(static::never())->method('save');
+        $cacheItemMock->expects(static::exactly(2))
             ->method('get')
             ->willReturnOnConsecutiveCalls('1.0.0', '1.0.0');
 
-        $cachePoolMock->expects($this->once())
+        $cachePoolMock->expects(static::once())
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
@@ -122,6 +123,6 @@ class FindologicRequestFactoryTest extends TestCase
         $searchRequest = $searchRequestFactory->getInstance($request);
 
         $params = $searchRequest->getParams();
-        $this->assertSame($expectedIpAddress, $params['userip']);
+        static::assertSame($expectedIpAddress, $params['userip']);
     }
 }

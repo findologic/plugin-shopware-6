@@ -81,7 +81,7 @@ class Utils
     {
         $encoded = '';
         $length = mb_strlen($string);
-        for ($i = 0; $i < $length; $i++) {
+        for ($i = 0; $i < $length; ++$i) {
             $encoded .= '%' . wordwrap(bin2hex(mb_substr($string, $i, 1)), 2, '%', true);
         }
 
@@ -90,16 +90,16 @@ class Utils
 
     public static function buildUrl(array $parsedUrl): string
     {
-        return (isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '') .
-            ((isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '') .
-            (isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '') .
-            (isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '') .
-            (isset($parsedUrl['user']) ? '@' : '') .
-            (isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '') .
-            (isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '') .
-            (isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '') .
-            (isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '') .
-            (isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : '');
+        return (isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '')
+            . ((isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '')
+            . (isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '')
+            . (isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '')
+            . (isset($parsedUrl['user']) ? '@' : '')
+            . (isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '')
+            . (isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '')
+            . (isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '')
+            . (isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '')
+            . (isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : '');
     }
 
     public static function versionLowerThan(string $version): bool

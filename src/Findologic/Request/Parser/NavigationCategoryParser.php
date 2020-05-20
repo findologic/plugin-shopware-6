@@ -47,10 +47,9 @@ class NavigationCategoryParser
             return $this->parseFromHeader($navPage->getHeader());
         } elseif ($request->get('navigationId')) {
             return $this->parseFromRequest($request, $salesChannelContext);
-        } else {
-            // Parsing the category from somewhere else is not possible.
-            return null;
         }
+        // Parsing the category from somewhere else is not possible.
+        return null;
     }
 
     private function parseFromHeader(HeaderPagelet $header): CategoryEntity

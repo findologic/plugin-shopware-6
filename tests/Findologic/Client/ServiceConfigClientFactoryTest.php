@@ -13,10 +13,10 @@ class ServiceConfigClientFactoryTest extends TestCase
 {
     use ConfigHelper;
 
-    public function testCreateServiceConfigClient()
+    public function testCreateServiceConfigClient(): void
     {
         $clientFactory = new ServiceConfigClientFactory();
         $serviceConfigClient = $clientFactory->getInstance($this->getShopkey());
-        $this->assertInstanceOf(ServiceConfigClient::class, $serviceConfigClient);
+        static::assertInstanceOf(ServiceConfigClient::class, $serviceConfigClient);
     }
 }

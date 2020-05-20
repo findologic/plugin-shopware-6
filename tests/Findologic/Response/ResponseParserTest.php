@@ -60,6 +60,6 @@ class ResponseParserTest extends TestCase
     ): void {
         $parser = ResponseParser::getInstance($response);
 
-        $this->assertInstanceOf($expectedParser, $parser);
+        static::assertInstanceOf($expectedParser, $parser);
     }
 }

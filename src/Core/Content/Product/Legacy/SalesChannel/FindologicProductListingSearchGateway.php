@@ -20,9 +20,8 @@ abstract class FindologicProductListingSearchGateway implements ShopwareProductL
 {
     use SearchResultHelper;
 
-    public const
-        TYPE_SEARCH = 0,
-        TYPE_NAVIGATION = 1;
+    public const TYPE_SEARCH = 0;
+    public const TYPE_NAVIGATION = 1;
 
     /** @var SalesChannelRepositoryInterface */
     protected $productRepository;

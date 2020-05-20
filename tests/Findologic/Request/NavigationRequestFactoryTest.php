@@ -40,13 +40,13 @@ class NavigationRequestFactoryTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cachePoolMock->expects($this->once())->method('save');
+        $cachePoolMock->expects(static::once())->method('save');
 
-        $cacheItemMock->expects($this->exactly(2))
+        $cacheItemMock->expects(static::exactly(2))
             ->method('get')
             ->willReturnOnConsecutiveCalls(null, $expectedVersion);
 
-        $cachePoolMock->expects($this->once())
+        $cachePoolMock->expects(static::once())
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
@@ -61,16 +61,16 @@ class NavigationRequestFactoryTest extends TestCase
         $navigationRequest = $navigationRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $expectedCategoryPath);
 
-        $this->assertInstanceOf(NavigationRequest::class, $navigationRequest);
+        static::assertInstanceOf(NavigationRequest::class, $navigationRequest);
 
         $params = $navigationRequest->getParams();
-        $this->assertSame($expectedVersion, $params['revision']);
+        static::assertSame($expectedVersion, $params['revision']);
 
         // Test other parameters are passed correctly
-        $this->assertSame($expectedReferer, $params['referer']);
-        $this->assertSame($expectedIpAddress, $params['userip']);
-        $this->assertSame($expectedAdapter, $params['outputAdapter']);
-        $this->assertSame($expectedHost, $params['shopurl']);
-        $this->assertSame($expectedCategoryPath, $params['selected']['cat'][0]);
+        static::assertSame($expectedReferer, $params['referer']);
+        static::assertSame($expectedIpAddress, $params['userip']);
+        static::assertSame($expectedAdapter, $params['outputAdapter']);
+        static::assertSame($expectedHost, $params['shopurl']);
+        static::assertSame($expectedCategoryPath, $params['selected']['cat'][0]);
     }
 }

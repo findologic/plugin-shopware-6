@@ -9,7 +9,7 @@ use Twig\Node\Expression\TestExpression;
 
 class InstanceOfTest extends TestExpression
 {
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler
             ->raw('(')

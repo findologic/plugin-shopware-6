@@ -49,17 +49,17 @@ class FrontendSubscriberTest extends TestCase
         $headerPageletMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $headerPageletMock->expects($this->at(0))
+        $headerPageletMock->expects(static::at(0))
             ->method('addExtension')
             ->with(
-                $this->callback(
+                static::callback(
                     function (string $name) {
                         $this->assertEquals('flConfig', $name);
 
                         return true;
                     }
                 ),
-                $this->callback(
+                static::callback(
                     function (Config $config) use ($shopkey) {
                         $this->assertSame($shopkey, $config->getShopkey());
 
@@ -67,19 +67,19 @@ class FrontendSubscriberTest extends TestCase
                     }
                 )
             );
-        $headerPageletMock->expects($this->at(1))
+        $headerPageletMock->expects(static::at(1))
             ->method('addExtension')
             ->with(
-                $this->callback(
+                static::callback(
                     function (string $name) {
                         $this->assertEquals('flSnippet', $name);
 
                         return true;
                     }
                 ),
-                $this->callback(
+                static::callback(
                     function (Snippet $snippet) use ($shopkey) {
-                        $this->assertSame(strtoupper(md5($shopkey)), $snippet->getHashedShopkey());
+                        $this->assertSame(mb_strtoupper(md5($shopkey)), $snippet->getHashedShopkey());
 
                         return true;
                     }
@@ -95,14 +95,15 @@ class FrontendSubscriberTest extends TestCase
         $customerGroupEntityMock = $this->getMockBuilder(CustomerGroupEntity::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $customerGroupEntityMock->expects($this->once())->method('getId')->willReturn('1');
+        $customerGroupEntityMock->expects(static::once())->method('getId')->willReturn('1');
 
-        $salesChannelContextMock->expects($this->once())
+        $salesChannelContextMock->expects(static::once())
             ->method('getCurrentCustomerGroup')
             ->willReturn($customerGroupEntityMock);
 
-        $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')->willReturn($headerPageletMock);
-        $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')
+        $headerPageletLoadedEventMock->expects(static::exactly(2))->method('getPagelet')
+            ->willReturn($headerPageletMock);
+        $headerPageletLoadedEventMock->expects(static::exactly(2))->method('getSalesChannelContext')
             ->willReturn($salesChannelContextMock);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */

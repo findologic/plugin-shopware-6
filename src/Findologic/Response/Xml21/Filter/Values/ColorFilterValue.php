@@ -14,9 +14,6 @@ class ColorFilterValue extends ColorImageFilterValue
      */
     private $colorHexCode;
 
-    /**
-     * @return string|null
-     */
     public function getColorHexCode(): ?string
     {
         return $this->colorHexCode;

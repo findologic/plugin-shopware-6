@@ -37,6 +37,7 @@ class SearchRequestFactoryTest extends TestCase
 
     /**
      * @dataProvider pluginVersionProvider
+     *
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
      */
@@ -59,16 +60,16 @@ class SearchRequestFactoryTest extends TestCase
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
         if ($isCached) {
-            $cachePoolMock->expects($this->never())->method('save');
+            $cachePoolMock->expects(static::never())->method('save');
         } else {
-            $cachePoolMock->expects($this->once())->method('save');
+            $cachePoolMock->expects(static::once())->method('save');
         }
 
-        $cacheItemMock->expects($this->exactly(2))
+        $cacheItemMock->expects(static::exactly(2))
             ->method('get')
             ->willReturnOnConsecutiveCalls($cachedVersion, $expectedVersion);
 
-        $cachePoolMock->expects($this->once())
+        $cachePoolMock->expects(static::once())
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
@@ -82,15 +83,15 @@ class SearchRequestFactoryTest extends TestCase
 
         $searchRequest = $searchRequestFactory->getInstance($request);
 
-        $this->assertInstanceOf(SearchRequest::class, $searchRequest);
+        static::assertInstanceOf(SearchRequest::class, $searchRequest);
 
         $params = $searchRequest->getParams();
-        $this->assertSame($expectedVersion, $params['revision']);
+        static::assertSame($expectedVersion, $params['revision']);
 
         // Test other parameters are passed correctly
-        $this->assertSame($expectedReferer, $params['referer']);
-        $this->assertSame($expectedIpAddress, $params['userip']);
-        $this->assertSame($expectedAdapter, $params['outputAdapter']);
-        $this->assertSame($expectedHost, $params['shopurl']);
+        static::assertSame($expectedReferer, $params['referer']);
+        static::assertSame($expectedIpAddress, $params['userip']);
+        static::assertSame($expectedAdapter, $params['outputAdapter']);
+        static::assertSame($expectedHost, $params['shopurl']);
     }
 }

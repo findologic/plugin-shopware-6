@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
-use FINDOLOGIC\Api\Responses\Xml21\Properties\OriginalQuery;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\QueryString;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class SmartDidYouMeanTest extends TestCase
@@ -71,9 +67,9 @@ class SmartDidYouMeanTest extends TestCase
         );
         $parameters = $smartDidYouMean->getVars();
 
-        $this->assertNotEmpty($parameters);
-        $this->assertSame($expectedLink, $parameters['link']);
-        $this->assertSame($alternativeQuery, $parameters['alternativeQuery']);
-        $this->assertSame($originalQuery, $parameters['originalQuery']);
+        static::assertNotEmpty($parameters);
+        static::assertSame($expectedLink, $parameters['link']);
+        static::assertSame($alternativeQuery, $parameters['alternativeQuery']);
+        static::assertSame($originalQuery, $parameters['originalQuery']);
     }
 }

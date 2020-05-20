@@ -37,7 +37,7 @@ class Config extends Struct
     /** @var ServiceConfigResource */
     private $serviceConfigResource;
 
-    /**@var bool */
+    /** @var bool */
     private $staging;
 
     /** @var bool */

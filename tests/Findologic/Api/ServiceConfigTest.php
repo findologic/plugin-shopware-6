@@ -64,8 +64,8 @@ class ServiceConfigTest extends TestCase
         $expectedExpiration = new DateTime('+1 day');
         $expirationDate = $serviceConfig->getExpireDateTime();
 
-        $this->assertSame($directIntegration, $serviceConfig->getDirectIntegration());
-        $this->assertEquals($isStagingShop, $serviceConfig->getIsStagingShop());
-        $this->assertEqualsWithDelta($expectedExpiration, $expirationDate, 5);
+        static::assertSame($directIntegration, $serviceConfig->getDirectIntegration());
+        static::assertEquals($isStagingShop, $serviceConfig->getIsStagingShop());
+        static::assertEqualsWithDelta($expectedExpiration, $expirationDate, 5);
     }
 }

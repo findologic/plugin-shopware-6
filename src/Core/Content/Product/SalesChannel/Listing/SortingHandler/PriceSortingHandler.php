@@ -11,7 +11,7 @@ class PriceSortingHandler implements SortingHandlerInterface
 {
     public function supportsSorting(FieldSorting $fieldSorting): bool
     {
-        return ($fieldSorting->getField() === 'product.listingPrices');
+        return $fieldSorting->getField() === 'product.listingPrices';
     }
 
     public function generateSorting(FieldSorting $fieldSorting, SearchNavigationRequest $searchNavigationRequest): void

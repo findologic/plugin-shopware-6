@@ -32,7 +32,7 @@ class ServiceConfigClientTest extends TestCase
     public function testConfigUrlAndValues(int $responseCode, ?string $body = null): void
     {
         $shopkey = $this->getShopkey();
-        $hashedShopkey = strtoupper(md5($shopkey));
+        $hashedShopkey = mb_strtoupper(md5($shopkey));
 
         // Create a mock and queue one response with the config json file
         $mock = new MockHandler([new Response($responseCode, [], $body)]);
@@ -43,12 +43,12 @@ class ServiceConfigClientTest extends TestCase
 
         try {
             $result = $serviceConfigClient->get();
-            $this->assertIsArray($result);
+            static::assertIsArray($result);
 
             // Make sure that the config returned is the same as the one we expect
-            $this->assertSame($this->getConfig(), $result);
+            static::assertSame($this->getConfig(), $result);
         } catch (ClientException $e) {
-            $this->assertSame(
+            static::assertSame(
                 sprintf(
                     'Client error: `GET static/%s/config.json` resulted in a `404 Not Found` response',
                     $hashedShopkey
@@ -56,7 +56,7 @@ class ServiceConfigClientTest extends TestCase
                 $e->getMessage()
             );
         } catch (Exception $e) {
-            $this->fail('Failed due to unknown exception: ' . $e->getMessage());
+            static::fail('Failed due to unknown exception: ' . $e->getMessage());
         }
     }
 }

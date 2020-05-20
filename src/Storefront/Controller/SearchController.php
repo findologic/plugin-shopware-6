@@ -61,15 +61,6 @@ class SearchController extends ShopwareSearchController
         return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
     }
 
-    private function handleFindologicSearchParams(Request $request): ?Response
-    {
-        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
-            return $this->redirect($uri);
-        }
-
-        return null;
-    }
-
     /**
      * @HttpCache()
      * @RouteScope(scopes={"storefront"})
@@ -104,5 +95,14 @@ class SearchController extends ShopwareSearchController
             '@Storefront/storefront/page/search/search-pagelet.html.twig',
             ['page' => $page]
         );
+    }
+
+    private function handleFindologicSearchParams(Request $request): ?Response
+    {
+        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
+            return $this->redirect($uri);
+        }
+
+        return null;
     }
 }
