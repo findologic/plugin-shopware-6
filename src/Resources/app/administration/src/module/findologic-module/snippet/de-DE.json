@@ -4,11 +4,12 @@
     "general": {
       "mainMenuDescription": "FINDOLOGIC Plugin für das Shopware 6 E-Commerce System"
     },
-    "fieldRequired": "Shopkey ist erforderlich",
-    "invalidShopkey": "Ungültiger Shopkey",
+    "fieldRequired": "Shopkey ist erforderlich.",
+    "invalidShopkey": "Ungültiger Shopkey.",
+    "notRegisteredShopkey": "Der eingegebene Shopkey ist keinem bekannten Service zugeordnet.",
     "settingForm": {
-      "configSaved": "Konfiguration gespeichert",
-      "testButton": "Findologic Test",
+      "configSaved": "Konfiguration gespeichert.",
+      "testButton": "Testmodus",
       "config": {
         "title": "Konfiguration",
         "shopkey": {
@@ -24,14 +25,14 @@
           "tooltipText": "Aktiviert die FINDOLOGIC Suche für Kategorieseiten."
         },
         "searchResultContainer": {
-          "label": "CSS-Klasse für Hauptcontainer",
-          "placeholder": "z.B. 'fl-result'",
-          "tooltipText": "Damit die Direct Integration einwandfrei funktioniert, muss sie Zugriff auf den Hauptcontainer des Shops haben."
+          "label": "CSS-Klasse für Suchresultat",
+          "placeholder": "fl-result",
+          "tooltipText": "Diese Option ist nur bei Direct Integration wirksam, wenn kein Wert gegeben ist wird fl-result verwendet"
         },
         "navigationResultContainer": {
-          "label": "CSS-Klasse für Hauptcontainer",
-          "placeholder": "z.B. 'fl-navigation-result'",
-          "tooltipText": "Damit die Direct Integration einwandfrei funktioniert, muss sie Zugriff auf den Hauptcontainer des Shops haben."
+          "label": "CSS-Klasse für Navigation",
+          "placeholder": "fl-navigation-result",
+          "tooltipText": "Diese Option ist nur bei Direct Integration wirksam, wenn kein Wert gegeben ist wird fl-navigation-result verwendet."
         },
         "integrationType": {
           "label": "Integration (schreibgeschützt)",
