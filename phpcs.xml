@@ -8,9 +8,8 @@
     <file>tests</file>
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>tests/TestBootstrap.php</exclude-pattern>
-    <exclude-pattern>*/Resources/app/storefront/src/snippets/*</exclude-pattern>
-    <exclude-pattern>*/Resources/app/storefront/dist/*</exclude-pattern>
-
+    <exclude-pattern>*/Resources/app/*</exclude-pattern>
+    <exclude-pattern>*/Resources/public/administration/*</exclude-pattern>
 
     <arg name="colors"/>
     <arg value="p"/>

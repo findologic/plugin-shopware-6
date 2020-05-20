@@ -4,14 +4,12 @@ import FilterBasePlugin from 'src/plugin/listing/filter-base.plugin';
 import deepmerge from 'deepmerge';
 
 export default class FilterCategorySelectPlugin extends FilterBasePlugin {
-
     static options = deepmerge(FilterBasePlugin.options, {
         checkboxSelector: '.filter-category-select-checkbox',
-        countSelector: '.filter-multi-select-count',
+        countSelector: '.filter-multi-select-count'
     });
 
-    init()
-    {
+    init() {
         this.selection = [];
         this.counter = DomAccess.querySelector(this.el, this.options.countSelector);
 
@@ -21,8 +19,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     /**
      * @private
      */
-    _registerEvents()
-    {
+    _registerEvents() {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
 
         Iterator.iterate(checkboxes, (checkbox) => {
@@ -34,8 +31,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @return {Array}
      * @public
      */
-    getValues()
-    {
+    getValues() {
         const activeCheckboxes = this.getSelected();
 
         let selection = [];
@@ -61,8 +57,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @return {Array}
      * @public
      */
-    getLabels()
-    {
+    getLabels() {
         let labels = [];
 
         const activeCheckboxes = this.getSelected();
@@ -71,7 +66,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             Iterator.iterate(activeCheckboxes, (checkbox) => {
                 labels.push({
                     label: checkbox.dataset.label,
-                    id: checkbox.id,
+                    id: checkbox.id
                 });
             });
         } else {
@@ -85,8 +80,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      * @param params
      */
-    setValuesFromUrl(params)
-    {
+    setValuesFromUrl(params) {
         let stateChanged = false;
         Object.keys(params).forEach(key => {
             if (key === this.options.name) {
@@ -110,8 +104,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     /**
      * @private
      */
-    _onChangeFilter()
-    {
+    _onChangeFilter() {
         const activeCheckboxes = this.getSelected();
 
         if (!activeCheckboxes.length) {
@@ -128,16 +121,14 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     /**
      * @public
      */
-    reset()
-    {
+    reset() {
         this.resetAll();
     }
 
     /**
      * @public
      */
-    resetAll()
-    {
+    resetAll() {
         this.selection.filter = [];
 
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
@@ -152,16 +143,14 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     /**
      * @private
      */
-    _updateCount()
-    {
+    _updateCount() {
         this.counter.innerText = '';
     }
 
     /**
      * @private
      */
-    _disableAll()
-    {
+    _disableAll() {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
 
         Iterator.iterate(checkboxes, (checkbox) => {
@@ -175,8 +164,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @param ids
      * @private
      */
-    _setCurrentCategoryAsSelected(ids)
-    {
+    _setCurrentCategoryAsSelected(ids) {
         const selectedCategory = ids.pop();
 
         // Selected category
@@ -191,8 +179,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     /**
      * @public
      */
-    getSelected()
-    {
+    getSelected() {
         return DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:checked`, false);
     }
 }
