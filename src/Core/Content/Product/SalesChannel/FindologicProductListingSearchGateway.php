@@ -74,6 +74,14 @@ abstract class FindologicProductListingSearchGateway implements ShopwareProductL
             return $this->productRepository->search($criteria, $context);
         }
 
+        /** @var Pagination $pagination */
+        $pagination = $criteria->getExtension('flPagination');
+        if ($pagination) {
+            // Pagination is handled by FINDOLOGIC.
+            $criteria->setLimit(24);
+            $criteria->setOffset(0);
+        }
+
         if (empty($criteria->getIds())) {
             // Return an empty response, as Shopware would search for all products if no explicit
             // product ids are submitted.
@@ -86,13 +94,6 @@ abstract class FindologicProductListingSearchGateway implements ShopwareProductL
             );
         }
 
-        /** @var Pagination $pagination */
-        $pagination = $criteria->getExtension('flPagination');
-        if ($pagination) {
-            // Pagination is handled by FINDOLOGIC.
-            $criteria->setLimit(24);
-            $criteria->setOffset(0);
-        }
         $result = $this->productRepository->search($criteria, $context);
 
         return $this->fixResultOrder($result, $criteria);

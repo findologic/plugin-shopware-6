@@ -44,6 +44,10 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
 
             return;
         }
+        if ($responseParser->getLandingPageExtension()) {
+            $this->handleLandingPage($responseParser, $event);
+            return;
+        }
 
         $event->getContext()->addExtension(
             'flSmartDidYouMean',
@@ -53,7 +57,6 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $criteria = new Criteria($responseParser->getProductIds());
         $criteria->addExtensions($event->getCriteria()->getExtensions());
 
-        $this->redirectOnLandingPage($responseParser);
         $this->setPromotionExtension($event, $responseParser);
 
         $this->setPagination(
@@ -94,12 +97,12 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         return $this->sendRequest($searchRequest);
     }
 
-    protected function redirectOnLandingPage(ResponseParser $responseParser): void
+    protected function handleLandingPage(ResponseParser $responseParser, ShopwareEvent $event): void
     {
-        if ($landingPageUri = $responseParser->getLandingPageUri()) {
-            header('Location:' . $landingPageUri);
-            exit;
-        }
+        $event->getContext()->addExtension(
+            'flLandingPage',
+            $responseParser->getLandingPageExtension()
+        );
     }
 
     /**

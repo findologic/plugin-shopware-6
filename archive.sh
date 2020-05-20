@@ -45,18 +45,16 @@ cp -rf . /tmp/FinSearch
 # Get into the created directory for running the archive command
 cd /tmp/FinSearch
 
-echo "Running composer install..."
-# Install dependencies
-composer install --no-dev --optimize-autoloader
-
+echo "Installing dependencies with 'composer install' ..."
+composer install --no-dev --optimize-autoloader --prefer-dist
 cd /tmp
-
-ZIP_FILE="${ROOT_DIR}/FinSearch-${VERSION}.zip"
 # Run archive command to create the zip in the root directory
-zip -r9 ${ZIP_FILE} FinSearch -x FinSearch/phpunit.xml.dist \
-FinSearch/phpcs.xml FinSearch/tests/\* FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip
+ZIP_FILE="${ROOT_DIR}/FinSearch-${VERSION}.zip"
+zip -r9 ${ZIP_FILE} FinSearch -x FinSearch/phpunit.xml.dist FinSearch/phpcs.xml FinSearch/tests/\* \
+ FinSearch/archive.sh FinSearch/.gitignore FinSearch/.travis.yml FinSearch/.idea/\* FinSearch/.git/\* *.zip \
+ FinSearch/composer.lock
 
-# Delete the directory after script execution
+# Delete the directory after script execution.
 rm -rf '/tmp/FinSearch'
 
 cd ${ROOT_DIR}
@@ -65,7 +63,7 @@ echo 'Restoring work in progress ...'
 
 git checkout ${BRANCH}
 
-# Only apply stash if there are some local changes
+# Only apply stash if there are some local changes.
 if [[ ${STASH} != 'No local changes to save' ]]; then
     git stash pop
 fi

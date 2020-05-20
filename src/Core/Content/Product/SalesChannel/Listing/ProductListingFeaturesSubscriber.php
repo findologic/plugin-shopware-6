@@ -17,7 +17,7 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
-use GuzzleHttp\Client;
+use FINDOLOGIC\GuzzleHttp\Client;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
