@@ -27,7 +27,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
 
         /** @var SearchRequest $searchRequest */
         $searchRequest = $this->findologicRequestFactory->getInstance($request);
-        $searchRequest->setQuery((string) $request->query->get('search'));
+        $searchRequest->setQuery((string)$request->query->get('search'));
         $originalCriteria = clone $event->getCriteria();
         $this->addSorting($searchRequest, $event->getCriteria());
 
@@ -40,8 +40,10 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
 
             return;
         }
+
         if ($responseParser->getLandingPageExtension()) {
             $this->handleLandingPage($responseParser, $event);
+
             return;
         }
 
@@ -77,7 +79,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
 
         /** @var SearchRequest $searchRequest */
         $searchRequest = $this->findologicRequestFactory->getInstance($request);
-        $searchRequest->setQuery((string) $request->query->get('search'));
+        $searchRequest->setQuery((string)$request->query->get('search'));
         $this->setPaginationParams($event, $searchRequest, $limit);
         $this->addSorting($searchRequest, $event->getCriteria());
         if ($event->getCriteria()->hasExtension('flFilters')) {

@@ -29,7 +29,7 @@ class UtilsTest extends TestCase
      */
     public function testCustomerGroupHash(string $shopkey, string $customerGroupId, string $expectedHash): void
     {
-        static::assertSame($expectedHash, Utils::calculateUserGroupHash($shopkey, $customerGroupId));
+        $this->assertSame($expectedHash, Utils::calculateUserGroupHash($shopkey, $customerGroupId));
     }
 
     public function controlCharacterProvider(): array
@@ -78,7 +78,7 @@ class UtilsTest extends TestCase
     public function testControlCharacterMethod($text, $expected, $errorMessage): void
     {
         $result = Utils::removeControlCharacters($text);
-        static::assertEquals($expected, $result, $errorMessage);
+        $this->assertEquals($expected, $result, $errorMessage);
     }
 
     public static function cleanStringProvider(): array
@@ -147,6 +147,6 @@ class UtilsTest extends TestCase
     public function testCleanStringMethod($text, $expected, $errorMessage): void
     {
         $result = Utils::cleanString($text);
-        static::assertEquals($expected, $result, $errorMessage);
+        $this->assertEquals($expected, $result, $errorMessage);
     }
 }

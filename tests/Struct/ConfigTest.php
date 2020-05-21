@@ -64,11 +64,11 @@ class ConfigTest extends TestCase
             ->getMock();
 
         if ($exception !== null) {
-            $serviceConfigResource->expects(static::once())
+            $serviceConfigResource->expects($this->once())
                 ->method('isDirectIntegration')
                 ->willThrowException($exception);
         } else {
-            $serviceConfigResource->expects(static::once())
+            $serviceConfigResource->expects($this->once())
                 ->method('isDirectIntegration')
                 ->willReturn(false);
         }
@@ -76,11 +76,11 @@ class ConfigTest extends TestCase
         $config = new Config($configServiceMock, $serviceConfigResource);
         $config->initializeBySalesChannel(Defaults::SALES_CHANNEL);
 
-        static::assertSame($data['active'], $config->isActive());
-        static::assertSame($data['shopkey'], $config->getShopkey());
-        static::assertSame($data['activeOnCategoryPages'], $config->isActiveOnCategoryPages());
-        static::assertSame($data['searchResultContainer'], $config->getSearchResultContainer());
-        static::assertSame($data['navigationResultContainer'], $config->getNavigationResultContainer());
-        static::assertSame($data['integrationType'], $config->getIntegrationType());
+        $this->assertSame($data['active'], $config->isActive());
+        $this->assertSame($data['shopkey'], $config->getShopkey());
+        $this->assertSame($data['activeOnCategoryPages'], $config->isActiveOnCategoryPages());
+        $this->assertSame($data['searchResultContainer'], $config->getSearchResultContainer());
+        $this->assertSame($data['navigationResultContainer'], $config->getNavigationResultContainer());
+        $this->assertSame($data['integrationType'], $config->getIntegrationType());
     }
 }

@@ -34,7 +34,7 @@ class ProductSearchBuilder extends ShopwareProductSearchBuilder
         if (is_array($search)) {
             $term = implode(' ', $search);
         } else {
-            $term = (string) $search;
+            $term = (string)$search;
         }
 
         $term = trim($term);

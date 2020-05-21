@@ -13,7 +13,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 trait SearchResultHelper
 {
-    public function createEmptySearchResult(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
+    protected function createEmptySearchResult(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
         // Return an empty response, as Shopware would search for all products if no explicit
         // product ids are submitted.
@@ -26,7 +26,7 @@ trait SearchResultHelper
         );
     }
 
-    public function assignPaginationToCriteria(Criteria $criteria): void
+    protected function assignPaginationToCriteria(Criteria $criteria): void
     {
         /** @var Pagination $pagination */
         $pagination = $criteria->getExtension('flPagination');
@@ -37,7 +37,7 @@ trait SearchResultHelper
         }
     }
 
-    public function fetchProducts(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
+    protected function fetchProducts(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
         $result = $this->productRepository->search($criteria, $context->getContext());
 

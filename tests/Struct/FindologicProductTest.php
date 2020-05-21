@@ -92,10 +92,10 @@ class FindologicProductTest extends TestCase
         );
 
         if (!$exception) {
-            static::assertTrue($findologicProduct->hasName());
-            static::assertSame($name, $findologicProduct->getName());
+            $this->assertTrue($findologicProduct->hasName());
+            $this->assertSame($name, $findologicProduct->getName());
         } else {
-            static::assertFalse($findologicProduct->hasName());
+            $this->assertFalse($findologicProduct->hasName());
         }
     }
 
@@ -179,10 +179,10 @@ class FindologicProductTest extends TestCase
             []
         );
 
-        static::assertTrue($findologicProduct->hasAttributes());
+        $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
-        static::assertSame('cat_url', $attribute->getKey());
-        static::assertSame(sprintf('/navigation/%s', $categoryId), current($attribute->getValues()));
+        $this->assertSame('cat_url', $attribute->getKey());
+        $this->assertSame(sprintf('/navigation/%s', $categoryId), current($attribute->getValues()));
     }
 
     /**
@@ -205,10 +205,10 @@ class FindologicProductTest extends TestCase
             []
         );
 
-        static::assertTrue($findologicProduct->hasAttributes());
+        $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
-        static::assertSame('cat_url', $attribute->getKey());
-        static::assertSame('/Findologic-Category', current($attribute->getValues()));
+        $this->assertSame('cat_url', $attribute->getKey());
+        $this->assertSame('/Findologic-Category', current($attribute->getValues()));
     }
 
     public function priceProvider(): array
@@ -254,10 +254,10 @@ class FindologicProductTest extends TestCase
         );
 
         if (!$exception) {
-            static::assertTrue($findologicProduct->hasPrices());
-            static::assertEquals($price, current($findologicProduct->getPrices()));
+            $this->assertTrue($findologicProduct->hasPrices());
+            $this->assertEquals($price, current($findologicProduct->getPrices()));
         } else {
-            static::assertFalse($findologicProduct->hasPrices());
+            $this->assertFalse($findologicProduct->hasPrices());
         }
     }
 
@@ -301,15 +301,15 @@ class FindologicProductTest extends TestCase
             $customerGroupEntities
         );
 
-        static::assertEquals($productEntity->getName(), $findologicProduct->getName());
-        static::assertEquals($productUrl, $findologicProduct->getUrl());
-        static::assertEquals([$productTag], $findologicProduct->getKeywords());
-        static::assertEquals($images, $findologicProduct->getImages());
-        static::assertEquals(0, $findologicProduct->getSalesFrequency());
-        static::assertEquals($attributes, $findologicProduct->getAttributes());
-        static::assertEquals($userGroup, $findologicProduct->getUserGroups());
-        static::assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
-        static::assertEquals($properties, $findologicProduct->getProperties());
+        $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
+        $this->assertEquals($productUrl, $findologicProduct->getUrl());
+        $this->assertEquals([$productTag], $findologicProduct->getKeywords());
+        $this->assertEquals($images, $findologicProduct->getImages());
+        $this->assertEquals(0, $findologicProduct->getSalesFrequency());
+        $this->assertEquals($attributes, $findologicProduct->getAttributes());
+        $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
+        $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
+        $this->assertEquals($properties, $findologicProduct->getProperties());
     }
 
     public function ratingProvider(): array
@@ -367,8 +367,8 @@ class FindologicProductTest extends TestCase
 
         $attributes = $findologicProduct->getAttributes();
         $ratingAttribute = end($attributes);
-        static::assertSame('rating', $ratingAttribute->getKey());
-        static::assertEquals($expectedRating, current($ratingAttribute->getValues()));
+        $this->assertSame('rating', $ratingAttribute->getKey());
+        $this->assertEquals($expectedRating, current($ratingAttribute->getValues()));
     }
 
     /**
@@ -380,7 +380,7 @@ class FindologicProductTest extends TestCase
 
         if ($productEntity->getTax()) {
             $property = new Property('tax');
-            $property->addValue((string) $productEntity->getTax()->getTaxRate());
+            $property->addValue((string)$productEntity->getTax()->getTaxRate());
             $properties[] = $property;
         }
 
@@ -398,61 +398,61 @@ class FindologicProductTest extends TestCase
 
         if ($productEntity->getPurchaseUnit()) {
             $property = new Property('purchaseunit');
-            $property->addValue((string) $productEntity->getPurchaseUnit());
+            $property->addValue((string)$productEntity->getPurchaseUnit());
             $properties[] = $property;
         }
 
         if ($productEntity->getReferenceUnit()) {
             $property = new Property('referenceunit');
-            $property->addValue((string) $productEntity->getReferenceUnit());
+            $property->addValue((string)$productEntity->getReferenceUnit());
             $properties[] = $property;
         }
 
         if ($productEntity->getPackUnit()) {
             $property = new Property('packunit');
-            $property->addValue((string) $productEntity->getPackUnit());
+            $property->addValue((string)$productEntity->getPackUnit());
             $properties[] = $property;
         }
 
         if ($productEntity->getStock()) {
             $property = new Property('stock');
-            $property->addValue((string) $productEntity->getStock());
+            $property->addValue((string)$productEntity->getStock());
             $properties[] = $property;
         }
 
         if ($productEntity->getAvailableStock()) {
             $property = new Property('availableStock');
-            $property->addValue((string) $productEntity->getAvailableStock());
+            $property->addValue((string)$productEntity->getAvailableStock());
             $properties[] = $property;
         }
 
         if ($productEntity->getWeight()) {
             $property = new Property('weight');
-            $property->addValue((string) $productEntity->getWeight());
+            $property->addValue((string)$productEntity->getWeight());
             $properties[] = $property;
         }
 
         if ($productEntity->getWidth()) {
             $property = new Property('width');
-            $property->addValue((string) $productEntity->getWidth());
+            $property->addValue((string)$productEntity->getWidth());
             $properties[] = $property;
         }
 
         if ($productEntity->getHeight()) {
             $property = new Property('height');
-            $property->addValue((string) $productEntity->getHeight());
+            $property->addValue((string)$productEntity->getHeight());
             $properties[] = $property;
         }
 
         if ($productEntity->getLength()) {
             $property = new Property('length');
-            $property->addValue((string) $productEntity->getLength());
+            $property->addValue((string)$productEntity->getLength());
             $properties[] = $property;
         }
 
         if ($productEntity->getReleaseDate()) {
             $property = new Property('releasedate');
-            $property->addValue((string) $productEntity->getReleaseDate()->format(DATE_ATOM));
+            $property->addValue((string)$productEntity->getReleaseDate()->format(DATE_ATOM));
             $properties[] = $property;
         }
 

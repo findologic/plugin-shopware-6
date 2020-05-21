@@ -62,39 +62,39 @@ class XmlProductTest extends TestCase
             $this->shopkey,
             []
         ])->getMock();
-        $findologicProductMock->expects(static::once())->method('hasName')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getName')->willReturn('some name');
-        $findologicProductMock->expects(static::once())->method('hasAttributes')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getAttributes')->willReturn([]);
-        $findologicProductMock->expects(static::once())->method('hasPrices')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getPrices')->willReturn([]);
-        $findologicProductMock->expects(static::once())->method('hasDescription')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getDescription')->willReturn('some description');
-        $findologicProductMock->expects(static::once())->method('hasDateAdded')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getName')->willReturn('some name');
+        $findologicProductMock->expects($this->once())->method('hasAttributes')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getAttributes')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasPrices')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getPrices')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasDescription')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getDescription')->willReturn('some description');
+        $findologicProductMock->expects($this->once())->method('hasDateAdded')->willReturn(true);
         $dateAdded = new DateAdded();
         $dateAdded->setDateValue($productEntity->getCreatedAt());
-        $findologicProductMock->expects(static::once())->method('getDateAdded')->willReturn($dateAdded);
-        $findologicProductMock->expects(static::once())->method('hasUrl')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getUrl')->willReturn('some url');
-        $findologicProductMock->expects(static::once())->method('hasKeywords')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getKeywords')->willReturn([]);
-        $findologicProductMock->expects(static::once())->method('hasImages')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getImages')->willReturn([]);
-        $findologicProductMock->expects(static::once())->method('getSalesFrequency')->willReturn(1);
-        $findologicProductMock->expects(static::once())->method('hasUserGroups')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getUserGroups')->willReturn([]);
-        $findologicProductMock->expects(static::once())->method('hasOrdernumbers')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getOrdernumbers')->willReturn([]);
-        $findologicProductMock->expects(static::once())->method('hasProperties')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getProperties')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('getDateAdded')->willReturn($dateAdded);
+        $findologicProductMock->expects($this->once())->method('hasUrl')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getUrl')->willReturn('some url');
+        $findologicProductMock->expects($this->once())->method('hasKeywords')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getKeywords')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasImages')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getImages')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('getSalesFrequency')->willReturn(1);
+        $findologicProductMock->expects($this->once())->method('hasUserGroups')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getUserGroups')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasOrdernumbers')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getOrdernumbers')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasProperties')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getProperties')->willReturn([]);
 
         /** @var FindologicProductFactory|MockObject $findologicFactoryMock */
         $findologicFactoryMock = $this->getMockBuilder(FindologicProductFactory::class)->getMock();
-        $findologicFactoryMock->expects(static::once())->method('buildInstance')->willReturn($findologicProductMock);
+        $findologicFactoryMock->expects($this->once())->method('buildInstance')->willReturn($findologicProductMock);
 
         /** @var ContainerInterface|MockObject $containerMock */
         $containerMock = $this->getMockBuilder(ContainerInterface::class)->disableOriginalConstructor()->getMock();
-        $containerMock->expects(static::once())->method('get')
+        $containerMock->expects($this->once())->method('get')
             ->with(FindologicProductFactory::class)
             ->willReturn($findologicFactoryMock);
 
@@ -107,7 +107,7 @@ class XmlProductTest extends TestCase
             []
         );
 
-        static::assertInstanceOf(Item::class, $xmlItem->getXmlItem());
+        $this->assertInstanceOf(Item::class, $xmlItem->getXmlItem());
     }
 
     /**
@@ -133,20 +133,20 @@ class XmlProductTest extends TestCase
             $this->shopkey,
             []
         ])->getMock();
-        $findologicProductMock->expects(static::once())->method('hasName')->willReturn(true);
-        $findologicProductMock->expects(static::once())->method('getName')->willReturn($productEntity->getName());
-        $findologicProductMock->expects(static::once())->method('hasAttributes')->willReturn(false);
-        $findologicProductMock->expects(static::never())->method('getAttributes');
-        $findologicProductMock->expects(static::never())->method('hasPrices');
-        $findologicProductMock->expects(static::never())->method('getPrices');
+        $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getName')->willReturn($productEntity->getName());
+        $findologicProductMock->expects($this->once())->method('hasAttributes')->willReturn(false);
+        $findologicProductMock->expects($this->never())->method('getAttributes');
+        $findologicProductMock->expects($this->never())->method('hasPrices');
+        $findologicProductMock->expects($this->never())->method('getPrices');
 
         /** @var FindologicProductFactory|MockObject $findologicFactoryMock */
         $findologicFactoryMock = $this->getMockBuilder(FindologicProductFactory::class)->getMock();
-        $findologicFactoryMock->expects(static::once())->method('buildInstance')->willReturn($findologicProductMock);
+        $findologicFactoryMock->expects($this->once())->method('buildInstance')->willReturn($findologicProductMock);
 
         /** @var ContainerInterface|MockObject $containerMock */
         $containerMock = $this->getMockBuilder(ContainerInterface::class)->disableOriginalConstructor()->getMock();
-        $containerMock->expects(static::once())->method('get')
+        $containerMock->expects($this->once())->method('get')
             ->with(FindologicProductFactory::class)
             ->willReturn($findologicFactoryMock);
 

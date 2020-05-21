@@ -17,6 +17,6 @@ class ServiceConfigClientFactoryTest extends TestCase
     {
         $clientFactory = new ServiceConfigClientFactory();
         $serviceConfigClient = $clientFactory->getInstance($this->getShopkey());
-        static::assertInstanceOf(ServiceConfigClient::class, $serviceConfigClient);
+        $this->assertInstanceOf(ServiceConfigClient::class, $serviceConfigClient);
     }
 }

@@ -121,7 +121,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $criteriaMock->expects(static::any())->method('assign')->with(
+        $criteriaMock->expects($this->any())->method('assign')->with(
             [
                 'source' => null,
                 'sorting' => [],
@@ -145,7 +145,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ]
         );
 
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         if ($isNavigationRequest) {
             $this->setUpNavigationRequestMocks();
@@ -201,12 +201,12 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
-        $criteriaMock->expects(static::any())->method('getSorting')->willReturn([$fieldSorting]);
+        $criteriaMock->expects($this->any())->method('getSorting')->willReturn([$fieldSorting]);
 
         $searchRequest = new SearchRequest();
-        $this->searchRequestFactoryMock->expects(static::any())
+        $this->searchRequestFactoryMock->expects($this->any())
             ->method('getInstance')
             ->willReturn($searchRequest);
 
@@ -214,9 +214,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->handleSearchRequest($eventMock);
 
         if ($expectedOrder !== '') {
-            static::assertEquals($expectedOrder, $searchRequest->getParams()['order']);
+            $this->assertEquals($expectedOrder, $searchRequest->getParams()['order']);
         } else {
-            static::assertArrayNotHasKey('order', $searchRequest->getParams());
+            $this->assertArrayNotHasKey('order', $searchRequest->getParams());
         }
     }
 
@@ -230,14 +230,14 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     ): void {
         $eventMock = $this->setUpSearchRequestMocks();
 
-        $this->apiClientMock->expects(static::any())->method('send')->willThrowException(
+        $this->apiClientMock->expects($this->any())->method('send')->willThrowException(
             new ServiceNotAliveException('dead: This service is currently unreachable.')
         );
 
         /** @var Criteria|MockObject $criteriaMock */
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
-        $criteriaMock->expects(static::any())->method('assign')->with([]); // Should be empty.
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
+        $criteriaMock->expects($this->any())->method('assign')->with([]); // Should be empty.
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->{$endpoint}($eventMock);
@@ -250,19 +250,19 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects(static::any())->method('getEnabled')->willReturn(true);
+        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects(static::any())->method('getExtension')->willReturn($findologicEnabledMock);
-        $contextMock->expects(static::any())->method('addExtension')->withConsecutive(
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
             ['flEnabled'],
             ['flSmartDidYouMean'],
             ['flPromotion', new Promotion('https://promotion.com/promotion.png', 'https://promotion.com/')]
         );
-        $eventMock->expects(static::any())->method('getContext')->willReturn($contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
@@ -270,7 +270,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     public function testResponseHasNoPromotion(): void
     {
-        $this->configMock->expects(static::once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse();
         unset($response->promotion);
 
@@ -279,18 +279,18 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects(static::any())->method('getEnabled')->willReturn(true);
+        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects(static::any())->method('getExtension')->willReturn($findologicEnabledMock);
-        $contextMock->expects(static::any())->method('addExtension')->withConsecutive(
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
             ['flEnabled'],
             ['flSmartDidYouMean']
         );
-        $eventMock->expects(static::any())->method('getContext')->willReturn($contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
@@ -298,7 +298,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     public function testContainsDidYouMeanQuery(): void
     {
-        $this->configMock->expects(static::once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithDidYouMeanQuery.xml');
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
@@ -306,21 +306,21 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects(static::any())->method('getEnabled')->willReturn(true);
+        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects(static::any())->method('getExtension')->willReturn($findologicEnabledMock);
-        $contextMock->expects(static::any())->method('addExtension')->withConsecutive(
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
             ['flEnabled'],
             [
                 'flSmartDidYouMean',
                 $this->getDefaultSmartDidYouMeanExtension('ps4', null, 'ps4')
             ]
         );
-        $eventMock->expects(static::any())->method('getContext')->willReturn($contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
@@ -328,7 +328,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     public function testContainsCorrectedQuery(): void
     {
-        $this->configMock->expects(static::once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithCorrectedQuery.xml');
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
@@ -336,21 +336,21 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects(static::any())->method('getEnabled')->willReturn(true);
+        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects(static::any())->method('getExtension')->willReturn($findologicEnabledMock);
-        $contextMock->expects(static::any())->method('addExtension')->withConsecutive(
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
             ['flEnabled'],
             [
                 'flSmartDidYouMean',
                 $this->getDefaultSmartDidYouMeanExtension('', 'ps4', null, 'corrected')
             ]
         );
-        $eventMock->expects(static::any())->method('getContext')->willReturn($contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
@@ -358,7 +358,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     public function testContainsImprovedQuery(): void
     {
-        $this->configMock->expects(static::once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithImprovedQuery.xml');
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
@@ -366,21 +366,21 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects(static::any())->method('getEnabled')->willReturn(true);
+        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects(static::any())->method('getExtension')->willReturn($findologicEnabledMock);
-        $contextMock->expects(static::any())->method('addExtension')->withConsecutive(
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
             ['flEnabled'],
             [
                 'flSmartDidYouMean',
                 $this->getDefaultSmartDidYouMeanExtension('', 'ps4', null, 'improved')
             ]
         );
-        $eventMock->expects(static::any())->method('getContext')->willReturn($contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
@@ -451,7 +451,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         array $params,
         string $alternativeQuery
     ): void {
-        $this->configMock->expects(static::once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         $xmlResponse = clone $this->getRawResponse();
         unset($xmlResponse->query);
 
@@ -471,12 +471,12 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $request->setSession($this->getDefaultSessionMock());
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($xmlResponse->asXML()), $request, false);
-        $eventMock->expects(static::any())->method('getRequest')->willReturn($request);
+        $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getContext')->willReturn($contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
@@ -539,17 +539,17 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         ?string $stagingParam,
         bool $isFindologicEnabled
     ): void {
-        $this->configMock->expects(static::once())->method('isActive')->willReturn(true);
-        $this->serviceConfigResourceMock->expects(static::any())->method('isStaging')->willReturn($isStaging);
-        $this->serviceConfigResourceMock->expects(static::any())->method('isDirectIntegration')->willReturn(false);
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $this->serviceConfigResourceMock->expects($this->any())->method('isStaging')->willReturn($isStaging);
+        $this->serviceConfigResourceMock->expects($this->any())->method('isDirectIntegration')->willReturn(false);
 
         $sessionMock = $this->getMockBuilder(SessionInterface::class)->disableOriginalConstructor()->getMock();
 
         if ($stagingParam === null) {
-            $sessionMock->expects(static::once())->method('get')->with('stagingFlag')->willReturn($stagingFlag);
-            $invokeCount = static::never();
+            $sessionMock->expects($this->once())->method('get')->with('stagingFlag')->willReturn($stagingFlag);
+            $invokeCount = $this->never();
         } else {
-            $invokeCount = static::once();
+            $invokeCount = $this->once();
         }
 
         $sessionMock->expects($invokeCount)->method('set')->with('stagingFlag', $stagingFlag);
@@ -559,12 +559,12 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $request->setSession($sessionMock);
 
         $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse(), $request, false);
-        $eventMock->expects(static::any())->method('getRequest')->willReturn($request);
+        $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getCriteria')->willReturn($criteriaMock);
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects(static::any())->method('getContext')->willReturn($contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
 
@@ -572,7 +572,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $method = $reflector->getMethod('allowRequest');
         $method->setAccessible(true);
         $isEnabled = $method->invoke($subscriber, $eventMock);
-        static::assertSame($isFindologicEnabled, $isEnabled);
+        $this->assertSame($isFindologicEnabled, $isEnabled);
     }
 
     private function initMocks(): void
@@ -646,16 +646,16 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sessionMock = $this->getDefaultSessionMock();
-        $requestMock->expects(static::any())->method('getSession')->willReturn($sessionMock);
+        $requestMock->expects($this->any())->method('getSession')->willReturn($sessionMock);
 
         $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
-        $queryMock->expects(static::at(0))
+        $queryMock->expects($this->at(0))
             ->method('getInt')
             ->willReturn(24);
-        $queryMock->expects(static::at(1))
+        $queryMock->expects($this->at(1))
             ->method('getInt')
             ->willReturn(1);
-        $queryMock->expects(static::any())->method('get')->willReturn('');
+        $queryMock->expects($this->any())->method('get')->willReturn('');
 
         $requestMock->query = $queryMock;
 
@@ -698,12 +698,12 @@ XML;
         ?Request $request = null,
         bool $withSmartDidYouMean = true
     ): ProductSearchCriteriaEvent {
-        $this->configMock->expects(static::once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         if ($response === null) {
             $response = $this->getDefaultResponse();
         }
 
-        $this->apiClientMock->expects(static::any())
+        $this->apiClientMock->expects($this->any())
             ->method('send')
             ->willReturn($response);
 
@@ -715,7 +715,7 @@ XML;
         if ($request === null) {
             $request = $this->getDefaultRequestMock();
         }
-        $eventMock->expects(static::any())->method('getRequest')->willReturn($request);
+        $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
 
         $findologicEnabled = new FindologicEnabled();
         $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
@@ -727,17 +727,17 @@ XML;
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
 
         if ($withSmartDidYouMean) {
-            $contextMock->expects(static::any())->method('addExtension')->withConsecutive(
+            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
                 ['flEnabled', $findologicEnabled],
                 ['flSmartDidYouMean', $smartDidYouMean]
             );
         } else {
-            $contextMock->expects(static::any())->method('addExtension')->withConsecutive(
+            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
                 ['flEnabled', $findologicEnabled]
             );
         }
-        $contextMock->expects(static::any())->method('getExtension')->willReturnMap($defaultExtensionMap);
-        $eventMock->expects(static::any())->method('getContext')->willReturn($contextMock);
+        $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         return $eventMock;
     }
@@ -750,23 +750,23 @@ XML;
 
         // TODO: Make this injectable via constructor arguments if possible.
         $pageMock = $this->getMockBuilder(Page::class)->disableOriginalConstructor()->getMock();
-        $pageMock->expects(static::any())->method('getHeader')->willReturn($headerMock);
+        $pageMock->expects($this->any())->method('getHeader')->willReturn($headerMock);
         $reflection = new ReflectionClass($pageMock);
         $reflectionProperty = $reflection->getProperty('header');
         $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($pageMock, $headerMock);
-        $this->genericPageLoaderMock->expects(static::any())->method('load')->willReturn($pageMock);
+        $this->genericPageLoaderMock->expects($this->any())->method('load')->willReturn($pageMock);
 
         $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
-        $headerMock->expects(static::once())->method('getNavigation')->willReturn($categoryTreeMock);
+        $headerMock->expects($this->once())->method('getNavigation')->willReturn($categoryTreeMock);
 
         $categoryEntityMock = $this->getMockBuilder(CategoryEntity::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $categoryTreeMock->expects(static::once())->method('getActive')->willReturn($categoryEntityMock);
+        $categoryTreeMock->expects($this->once())->method('getActive')->willReturn($categoryEntityMock);
 
-        $categoryEntityMock->expects(static::once())->method('getBreadcrumb')
+        $categoryEntityMock->expects($this->once())->method('getBreadcrumb')
             ->willReturn(['Deutsch', 'Freizeit & Elektro']);
     }
 
@@ -774,7 +774,7 @@ XML;
     {
         /** @var SessionInterface|MockObject $sessionMock */
         $sessionMock = $this->getMockBuilder(SessionInterface::class)->disableOriginalConstructor()->getMock();
-        $sessionMock->expects(static::any())->method('get')->with('stagingFlag')->willReturn(false);
+        $sessionMock->expects($this->any())->method('get')->with('stagingFlag')->willReturn(false);
 
         return $sessionMock;
     }

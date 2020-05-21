@@ -103,12 +103,12 @@ class FindologicRequestFactoryTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cachePoolMock->expects(static::never())->method('save');
-        $cacheItemMock->expects(static::exactly(2))
+        $cachePoolMock->expects($this->never())->method('save');
+        $cacheItemMock->expects($this->exactly(2))
             ->method('get')
             ->willReturnOnConsecutiveCalls('1.0.0', '1.0.0');
 
-        $cachePoolMock->expects(static::once())
+        $cachePoolMock->expects($this->once())
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
@@ -123,6 +123,6 @@ class FindologicRequestFactoryTest extends TestCase
         $searchRequest = $searchRequestFactory->getInstance($request);
 
         $params = $searchRequest->getParams();
-        static::assertSame($expectedIpAddress, $params['userip']);
+        $this->assertSame($expectedIpAddress, $params['userip']);
     }
 }

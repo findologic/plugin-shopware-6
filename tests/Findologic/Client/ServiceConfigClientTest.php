@@ -43,12 +43,12 @@ class ServiceConfigClientTest extends TestCase
 
         try {
             $result = $serviceConfigClient->get();
-            static::assertIsArray($result);
+            $this->assertIsArray($result);
 
             // Make sure that the config returned is the same as the one we expect
-            static::assertSame($this->getConfig(), $result);
+            $this->assertSame($this->getConfig(), $result);
         } catch (ClientException $e) {
-            static::assertSame(
+            $this->assertSame(
                 sprintf(
                     'Client error: `GET static/%s/config.json` resulted in a `404 Not Found` response',
                     $hashedShopkey
@@ -56,7 +56,7 @@ class ServiceConfigClientTest extends TestCase
                 $e->getMessage()
             );
         } catch (Exception $e) {
-            static::fail('Failed due to unknown exception: ' . $e->getMessage());
+            $this->fail('Failed due to unknown exception: ' . $e->getMessage());
         }
     }
 }

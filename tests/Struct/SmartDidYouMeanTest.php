@@ -67,9 +67,9 @@ class SmartDidYouMeanTest extends TestCase
         );
         $parameters = $smartDidYouMean->getVars();
 
-        static::assertNotEmpty($parameters);
-        static::assertSame($expectedLink, $parameters['link']);
-        static::assertSame($alternativeQuery, $parameters['alternativeQuery']);
-        static::assertSame($originalQuery, $parameters['originalQuery']);
+        $this->assertNotEmpty($parameters);
+        $this->assertSame($expectedLink, $parameters['link']);
+        $this->assertSame($alternativeQuery, $parameters['alternativeQuery']);
+        $this->assertSame($originalQuery, $parameters['originalQuery']);
     }
 }

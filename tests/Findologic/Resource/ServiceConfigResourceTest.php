@@ -69,22 +69,22 @@ class ServiceConfigResourceTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cacheItemMock->expects(static::exactly(2))->method('get')->willReturn(serialize($serviceConfig));
-        $cacheItemMock->expects(static::never())->method('set')->willReturnSelf();
+        $cacheItemMock->expects($this->exactly(2))->method('get')->willReturn(serialize($serviceConfig));
+        $cacheItemMock->expects($this->never())->method('set')->willReturnSelf();
 
-        $cachePoolMock->expects(static::exactly(2))
+        $cachePoolMock->expects($this->exactly(2))
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
-        $cachePoolMock->expects(static::never())->method('save')->with($cacheItemMock);
+        $cachePoolMock->expects($this->never())->method('save')->with($cacheItemMock);
 
         $serviceConfigResource = new ServiceConfigResource(
             $cachePoolMock,
             new ServiceConfigClientFactory()
         );
 
-        static::assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
-        static::assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
+        $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
+        $this->assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
     }
 
     public function findologicConfigDataProvider(): array
@@ -121,13 +121,13 @@ class ServiceConfigResourceTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cacheItemMock->expects(static::exactly(2))
+        $cacheItemMock->expects($this->exactly(2))
             ->method('get')
             ->willReturnOnConsecutiveCalls(null, serialize($serviceConfig));
-        $cacheItemMock->expects(static::once())->method('set')->willReturnSelf();
-        $cachePoolMock->expects(static::once())->method('save')->with($cacheItemMock);
+        $cacheItemMock->expects($this->once())->method('set')->willReturnSelf();
+        $cachePoolMock->expects($this->once())->method('save')->with($cacheItemMock);
 
-        $cachePoolMock->expects(static::exactly(3))
+        $cachePoolMock->expects($this->exactly(3))
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
@@ -146,8 +146,8 @@ class ServiceConfigResourceTest extends TestCase
             $client
         );
 
-        static::assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
-        static::assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
+        $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
+        $this->assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
     }
 
     public function expiredTimeProvider(): array
@@ -196,23 +196,23 @@ class ServiceConfigResourceTest extends TestCase
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cacheItemMock->expects(static::once())->method('get')->willReturn($serviceConfigFromCache);
+        $cacheItemMock->expects($this->once())->method('get')->willReturn($serviceConfigFromCache);
 
         if ($isExpired) {
-            $cacheItemMock->expects(static::once())->method('set')->willReturnSelf();
+            $cacheItemMock->expects($this->once())->method('set')->willReturnSelf();
         } else {
-            $cacheItemMock->expects(static::never())->method('set');
+            $cacheItemMock->expects($this->never())->method('set');
         }
 
-        $cachePoolMock->expects($isExpired ? static::exactly(2) : static::once())
+        $cachePoolMock->expects($isExpired ? $this->exactly(2) : $this->once())
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
 
         if ($isExpired) {
-            $cachePoolMock->expects(static::once())->method('save')->with($cacheItemMock);
+            $cachePoolMock->expects($this->once())->method('save')->with($cacheItemMock);
         } else {
-            $cachePoolMock->expects(static::never())->method('save');
+            $cachePoolMock->expects($this->never())->method('save');
         }
 
         // Create a mock and queue one response with the config json file
@@ -229,6 +229,6 @@ class ServiceConfigResourceTest extends TestCase
             $client
         );
 
-        static::assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
+        $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
     }
 }

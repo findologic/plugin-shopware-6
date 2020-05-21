@@ -110,10 +110,7 @@ class Utils
         return version_compare($shopwareVersion, $version, '<');
     }
 
-    /**
-     * @return bool
-     */
-    public static function isFindologicEnabled(SalesChannelContext $context)
+    public static function isFindologicEnabled(SalesChannelContext $context): bool
     {
         /** @var FindologicEnabled $findologicEnabled */
         $findologicEnabled = $context->getContext()->getExtension('flEnabled');

@@ -9,13 +9,14 @@ use Shopware\Core\Framework\Struct\Struct;
 
 abstract class QueryInfoMessage extends Struct
 {
+    // Search results for "<query>" (<count> hits)
     public const TYPE_QUERY = 'query';
-    public const // Search results for "<query>" (<count> hits)
-        TYPE_CATEGORY = 'cat';
-    public const // Search results for <cat-filter-name> <cat-name> (<count> hits)
-        TYPE_VENDOR = 'vendor';
-    public const // Search results for <vendor-filter-name> <vendor-name> (<count> hits)
-        TYPE_DEFAULT = 'default'; // Search results (<count> hits)
+    // Search results for <cat-filter-name> <cat-name> (<count> hits)
+    public const TYPE_CATEGORY = 'cat';
+    // Search results for <vendor-filter-name> <vendor-name> (<count> hits)
+    public const TYPE_VENDOR = 'vendor';
+    // Search results (<count> hits)
+    public const TYPE_DEFAULT = 'default';
 
     public static function buildInstance(
         string $type,

@@ -60,16 +60,16 @@ class SearchRequestFactoryTest extends TestCase
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
         if ($isCached) {
-            $cachePoolMock->expects(static::never())->method('save');
+            $cachePoolMock->expects($this->never())->method('save');
         } else {
-            $cachePoolMock->expects(static::once())->method('save');
+            $cachePoolMock->expects($this->once())->method('save');
         }
 
-        $cacheItemMock->expects(static::exactly(2))
+        $cacheItemMock->expects($this->exactly(2))
             ->method('get')
             ->willReturnOnConsecutiveCalls($cachedVersion, $expectedVersion);
 
-        $cachePoolMock->expects(static::once())
+        $cachePoolMock->expects($this->once())
             ->method('getItem')
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
@@ -83,15 +83,15 @@ class SearchRequestFactoryTest extends TestCase
 
         $searchRequest = $searchRequestFactory->getInstance($request);
 
-        static::assertInstanceOf(SearchRequest::class, $searchRequest);
+        $this->assertInstanceOf(SearchRequest::class, $searchRequest);
 
         $params = $searchRequest->getParams();
-        static::assertSame($expectedVersion, $params['revision']);
+        $this->assertSame($expectedVersion, $params['revision']);
 
         // Test other parameters are passed correctly
-        static::assertSame($expectedReferer, $params['referer']);
-        static::assertSame($expectedIpAddress, $params['userip']);
-        static::assertSame($expectedAdapter, $params['outputAdapter']);
-        static::assertSame($expectedHost, $params['shopurl']);
+        $this->assertSame($expectedReferer, $params['referer']);
+        $this->assertSame($expectedIpAddress, $params['userip']);
+        $this->assertSame($expectedAdapter, $params['outputAdapter']);
+        $this->assertSame($expectedHost, $params['shopurl']);
     }
 }

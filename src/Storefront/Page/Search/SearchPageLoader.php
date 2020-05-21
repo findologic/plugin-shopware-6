@@ -57,7 +57,7 @@ class SearchPageLoader extends ShopwareSearchPageLoader
         $listing = $result->getListingResult();
         $page->setListing($listing);
         $page->setSearchResult(StorefrontSearchResult::createFrom($listing));
-        $page->setSearchTerm((string) $request->query->get('search'));
+        $page->setSearchTerm((string)$request->query->get('search'));
 
         $this->eventDispatcher->dispatch(
             new SearchPageLoadedEvent($page, $salesChannelContext, $request)

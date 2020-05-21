@@ -84,8 +84,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
         // We can safely cast the values here as integers because the validation is already taken care of in the
         // previous step so if we reach till here, it means there are no invalid strings being passed as parameter here
-        $start = (int) $request->get('start', self::DEFAULT_START_PARAM);
-        $count = (int) $request->get('count', self::DEFAULT_COUNT_PARAM);
+        $start = (int)$request->get('start', self::DEFAULT_START_PARAM);
+        $count = (int)$request->get('count', self::DEFAULT_COUNT_PARAM);
 
         $salesChannelContext = $this->getSalesChannelContext($shopkey, $context);
 
