@@ -112,7 +112,7 @@ class Xml21ResponseParserTest extends TestCase
     {
         $responseParser = new Xml21ResponseParser($response);
 
-        static::assertEquals($expectedIds, $responseParser->getProductIds());
+        $this->assertEquals($expectedIds, $responseParser->getProductIds());
     }
 
     public function testSmartDidYouMeanExtensionIsReturned(): void
@@ -123,10 +123,10 @@ class Xml21ResponseParserTest extends TestCase
         $request = new Request();
         $extension = $responseParser->getSmartDidYouMeanExtension($request);
 
-        static::assertEquals('did-you-mean', $extension->getType());
-        static::assertEquals('?search=ps4&forceOriginalQuery=1', $extension->getLink());
-        static::assertEquals('ps4', $extension->getAlternativeQuery());
-        static::assertEquals('', $extension->getOriginalQuery());
+        $this->assertEquals('did-you-mean', $extension->getType());
+        $this->assertEquals('?search=ps4&forceOriginalQuery=1', $extension->getLink());
+        $this->assertEquals('ps4', $extension->getAlternativeQuery());
+        $this->assertEquals('', $extension->getOriginalQuery());
     }
 
     public function testLandingPageUriIsReturned(): void
@@ -134,7 +134,7 @@ class Xml21ResponseParserTest extends TestCase
         $response = new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithLandingPage.xml'));
         $responseParser = new Xml21ResponseParser($response);
 
-        static::assertEquals('https://blubbergurken.io', $responseParser->getLandingPageUri());
+        $this->assertEquals('https://blubbergurken.io', $responseParser->getLandingPageExtension()->getLink());
     }
 
     public function testNoLandingPageIsReturnedIfResponseDoesNotHaveALandingPage(): void
@@ -142,7 +142,7 @@ class Xml21ResponseParserTest extends TestCase
         $response = new Xml21Response($this->getMockResponse());
         $responseParser = new Xml21ResponseParser($response);
 
-        static::assertNull($responseParser->getLandingPageUri());
+        $this->assertNull($responseParser->getLandingPageExtension());
     }
 
     public function testPromotionExtensionIsReturned(): void
@@ -151,9 +151,9 @@ class Xml21ResponseParserTest extends TestCase
         $responseParser = new Xml21ResponseParser($response);
         $promotion = $responseParser->getPromotionExtension();
 
-        static::assertInstanceOf(Promotion::class, $promotion);
-        static::assertEquals('https://promotion.com/', $promotion->getLink());
-        static::assertEquals('https://promotion.com/promotion.png', $promotion->getImage());
+        $this->assertInstanceOf(Promotion::class, $promotion);
+        $this->assertEquals('https://promotion.com/', $promotion->getLink());
+        $this->assertEquals('https://promotion.com/promotion.png', $promotion->getImage());
     }
 
     public function filterResponseProvider(): array
@@ -254,7 +254,7 @@ class Xml21ResponseParserTest extends TestCase
         $filtersExtension = $responseParser->getFiltersExtension();
         $filters = $filtersExtension->getFilters();
 
-        static::assertEquals($expectedFilters, $filters);
+        $this->assertEquals($expectedFilters, $filters);
     }
 
     public function paginationResponseProvider(): array
@@ -302,9 +302,9 @@ class Xml21ResponseParserTest extends TestCase
 
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
 
-        static::assertEquals($expectedTotal, $pagination->getTotal());
-        static::assertEquals($expectedOffset, $pagination->getOffset());
-        static::assertEquals($expectedLimit, $pagination->getLimit());
+        $this->assertEquals($expectedTotal, $pagination->getTotal());
+        $this->assertEquals($expectedOffset, $pagination->getOffset());
+        $this->assertEquals($expectedLimit, $pagination->getLimit());
     }
 
     public function queryInfoMessageResponseProvider(): array
@@ -383,7 +383,7 @@ class Xml21ResponseParserTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $contextMock->expects(static::any())
+        $contextMock->expects($this->any())
             ->method('getExtension')
             ->willReturn($this->getDefaultSmartDidYouMeanExtension());
 
@@ -393,11 +393,11 @@ class Xml21ResponseParserTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $salesChannelContextMock->expects(static::any())->method('getContext')->willReturn($contextMock);
+        $salesChannelContextMock->expects($this->any())->method('getContext')->willReturn($contextMock);
         $event = new ProductListingCriteriaEvent($request, new Criteria(), $salesChannelContextMock);
 
         $queryInfoMessage = $responseParser->getQueryInfoMessage($event);
-        static::assertInstanceOf($expectedInstance, $queryInfoMessage);
-        static::assertEquals($expectedVars, $queryInfoMessage->getVars());
+        $this->assertInstanceOf($expectedInstance, $queryInfoMessage);
+        $this->assertEquals($expectedVars, $queryInfoMessage->getVars());
     }
 }

@@ -10,6 +10,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
+use FINDOLOGIC\FinSearch\Struct\LandingPage as LandingPageExtension;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
@@ -54,11 +55,11 @@ class Xml21ResponseParser extends ResponseParser
         );
     }
 
-    public function getLandingPageUri(): ?string
+    public function getLandingPageExtension(): ?LandingPageExtension
     {
         $landingPage = $this->response->getLandingPage();
         if ($landingPage instanceof LandingPage) {
-            return $landingPage->getLink();
+            return new LandingPageExtension($landingPage->getLink());
         }
 
         return null;

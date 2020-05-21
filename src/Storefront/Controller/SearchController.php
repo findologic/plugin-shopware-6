@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
+use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
+use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
+use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Storefront\Framework\Cache\Annotation\HttpCache;
-use Shopware\Storefront\Page\Search\SearchPageLoader;
 use Shopware\Storefront\Page\Suggest\SuggestPageLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,7 +59,21 @@ class SearchController extends ShopwareSearchController
 
         $page = $this->searchPageLoader->load($request, $context);
 
+        /** @var LandingPage|null $landingPage */
+        if ($landingPage = $context->getContext()->getExtension('flLandingPage')) {
+            return $this->redirect($landingPage->getLink(), 301);
+        }
+
         return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
+    }
+
+    private function handleFindologicSearchParams(Request $request): ?Response
+    {
+        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
+            return $this->redirect($uri);
+        }
+
+        return null;
     }
 
     /**
@@ -78,7 +93,9 @@ class SearchController extends ShopwareSearchController
 
     /**
      * @HttpCache()
+     *
      * Route to load the listing filters
+     *
      * @RouteScope(scopes={"storefront"})
      * @Route("/widgets/search/{search}", name="widgets.search.pagelet", methods={"GET", "POST"},
      *     defaults={"XmlHttpRequest"=true})
@@ -95,14 +112,5 @@ class SearchController extends ShopwareSearchController
             '@Storefront/storefront/page/search/search-pagelet.html.twig',
             ['page' => $page]
         );
-    }
-
-    private function handleFindologicSearchParams(Request $request): ?Response
-    {
-        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
-            return $this->redirect($uri);
-        }
-
-        return null;
     }
 }
