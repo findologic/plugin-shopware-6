@@ -104,8 +104,14 @@ class Utils
 
     public static function versionLowerThan(string $version): bool
     {
+        $versions = Versions::VERSIONS;
+        if (isset($versions['shopware/core'])) {
+            $shopwareVersion = Versions::getVersion('shopware/core');
+        } else {
+            $shopwareVersion = Versions::getVersion('shopware/platform');
+        }
         // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
-        $shopwareVersion = ltrim(Versions::getVersion('shopware/platform'), 'v');
+        $shopwareVersion = ltrim($shopwareVersion, 'v');
 
         return version_compare($shopwareVersion, $version, '<');
     }
