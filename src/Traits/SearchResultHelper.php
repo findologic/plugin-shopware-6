@@ -39,7 +39,7 @@ trait SearchResultHelper
 
     protected function fetchProducts(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
-        $result = $this->productRepository->search($criteria, $context->getContext());
+        $result = $this->productRepository->search($criteria, $context);
 
         return $this->fixResultOrder($result, $criteria);
     }
