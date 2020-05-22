@@ -3,6 +3,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -23,7 +24,8 @@ const IGNORED = [
 ];
 
 $logger = new Logger('release');
-$logger->pushHandler(new StreamHandler('php://stdout'));
+$formatter = new LineFormatter(null, null, false, true);
+$logger->pushHandler((new StreamHandler('php://stdout'))->setFormatter($formatter));
 
 $composerJsonData = json_decode(file_get_contents(COMPOSER_JSON_DEST), true);
 $version = $composerJsonData['version'];
@@ -49,7 +51,7 @@ $logger->info('Copying files...');
 exec(sprintf('cp -rf . %s', TMP_DIR));
 chdir(TMP_DIR);
 
-$logger->info('Installing dependencies...');
+$logger->info('Installing dependencies (may remove dev dependencies)...');
 exec('composer install --no-dev --optimize-autoloader --prefer-dist');
 
 $logger->info('Adding shopware/core and shopware/storefront to the composer.json.');
@@ -75,4 +77,4 @@ if ($stash !== 'No local changes to save') {
     exec('git stash pop');
 }
 
-$logger->info(sprintf('The release was successfully created! You can find it in %s', realpath($zipFileDest)));
+$logger->info(sprintf('SUCCESS! The release was successfully created! You can find it in %s', realpath($zipFileDest)));
