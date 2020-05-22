@@ -32,7 +32,7 @@ class ServiceConfigClientTest extends TestCase
     public function testConfigUrlAndValues(int $responseCode, ?string $body = null): void
     {
         $shopkey = $this->getShopkey();
-        $hashedShopkey = strtoupper(md5($shopkey));
+        $hashedShopkey = mb_strtoupper(md5($shopkey));
 
         // Create a mock and queue one response with the config json file
         $mock = new MockHandler([new Response($responseCode, [], $body)]);

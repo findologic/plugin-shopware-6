@@ -59,15 +59,12 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      */
     public function handleRequest(ShopwareEvent $event): void
     {
-        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
-            return;
-        }
-
         $originalCriteria = clone $event->getCriteria();
 
         try {
             /** @var Xml21Response $response */
             $response = $this->doRequest($event);
+
             $responseParser = ResponseParser::getInstance($response);
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
@@ -89,9 +86,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
     /**
      * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     * @param int|null $limit
      *
-     * @return Response|null
      * @throws CategoryNotFoundException
      * @throws InconsistentCriteriaIdsException
      * @throws MissingRequestParameterException
@@ -100,10 +95,6 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      */
     public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response
     {
-        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
-            return null;
-        }
-
         // Prevent exception if someone really tried to order by score on a category page.
         if ($event->getRequest()->query->get('sort') === 'score') {
             $event->getCriteria()->resetSorting();

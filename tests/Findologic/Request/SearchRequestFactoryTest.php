@@ -37,6 +37,7 @@ class SearchRequestFactoryTest extends TestCase
 
     /**
      * @dataProvider pluginVersionProvider
+     *
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
      */
