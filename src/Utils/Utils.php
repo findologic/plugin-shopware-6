@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Utils;
 
-use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
-use PackageVersions\Versions;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Kernel;
+use Symfony\Component\HttpFoundation\Request;
 
 class Utils
 {
@@ -81,7 +80,7 @@ class Utils
     {
         $encoded = '';
         $length = mb_strlen($string);
-        for ($i = 0; $i < $length; ++$i) {
+        for ($i = 0; $i < $length; $i++) {
             $encoded .= '%' . wordwrap(bin2hex(mb_substr($string, $i, 1)), 2, '%', true);
         }
 
@@ -90,31 +89,15 @@ class Utils
 
     public static function buildUrl(array $parsedUrl): string
     {
-        return (isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '')
-            . ((isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '')
-            . (isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '')
-            . (isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '')
-            . (isset($parsedUrl['user']) ? '@' : '')
-            . (isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '')
-            . (isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '')
-            . (isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '')
-            . (isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '')
-            . (isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : '');
-    }
-
-    public static function versionLowerThan(string $version): bool
-    {
-        // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
-        $shopwareVersion = ltrim(Versions::getVersion('shopware/platform'), 'v');
-
-        return version_compare($shopwareVersion, $version, '<');
-    }
-
-    public static function isFindologicEnabled(SalesChannelContext $context): bool
-    {
-        /** @var FindologicEnabled $findologicEnabled */
-        $findologicEnabled = $context->getContext()->getExtension('flEnabled');
-
-        return $findologicEnabled ? $findologicEnabled->getEnabled() : false;
+        return (isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '') .
+            ((isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '') .
+            (isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '') .
+            (isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '') .
+            (isset($parsedUrl['user']) ? '@' : '') .
+            (isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '') .
+            (isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '') .
+            (isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '') .
+            (isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '') .
+            (isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : '');
     }
 }

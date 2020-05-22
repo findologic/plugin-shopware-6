@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel\Listing;
+namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
 
-use FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel\FindologicProductListingGateway;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\FindologicProductListingGateway;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingGateway as ShopwareProductListingGateway;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;

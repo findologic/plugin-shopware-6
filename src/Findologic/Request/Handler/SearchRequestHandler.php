@@ -23,6 +23,10 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
      */
     public function handleRequest(ShopwareEvent $event): void
     {
+        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
+            return;
+        }
+
         $request = $event->getRequest();
 
         /** @var SearchRequest $searchRequest */
@@ -40,10 +44,8 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
 
             return;
         }
-
         if ($responseParser->getLandingPageExtension()) {
             $this->handleLandingPage($responseParser, $event);
-
             return;
         }
 
@@ -70,11 +72,17 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
 
     /**
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
+     * @param int|null $limit
      *
+     * @return Response|null
      * @throws ServiceNotAliveException
      */
     public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response
     {
+        if (!$event->getContext()->getExtension('flEnabled')->getEnabled()) {
+            return null;
+        }
+
         $request = $event->getRequest();
 
         /** @var SearchRequest $searchRequest */

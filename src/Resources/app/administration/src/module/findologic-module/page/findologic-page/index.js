@@ -39,8 +39,7 @@ Component.register('findologic-page', {
                     this.shopkeyAvailable = !!this.config['FinSearch.config.shopkey'];
                     this.isActive = !!this.config['FinSearch.config.active'];
                 } else {
-                    this.shopkeyAvailable = !!this.config['FinSearch.config.shopkey']
-                        || !!defaultConfig['FinSearch.config.shopkey'];
+                    this.shopkeyAvailable = !!this.config['FinSearch.config.shopkey'] || !!defaultConfig['FinSearch.config.shopkey'];
                     this.isActive = !!this.config['FinSearch.config.active'] || !!defaultConfig['FinSearch.config.active'];
                 }
 
@@ -101,7 +100,7 @@ Component.register('findologic-page', {
                         this.isStagingShop = true;
                     }
                 })
-                .catch(() => {
+                .catch((error) => {
                     this.isStagingShop = false;
                 });
         },

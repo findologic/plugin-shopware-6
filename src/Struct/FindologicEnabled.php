@@ -13,7 +13,7 @@ class FindologicEnabled extends Struct
 {
     private $enabled = true;
 
-    public function setEnabled(): void
+    public function setEnabled()
     {
         $this->enabled = true;
     }

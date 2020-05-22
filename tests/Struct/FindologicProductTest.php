@@ -65,7 +65,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider productNameProvider
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
@@ -158,7 +157,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider categorySeoProvider
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
@@ -224,7 +222,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider priceProvider
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException

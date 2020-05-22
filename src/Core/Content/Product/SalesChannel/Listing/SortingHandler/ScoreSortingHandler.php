@@ -11,7 +11,7 @@ class ScoreSortingHandler implements SortingHandlerInterface
 {
     public function supportsSorting(FieldSorting $fieldSorting): bool
     {
-        return $fieldSorting->getField() === '_score';
+        return ($fieldSorting->getField() === '_score');
     }
 
     public function generateSorting(FieldSorting $fieldSorting, SearchNavigationRequest $searchNavigationRequest): void

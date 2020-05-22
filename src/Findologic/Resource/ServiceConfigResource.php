@@ -38,26 +38,6 @@ class ServiceConfigResource
 
     /**
      * @throws InvalidArgumentException
-     * @throws ClientException
-     */
-    public function isDirectIntegration(string $shopkey): bool
-    {
-        $directIntegration = $this->get($shopkey, 'directIntegration');
-
-        return $directIntegration['enabled'];
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     * @throws ClientException
-     */
-    public function isStaging(string $shopkey): bool
-    {
-        return $this->get($shopkey, 'isStagingShop');
-    }
-
-    /**
-     * @throws InvalidArgumentException
      */
     private function getFromCache(): ?ServiceConfig
     {
@@ -103,5 +83,25 @@ class ServiceConfigResource
         }
 
         throw new InvalidServiceConfigKeyException(sprintf('Trying to access unknown ServiceConfig key "%s"', $key));
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws ClientException
+     */
+    public function isDirectIntegration(string $shopkey): bool
+    {
+        $directIntegration = $this->get($shopkey, 'directIntegration');
+
+        return $directIntegration['enabled'];
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws ClientException
+     */
+    public function isStaging(string $shopkey): bool
+    {
+        return $this->get($shopkey, 'isStagingShop');
     }
 }

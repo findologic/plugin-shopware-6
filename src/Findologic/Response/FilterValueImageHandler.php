@@ -18,7 +18,7 @@ class FilterValueImageHandler
     /** @var Client */
     private $client;
 
-    public function __construct(?Client $client = null)
+    public function __construct(Client $client = null)
     {
         $this->client = $client ?? new Client();
     }
@@ -27,7 +27,6 @@ class FilterValueImageHandler
      * Sends asynchronous HEAD requests to fetch images. Returns an array of actual found images.
      *
      * @param string[] $urls
-     *
      * @return string[]
      */
     public function getValidImageUrls(array $urls): array
@@ -37,7 +36,7 @@ class FilterValueImageHandler
         $validUrls = [];
         $pool = new Pool($this->client, $requests, [
             'concurrency' => 8,
-            'fulfilled' => function (Response $response, $index) use (&$validUrls, &$requests): void {
+            'fulfilled' => function (Response $response, $index) use (&$validUrls, &$requests) {
                 if ($response->getStatusCode() === 200) {
                     /** @var Request $request */
                     $request = $requests[$index];

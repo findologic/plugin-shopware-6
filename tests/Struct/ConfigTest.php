@@ -50,7 +50,6 @@ class ConfigTest extends TestCase
 
     /**
      * @dataProvider configValuesProvider
-     *
      * @throws InvalidArgumentException
      */
     public function testConfigPropertiesInitialization(array $data, ?ClientException $exception): void
