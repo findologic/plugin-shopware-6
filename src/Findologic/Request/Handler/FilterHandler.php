@@ -14,13 +14,15 @@ class FilterHandler
 {
     protected const FILTER_DELIMITER = '|';
 
-    protected const MIN_PREFIX = 'min-';
-    protected const MAX_PREFIX = 'max-';
+    protected const
+        MIN_PREFIX = 'min-',
+        MAX_PREFIX = 'max-';
 
     /**
      * Sets all requested filters to the FINDOLOGIC API request.
      *
      * @param ShopwareEvent|ProductListingCriteriaEvent $event
+     * @param SearchNavigationRequest $searchNavigationRequest
      */
     public function handleFilters(ShopwareEvent $event, SearchNavigationRequest $searchNavigationRequest): void
     {
@@ -45,6 +47,9 @@ class FilterHandler
      * E.g.
      * https://www.example.com/search?attrib%5Bvendor%5D%3DAdidas will return
      * https://www.example.com/search?manufacturer=Adidas
+     *
+     * @param Request $request
+     * @return string|null
      */
     public function handleFindologicSearchParams(Request $request): ?string
     {
@@ -101,7 +106,6 @@ class FilterHandler
         // the appropriate parameters to our API.
         if ($this->isRangeSliderFilter($filterName)) {
             $this->handleRangeSliderFilter($filterName, $filterValue, $searchNavigationRequest);
-
             return;
         }
 
@@ -111,18 +115,20 @@ class FilterHandler
     }
 
     /**
+     * @param string $filterName
      * @param string|int|float $filterValue
+     * @param SearchNavigationRequest $searchNavigationRequest
      */
     protected function handleRangeSliderFilter(
         string $filterName,
         $filterValue,
         SearchNavigationRequest $searchNavigationRequest
     ): void {
-        if (mb_substr($filterName, 0, mb_strlen(self::MIN_PREFIX)) === self::MIN_PREFIX) {
-            $filterName = mb_substr($filterName, mb_strlen(self::MIN_PREFIX));
+        if (substr($filterName, 0, strlen(self::MIN_PREFIX)) == self::MIN_PREFIX) {
+            $filterName = substr($filterName, strlen(self::MIN_PREFIX));
             $searchNavigationRequest->addAttribute($filterName, $filterValue, 'min');
         } else {
-            $filterName = mb_substr($filterName, mb_strlen(self::MAX_PREFIX));
+            $filterName = substr($filterName, strlen(self::MAX_PREFIX));
             $searchNavigationRequest->addAttribute($filterName, $filterValue, 'max');
         }
     }
@@ -137,7 +143,6 @@ class FilterHandler
      * like "q", "sort", etc. and real filters.
      *
      * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     *
      * @return string[]
      */
     protected function fetchAvailableFilterNames(ShopwareEvent $event): array
@@ -159,6 +164,9 @@ class FilterHandler
      * the same query parameter twice. Instead they have the same key and their values are
      * imploded via a special character (|). The query parameter looks like ?size=20|21.
      * This method simply explodes the given string into filter values.
+     *
+     * @param string $filterValues
+     * @return array
      */
     protected function getFilterValues(string $filterValues): array
     {
@@ -167,11 +175,11 @@ class FilterHandler
 
     private function isMinRangeSlider(string $name): bool
     {
-        return mb_substr($name, 0, mb_strlen(self::MIN_PREFIX)) === self::MIN_PREFIX;
+        return substr($name, 0, strlen(self::MIN_PREFIX)) == self::MIN_PREFIX;
     }
 
     private function isMaxRangeSlider(string $name): bool
     {
-        return mb_substr($name, 0, mb_strlen(self::MAX_PREFIX)) === self::MAX_PREFIX;
+        return substr($name, 0, strlen(self::MAX_PREFIX)) == self::MAX_PREFIX;
     }
 }

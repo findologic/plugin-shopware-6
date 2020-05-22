@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel;
+namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel;
 
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchResultEvent;
+use Shopware\Core\Content\Product\ProductEvents;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -29,7 +30,8 @@ class FindologicProductSearchGateway extends FindologicProductListingSearchGatew
         $this->searchBuilder->build($request, $criteria, $context);
 
         $this->eventDispatcher->dispatch(
-            new ProductSearchCriteriaEvent($request, $criteria, $context)
+            new ProductSearchCriteriaEvent($request, $criteria, $context),
+            ProductEvents::PRODUCT_SEARCH_CRITERIA
         );
 
         $result = $this->doSearch($criteria, $context);
@@ -37,7 +39,8 @@ class FindologicProductSearchGateway extends FindologicProductListingSearchGatew
         $result = ProductListingResult::createFrom($result);
 
         $this->eventDispatcher->dispatch(
-            new ProductSearchResultEvent($request, $result, $context)
+            new ProductSearchResultEvent($request, $result, $context),
+            ProductEvents::PRODUCT_SEARCH_RESULT
         );
 
         $result->addCurrentFilter('search', $request->query->get('search'));

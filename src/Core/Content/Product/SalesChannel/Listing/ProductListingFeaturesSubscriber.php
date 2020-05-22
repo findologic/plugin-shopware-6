@@ -125,28 +125,6 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $this->addTopResultSorting($event);
     }
 
-    public function handleListingRequest(ProductListingCriteriaEvent $event): void
-    {
-        parent::handleListingRequest($event);
-
-        if ($this->allowRequest($event)) {
-            $this->apiConfig->setServiceId($this->config->getShopkey());
-            $this->handleFilters($event);
-            $this->navigationRequestHandler->handleRequest($event);
-        }
-    }
-
-    public function handleSearchRequest(ProductSearchCriteriaEvent $event): void
-    {
-        parent::handleSearchRequest($event);
-
-        if ($this->allowRequest($event)) {
-            $this->apiConfig->setServiceId($this->config->getShopkey());
-            $this->handleFilters($event);
-            $this->searchRequestHandler->handleRequest($event);
-        }
-    }
-
     private function addTopResultSorting(ProductListingResultEvent $event): void
     {
         $defaultSort = $event instanceof ProductSearchResultEvent ? self::DEFAULT_SEARCH_SORT : self::DEFAULT_SORT;
@@ -178,6 +156,28 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         }
 
         return $default;
+    }
+
+    public function handleListingRequest(ProductListingCriteriaEvent $event): void
+    {
+        parent::handleListingRequest($event);
+
+        if ($this->allowRequest($event)) {
+            $this->apiConfig->setServiceId($this->config->getShopkey());
+            $this->handleFilters($event);
+            $this->navigationRequestHandler->handleRequest($event);
+        }
+    }
+
+    public function handleSearchRequest(ProductSearchCriteriaEvent $event): void
+    {
+        parent::handleSearchRequest($event);
+
+        if ($this->allowRequest($event)) {
+            $this->apiConfig->setServiceId($this->config->getShopkey());
+            $this->handleFilters($event);
+            $this->searchRequestHandler->handleRequest($event);
+        }
     }
 
     private function handleFilters(ProductListingCriteriaEvent $event): void

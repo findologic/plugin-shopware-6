@@ -168,7 +168,6 @@ class ServiceConfigResourceTest extends TestCase
 
     /**
      * @dataProvider expiredTimeProvider
-     *
      * @throws InvalidArgumentException
      */
     public function testConfigWhenCacheIsExpired(bool $isExpired, array $directIntegration, string $expiredTime): void

@@ -79,7 +79,7 @@ class FrontendSubscriberTest extends TestCase
                 ),
                 $this->callback(
                     function (Snippet $snippet) use ($shopkey) {
-                        $this->assertSame(mb_strtoupper(md5($shopkey)), $snippet->getHashedShopkey());
+                        $this->assertSame(strtoupper(md5($shopkey)), $snippet->getHashedShopkey());
 
                         return true;
                     }
@@ -101,8 +101,7 @@ class FrontendSubscriberTest extends TestCase
             ->method('getCurrentCustomerGroup')
             ->willReturn($customerGroupEntityMock);
 
-        $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')
-            ->willReturn($headerPageletMock);
+        $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')->willReturn($headerPageletMock);
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')
             ->willReturn($salesChannelContextMock);
 

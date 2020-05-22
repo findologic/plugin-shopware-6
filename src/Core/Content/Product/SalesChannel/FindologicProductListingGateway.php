@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel;
+namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel;
 
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
@@ -27,9 +27,8 @@ class FindologicProductListingGateway extends FindologicProductListingSearchGate
             )
         );
 
-        $categoryId = $this->getNavigationId($request, $salesChannelContext);
         $criteria->addFilter(
-            new EqualsFilter('product.categoriesRo.id', $categoryId)
+            new EqualsFilter('product.categoriesRo.id', $this->getNavigationId($request, $salesChannelContext))
         );
         $this->eventDispatcher->dispatch(
             new ProductListingCriteriaEvent($request, $criteria, $salesChannelContext)
@@ -39,7 +38,7 @@ class FindologicProductListingGateway extends FindologicProductListingSearchGate
 
         $result = ProductListingResult::createFrom($result);
 
-        $result->addCurrentFilter('navigationId', $categoryId);
+        $result->addCurrentFilter('navigationId', $this->getNavigationId($request, $salesChannelContext));
 
         $this->eventDispatcher->dispatch(
             new ProductListingResultEvent($request, $result, $salesChannelContext)

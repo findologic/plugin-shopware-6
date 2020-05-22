@@ -91,6 +91,204 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->initMocks();
     }
 
+    private function initMocks(): void
+    {
+        $this->connectionMock = $this->getMockBuilder(Connection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->entityRepositoryMock = $this->getMockBuilder(EntityRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->productListingSortingRegistry = $this->getMockBuilder(ProductListingSortingRegistry::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->navigationRequestFactoryMock = $this->getMockBuilder(NavigationRequestFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->searchRequestFactoryMock = $this->getMockBuilder(SearchRequestFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->systemConfigServiceMock = $this->getMockBuilder(SystemConfigService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->serviceConfigResourceMock = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->genericPageLoaderMock = $this->getMockBuilder(GenericPageLoader::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->containerMock = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
+        $this->configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
+        $this->apiConfigMock = $this->getMockBuilder(ApiConfig::class)->disableOriginalConstructor()->getMock();
+        $this->apiClientMock = $this->getMockBuilder(ApiClient::class)->disableOriginalConstructor()->getMock();
+    }
+
+    private function getDefaultProductListingFeaturesSubscriber(): ProductListingFeaturesSubscriber
+    {
+        return new ProductListingFeaturesSubscriber(
+            $this->connectionMock,
+            $this->entityRepositoryMock,
+            $this->productListingSortingRegistry,
+            $this->navigationRequestFactoryMock,
+            $this->searchRequestFactoryMock,
+            $this->systemConfigServiceMock,
+            $this->serviceConfigResourceMock,
+            $this->genericPageLoaderMock,
+            $this->containerMock,
+            $this->configMock,
+            $this->apiConfigMock,
+            $this->apiClientMock
+        );
+    }
+
+    private function getRawResponse(string $file = 'demo.xml'): SimpleXMLElement
+    {
+        return new SimpleXMLElement(
+            file_get_contents(
+                __DIR__ . sprintf('/../../../../../MockData/XMLResponse/%s', $file)
+            )
+        );
+    }
+
+    private function getDefaultResponse(): Xml21Response
+    {
+        return new Xml21Response(file_get_contents(__DIR__ . '/../../../../../MockData/XMLResponse/demo.xml'));
+    }
+
+    private function getDefaultRequestMock(): Request
+    {
+        /** @var Request|MockObject $requestMock */
+        $requestMock = $this->getMockBuilder(Request::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sessionMock = $this->getDefaultSessionMock();
+        $requestMock->expects($this->any())->method('getSession')->willReturn($sessionMock);
+
+        $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
+        $queryMock->expects($this->at(0))
+            ->method('getInt')
+            ->willReturn(24);
+        $queryMock->expects($this->at(1))
+            ->method('getInt')
+            ->willReturn(1);
+        $queryMock->expects($this->any())->method('get')->willReturn('');
+
+        $requestMock->query = $queryMock;
+
+        return $requestMock;
+    }
+
+    private function buildSmartDidYouMeanQueryElement(
+        ?string $didYouMeanQuery = null,
+        ?string $improvedQuery = null,
+        ?string $correctedQuery = null
+    ): SimpleXMLElement {
+        $rawXML = <<<XML
+<query>
+    <limit first="0" count="24" />
+    <queryString>ps3</queryString>
+</query>
+XML;
+        $element = new SimpleXMLElement($rawXML);
+
+        if ($didYouMeanQuery) {
+            $element->addChild('didYouMeanQuery', $didYouMeanQuery);
+        }
+        if ($improvedQuery) {
+            $element->queryString->addAttribute('type', 'improved');
+            $element->addChild('originalQuery', $improvedQuery);
+        }
+        if ($correctedQuery) {
+            $element->queryString->addAttribute('type', 'corrected');
+            $element->addChild('originalQuery', $correctedQuery);
+        }
+
+        return $element;
+    }
+
+    /**
+     * @param Xml21Response|null $response
+     * @param Request|null $request
+     *
+     * @return MockObject|ProductSearchCriteriaEvent
+     */
+    private function setUpSearchRequestMocks(
+        Xml21Response $response = null,
+        Request $request = null,
+        bool $withSmartDidYouMean = true
+    ): ProductSearchCriteriaEvent {
+        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        if ($response === null) {
+            $response = $this->getDefaultResponse();
+        }
+
+        $this->apiClientMock->expects($this->any())
+            ->method('send')
+            ->willReturn($response);
+
+        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
+        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        if ($request === null) {
+            $request = $this->getDefaultRequestMock();
+        }
+        $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
+
+        $findologicEnabled = new FindologicEnabled();
+        $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
+        $defaultExtensionMap = [
+            ['flEnabled', $findologicEnabled],
+            ['flSmartDidYouMean', $smartDidYouMean]
+        ];
+
+        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
+
+        if ($withSmartDidYouMean) {
+            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
+                ['flEnabled', $findologicEnabled],
+                ['flSmartDidYouMean', $smartDidYouMean]
+            );
+        } else {
+            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
+                ['flEnabled', $findologicEnabled]
+            );
+        }
+        $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
+
+        return $eventMock;
+    }
+
+    private function setUpNavigationRequestMocks(): void
+    {
+        $headerMock = $this->getMockBuilder(HeaderPagelet::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // TODO: Make this injectable via constructor arguments if possible.
+        $pageMock = $this->getMockBuilder(Page::class)->disableOriginalConstructor()->getMock();
+        $pageMock->expects($this->any())->method('getHeader')->willReturn($headerMock);
+        $reflection = new ReflectionClass($pageMock);
+        $reflectionProperty = $reflection->getProperty('header');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($pageMock, $headerMock);
+        $this->genericPageLoaderMock->expects($this->any())->method('load')->willReturn($pageMock);
+
+        $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
+        $headerMock->expects($this->once())->method('getNavigation')->willReturn($categoryTreeMock);
+
+        $categoryEntityMock = $this->getMockBuilder(CategoryEntity::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $categoryTreeMock->expects($this->once())->method('getActive')->willReturn($categoryEntityMock);
+
+        $categoryEntityMock->expects($this->once())->method('getBreadcrumb')
+            ->willReturn(['Deutsch', 'Freizeit & Elektro']);
+    }
+
     public function requestProvider(): array
     {
         return [
@@ -112,6 +310,10 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     /**
      * @dataProvider requestProvider
+     *
+     * @param string $endpoint
+     * @param array $expectedProducts
+     * @param bool $isNavigationRequest
      */
     public function testResponseMatchesProductIds(
         string $endpoint,
@@ -140,8 +342,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
                 'term' => null,
                 'extensions' => [
                     'flPagination' => new Pagination(24, 0, 1808)
-                ],
-                'includes' => null
+                ]
             ]
         );
 
@@ -195,6 +396,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     /**
      * @dataProvider sortingProvider
+     *
+     * @param FieldSorting $fieldSorting
+     * @param string $expectedOrder
      */
     public function testSortingIsSubmitted(FieldSorting $fieldSorting, string $expectedOrder): void
     {
@@ -222,6 +426,10 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     /**
      * @dataProvider requestProvider
+     *
+     * @param string $endpoint
+     * @param array $expectedProducts
+     * @param bool $isNavigationRequest
      */
     public function testServiceNotAliveExceptionsAreCaught(
         string $endpoint,
@@ -573,201 +781,6 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $method->setAccessible(true);
         $isEnabled = $method->invoke($subscriber, $eventMock);
         $this->assertSame($isFindologicEnabled, $isEnabled);
-    }
-
-    private function initMocks(): void
-    {
-        $this->connectionMock = $this->getMockBuilder(Connection::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->entityRepositoryMock = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->productListingSortingRegistry = $this->getMockBuilder(ProductListingSortingRegistry::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->navigationRequestFactoryMock = $this->getMockBuilder(NavigationRequestFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->searchRequestFactoryMock = $this->getMockBuilder(SearchRequestFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->systemConfigServiceMock = $this->getMockBuilder(SystemConfigService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->serviceConfigResourceMock = $this->getMockBuilder(ServiceConfigResource::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->genericPageLoaderMock = $this->getMockBuilder(GenericPageLoader::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->containerMock = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
-        $this->configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
-        $this->apiConfigMock = $this->getMockBuilder(ApiConfig::class)->disableOriginalConstructor()->getMock();
-        $this->apiClientMock = $this->getMockBuilder(ApiClient::class)->disableOriginalConstructor()->getMock();
-    }
-
-    private function getDefaultProductListingFeaturesSubscriber(): ProductListingFeaturesSubscriber
-    {
-        return new ProductListingFeaturesSubscriber(
-            $this->connectionMock,
-            $this->entityRepositoryMock,
-            $this->productListingSortingRegistry,
-            $this->navigationRequestFactoryMock,
-            $this->searchRequestFactoryMock,
-            $this->systemConfigServiceMock,
-            $this->serviceConfigResourceMock,
-            $this->genericPageLoaderMock,
-            $this->containerMock,
-            $this->configMock,
-            $this->apiConfigMock,
-            $this->apiClientMock
-        );
-    }
-
-    private function getRawResponse(string $file = 'demo.xml'): SimpleXMLElement
-    {
-        return new SimpleXMLElement(
-            file_get_contents(
-                __DIR__ . sprintf('/../../../../../MockData/XMLResponse/%s', $file)
-            )
-        );
-    }
-
-    private function getDefaultResponse(): Xml21Response
-    {
-        return new Xml21Response(file_get_contents(__DIR__ . '/../../../../../MockData/XMLResponse/demo.xml'));
-    }
-
-    private function getDefaultRequestMock(): Request
-    {
-        /** @var Request|MockObject $requestMock */
-        $requestMock = $this->getMockBuilder(Request::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sessionMock = $this->getDefaultSessionMock();
-        $requestMock->expects($this->any())->method('getSession')->willReturn($sessionMock);
-
-        $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
-        $queryMock->expects($this->at(0))
-            ->method('getInt')
-            ->willReturn(24);
-        $queryMock->expects($this->at(1))
-            ->method('getInt')
-            ->willReturn(1);
-        $queryMock->expects($this->any())->method('get')->willReturn('');
-
-        $requestMock->query = $queryMock;
-
-        return $requestMock;
-    }
-
-    private function buildSmartDidYouMeanQueryElement(
-        ?string $didYouMeanQuery = null,
-        ?string $improvedQuery = null,
-        ?string $correctedQuery = null
-    ): SimpleXMLElement {
-        $rawXML = <<<XML
-<query>
-    <limit first="0" count="24" />
-    <queryString>ps3</queryString>
-</query>
-XML;
-        $element = new SimpleXMLElement($rawXML);
-
-        if ($didYouMeanQuery) {
-            $element->addChild('didYouMeanQuery', $didYouMeanQuery);
-        }
-        if ($improvedQuery) {
-            $element->queryString->addAttribute('type', 'improved');
-            $element->addChild('originalQuery', $improvedQuery);
-        }
-        if ($correctedQuery) {
-            $element->queryString->addAttribute('type', 'corrected');
-            $element->addChild('originalQuery', $correctedQuery);
-        }
-
-        return $element;
-    }
-
-    /**
-     * @return MockObject|ProductSearchCriteriaEvent
-     */
-    private function setUpSearchRequestMocks(
-        ?Xml21Response $response = null,
-        ?Request $request = null,
-        bool $withSmartDidYouMean = true
-    ): ProductSearchCriteriaEvent {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
-        if ($response === null) {
-            $response = $this->getDefaultResponse();
-        }
-
-        $this->apiClientMock->expects($this->any())
-            ->method('send')
-            ->willReturn($response);
-
-        /** @var ProductSearchCriteriaEvent|MockObject $eventMock */
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        if ($request === null) {
-            $request = $this->getDefaultRequestMock();
-        }
-        $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
-
-        $findologicEnabled = new FindologicEnabled();
-        $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
-        $defaultExtensionMap = [
-            ['flEnabled', $findologicEnabled],
-            ['flSmartDidYouMean', $smartDidYouMean]
-        ];
-
-        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-
-        if ($withSmartDidYouMean) {
-            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-                ['flEnabled', $findologicEnabled],
-                ['flSmartDidYouMean', $smartDidYouMean]
-            );
-        } else {
-            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-                ['flEnabled', $findologicEnabled]
-            );
-        }
-        $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
-        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
-
-        return $eventMock;
-    }
-
-    private function setUpNavigationRequestMocks(): void
-    {
-        $headerMock = $this->getMockBuilder(HeaderPagelet::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        // TODO: Make this injectable via constructor arguments if possible.
-        $pageMock = $this->getMockBuilder(Page::class)->disableOriginalConstructor()->getMock();
-        $pageMock->expects($this->any())->method('getHeader')->willReturn($headerMock);
-        $reflection = new ReflectionClass($pageMock);
-        $reflectionProperty = $reflection->getProperty('header');
-        $reflectionProperty->setAccessible(true);
-        $reflectionProperty->setValue($pageMock, $headerMock);
-        $this->genericPageLoaderMock->expects($this->any())->method('load')->willReturn($pageMock);
-
-        $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
-        $headerMock->expects($this->once())->method('getNavigation')->willReturn($categoryTreeMock);
-
-        $categoryEntityMock = $this->getMockBuilder(CategoryEntity::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $categoryTreeMock->expects($this->once())->method('getActive')->willReturn($categoryEntityMock);
-
-        $categoryEntityMock->expects($this->once())->method('getBreadcrumb')
-            ->willReturn(['Deutsch', 'Freizeit & Elektro']);
     }
 
     private function getDefaultSessionMock(): SessionInterface
