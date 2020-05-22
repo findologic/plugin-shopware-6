@@ -15,10 +15,10 @@ use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -53,7 +53,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
     private $decorated;
 
     /**
-     * @var EntityRepositoryInterface
+     * @var SalesChannelRepositoryInterface
      */
     private $productRepository;
 
@@ -61,7 +61,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         AbstractProductSearchRoute $decorated,
         ProductSearchBuilderInterface $searchBuilder,
         EventDispatcherInterface $eventDispatcher,
-        EntityRepositoryInterface $productRepository,
+        SalesChannelRepositoryInterface $productRepository,
         ProductDefinition $definition,
         RequestCriteriaBuilder $criteriaBuilder
     ) {
@@ -114,7 +114,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
     protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
         if (!Utils::isFindologicEnabled($context)) {
-            return $this->productRepository->search($criteria, $context->getContext());
+            return $this->productRepository->search($criteria, $context);
         }
 
         $this->assignPaginationToCriteria($criteria);

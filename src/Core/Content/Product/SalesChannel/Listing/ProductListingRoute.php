@@ -14,11 +14,11 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRou
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -48,13 +48,13 @@ class ProductListingRoute extends AbstractProductListingRoute
     private $decorated;
 
     /**
-     * @var EntityRepositoryInterface
+     * @var SalesChannelRepositoryInterface
      */
     private $productRepository;
 
     public function __construct(
         AbstractProductListingRoute $decorated,
-        EntityRepositoryInterface $productRepository,
+        SalesChannelRepositoryInterface $productRepository,
         EventDispatcherInterface $eventDispatcher,
         ProductDefinition $definition,
         RequestCriteriaBuilder $criteriaBuilder
@@ -113,7 +113,7 @@ class ProductListingRoute extends AbstractProductListingRoute
     protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
         if (!Utils::isFindologicEnabled($context)) {
-            return $this->productRepository->search($criteria, $context->getContext());
+            return $this->productRepository->search($criteria, $context);
         }
 
         $this->assignPaginationToCriteria($criteria);
