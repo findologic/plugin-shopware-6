@@ -20,11 +20,6 @@ abstract class BaseFilter
     /** @var FilterValue[] */
     protected $values;
 
-    /**
-     * @param string $id
-     * @param string $name
-     * @param array $values
-     */
     public function __construct(string $id, string $name, array $values = [])
     {
         $this->id = $id;

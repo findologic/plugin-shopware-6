@@ -2,8 +2,8 @@ import './extension/sw-plugin';
 import './page/findologic-page';
 import './components/findologic-config';
 
-import enGB from './snippet/en-GB';
-import deDE from './snippet/de-DE';
+import enGB from './snippet/en-GB.json';
+import deDE from './snippet/de-DE.json';
 
 const { Module } = Shopware;
 
