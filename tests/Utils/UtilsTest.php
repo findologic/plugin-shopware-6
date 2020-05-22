@@ -96,7 +96,7 @@ class UtilsTest extends TestCase
             ],
             'String with double quotes' => [
                 'Findologic "Rocks!"',
-                "Findologic \"Rocks!\"",
+                'Findologic "Rocks!"',
                 'Expected double quotes to be escaped with back slash'
             ],
             'String with back slashes' => [

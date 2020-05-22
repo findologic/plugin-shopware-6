@@ -83,6 +83,7 @@ class FindologicRequestFactoryTest extends TestCase
     /**
      * @dataProvider ipAddressProvider
      * @dataProvider reverseProxyIpAddressProvider
+     *
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
      */

@@ -15,9 +15,7 @@ use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Checkout\Cart\Tax\TaxDetector;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -27,7 +25,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
@@ -43,9 +40,8 @@ use Symfony\Component\Validator\Validation;
 
 class ExportController extends AbstractController implements EventSubscriberInterface
 {
-    private const
-        DEFAULT_START_PARAM = 0,
-        DEFAULT_COUNT_PARAM = 20;
+    private const DEFAULT_START_PARAM = 0;
+    private const DEFAULT_COUNT_PARAM = 20;
 
     /** @var LoggerInterface */
     protected $logger;
@@ -76,6 +72,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
+     *
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
@@ -109,119 +106,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
         );
 
         return new Response($response, 200, $this->headerHandler->getHeaders());
-    }
-
-    private function validateParams(Request $request): void
-    {
-        $shopkey = $request->get('shopkey');
-        $start = $request->get('start', self::DEFAULT_START_PARAM);
-        $count = $request->get('count', self::DEFAULT_COUNT_PARAM);
-
-        $validator = Validation::createValidator();
-        $shopkeyViolations = $validator->validate(
-            $shopkey,
-            [
-                new NotBlank(),
-                new Assert\Regex(
-                    [
-                        'pattern' => '/^[A-F0-9]{32}$/'
-                    ]
-                )
-            ]
-        );
-        if (count($shopkeyViolations) > 0) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'Required argument "shopkey" was not given, or does not match the shopkey schema "%s"',
-                    $shopkey
-                )
-            );
-        }
-
-        $startViolations = $validator->validate(
-            $start,
-            [
-                new Assert\Type(
-                    [
-                        'type' => 'numeric',
-                        'message' => 'The value {{ value }} is not a valid {{ type }}',
-                    ]
-                ),
-                new Assert\GreaterThanOrEqual(
-                    [
-                        'value' => 0,
-                        'message' => 'The value {{ value }} is not greater than or equal to zero'
-                    ]
-                )
-            ]
-        );
-        if (count($startViolations) > 0) {
-            throw new InvalidArgumentException($startViolations->get(0)->getMessage());
-        }
-
-        $countViolations = $validator->validate(
-            $count,
-            [
-                new Assert\Type(
-                    [
-                        'type' => 'numeric',
-                        'message' => 'The value {{ value }} is not a valid {{ type }}',
-                    ]
-                ),
-                new Assert\GreaterThan(
-                    [
-                        'value' => 0,
-                        'message' => 'The value {{ value }} is not greater than zero'
-                    ]
-                )
-            ]
-        );
-        if (count($countViolations) > 0) {
-            throw new InvalidArgumentException($countViolations->get(0)->getMessage());
-        }
-    }
-
-    /**
-     * @throws InconsistentCriteriaIdsException
-     * @throws UnknownShopkeyException
-     */
-    private function getSalesChannelContext(string $shopkey, SalesChannelContext $currentContext): SalesChannelContext
-    {
-        $systemConfigRepository = $this->container->get('system_config.repository');
-        $systemConfigEntities = $systemConfigRepository->search(
-            (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
-            $currentContext->getContext()
-        );
-
-        /** @var SystemConfigEntity $systemConfigEntity */
-        foreach ($systemConfigEntities as $systemConfigEntity) {
-            if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
-                // If there is no sales channel assigned, we will return the current context
-                if ($systemConfigEntity->getSalesChannelId() === null) {
-                    return $currentContext;
-                }
-
-                $factory = new SalesChannelContextFactory(
-                    $this->container->get('sales_channel.repository'),
-                    $this->container->get('currency.repository'),
-                    $this->container->get('customer.repository'),
-                    $this->container->get('customer_group.repository'),
-                    $this->container->get('country.repository'),
-                    $this->container->get('tax.repository'),
-                    $this->container->get('customer_address.repository'),
-                    $this->container->get('payment_method.repository'),
-                    $this->container->get('shipping_method.repository'),
-                    Kernel::getConnection(),
-                    $this->container->get('country_state.repository'),
-                    new TaxDetector(),
-                    []
-                );
-
-                return $factory->create($currentContext->getToken(), $systemConfigEntity->getSalesChannelId());
-            }
-        }
-
-        throw new UnknownShopkeyException(sprintf('Given shopkey "%s" is not assigned to any shop', $shopkey));
     }
 
     /**
@@ -277,6 +161,105 @@ class ExportController extends AbstractController implements EventSubscriberInte
         }
 
         return $this->queryProducts($salesChannelContext, $start, $count);
+    }
+
+    private function validateParams(Request $request): void
+    {
+        $shopkey = $request->get('shopkey');
+        $start = $request->get('start', self::DEFAULT_START_PARAM);
+        $count = $request->get('count', self::DEFAULT_COUNT_PARAM);
+
+        $validator = Validation::createValidator();
+        $shopkeyViolations = $validator->validate(
+            $shopkey,
+            [
+                new NotBlank(),
+                new Assert\Regex(
+                    [
+                        'pattern' => '/^[A-F0-9]{32}$/',
+                    ]
+                ),
+            ]
+        );
+        if (count($shopkeyViolations) > 0) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Required argument "shopkey" was not given, or does not match the shopkey schema "%s"',
+                    $shopkey
+                )
+            );
+        }
+
+        $startViolations = $validator->validate(
+            $start,
+            [
+                new Assert\Type(
+                    [
+                        'type' => 'numeric',
+                        'message' => 'The value {{ value }} is not a valid {{ type }}',
+                    ]
+                ),
+                new Assert\GreaterThanOrEqual(
+                    [
+                        'value' => 0,
+                        'message' => 'The value {{ value }} is not greater than or equal to zero',
+                    ]
+                ),
+            ]
+        );
+        if (count($startViolations) > 0) {
+            throw new \InvalidArgumentException($startViolations->get(0)->getMessage());
+        }
+
+        $countViolations = $validator->validate(
+            $count,
+            [
+                new Assert\Type(
+                    [
+                        'type' => 'numeric',
+                        'message' => 'The value {{ value }} is not a valid {{ type }}',
+                    ]
+                ),
+                new Assert\GreaterThan(
+                    [
+                        'value' => 0,
+                        'message' => 'The value {{ value }} is not greater than zero',
+                    ]
+                ),
+            ]
+        );
+        if (count($countViolations) > 0) {
+            throw new \InvalidArgumentException($countViolations->get(0)->getMessage());
+        }
+    }
+
+    /**
+     * @throws InconsistentCriteriaIdsException
+     * @throws UnknownShopkeyException
+     */
+    private function getSalesChannelContext(string $shopkey, SalesChannelContext $currentContext): SalesChannelContext
+    {
+        $systemConfigRepository = $this->container->get('system_config.repository');
+        $systemConfigEntities = $systemConfigRepository->search(
+            (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
+            $currentContext->getContext()
+        );
+
+        /** @var SystemConfigEntity $systemConfigEntity */
+        foreach ($systemConfigEntities as $systemConfigEntity) {
+            if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
+                // If there is no sales channel assigned, we will return the current context
+                if ($systemConfigEntity->getSalesChannelId() === null) {
+                    return $currentContext;
+                }
+
+                $factory = $this->container->get(SalesChannelContextFactory::class);
+
+                return $factory->create($currentContext->getToken(), $systemConfigEntity->getSalesChannelId());
+            }
+        }
+
+        throw new UnknownShopkeyException(sprintf('Given shopkey "%s" is not assigned to any shop', $shopkey));
     }
 
     /**
