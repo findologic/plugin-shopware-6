@@ -21,6 +21,7 @@ use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
+use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
@@ -742,8 +743,19 @@ class FindologicProduct extends Struct
             return;
         }
 
+        $imagesOrdered = new ProductMediaCollection();
+        $images = $this->product->getMedia()->getElements();
+        $coverImageId = $this->product->getCoverId();
+        $imagesOrdered->add($images[$coverImageId]);
+
+        foreach ($images as $image) {
+            if ($image->getId() !== $coverImageId) {
+                $imagesOrdered->add($image);
+            }
+        }
+
         /** @var ProductMediaEntity $mediaEntity */
-        foreach ($this->product->getMedia() as $mediaEntity) {
+        foreach ($imagesOrdered as $mediaEntity) {
             if (!$mediaEntity->getMedia() || !$mediaEntity->getMedia()->getUrl()) {
                 continue;
             }
