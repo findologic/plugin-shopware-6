@@ -54,14 +54,18 @@ class ExportController extends AbstractController implements EventSubscriberInte
      */
     private $headerHandler;
 
+    private $salesChannelContextFactory;
+
     public function __construct(
         LoggerInterface $logger,
         Router $router,
-        HeaderHandler $headerHandler
+        HeaderHandler $headerHandler,
+        SalesChannelContextFactory $salesChannelContextFactory
     ) {
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
+        $this->salesChannelContextFactory = $salesChannelContextFactory;
     }
 
     public static function getSubscribedEvents(): array
@@ -253,9 +257,10 @@ class ExportController extends AbstractController implements EventSubscriberInte
                     return $currentContext;
                 }
 
-                $factory = $this->container->get(SalesChannelContextFactory::class);
-
-                return $factory->create($currentContext->getToken(), $systemConfigEntity->getSalesChannelId());
+                return $this->salesChannelContextFactory->create(
+                    $currentContext->getToken(),
+                    $systemConfigEntity->getSalesChannelId()
+                );
             }
         }
 
