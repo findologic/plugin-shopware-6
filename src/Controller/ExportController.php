@@ -26,6 +26,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
@@ -227,11 +228,19 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @throws InconsistentCriteriaIdsException
      */
-    public function queryProducts(
-        SalesChannelContext $salesChannelContext,
-        ?int $offset = null,
-        ?int $limit = null
-    ): EntitySearchResult {
+    public function getTotalProductCount(SalesChannelContext $salesChannelContext): int
+    {
+        $criteria = $this->getQueryCriteria($salesChannelContext);
+
+        /** @var IdSearchResult $result */
+        $result = $this->container->get('product.repository')->searchIds($criteria, $salesChannelContext->getContext());
+        return $result->getTotal();
+    }
+
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
+    public function getQueryCriteria(SalesChannelContext $salesChannelContext, ?int $offset = null, ?int $limit = null): Criteria {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('parent.id', null));
         $criteria->addFilter(
@@ -250,15 +259,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $criteria->setLimit($limit);
         }
 
-        return $this->container->get('product.repository')->search($criteria, $salesChannelContext->getContext());
-    }
-
-    /**
-     * @throws InconsistentCriteriaIdsException
-     */
-    public function getTotalProductCount(SalesChannelContext $salesChannelContext): int
-    {
-        return $this->queryProducts($salesChannelContext)->getEntities()->count();
+        return $criteria;
     }
 
     /**
@@ -276,7 +277,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $count = self::DEFAULT_COUNT_PARAM;
         }
 
-        return $this->queryProducts($salesChannelContext, $start, $count);
+        $criteria = $this->getQueryCriteria($salesChannelContext, $start, $count);
+
+        return $this->container->get('product.repository')->search($criteria, $salesChannelContext->getContext());
     }
 
     /**
