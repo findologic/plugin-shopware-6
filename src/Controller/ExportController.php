@@ -240,7 +240,11 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @throws InconsistentCriteriaIdsException
      */
-    public function getQueryCriteria(SalesChannelContext $salesChannelContext, ?int $offset = null, ?int $limit = null): Criteria {
+    public function getQueryCriteria(
+        SalesChannelContext $salesChannelContext,
+        ?int $offset = null,
+        ?int $limit = null
+    ): Criteria {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('parent.id', null));
         $criteria->addFilter(
