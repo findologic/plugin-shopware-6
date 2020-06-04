@@ -17,6 +17,7 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\GuzzleHttp\Client;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
@@ -167,7 +168,10 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
     private function getCurrentSorting(Request $request, string $default): ?string
     {
-        $key = $request->get('sort', $default);
+        $key = $request->get('order', $default);
+        if (Utils::versionLowerThan('6.1')) {
+            $key = $request->get('sort', $default);
+        }
 
         if (!$key) {
             return null;

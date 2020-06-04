@@ -18,6 +18,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
@@ -122,6 +123,16 @@ class ProductListingRoute extends AbstractProductListingRoute
             return $this->createEmptySearchResult($criteria, $context);
         }
 
-        return $this->fetchProducts($criteria, $context);
+        // Shopware can not handle _score sort for listing pages, but since our Findologic navigation always shows
+        // top results, we reset it here shortly.
+        $preservedSortings = $criteria->getSorting();
+        $criteria->resetSorting();
+
+        $result = $this->fetchProducts($criteria, $context);
+        foreach ($preservedSortings as $sorting) {
+            $criteria->addSorting($sorting);
+        }
+
+        return $result;
     }
 }
