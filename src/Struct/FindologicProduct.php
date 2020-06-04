@@ -518,7 +518,8 @@ class FindologicProduct extends Struct
      * @param ProductMediaCollection $images
      * @return ProductMediaCollection
      */
-    private function setCoverImageOnFirstPlace(ProductMediaCollection $images): ProductMediaCollection {
+    private function setCoverImageOnFirstPlace(ProductMediaCollection $images): ProductMediaCollection
+    {
         $coverImageId = $this->product->getCoverId();
         $coverImage = $images->get($coverImageId);
         $images->remove($coverImageId);
