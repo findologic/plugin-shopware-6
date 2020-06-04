@@ -27,6 +27,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Plugin\PluginCollection;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -266,6 +267,13 @@ class ExportControllerTest extends TestCase
             $this->defaultContext
         );
 
+        $productIdSearchResult = new IdSearchResult(
+            13,
+            [],
+            $criteria,
+            $this->defaultContext
+        );
+
         $criteriaWithoutOffsetLimit = clone $criteria;
         $criteriaWithoutOffsetLimit->setOffset(null);
         $criteriaWithoutOffsetLimit->setLimit(null);
@@ -276,9 +284,9 @@ class ExportControllerTest extends TestCase
             ->getMock();
 
         $productRepositoryMock->expects($this->at(0))
-            ->method('search')
+            ->method('searchIds')
             ->with($criteriaWithoutOffsetLimit, $this->defaultContext)
-            ->willReturn($productEntitySearchResult);
+            ->willReturn($productIdSearchResult);
         $productRepositoryMock->expects($this->at(1))
             ->method('search')
             ->with($criteria, $this->defaultContext)
@@ -374,6 +382,13 @@ class ExportControllerTest extends TestCase
             )
         );
 
+        $productIdSearchResult = new IdSearchResult(
+            13,
+            [],
+            $criteria,
+            $this->defaultContext
+        );
+
         $criteria = Utils::addProductAssociations($criteria);
         $criteria->setOffset($start);
         $criteria->setLimit($count);
@@ -387,7 +402,10 @@ class ExportControllerTest extends TestCase
             $this->defaultContext
         );
 
-        $productRepositoryMock->expects($this->exactly(2))
+        $productRepositoryMock->expects($this->once())
+            ->method('searchIds')
+            ->willReturn($productIdSearchResult);
+        $productRepositoryMock->expects($this->once())
             ->method('search')
             ->willReturn($productEntitySearchResult);
 
@@ -581,6 +599,13 @@ class ExportControllerTest extends TestCase
         $criteria->setOffset(0);
         $criteria->setLimit(20);
 
+        $productIdSearchResult = new IdSearchResult(
+            13,
+            [],
+            $criteria,
+            $this->defaultContext
+        );
+
         /** @var EntitySearchResult $productEntitySearchResult */
         $productEntitySearchResult = new EntitySearchResult(
             1,
@@ -600,9 +625,9 @@ class ExportControllerTest extends TestCase
             ->getMock();
 
         $productRepositoryMock->expects($this->at(0))
-            ->method('search')
+            ->method('searchIds')
             ->with($criteriaWithoutOffsetLimit, $this->defaultContext)
-            ->willReturn($productEntitySearchResult);
+            ->willReturn($productIdSearchResult);
         $productRepositoryMock->expects($this->at(1))
             ->method('search')
             ->with($criteria, $this->defaultContext)
