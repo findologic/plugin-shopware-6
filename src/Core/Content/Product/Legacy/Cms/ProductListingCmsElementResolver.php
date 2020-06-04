@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\Cms;
 
 use Shopware\Core\Content\Product\Cms\ProductListingCmsElementResolver as ShopwareProductListingCmsElementResolver;
