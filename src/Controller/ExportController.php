@@ -230,7 +230,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
      */
     public function getTotalProductCount(SalesChannelContext $salesChannelContext): int
     {
-        $criteria = $this->getQueryCriteria($salesChannelContext);
+        $criteria = $this->getProductCriteria($salesChannelContext);
 
         /** @var IdSearchResult $result */
         $result = $this->container->get('product.repository')->searchIds($criteria, $salesChannelContext->getContext());
@@ -240,7 +240,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @throws InconsistentCriteriaIdsException
      */
-    public function getQueryCriteria(
+    public function getProductCriteria(
         SalesChannelContext $salesChannelContext,
         ?int $offset = null,
         ?int $limit = null
@@ -281,7 +281,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $count = self::DEFAULT_COUNT_PARAM;
         }
 
-        $criteria = $this->getQueryCriteria($salesChannelContext, $start, $count);
+        $criteria = $this->getProductCriteria($salesChannelContext, $start, $count);
 
         return $this->container->get('product.repository')->search($criteria, $salesChannelContext->getContext());
     }
