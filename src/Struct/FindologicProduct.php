@@ -21,6 +21,7 @@ use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
+use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
@@ -743,7 +744,7 @@ class FindologicProduct extends Struct
         }
 
         /** @var ProductMediaEntity $mediaEntity */
-        foreach ($this->product->getMedia() as $mediaEntity) {
+        foreach ($this->getSortedImages() as $mediaEntity) {
             if (!$mediaEntity->getMedia() || !$mediaEntity->getMedia()->getUrl()) {
                 continue;
             }
@@ -814,5 +815,16 @@ class FindologicProduct extends Struct
         array_shift($breadCrumbs);
 
         return implode('_', $breadCrumbs);
+    }
+
+    private function getSortedImages(): ProductMediaCollection
+    {
+        $images = $this->product->getMedia();
+        $coverImageId = $this->product->getCoverId();
+        $coverImage = $images->get($coverImageId);
+        $images->remove($coverImageId);
+        $images->insert(0, $coverImage);
+
+        return $images;
     }
 }
