@@ -30,6 +30,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginCollection;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigCollection;
@@ -38,6 +39,7 @@ use Shopware\Storefront\Framework\Routing\Router;
 use SimpleXMLElement;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class ExportControllerTest extends TestCase
@@ -61,6 +63,11 @@ class ExportControllerTest extends TestCase
     /** @var string */
     private $validShopkey = '80AB18D4BE2654E78244106AD315DC2C';
 
+    /**
+     * @var EventDispatcherInterface|MockObject
+     */
+    private $eventDispatcherMock;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -70,7 +77,8 @@ class ExportControllerTest extends TestCase
         $this->exportController = new ExportController(
             $this->loggerMock,
             $this->router,
-            $this->getContainer()->get(HeaderHandler::class)
+            $this->getContainer()->get(HeaderHandler::class),
+            $this->getContainer()->get(SalesChannelContextFactory::class)
         );
         $this->defaultContext = Context::createDefaultContext();
     }
@@ -131,6 +139,7 @@ class ExportControllerTest extends TestCase
 
     /**
      * @dataProvider invalidArgumentProvider
+     *
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
@@ -170,6 +179,7 @@ class ExportControllerTest extends TestCase
 
     /**
      * @dataProvider validArgumentProvider
+     *
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
@@ -198,8 +208,8 @@ class ExportControllerTest extends TestCase
         $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
 
         /** @var PsrContainerInterface|MockObject $containerMock */
-        $containerMock =
-            $this->getMockBuilder(PsrContainerInterface::class)->disableOriginalConstructor()->getMock();
+        $containerMock
+            = $this->getMockBuilder(PsrContainerInterface::class)->disableOriginalConstructor()->getMock();
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
@@ -322,8 +332,8 @@ class ExportControllerTest extends TestCase
         $entities = new SystemConfigCollection([$systemConfigEntity]);
 
         /** @var EntitySearchResult $entitySearchResult */
-        $entitySearchResult =
-            new EntitySearchResult(1, $entities, null, new Criteria(), $this->defaultContext);
+        $entitySearchResult
+            = new EntitySearchResult(1, $entities, null, new Criteria(), $this->defaultContext);
 
         $systemConfigRepositoryMock->expects($this->once())->method('search')->willReturn($entitySearchResult);
 
@@ -340,12 +350,12 @@ class ExportControllerTest extends TestCase
         $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
 
         /** @var PsrContainerInterface|MockObject $containerMock */
-        $containerMock =
-            $this->getMockBuilder(PsrContainerInterface::class)->disableOriginalConstructor()->getMock();
+        $containerMock
+            = $this->getMockBuilder(PsrContainerInterface::class)->disableOriginalConstructor()->getMock();
 
         /** @var EntityRepository|MockObject $productRepositoryMock */
-        $productRepositoryMock =
-            $this->getMockBuilder(EntityRepository::class)->disableOriginalConstructor()->getMock();
+        $productRepositoryMock
+            = $this->getMockBuilder(EntityRepository::class)->disableOriginalConstructor()->getMock();
 
         /** @var ProductEntity $productEntity */
         $productEntity = $this->createTestProduct();
@@ -396,6 +406,7 @@ class ExportControllerTest extends TestCase
             ['country_state.repository', $this->getContainer()->get('country_state.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             [FindologicProductFactory::class, $this->getContainer()->get(FindologicProductFactory::class)],
+            [SalesChannelContextFactory::class, $this->getContainer()->get(SalesChannelContextFactory::class)],
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
 
@@ -441,8 +452,8 @@ class ExportControllerTest extends TestCase
         $systemConfigRepositoryMock->expects($this->once())->method('search')->willReturn($systemConfigSearchResult);
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
-        $salesChannelContextMock =
-            $this->getMockBuilder(SalesChannelContext::class)->disableOriginalConstructor()->getMock();
+        $salesChannelContextMock
+            = $this->getMockBuilder(SalesChannelContext::class)->disableOriginalConstructor()->getMock();
 
         /** @var Request $request */
         $request = new Request(['shopkey' => $unknownShopkey]);
@@ -608,7 +619,6 @@ class ExportControllerTest extends TestCase
 
         $pluginCollection = new PluginCollection([$pluginEntity]);
 
-        /** @var EntitySearchResult $productEntitySearchResult */
         $pluginEntitySearchResult = new EntitySearchResult(
             1,
             $pluginCollection,
@@ -622,7 +632,6 @@ class ExportControllerTest extends TestCase
 
         $extensionPluginCollection = new PluginCollection([$extensionPluginEntity]);
 
-        /** @var EntitySearchResult $productEntitySearchResult */
         $extensionPluginEntitySearchResult = new EntitySearchResult(
             1,
             $extensionPluginCollection,
@@ -666,7 +675,12 @@ class ExportControllerTest extends TestCase
 
         $headerHandler->expects($this->once())->method('getHeaders')->willReturn($expectedHeaders);
 
-        $this->exportController = new ExportController($this->loggerMock, $this->router, $headerHandler);
+        $this->exportController = new ExportController(
+            $this->loggerMock,
+            $this->router,
+            $headerHandler,
+            $this->getContainer()->get(SalesChannelContextFactory::class)
+        );
         $this->exportController->setContainer($containerMock);
         $result = $this->exportController->export($request, $salesChannelContextMock);
 

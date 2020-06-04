@@ -8,11 +8,10 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class SmartDidYouMean extends Struct
 {
-    protected const
-        DID_YOU_MEAN = 'did-you-mean',
-        IMPROVED = 'improved';
+    protected const DID_YOU_MEAN = 'did-you-mean';
+    protected const IMPROVED = 'improved';
 
-    /** @var null|string */
+    /** @var string|null */
     private $type;
 
     /** @var string|null */
@@ -36,26 +35,6 @@ class SmartDidYouMean extends Struct
         $this->originalQuery = $this->type === self::DID_YOU_MEAN ? '' : htmlentities($originalQuery);
 
         $this->link = $this->createLink($controllerPath);
-    }
-
-    private function createLink(?string $controllerPath): ?string
-    {
-        switch ($this->type) {
-            case self::DID_YOU_MEAN:
-                return sprintf(
-                    '%s?search=%s&forceOriginalQuery=1',
-                    $controllerPath,
-                    $this->alternativeQuery
-                );
-            case self::IMPROVED:
-                return sprintf(
-                    '%s?search=%s&forceOriginalQuery=1',
-                    $controllerPath,
-                    $this->originalQuery
-                );
-            default:
-                return null;
-        }
     }
 
     public function getType(): ?string
@@ -86,5 +65,25 @@ class SmartDidYouMean extends Struct
             'alternativeQuery' => $this->alternativeQuery,
             'originalQuery' => $this->originalQuery,
         ];
+    }
+
+    private function createLink(?string $controllerPath): ?string
+    {
+        switch ($this->type) {
+            case self::DID_YOU_MEAN:
+                return sprintf(
+                    '%s?search=%s&forceOriginalQuery=1',
+                    $controllerPath,
+                    $this->alternativeQuery
+                );
+            case self::IMPROVED:
+                return sprintf(
+                    '%s?search=%s&forceOriginalQuery=1',
+                    $controllerPath,
+                    $this->originalQuery
+                );
+            default:
+                return null;
+        }
     }
 }

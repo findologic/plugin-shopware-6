@@ -6,14 +6,28 @@ namespace FINDOLOGIC\FinSearch;
 
 use Composer\Autoload\ClassLoader;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 class FinSearch extends Plugin
 {
+    public function build(ContainerBuilder $container): void
+    {
+        // For maintaining compatibility with Shopware 6.1.x we load relevant services due to several
+        // breaking changes introduced in Shopware 6.2
+        // @link https://github.com/shopware/platform/blob/master/UPGRADE-6.2.md
+        $this->loadServiceXml($container, $this->getServiceXml());
+
+        parent::build($container);
+    }
+
     public function uninstall(UninstallContext $uninstallContext): void
     {
         $activePlugins = $this->container->getParameter('kernel.active_plugins');
@@ -35,11 +49,32 @@ class FinSearch extends Plugin
 
         parent::uninstall($uninstallContext);
     }
+
+    private function getServiceXml(): string
+    {
+        if (Utils::versionLowerThan('6.2')) {
+            $file = 'sw61_services';
+        } else {
+            $file = 'services';
+        }
+
+        return $file;
+    }
+
+    private function loadServiceXml($container, string $file): void
+    {
+        $loader = new XmlFileLoader(
+            $container,
+            new FileLocator($this->getPath() . '/Resources/config/services')
+        );
+        $loader->load(sprintf('%s.xml', $file));
+    }
 }
 
 // phpcs:disable
 /**
  * Shopware themselves use this method to autoload their libraries inside of plugins.
+ *
  * @see https://github.com/shopware-blog/shopware-fastbill-connector/blob/development/src/FastBillConnector.php#L47
  */
 $loader = require_once __DIR__ . '/../vendor/autoload.php';

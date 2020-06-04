@@ -82,10 +82,7 @@ abstract class SearchNavigationRequestHandler
     /**
      * Sends a request to the FINDOLOGIC service based on the given event and the responsible request handler.
      *
-     * @param ShopwareEvent $event
-     * @param int|null $limit Limited amount of products.
-     *
-     * @return Response|null
+     * @param int|null $limit limited amount of products
      */
     abstract public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response;
 
@@ -99,8 +96,6 @@ abstract class SearchNavigationRequestHandler
 
     /**
      * @param ShopwareEvent|ProductSearchCriteriaEvent $event
-     * @param SearchNavigationRequest $request
-     * @param int|null $limit
      */
     protected function setPaginationParams(ShopwareEvent $event, SearchNavigationRequest $request, ?int $limit): void
     {
@@ -110,11 +105,15 @@ abstract class SearchNavigationRequestHandler
 
     /**
      * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     * @param Criteria $criteria
      */
     protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
     {
-        $event->getCriteria()->assign($criteria->getVars());
+        $vars = $criteria->getVars();
+        // `includes` is added in Shopware >= 6.2, so we manually add this for compatibility with Shopware 6.1.x
+        if (!empty($vars) && !array_key_exists('includes', $vars)) {
+            $vars['includes'] = null;
+        }
+        $event->getCriteria()->assign($vars);
     }
 
     /**

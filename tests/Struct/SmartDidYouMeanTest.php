@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
-use FINDOLOGIC\Api\Responses\Xml21\Properties\OriginalQuery;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Query;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\QueryString;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class SmartDidYouMeanTest extends TestCase

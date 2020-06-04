@@ -34,11 +34,8 @@ abstract class Filter extends BaseFilter
      * Builds a new filter instance. May return null for unsupported filter types. Throws an exception for unknown
      * filter types.
      *
-     * @param ApiFilter $filter
      * @param Client|null $client Used to fetch images from vendor image or color filters. If not set a new client
-     * instance will be created internally.
-     *
-     * @return Filter|null
+     *                            instance will be created internally.
      */
     public static function getInstance(ApiFilter $filter, ?Client $client = null): ?Filter
     {
@@ -58,6 +55,13 @@ abstract class Filter extends BaseFilter
             default:
                 throw new InvalidArgumentException('The submitted filter is unknown.');
         }
+    }
+
+    public function addValue(FilterValue $filterValue): self
+    {
+        $this->values[] = $filterValue;
+
+        return $this;
     }
 
     private static function handleLabelTextFilter(ApiLabelTextFilter $filter): LabelTextFilter
@@ -177,7 +181,7 @@ abstract class Filter extends BaseFilter
     /**
      * @param CategoryItem[] $items
      */
-    private static function parseSubFilters(CategoryFilterValue $filterValue, array $items)
+    private static function parseSubFilters(CategoryFilterValue $filterValue, array $items): void
     {
         foreach ($items as $item) {
             $filter = new CategoryFilterValue($item->getName(), $item->getName());
@@ -187,12 +191,5 @@ abstract class Filter extends BaseFilter
 
             $filterValue->addValue($filter);
         }
-    }
-
-    public function addValue(FilterValue $filterValue): self
-    {
-        $this->values[] = $filterValue;
-
-        return $this;
     }
 }

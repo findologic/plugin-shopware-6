@@ -19,9 +19,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class FindologicRequestFactory
 {
-    private const
-        CACHE_VERSION_LIFETIME = 60 * 60 * 24,
-        CACHE_VERSION_KEY = 'finsearch_version';
+    private const CACHE_VERSION_LIFETIME = 60 * 60 * 24;
+    private const CACHE_VERSION_KEY = 'finsearch_version';
 
     /** @var CacheItemPoolInterface */
     private $cache;
@@ -63,7 +62,6 @@ abstract class FindologicRequestFactory
     }
 
     /**
-     * @return SearchNavigationRequest
      * @throws InconsistentCriteriaIdsException
      * @throws InvalidArgumentException
      */
@@ -98,11 +96,11 @@ abstract class FindologicRequestFactory
             $ipAddress = $_SERVER['HTTP_CLIENT_IP'];
         } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             // Check for multiple IPs passing through proxy
-            $position = strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',');
+            $position = mb_strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',');
 
             // If multiple IPs are passed, extract the first one
             if ($position !== false) {
-                $ipAddress = substr($_SERVER['HTTP_X_FORWARDED_FOR'], 0, $position);
+                $ipAddress = mb_substr($_SERVER['HTTP_X_FORWARDED_FOR'], 0, $position);
             } else {
                 $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
             }
