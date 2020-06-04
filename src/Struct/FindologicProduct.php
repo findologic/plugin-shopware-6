@@ -472,19 +472,9 @@ class FindologicProduct extends Struct
             return;
         }
 
-        $imagesOrdered = new ProductMediaCollection();
-        $images = $this->product->getMedia()->getElements();
-        $coverImageId = $this->product->getCoverId();
-        $imagesOrdered->add($images[$coverImageId]);
-
-        foreach ($images as $image) {
-            if ($image->getId() !== $coverImageId) {
-                $imagesOrdered->add($image);
-            }
-        }
-
+        $images = $this->setCoverImageOnFirstPlace($this->product->getMedia());
         /** @var ProductMediaEntity $mediaEntity */
-        foreach ($imagesOrdered as $mediaEntity) {
+        foreach ($images as $mediaEntity) {
             if (!$mediaEntity->getMedia() || !$mediaEntity->getMedia()->getUrl()) {
                 continue;
             }
@@ -520,6 +510,15 @@ class FindologicProduct extends Struct
         ));
 
         return Utils::buildUrl($parsedUrl);
+    }
+
+    private function setCoverImageOnFirstPlace(ProductMediaCollection $images): ProductMediaCollection {
+        $coverImageId = $this->product->getCoverId();
+        $coverImage = $images->get($coverImageId);
+        $images->remove($coverImageId);
+        $images->insert(0, $coverImage);
+
+        return $images;
     }
 
     /**
