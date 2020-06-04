@@ -472,9 +472,8 @@ class FindologicProduct extends Struct
             return;
         }
 
-        $images = $this->setCoverImageOnFirstPlace($this->product->getMedia());
         /** @var ProductMediaEntity $mediaEntity */
-        foreach ($images as $mediaEntity) {
+        foreach ($this->getSortedImages() as $mediaEntity) {
             if (!$mediaEntity->getMedia() || !$mediaEntity->getMedia()->getUrl()) {
                 continue;
             }
@@ -513,13 +512,13 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * Takes the cover image from the unordered collection and moves it to the first position
+     * Returns the images with the cover image on the first position
      *
-     * @param ProductMediaCollection $images
      * @return ProductMediaCollection
      */
-    private function setCoverImageOnFirstPlace(ProductMediaCollection $images): ProductMediaCollection
+    private function getSortedImages(): ProductMediaCollection
     {
+        $images = $this->product->getMedia();
         $coverImageId = $this->product->getCoverId();
         $coverImage = $images->get($coverImageId);
         $images->remove($coverImageId);
