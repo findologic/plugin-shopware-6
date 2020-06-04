@@ -512,6 +512,12 @@ class FindologicProduct extends Struct
         return Utils::buildUrl($parsedUrl);
     }
 
+    /**
+     * Takes the cover image from the unordered collection and moves it to the first position
+     *
+     * @param ProductMediaCollection $images
+     * @return ProductMediaCollection
+     */
     private function setCoverImageOnFirstPlace(ProductMediaCollection $images): ProductMediaCollection {
         $coverImageId = $this->product->getCoverId();
         $coverImage = $images->get($coverImageId);
