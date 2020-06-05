@@ -820,12 +820,13 @@ class FindologicProduct extends Struct
     private function getSortedImages(): ProductMediaCollection
     {
         $images = $this->product->getMedia();
-        if ($images->count() === 1) {
+        $coverImageId = $this->product->getCoverId();
+        $coverImage = $images->get($coverImageId);
+
+        if (!$coverImage || $images->count() === 1) {
             return $images;
         }
 
-        $coverImageId = $this->product->getCoverId();
-        $coverImage = $images->get($coverImageId);
         $images->remove($coverImageId);
         $images->insert(0, $coverImage);
 
