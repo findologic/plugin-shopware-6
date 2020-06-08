@@ -93,7 +93,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      * @throws ServiceNotAliveException
      * @throws UnknownCategoryException
      */
-    public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response
+    public function doRequest(ShopwareEvent $event, ?int $limit = null): Response
     {
         // Prevent exception if someone really tried to order by score on a category page.
         if ($event->getRequest()->query->get('sort') === 'score') {
@@ -104,13 +104,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         /** @var SalesChannelContext $salesChannelContext */
         $salesChannelContext = $event->getSalesChannelContext();
-
         $categoryPath = $this->fetchCategoryPath($request, $salesChannelContext);
-
-        // If we can't fetch the category path, we let Shopware handle the request.
-        if (empty($categoryPath)) {
-            throw new UnknownCategoryException();
-        }
 
         /** @var NavigationRequest $navigationRequest */
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
