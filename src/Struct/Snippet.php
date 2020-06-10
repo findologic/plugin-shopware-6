@@ -18,7 +18,7 @@ class Snippet extends Struct
     private $userGroupHash;
 
     /** @var string */
-    private $hashedShopkey;
+    private $shopkey;
 
     public function __construct(
         string $shopkey,
@@ -26,7 +26,7 @@ class Snippet extends Struct
         string $navigationResultContainer,
         string $userGroupHash
     ) {
-        $this->hashedShopkey = mb_strtoupper(md5($shopkey));
+        $this->shopkey = $shopkey;
         $this->searchResultContainer = $searchResultContainer;
         $this->navigationResultContainer = $navigationResultContainer;
         $this->userGroupHash = $userGroupHash;
@@ -47,8 +47,8 @@ class Snippet extends Struct
         return $this->userGroupHash;
     }
 
-    public function getHashedShopkey(): string
+    public function getShopkey(): string
     {
-        return $this->hashedShopkey;
+        return $this->shopkey;
     }
 }
