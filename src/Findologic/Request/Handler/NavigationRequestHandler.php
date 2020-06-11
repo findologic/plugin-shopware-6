@@ -106,6 +106,11 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $salesChannelContext = $event->getSalesChannelContext();
         $categoryPath = $this->fetchCategoryPath($request, $salesChannelContext);
 
+        // If we can't fetch the category path, we let Shopware handle the request.
+        if (empty($categoryPath)) {
+            throw new UnknownCategoryException();
+        }
+
         /** @var NavigationRequest $navigationRequest */
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $categoryPath);

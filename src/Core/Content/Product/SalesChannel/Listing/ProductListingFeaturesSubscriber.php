@@ -194,7 +194,11 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             }
             $responseParser = ResponseParser::getInstance($response);
             $event->getCriteria()->addExtension('flFilters', $responseParser->getFiltersExtension());
-        } catch (ServiceNotAliveException | UnknownCategoryException $ignored) {
+        } catch (ServiceNotAliveException $e) {
+            /** @var FindologicEnabled $flEnabled */
+            $flEnabled = $event->getContext()->getExtension('flEnabled');
+            $flEnabled->setDisabled();
+        } catch (UnknownCategoryException $ignored) {
         }
     }
 
