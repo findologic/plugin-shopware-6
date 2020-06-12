@@ -199,6 +199,8 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $flEnabled = $event->getContext()->getExtension('flEnabled');
             $flEnabled->setDisabled();
         } catch (UnknownCategoryException $ignored) {
+            // We ignore this exception and do not disable the plugin here, otherwise the autocomplete of Shopware
+            // would be visible behind Findologic's search suggest
         }
     }
 
