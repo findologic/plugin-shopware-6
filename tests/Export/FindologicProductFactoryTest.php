@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
@@ -54,7 +55,8 @@ class FindologicProductFactoryTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            []
+            [],
+            new XMLItem('123')
         );
 
         $this->assertInstanceOf(FindologicProduct::class, $findologicProduct);

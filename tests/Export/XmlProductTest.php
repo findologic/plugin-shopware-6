@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\Export\Data\DateAdded;
 use FINDOLOGIC\Export\Data\Item;
+use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
@@ -60,7 +61,8 @@ class XmlProductTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            []
+            [],
+            new XMLItem('123')
         ])->getMock();
         $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getName')->willReturn('some name');
