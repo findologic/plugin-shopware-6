@@ -133,7 +133,8 @@ class XmlProductTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            []
+            [],
+            new XMLItem('123')
         ])->getMock();
         $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getName')->willReturn($productEntity->getName());
