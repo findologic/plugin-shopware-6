@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Struct;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\DateAdded;
 use FINDOLOGIC\Export\Data\Image;
+use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Data\Keyword;
 use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
@@ -91,6 +92,9 @@ class FindologicProduct extends Struct
     /** @var Property[] */
     protected $properties;
 
+    /** @var Item */
+    protected $item;
+
     /**
      * @param CustomerGroupEntity[] $customerGroups
      *
@@ -104,7 +108,8 @@ class FindologicProduct extends Struct
         ContainerInterface $container,
         Context $context,
         string $shopkey,
-        array $customerGroups
+        array $customerGroups,
+        Item $item
     ) {
         $this->product = $product;
         $this->router = $router;
@@ -112,6 +117,7 @@ class FindologicProduct extends Struct
         $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
+        $this->item = $item;
         $this->prices = [];
         $this->attributes = [];
         $this->properties = [];

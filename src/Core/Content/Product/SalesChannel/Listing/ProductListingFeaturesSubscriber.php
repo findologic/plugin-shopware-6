@@ -44,31 +44,31 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     private const RESULT_LIMIT_FILTER = 0;
 
     /** @var ProductListingSortingRegistry */
-    private $sortingRegistry;
+    protected $sortingRegistry;
 
     /** @var NavigationRequestFactory */
-    private $navigationRequestFactory;
+    protected $navigationRequestFactory;
 
     /** @var SearchRequestFactory */
-    private $searchRequestFactory;
+    protected $searchRequestFactory;
 
     /** @var ServiceConfigResource */
-    private $serviceConfigResource;
+    protected $serviceConfigResource;
 
     /** @var Config */
-    private $config;
+    protected $config;
 
     /** @var ApiConfig */
-    private $apiConfig;
+    protected $apiConfig;
 
     /** @var ContainerInterface */
-    private $container;
+    protected $container;
 
     /** @var SearchRequestHandler */
-    private $searchRequestHandler;
+    protected $searchRequestHandler;
 
     /** @var NavigationRequestHandler */
-    private $navigationRequestHandler;
+    protected $navigationRequestHandler;
 
     public function __construct(
         Connection $connection,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export;
 
+use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
@@ -29,8 +30,9 @@ class FindologicProductFactory
         ContainerInterface $container,
         Context $context,
         string $shopkey,
-        array $customerGroups
+        array $customerGroups,
+        Item $item
     ): FindologicProduct {
-        return new FindologicProduct($product, $router, $container, $context, $shopkey, $customerGroups);
+        return new FindologicProduct($product, $router, $container, $context, $shopkey, $customerGroups, $item);
     }
 }
