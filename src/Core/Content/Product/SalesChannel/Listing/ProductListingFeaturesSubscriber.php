@@ -229,7 +229,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $shopkey = $this->config->getShopkey();
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
-        $isStagingSession = $this->isStagingSession($event);
+        $isStagingSession = Utils::isStagingSession($event->getRequest());
 
         // Allow request if shop is not staging or is staging with findologic=on flag set
         $allowRequestForStaging = (!$isStagingShop || ($isStagingShop && $isStagingSession));
@@ -243,30 +243,5 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         }
 
         return $shouldHandleRequest;
-    }
-
-    private function isStagingSession(ShopwareEvent $event): bool
-    {
-        $request = $event->getRequest();
-
-        $findologic = $request->get('findologic');
-
-        if ($findologic === 'on') {
-            $request->getSession()->set('stagingFlag', true);
-
-            return true;
-        }
-
-        if ($findologic === 'off' || $findologic === 'disabled') {
-            $request->getSession()->set('stagingFlag', false);
-
-            return false;
-        }
-
-        if ($request->getSession()->get('stagingFlag') === true) {
-            return true;
-        }
-
-        return false;
     }
 }
