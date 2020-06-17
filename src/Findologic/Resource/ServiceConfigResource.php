@@ -55,8 +55,12 @@ class ServiceConfigResource
      * @throws InvalidArgumentException
      * @throws ClientException
      */
-    public function isStaging(string $shopkey): bool
+    public function isStaging(?string $shopkey): bool
     {
+        if ($shopkey === null) {
+            return false;
+        }
+
         return $this->get($shopkey, 'isStagingShop');
     }
 
