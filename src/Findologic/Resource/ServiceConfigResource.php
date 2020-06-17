@@ -40,8 +40,12 @@ class ServiceConfigResource
      * @throws InvalidArgumentException
      * @throws ClientException
      */
-    public function isDirectIntegration(string $shopkey): bool
+    public function isDirectIntegration(?string $shopkey): bool
     {
+        if ($shopkey === null) {
+            return false;
+        }
+
         $directIntegration = $this->get($shopkey, 'directIntegration');
 
         return $directIntegration['enabled'];
@@ -51,8 +55,12 @@ class ServiceConfigResource
      * @throws InvalidArgumentException
      * @throws ClientException
      */
-    public function isStaging(string $shopkey): bool
+    public function isStaging(?string $shopkey): bool
     {
+        if ($shopkey === null) {
+            return false;
+        }
+
         return $this->get($shopkey, 'isStagingShop');
     }
 
