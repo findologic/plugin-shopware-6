@@ -194,10 +194,13 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             }
             $responseParser = ResponseParser::getInstance($response);
             $event->getCriteria()->addExtension('flFilters', $responseParser->getFiltersExtension());
-        } catch (ServiceNotAliveException | UnknownCategoryException $e) {
+        } catch (ServiceNotAliveException $e) {
             /** @var FindologicEnabled $flEnabled */
             $flEnabled = $event->getContext()->getExtension('flEnabled');
             $flEnabled->setDisabled();
+        } catch (UnknownCategoryException $ignored) {
+            // We ignore this exception and do not disable the plugin here, otherwise the autocomplete of Shopware
+            // would be visible behind Findologic's search suggest
         }
     }
 
