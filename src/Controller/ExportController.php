@@ -151,7 +151,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
         /** @var IdSearchResult $result */
         $result = $this->container->get('product.repository')->searchIds($criteria, $salesChannelContext->getContext());
-
         return $result->getTotal();
     }
 

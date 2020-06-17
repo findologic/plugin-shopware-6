@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
@@ -15,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 class FilterHandler
 {
     protected const FILTER_DELIMITER = '|';
+
     protected const MIN_PREFIX = 'min-';
     protected const MAX_PREFIX = 'max-';
 
@@ -32,13 +31,7 @@ class FilterHandler
         if ($selectedFilters) {
             foreach ($selectedFilters as $filterName => $filterValues) {
                 foreach ($this->getFilterValues($filterValues) as $filterValue) {
-                    $this->handleFilter(
-                        $filterName,
-                        $filterValue,
-                        $searchNavigationRequest,
-                        $availableFilterNames,
-                        $event
-                    );
+                    $this->handleFilter($filterName, $filterValue, $searchNavigationRequest, $availableFilterNames);
                 }
             }
         }
@@ -48,6 +41,7 @@ class FilterHandler
      * Handles FINDOLOGIC-specific query params like "attrib" or "catFilter".
      * If any of these parameters are submitted, an URI may be returned that contains the query parameters
      * in a Shopware-readable format. If no FINDOLOGIC params are submitted, null may be returned.
+     *
      * E.g.
      * https://www.example.com/search?attrib%5Bvendor%5D%3DAdidas will return
      * https://www.example.com/search?manufacturer=Adidas
@@ -101,8 +95,7 @@ class FilterHandler
         string $filterName,
         string $filterValue,
         SearchNavigationRequest $searchNavigationRequest,
-        array $availableFilterNames,
-        ShopwareEvent $event
+        array $availableFilterNames
     ): void {
         // Range Slider filters in Shopware are prefixed with min-/max-. We manually need to remove this and send
         // the appropriate parameters to our API.
@@ -110,15 +103,6 @@ class FilterHandler
             $this->handleRangeSliderFilter($filterName, $filterValue, $searchNavigationRequest);
 
             return;
-        }
-        if ($this->isRatingFilter($filterName)) {
-            $filters = $event->getCriteria()->getExtension('flFilters');
-            /** @var Filter $filter */
-            foreach ($filters as $filter) {
-                if ($filter instanceof RatingFilter && $filter->getId() === 'rating') {
-                    $searchNavigationRequest->addAttribute($filterName, $filterValue, 'min');
-                }
-            }
         }
 
         if (in_array($filterName, $availableFilterNames, true)) {
@@ -134,7 +118,7 @@ class FilterHandler
         $filterValue,
         SearchNavigationRequest $searchNavigationRequest
     ): void {
-        if (mb_strpos($filterName, self::MIN_PREFIX) === 0) {
+        if (mb_substr($filterName, 0, mb_strlen(self::MIN_PREFIX)) === self::MIN_PREFIX) {
             $filterName = mb_substr($filterName, mb_strlen(self::MIN_PREFIX));
             $searchNavigationRequest->addAttribute($filterName, $filterValue, 'min');
         } else {
@@ -183,16 +167,11 @@ class FilterHandler
 
     private function isMinRangeSlider(string $name): bool
     {
-        return mb_strpos($name, self::MIN_PREFIX) === 0;
+        return mb_substr($name, 0, mb_strlen(self::MIN_PREFIX)) === self::MIN_PREFIX;
     }
 
     private function isMaxRangeSlider(string $name): bool
     {
-        return mb_strpos($name, self::MAX_PREFIX) === 0;
-    }
-
-    private function isRatingFilter(string $filterName): bool
-    {
-        return $filterName === 'rating';
+        return mb_substr($name, 0, mb_strlen(self::MAX_PREFIX)) === self::MAX_PREFIX;
     }
 }
