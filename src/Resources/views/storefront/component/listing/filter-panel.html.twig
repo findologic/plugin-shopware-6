@@ -68,6 +68,17 @@
                     } %}
                 {% endif %}
 
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RatingFilter") %}
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating.html.twig' with {
+                        elements: filter.values,
+                        maxPoints: filter.maxPoints,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        displayName: filter.name,
+                        pluginSelector: 'filter-rating'
+                    } %}
+                {% endif %}
+
             {% endfor %}
         {% endif %}
     {% endblock %}

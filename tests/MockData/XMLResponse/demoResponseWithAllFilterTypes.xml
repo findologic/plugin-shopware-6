@@ -178,6 +178,35 @@
                     </item>
                 </items>
             </filter>
+
+            <filter>
+                <name>rating</name>
+                <display>Rating</display>
+                <select>single</select>
+                <type>range-slider</type>
+                <attributes>
+                    <selectedRange>
+                        <min>0.0</min>
+                        <max />
+                    </selectedRange>
+                    <totalRange>
+                        <min>0.0</min>
+                        <max>5.0</max>
+                    </totalRange>
+                    <stepSize>1</stepSize>
+                    <unit />
+                </attributes>
+                <items>
+                    <item>
+                        <name>0.0</name>
+                        <weight>0</weight>
+                    </item>
+                    <item>
+                        <name>5.0</name>
+                        <weight>0</weight>
+                    </item>
+                </items>
+            </filter>
         </other>
     </filters>
 </searchResult>
