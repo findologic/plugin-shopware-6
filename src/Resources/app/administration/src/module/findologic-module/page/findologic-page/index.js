@@ -1,7 +1,7 @@
 import template from './findologic-page.html.twig';
 import './findologic-page.scss';
 
-const { Component, Mixin, Application, Utils } = Shopware;
+const { Component, Mixin, Application } = Shopware;
 
 Component.register('findologic-page', {
     template,
@@ -49,8 +49,7 @@ Component.register('findologic-page', {
                     const shopkey = this._getShopkey();
                     if (this._isShopkeyValid(shopkey)) {
                         this.shopkeyErrorState = null;
-                        const hashedShopkey = Utils.format.md5(shopkey).toUpperCase();
-                        this._isStagingRequest(hashedShopkey);
+                        this._isStagingRequest(shopkey);
                     }
                 }
                 this._setErrorStates();
@@ -90,12 +89,12 @@ Component.register('findologic-page', {
         },
 
         /**
-         * @param {String} hashedShopkey
+         * @param {String} shopkey
          * @private
          */
-        _isStagingRequest(hashedShopkey) {
+        _isStagingRequest(shopkey) {
             this.httpClient
-                .get(`https://cdn.findologic.com/static/${hashedShopkey}/config.json`)
+                .get(`https://cdn.findologic.com/config/${shopkey}/config.json`)
                 .then((response) => {
                     if (response.data.isStagingShop) {
                         this.isStagingShop = true;
