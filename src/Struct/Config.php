@@ -13,10 +13,13 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class Config extends Struct
 {
+    public const DEFAULT_SEARCH_RESULT_CONTAINER = 'fl-result';
+    public const DEFAULT_NAVIGATION_RESULT_CONTAINER = 'fl-navigation-result';
+
     /** @var SystemConfigService */
     private $systemConfigService;
 
-    /** @var string */
+    /** @var string|null */
     private $shopkey;
 
     /** @var bool */
@@ -49,7 +52,7 @@ class Config extends Struct
         $this->serviceConfigResource = $serviceConfigResource;
     }
 
-    public function getShopkey(): string
+    public function getShopkey(): ?string
     {
         return $this->shopkey;
     }
@@ -94,26 +97,23 @@ class Config extends Struct
      */
     public function initializeBySalesChannel(?string $salesChannelId): void
     {
-        $this->active = $this->systemConfigService->get(
-            'FinSearch.config.active',
-            $salesChannelId
-        ) ?? false;
-        $this->shopkey = $this->systemConfigService->get(
-            'FinSearch.config.shopkey',
-            $salesChannelId
-        );
-        $this->activeOnCategoryPages = $this->systemConfigService->get(
+        $this->active = $this->getConfig($salesChannelId, 'FinSearch.config.active', false);
+        $this->shopkey = $this->getConfig($salesChannelId, 'FinSearch.config.shopkey');
+        $this->activeOnCategoryPages = $this->getConfig(
+            $salesChannelId,
             'FinSearch.config.activeOnCategoryPages',
-            $salesChannelId
+            false
         );
-        $this->searchResultContainer = $this->systemConfigService->get(
+        $this->searchResultContainer = $this->getConfig(
+            $salesChannelId,
             'FinSearch.config.searchResultContainer',
-            $salesChannelId
-        ) ?? 'fl-result';
-        $this->navigationResultContainer = $this->systemConfigService->get(
+            self::DEFAULT_SEARCH_RESULT_CONTAINER
+        );
+        $this->navigationResultContainer = $this->getConfig(
+            $salesChannelId,
             'FinSearch.config.navigationResultContainer',
-            $salesChannelId
-        ) ?? 'fl-navigation-result';
+            self::DEFAULT_NAVIGATION_RESULT_CONTAINER
+        );
 
         $this->initializeReadonlyConfig($salesChannelId);
 
@@ -156,5 +156,19 @@ class Config extends Struct
             $this->staging = false;
             $this->integrationType = null;
         }
+    }
+
+    /**
+     * @param mixed $default
+     * @return string|bool|null
+     */
+    private function getConfig(?string $salesChannelId, string $configKey, $default = null)
+    {
+        $configValue = $this->systemConfigService->get($configKey, $salesChannelId);
+        if ($configValue === null || (is_string($configValue) && trim($configValue) === '')) {
+            return $default;
+        }
+
+        return $configValue;
     }
 }
