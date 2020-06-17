@@ -8,7 +8,9 @@ use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use PackageVersions\Versions;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\HttpFoundation\Request;
 
 class Utils
 {
@@ -122,5 +124,27 @@ class Utils
         $findologicEnabled = $context->getContext()->getExtension('flEnabled');
 
         return $findologicEnabled ? $findologicEnabled->getEnabled() : false;
+    }
+
+    public static function isStagingSession(Request $request): bool
+    {
+        $findologic = $request->get('findologic');
+        if ($findologic === 'on') {
+            $request->getSession()->set('stagingFlag', true);
+
+            return true;
+        }
+
+        if ($findologic === 'off' || $findologic === 'disabled') {
+            $request->getSession()->set('stagingFlag', false);
+
+            return false;
+        }
+
+        if ($request->getSession()->get('stagingFlag') === true) {
+            return true;
+        }
+
+        return false;
     }
 }
