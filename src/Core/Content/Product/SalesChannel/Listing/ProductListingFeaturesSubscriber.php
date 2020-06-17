@@ -220,7 +220,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $findologicEnabled->setEnabled();
 
         $shopkey = $this->config->getShopkey();
-        $hasShopkey = ($shopkey !== null);
+        $hasShopkey = ($shopkey === null);
         $isActive = $this->config->isActive();
         $isCategoryPage = !($event instanceof ProductSearchCriteriaEvent);
         if (!$hasShopkey || !$isActive || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
