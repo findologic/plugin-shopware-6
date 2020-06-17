@@ -194,10 +194,13 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             }
             $responseParser = ResponseParser::getInstance($response);
             $event->getCriteria()->addExtension('flFilters', $responseParser->getFiltersExtension());
-        } catch (ServiceNotAliveException | UnknownCategoryException $e) {
+        } catch (ServiceNotAliveException $e) {
             /** @var FindologicEnabled $flEnabled */
             $flEnabled = $event->getContext()->getExtension('flEnabled');
             $flEnabled->setDisabled();
+        } catch (UnknownCategoryException $ignored) {
+            // We ignore this exception and do not disable the plugin here, otherwise the autocomplete of Shopware
+            // would be visible behind Findologic's search suggest
         }
     }
 
@@ -216,14 +219,16 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $event->getContext()->addExtension('flEnabled', $findologicEnabled);
         $findologicEnabled->setEnabled();
 
+        $shopkey = $this->config->getShopkey();
+        $hasShopkey = ($shopkey !== null);
+        $isActive = $this->config->isActive();
         $isCategoryPage = !($event instanceof ProductSearchCriteriaEvent);
-        if (!$this->config->isActive() || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
+        if (!$hasShopkey || !$isActive || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
             $findologicEnabled->setDisabled();
 
             return false;
         }
 
-        $shopkey = $this->config->getShopkey();
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
         $isStagingSession = $this->isStagingSession($event);

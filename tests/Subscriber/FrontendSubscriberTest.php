@@ -79,7 +79,7 @@ class FrontendSubscriberTest extends TestCase
                 ),
                 $this->callback(
                     function (Snippet $snippet) use ($shopkey) {
-                        $this->assertSame(mb_strtoupper(md5($shopkey)), $snippet->getHashedShopkey());
+                        $this->assertSame($shopkey, $snippet->getShopkey());
 
                         return true;
                     }

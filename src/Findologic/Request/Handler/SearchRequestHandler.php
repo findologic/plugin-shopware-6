@@ -73,7 +73,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
      *
      * @throws ServiceNotAliveException
      */
-    public function doRequest(ShopwareEvent $event, ?int $limit = null): ?Response
+    public function doRequest(ShopwareEvent $event, ?int $limit = null): Response
     {
         $request = $event->getRequest();
 

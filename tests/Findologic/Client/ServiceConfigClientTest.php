@@ -32,7 +32,6 @@ class ServiceConfigClientTest extends TestCase
     public function testConfigUrlAndValues(int $responseCode, ?string $body = null): void
     {
         $shopkey = $this->getShopkey();
-        $hashedShopkey = mb_strtoupper(md5($shopkey));
 
         // Create a mock and queue one response with the config json file
         $mock = new MockHandler([new Response($responseCode, [], $body)]);
@@ -50,8 +49,8 @@ class ServiceConfigClientTest extends TestCase
         } catch (ClientException $e) {
             $this->assertSame(
                 sprintf(
-                    'Client error: `GET static/%s/config.json` resulted in a `404 Not Found` response',
-                    $hashedShopkey
+                    'Client error: `GET config/%s/config.json` resulted in a `404 Not Found` response',
+                    $shopkey
                 ),
                 $e->getMessage()
             );
