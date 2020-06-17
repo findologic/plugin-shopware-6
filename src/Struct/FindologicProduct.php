@@ -581,7 +581,7 @@ class FindologicProduct extends Struct
     /**
      * @throws ProductHasNoCategoriesException
      */
-    private function setCategoriesAndCatUrls(): void
+    protected function setCategoriesAndCatUrls(): void
     {
         if (!$this->product->getCategories() || empty($this->product->getCategories()->count())) {
             throw new ProductHasNoCategoriesException();
@@ -646,7 +646,7 @@ class FindologicProduct extends Struct
         }
     }
 
-    private function setVariantPrices(): void
+    protected function setVariantPrices(): void
     {
         if (!$this->product->getChildCount()) {
             return;
@@ -665,7 +665,7 @@ class FindologicProduct extends Struct
     /**
      * @return Price[]
      */
-    private function getPricesFromProduct(ProductEntity $variant): array
+    protected function getPricesFromProduct(ProductEntity $variant): array
     {
         $prices = [];
 
@@ -700,7 +700,7 @@ class FindologicProduct extends Struct
     /**
      * @throws ProductHasNoPricesException
      */
-    private function setProductPrices(): void
+    protected function setProductPrices(): void
     {
         $prices = $this->getPricesFromProduct($this->product);
         if (empty($prices)) {
@@ -710,7 +710,7 @@ class FindologicProduct extends Struct
         $this->prices = array_merge($this->prices, $prices);
     }
 
-    private function setUrl(): void
+    protected function setUrl(): void
     {
         if (!$this->product->hasExtension('canonicalUrl')) {
             $productUrl = $this->router->generate(
@@ -727,7 +727,7 @@ class FindologicProduct extends Struct
         $this->url = $productUrl;
     }
 
-    private function setKeywords(): void
+    protected function setKeywords(): void
     {
         $tags = $this->product->getTags();
         if ($tags !== null && $tags->count() > 0) {
@@ -738,7 +738,7 @@ class FindologicProduct extends Struct
         }
     }
 
-    private function setImages(): void
+    protected function setImages(): void
     {
         if (!$this->product->getMedia() || !$this->product->getMedia()->count()) {
             $fallbackImage = $this->buildFallbackImage($this->router->getContext());
@@ -773,7 +773,7 @@ class FindologicProduct extends Struct
      * Takes invalid URLs that contain special characters such as umlauts, or special UTF-8 characters and
      * encodes them.
      */
-    private function getEncodedUrl(string $url): string
+    protected function getEncodedUrl(string $url): string
     {
         $parsedUrl = parse_url($url);
 
@@ -785,7 +785,7 @@ class FindologicProduct extends Struct
         return Utils::buildUrl($parsedUrl);
     }
 
-    private function buildFallbackImage(RequestContext $requestContext): string
+    protected function buildFallbackImage(RequestContext $requestContext): string
     {
         $schemaAuthority = $requestContext->getScheme() . '://' . $requestContext->getHost();
         if ($requestContext->getHttpPort() !== 80) {
@@ -801,7 +801,7 @@ class FindologicProduct extends Struct
         );
     }
 
-    private function setSalesFrequency(): void
+    protected function setSalesFrequency(): void
     {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('payload.productNumber', $this->product->getProductNumber()));
@@ -810,12 +810,12 @@ class FindologicProduct extends Struct
         $this->salesFrequency = $orders->count();
     }
 
-    private function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
+    protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
     {
         return $categoryEntity->getSeoUrls();
     }
 
-    private function buildCategoryPath(CategoryEntity $categoryEntity): string
+    protected function buildCategoryPath(CategoryEntity $categoryEntity): string
     {
         $breadCrumbs = $categoryEntity->getBreadcrumb();
         array_shift($breadCrumbs);
@@ -823,7 +823,7 @@ class FindologicProduct extends Struct
         return implode('_', $breadCrumbs);
     }
 
-    private function getSortedImages(): ProductMediaCollection
+    protected function getSortedImages(): ProductMediaCollection
     {
         $images = $this->product->getMedia();
         if ($images->count() === 1) {
