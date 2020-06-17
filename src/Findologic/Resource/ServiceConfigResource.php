@@ -40,8 +40,12 @@ class ServiceConfigResource
      * @throws InvalidArgumentException
      * @throws ClientException
      */
-    public function isDirectIntegration(string $shopkey): bool
+    public function isDirectIntegration(?string $shopkey): bool
     {
+        if ($shopkey === null) {
+            return false;
+        }
+
         $directIntegration = $this->get($shopkey, 'directIntegration');
 
         return $directIntegration['enabled'];
