@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8705e98f2f5e0c07db4e3c0e4a9b89a9",
+    "content-hash": "97cbce4b7aee121e5c30d8245b45bdf3",
     "packages": [
         {
             "name": "findologic/findologic-api",
-            "version": "v1.4.0",
+            "version": "v1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "a1e5d3d1d017ca7cc6df2a2cf2f69963a6f2263b"
+                "reference": "ee989e35f04669772d9f6e9b9f619341f79bf5af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/a1e5d3d1d017ca7cc6df2a2cf2f69963a6f2263b",
-                "reference": "a1e5d3d1d017ca7cc6df2a2cf2f69963a6f2263b",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/ee989e35f04669772d9f6e9b9f619341f79bf5af",
+                "reference": "ee989e35f04669772d9f6e9b9f619341f79bf5af",
                 "shasum": ""
             },
             "require": {
@@ -59,10 +59,15 @@
                     "name": "Markus Machatschek",
                     "email": "m.machatschek@findologic.com",
                     "role": "Developer"
+                },
+                {
+                    "name": "Huzaifa Mustafa",
+                    "email": "24492269+zaifastafa@users.noreply.github.com",
+                    "role": "developer"
                 }
             ],
             "description": "Library for FINDOLOGIC API requests",
-            "time": "2020-05-05T15:42:09+00:00"
+            "time": "2020-06-16T12:30:52+00:00"
         },
         {
             "name": "findologic/guzzle",

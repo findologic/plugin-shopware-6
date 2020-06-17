@@ -11,6 +11,7 @@ use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
+use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
@@ -88,7 +89,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            []
+            [],
+            new XMLItem('123')
         );
 
         if (!$exception) {
@@ -118,7 +120,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            []
+            [],
+            new XMLItem('123')
         );
     }
 
@@ -176,7 +179,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            []
+            [],
+            new XMLItem('123')
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -202,7 +206,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            []
+            [],
+            new XMLItem('123')
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -250,7 +255,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            []
+            [],
+            new XMLItem('123')
         );
 
         if (!$exception) {
@@ -298,7 +304,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            $customerGroupEntities
+            $customerGroupEntities,
+            new XMLItem('123')
         );
 
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
@@ -362,7 +369,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->defaultContext,
             $this->shopkey,
-            $customerGroupEntities
+            $customerGroupEntities,
+            new XMLItem('123')
         );
 
         $attributes = $findologicProduct->getAttributes();
