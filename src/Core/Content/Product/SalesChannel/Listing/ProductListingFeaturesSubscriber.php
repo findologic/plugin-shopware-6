@@ -219,14 +219,16 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $event->getContext()->addExtension('flEnabled', $findologicEnabled);
         $findologicEnabled->setEnabled();
 
+        $shopkey = $this->config->getShopkey();
+        $hasShopkey = ($shopkey === null);
+        $isActive = $this->config->isActive();
         $isCategoryPage = !($event instanceof ProductSearchCriteriaEvent);
-        if (!$this->config->isActive() || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
+        if (!$hasShopkey || !$isActive || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
             $findologicEnabled->setDisabled();
 
             return false;
         }
 
-        $shopkey = $this->config->getShopkey();
         $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
         $isStagingSession = $this->isStagingSession($event);
