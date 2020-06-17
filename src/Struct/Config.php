@@ -127,7 +127,7 @@ class Config extends Struct
     {
         try {
             // Only set read-only configurations if the plugin is active
-            if ($this->active && $this->shopkey !== null) {
+            if ($this->active) {
                 $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
                 $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
                 $integrationType = $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
