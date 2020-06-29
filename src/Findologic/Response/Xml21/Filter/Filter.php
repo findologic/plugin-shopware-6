@@ -70,7 +70,7 @@ abstract class Filter extends BaseFilter
 
         /** @var DefaultItem $item */
         foreach ($filter->getItems() as $item) {
-            $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
+            $customFilter->addValue(new FilterValue($item->getName(), $item->getName(), $filter->getName()));
         }
 
         return $customFilter;
@@ -82,7 +82,7 @@ abstract class Filter extends BaseFilter
 
         /** @var DefaultItem $item */
         foreach ($filter->getItems() as $item) {
-            $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
+            $customFilter->addValue(new FilterValue($item->getName(), $item->getName(), $filter->getName()));
         }
 
         return $customFilter;
@@ -97,7 +97,7 @@ abstract class Filter extends BaseFilter
         }
         /** @var RangeSliderItem $item */
         foreach ($filter->getItems() as $item) {
-            $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
+            $customFilter->addValue(new FilterValue($item->getName(), $item->getName(), $filter->getName()));
         }
 
         return $customFilter;
@@ -112,7 +112,7 @@ abstract class Filter extends BaseFilter
         foreach ($filter->getItems() as $item) {
             $imageUrls[$item->getName()] = $item->getImage();
 
-            $filterValue = new ColorFilterValue($item->getName(), $item->getName());
+            $filterValue = new ColorFilterValue($item->getName(), $item->getName(), $filter->getName());
             $filterValue->setColorHexCode($item->getColor());
 
             $media = new Media($item->getImage());
@@ -142,7 +142,7 @@ abstract class Filter extends BaseFilter
         /** @var VendorImageItem $item */
         foreach ($filter->getItems() as $item) {
             $imageUrls[$item->getName()] = $item->getImage();
-            $filterValue = new ImageFilterValue($item->getName(), $item->getName());
+            $filterValue = new ImageFilterValue($item->getName(), $item->getName(), $filter->getName());
             $media = new Media($item->getImage());
             $filterValue->setMedia($media);
             $customFilter->addValue($filterValue);

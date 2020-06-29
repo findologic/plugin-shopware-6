@@ -10,6 +10,9 @@ use Shopware\Core\Framework\Struct\Struct;
 class FilterValue extends Struct
 {
     /** @var string */
+    protected $uuid;
+
+    /** @var string */
     private $id;
 
     /** @var string */
@@ -18,11 +21,14 @@ class FilterValue extends Struct
     /** @var TranslatedName */
     private $translated;
 
-    public function __construct(string $id, string $name)
+    public function __construct(string $id, string $name, ?string $filterName = null)
     {
         $this->id = $id;
         $this->name = $name;
         $this->translated = new TranslatedName($name);
+        if ($filterName) {
+            $this->uuid = sprintf('%s-%s', $filterName, $id);
+        }
     }
 
     public function getId(): string
@@ -38,5 +44,10 @@ class FilterValue extends Struct
     public function getTranslated(): TranslatedName
     {
         return $this->translated;
+    }
+
+    public function getUuid(): string
+    {
+        return $this->uuid;
     }
 }

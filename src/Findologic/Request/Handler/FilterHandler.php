@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Request;
 class FilterHandler
 {
     protected const FILTER_DELIMITER = '|';
-
     protected const MIN_PREFIX = 'min-';
     protected const MAX_PREFIX = 'max-';
 
@@ -41,7 +40,6 @@ class FilterHandler
      * Handles FINDOLOGIC-specific query params like "attrib" or "catFilter".
      * If any of these parameters are submitted, an URI may be returned that contains the query parameters
      * in a Shopware-readable format. If no FINDOLOGIC params are submitted, null may be returned.
-     *
      * E.g.
      * https://www.example.com/search?attrib%5Bvendor%5D%3DAdidas will return
      * https://www.example.com/search?manufacturer=Adidas
@@ -106,7 +104,12 @@ class FilterHandler
         }
 
         if (in_array($filterName, $availableFilterNames, true)) {
-            $searchNavigationRequest->addAttribute($filterName, $filterValue);
+            // This resolves the SW-451 issue about filter value conflict in storefront
+            if ($filterName !== 'cat' && $this->isPropertyFilter($filterName, $filterValue)) {
+                $this->handlePropertyFilter($filterName, $filterValue, $searchNavigationRequest);
+            } else {
+                $searchNavigationRequest->addAttribute($filterName, $filterValue);
+            }
         }
     }
 
@@ -173,5 +176,20 @@ class FilterHandler
     private function isMaxRangeSlider(string $name): bool
     {
         return mb_substr($name, 0, mb_strlen(self::MAX_PREFIX)) === self::MAX_PREFIX;
+    }
+
+    private function isPropertyFilter(string $filterName, string $filterValue): bool
+    {
+        return mb_strpos($filterValue, sprintf('%s-', $filterName)) === 0;
+    }
+
+    private function handlePropertyFilter(
+        string $filterName,
+        string $filterValue,
+        SearchNavigationRequest $searchNavigationRequest
+    ): void {
+        $parsedFilterValue = explode('-', $filterValue);
+        $filterValue = end($parsedFilterValue);
+        $searchNavigationRequest->addAttribute($filterName, $filterValue);
     }
 }
