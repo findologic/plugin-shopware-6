@@ -169,52 +169,52 @@ class Xml21ResponseParserTest extends TestCase
 
         $expectedVendorFilter = new VendorImageFilter('vendor', 'Hersteller');
         $expectedVendorFilter->addValue(
-            (new ImageFilterValue('Anderson, Gusikowski and Barton', 'Anderson, Gusikowski and Barton'))
+            (new ImageFilterValue('Anderson, Gusikowski and Barton', 'Anderson, Gusikowski and Barton', 'vendor'))
                 ->setDisplayType('none')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/anderson_gusikowski_and_barton.png'))
         );
         $expectedVendorFilter->addValue(
-            (new ImageFilterValue('Bednar Ltd', 'Bednar Ltd'))
+            (new ImageFilterValue('Bednar Ltd', 'Bednar Ltd', 'vendor'))
                 ->setDisplayType('none')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/bednar_ltd.png'))
         );
         $expectedVendorFilter->addValue(
-            (new ImageFilterValue('Buckridge-Fisher', 'Buckridge-Fisher'))
+            (new ImageFilterValue('Buckridge-Fisher', 'Buckridge-Fisher', 'vendor'))
                 ->setDisplayType('none')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/buckridge_fisher.png'))
         );
         $expectedVendorFilter->addValue(
-            (new ImageFilterValue('Connelly, Eichmann and Weissnat', 'Connelly, Eichmann and Weissnat'))
+            (new ImageFilterValue('Connelly, Eichmann and Weissnat', 'Connelly, Eichmann and Weissnat', 'vendor'))
                 ->setDisplayType('none')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/connelly_eichmann_and_weissnat.png'))
         );
 
         $expectedPriceFilter = new RangeSliderFilter('price', 'Preis');
-        $expectedPriceFilter->addValue(new FilterValue('0.39 - 13.4', '0.39 - 13.4'));
-        $expectedPriceFilter->addValue(new FilterValue('13.45 - 25.99', '13.45 - 25.99'));
-        $expectedPriceFilter->addValue(new FilterValue('26 - 40.3', '26 - 40.3'));
+        $expectedPriceFilter->addValue(new FilterValue('0.39 - 13.4', '0.39 - 13.4', 'price'));
+        $expectedPriceFilter->addValue(new FilterValue('13.45 - 25.99', '13.45 - 25.99', 'price'));
+        $expectedPriceFilter->addValue(new FilterValue('26 - 40.3', '26 - 40.3', 'price'));
 
         $expectedColorFilter = new ColorPickerFilter('Farbe', 'Farbe');
         $expectedColorFilter->addValue(
-            (new ColorFilterValue('beige', 'beige'))
+            (new ColorFilterValue('beige', 'beige', 'Farbe'))
                 ->setColorHexCode('#F5F5DC')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/beige.gif'))
         );
         $expectedColorFilter->addValue(
-            (new ColorFilterValue('blau', 'blau'))
+            (new ColorFilterValue('blau', 'blau', 'Farbe'))
                 ->setColorHexCode('#3c6380')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/blau.gif'))
         );
         $expectedColorFilter->addValue(
-            (new ColorFilterValue('braun', 'braun'))
+            (new ColorFilterValue('braun', 'braun', 'Farbe'))
                 ->setColorHexCode('#94651e')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/braun.gif'))
         );
 
         $expectedSelectDropdownFilter = new SelectDropdownFilter('Material', 'Material');
-        $expectedSelectDropdownFilter->addValue(new FilterValue('Hartgepäck', 'Hartgepäck'));
-        $expectedSelectDropdownFilter->addValue(new FilterValue('Leder', 'Leder'));
-        $expectedSelectDropdownFilter->addValue(new FilterValue('Nylon', 'Nylon'));
+        $expectedSelectDropdownFilter->addValue(new FilterValue('Hartgepäck', 'Hartgepäck', 'Material'));
+        $expectedSelectDropdownFilter->addValue(new FilterValue('Leder', 'Leder', 'Material'));
+        $expectedSelectDropdownFilter->addValue(new FilterValue('Nylon', 'Nylon', 'Material'));
 
         return [
             'response including all filter types' => [
@@ -226,7 +226,7 @@ class Xml21ResponseParserTest extends TestCase
                     $expectedVendorFilter,
                     $expectedPriceFilter,
                     $expectedColorFilter,
-                    $expectedSelectDropdownFilter,
+                    $expectedSelectDropdownFilter
                 ]
             ],
             'response without results' => [

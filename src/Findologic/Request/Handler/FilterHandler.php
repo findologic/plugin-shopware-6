@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
@@ -188,7 +189,7 @@ class FilterHandler
         string $filterValue,
         SearchNavigationRequest $searchNavigationRequest
     ): void {
-        $parsedFilterValue = explode('-', $filterValue);
+        $parsedFilterValue = explode(FilterValue::DELIMITER, $filterValue);
         $filterValue = end($parsedFilterValue);
         $searchNavigationRequest->addAttribute($filterName, $filterValue);
     }
