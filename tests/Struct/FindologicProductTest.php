@@ -385,7 +385,19 @@ class FindologicProductTest extends TestCase
             'filter with some special characters' => [
                 'attributeName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|',
                 'expectedName' => 'SpecialCharacters'
-            ]
+            ],
+            'filter with brackets' => [
+                'attributeName' => 'Farbwiedergabe (Ra/CRI)',
+                'expectedName' => 'FarbwiedergabeRaCRI'
+            ],
+            'filter with special UTF-8 characters' => [
+                'attributeName' => 'Ausschnitt D ø (mm)',
+                'expectedName' => 'AusschnittDmm'
+            ],
+            'filter dots and dashes' => [
+                'attributeName' => 'free_shipping.. Really Cool--__',
+                'expectedName' => 'free_shippingReallyCool--__'
+            ],
         ];
     }
 
@@ -396,12 +408,14 @@ class FindologicProductTest extends TestCase
     {
         $productEntity = $this->createTestProduct([
             'properties' => [
-                'id' => Uuid::randomHex(),
-                'name' => 'some random',
-                'group' => [
+                [
                     'id' => Uuid::randomHex(),
-                    'name' => $attributeName
-                ],
+                    'name' => 'some value',
+                    'group' => [
+                        'id' => Uuid::randomHex(),
+                        'name' => $attributeName
+                    ],
+                ]
             ]
         ]);
 
@@ -427,7 +441,8 @@ class FindologicProductTest extends TestCase
             new XMLItem('123')
         );
 
-
+        $this->assertCount(5, $findologicProduct->getAttributes());
+        $this->assertEquals($expectedName, $findologicProduct->getAttributes()[2]->getKey());
     }
 
     /**

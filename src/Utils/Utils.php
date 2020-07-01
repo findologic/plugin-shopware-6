@@ -49,7 +49,7 @@ class Utils
      */
     public static function cleanFilterName(string $filterName): string
     {
-        return preg_replace('/[^\w:-äöü]/', '', $filterName);
+        return preg_replace('/[^äöü_A-Za-z0-9:-]/u', '', $filterName);
     }
 
     /**
