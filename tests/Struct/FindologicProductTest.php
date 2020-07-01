@@ -379,6 +379,57 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($expectedRating, current($ratingAttribute->getValues()));
     }
 
+    public function attributeProvider(): array
+    {
+        return [
+            'filter with some special characters' => [
+                'attributeName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|',
+                'expectedName' => 'SpecialCharacters'
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider attributeProvider
+     */
+    public function testAttributesAreProperlyEscaped(string $attributeName, string $expectedName): void
+    {
+        $productEntity = $this->createTestProduct([
+            'properties' => [
+                'id' => Uuid::randomHex(),
+                'name' => 'some random',
+                'group' => [
+                    'id' => Uuid::randomHex(),
+                    'name' => $attributeName
+                ],
+            ]
+        ]);
+
+        $criteria = new Criteria([$productEntity->getId()]);
+        $criteria = Utils::addProductAssociations($criteria);
+
+        $productEntity = $this->getContainer()->get('product.repository')->search($criteria, $this->defaultContext)
+            ->get($productEntity->getId());
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->defaultContext)
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->defaultContext,
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+
+    }
+
     /**
      * @return Property[]
      */

@@ -8,7 +8,6 @@ use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use PackageVersions\Versions;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -41,6 +40,16 @@ class Utils
         $result = preg_replace('/[\x{0000}-\x{001F}]|[\x{007F}]|[\x{0080}-\x{009F}]/u', '', $string);
 
         return $result ?? $string;
+    }
+
+    /**
+     * Filter names are not allowed to have special characters inside of them. If they do, you may not be able
+     * to properly select a filter in certain scenarios. This is only relevant for internal naming, which is
+     * used for the query parameters. The naming in the customer-login can differ though.
+     */
+    public static function cleanFilterName(string $filterName): string
+    {
+        return preg_replace('/[^\w:-äöü]/', '', $filterName);
     }
 
     /**
