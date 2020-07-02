@@ -29,7 +29,7 @@ class FilterHandlerTest extends TestCase
                 'expectedValue' => 'somevalue'
             ],
             'Filter name with spaces' => [
-                'filterName' =>'filter name',
+                'filterName' => 'filter name',
                 'filterValue' => sprintf('filter name%ssomevalue', FilterValue::DELIMITER),
                 'expectedValue' => 'somevalue'
             ],
