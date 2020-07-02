@@ -24,20 +24,24 @@ class FilterHandlerTest extends TestCase
     {
         return [
             'Filter name with special characters' => [
-                'filter-name',
-                sprintf('filter-name%somevalue', FilterValue::DELIMITER)
+                'filterName' => 'filter-name',
+                'filterValue' => sprintf('filter-name%ssomevalue', FilterValue::DELIMITER),
+                'expectedValue' => 'somevalue'
             ],
             'Filter name with spaces' => [
-                'filter name',
-                sprintf('filter name%somevalue', FilterValue::DELIMITER)
+                'filterName' =>'filter name',
+                'filterValue' => sprintf('filter name%ssomevalue', FilterValue::DELIMITER),
+                'expectedValue' => 'somevalue'
             ],
             'Filter value with special characters' => [
-                'filtername',
-                sprintf('filtername%some-value', FilterValue::DELIMITER)
+                'filterName' => 'filtername',
+                'filterValue' => sprintf('filtername%ssome-value', FilterValue::DELIMITER),
+                'expectedValue' => 'some-value'
             ],
             'Filter value with space' => [
-                'filtername',
-                sprintf('filtername%some value', FilterValue::DELIMITER)
+                'filterName' => 'filtername',
+                'filterValue' => sprintf('filtername%ssome value', FilterValue::DELIMITER),
+                'expectedValue' => 'some value'
             ]
         ];
     }
@@ -45,7 +49,7 @@ class FilterHandlerTest extends TestCase
     /**
      * @dataProvider filterRequestProvider
      */
-    public function testFilters(string $filterName, string $filterValue)
+    public function testFilters(string $filterName, string $filterValue, string $expectedValue)
     {
         $searchNavigationRequest = new SearchRequest();
         $expectedColorFilter = new ColorPickerFilter($filterName, $filterName);
@@ -75,6 +79,6 @@ class FilterHandlerTest extends TestCase
         $result = $searchNavigationRequest->getParams();
         $this->assertArrayHasKey('attrib', $result);
         $this->assertArrayHasKey($filterName, $result['attrib']);
-        $this->assertSame($filterValue, current($result['attrib'][$filterName]));
+        $this->assertSame($expectedValue, current($result['attrib'][$filterName]));
     }
 }

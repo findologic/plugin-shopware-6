@@ -181,7 +181,7 @@ class FilterHandler
 
     private function isPropertyFilter(string $filterName, string $filterValue): bool
     {
-        return mb_strpos($filterValue, sprintf('%s-', $filterName)) === 0;
+        return mb_strpos($filterValue, sprintf('%s%s', $filterName, FilterValue::DELIMITER)) === 0;
     }
 
     private function handlePropertyFilter(
@@ -189,7 +189,7 @@ class FilterHandler
         string $filterValue,
         SearchNavigationRequest $searchNavigationRequest
     ): void {
-        $parsedFilterValue = explode(FilterValue::DELIMITER, $filterValue);
+        $parsedFilterValue = explode(sprintf('%s%s', $filterName, FilterValue::DELIMITER), $filterValue);
         $filterValue = end($parsedFilterValue);
         $searchNavigationRequest->addAttribute($filterName, $filterValue);
     }
