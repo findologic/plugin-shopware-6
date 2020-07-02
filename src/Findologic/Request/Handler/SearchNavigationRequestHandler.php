@@ -154,4 +154,14 @@ abstract class SearchNavigationRequestHandler
     {
         $event->getContext()->addExtension('flQueryInfoMessage', $queryInfoMessage);
     }
+
+    /**
+     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
+     */
+    protected function setPromotionExtension(ShopwareEvent $event, ResponseParser $responseParser): void
+    {
+        if ($promotion = $responseParser->getPromotionExtension()) {
+            $event->getContext()->addExtension('flPromotion', $promotion);
+        }
+    }
 }

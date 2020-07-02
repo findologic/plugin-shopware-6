@@ -96,14 +96,4 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             $responseParser->getLandingPageExtension()
         );
     }
-
-    /**
-     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
-     */
-    protected function setPromotionExtension(ShopwareEvent $event, ResponseParser $responseParser): void
-    {
-        if ($promotion = $responseParser->getPromotionExtension()) {
-            $event->getContext()->addExtension('flPromotion', $promotion);
-        }
-    }
 }

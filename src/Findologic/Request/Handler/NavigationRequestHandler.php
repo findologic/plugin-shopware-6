@@ -74,6 +74,9 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         /** @var Criteria $criteria */
         $criteria = $event->getCriteria();
+
+        $this->setPromotionExtension($event, $responseParser);
+
         $this->setPagination(
             $criteria,
             $responseParser,
