@@ -398,6 +398,10 @@ class FindologicProductTest extends TestCase
                 'attributeName' => 'free_shipping.. Really Cool--__',
                 'expectedName' => 'free_shippingReallyCool--__'
             ],
+            'filter with umlauts' => [
+                'attributeName' => 'Umläüts äre cööl',
+                'expectedName' => 'Umläütsärecööl'
+            ],
         ];
     }
 

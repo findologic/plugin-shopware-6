@@ -42,14 +42,9 @@ class Utils
         return $result ?? $string;
     }
 
-    /**
-     * Filter names are not allowed to have special characters inside of them. If they do, you may not be able
-     * to properly select a filter in certain scenarios. This is only relevant for internal naming, which is
-     * used for the query parameters. The naming in the customer-login can differ though.
-     */
-    public static function cleanFilterName(string $filterName): string
+    public static function removeSpecialChars(string $string): string
     {
-        return preg_replace('/[^äöü_A-Za-z0-9:-]/u', '', $filterName);
+        return preg_replace('/[^äöü_A-Za-z0-9:-]/u', '', $string);
     }
 
     /**
