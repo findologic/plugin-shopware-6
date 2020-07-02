@@ -44,7 +44,7 @@ class Utils
 
     public static function removeSpecialChars(string $string): string
     {
-        return preg_replace('/[^äöü_A-Za-z0-9:-]/u', '', $string);
+        return preg_replace('/[^äöüA-Za-z0-9:_-]/u', '', $string);
     }
 
     /**
