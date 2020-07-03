@@ -445,8 +445,20 @@ class FindologicProductTest extends TestCase
             new XMLItem('123')
         );
 
-        $this->assertCount(5, $findologicProduct->getAttributes());
-        $this->assertEquals($expectedName, $findologicProduct->getAttributes()[2]->getKey());
+        $foundAttributes = array_filter(
+            $findologicProduct->getAttributes(),
+            function (Attribute $attribute) use ($expectedName) {
+                return $attribute->getKey() === $expectedName;
+            }
+        );
+
+        /** @var Attribute $attribute */
+        $attribute = reset($foundAttributes);
+        $this->assertInstanceOf(
+            Attribute::class,
+            $attribute,
+            sprintf('Attribute "%s" not present in attributes.', $expectedName)
+        );
     }
 
     /**
