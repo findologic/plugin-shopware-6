@@ -553,8 +553,8 @@ class FindologicProductTest extends TestCase
             ]
         );
 
-        $value = $productEntity->getShippingFree() ? "yes" : "no";
-        $shippingFree = $this->getContainer()->get('translator')->trans(sprintf('finSearch.general.%s', $value));
+        $translationKey = $productEntity->getShippingFree() ? "finSearch.general.yes" : "finSearch.general.no";
+        $shippingFree = $this->getContainer()->get('translator')->trans($translationKey);
 
         $attributes[] = new Attribute('shipping_free', [$shippingFree]);
         $rating = $productEntity->getRatingAverage() ?? 0.0;
