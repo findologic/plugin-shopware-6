@@ -146,23 +146,4 @@ class Utils
 
         return false;
     }
-
-    public static function removeSpecialCharacters($name, $replace = '-')
-    {
-        $name = iconv('utf-8', 'ascii//translit', $name);
-        $name = preg_replace('#[^A-z0-9\-_]#', $replace, $name);
-        $name = preg_replace('#-{2,}#', $replace, $name);
-        $name = trim($name, $replace);
-
-        return mb_substr($name, 0, 180);
-    }
-
-    public static function clean($string)
-    {
-        $string = iconv('utf-8', 'ascii//translit', $string);
-        $string = str_replace(' ', '_', strtolower($string));
-        $string = preg_replace('/[^A-Za-z0-9\_]/', '', $string);
-
-        return str_replace('_', '', ucwords($string, '_'));
-    }
 }
