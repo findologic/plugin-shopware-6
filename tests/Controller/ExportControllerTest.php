@@ -296,6 +296,7 @@ class ExportControllerTest extends TestCase
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
+            ['translator', $this->getContainer()->get('translator')],
             ['product.repository', $productRepositoryMock],
             [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
@@ -418,6 +419,7 @@ class ExportControllerTest extends TestCase
             ['customer.repository', $this->getContainer()->get('customer.repository')],
             ['country.repository', $this->getContainer()->get('country.repository')],
             ['tax.repository', $this->getContainer()->get('tax.repository')],
+            ['translator', $this->getContainer()->get('translator')],
             ['customer_address.repository', $this->getContainer()->get('customer_address.repository')],
             ['payment_method.repository', $this->getContainer()->get('payment_method.repository')],
             ['shipping_method.repository', $this->getContainer()->get('shipping_method.repository')],
@@ -680,6 +682,7 @@ class ExportControllerTest extends TestCase
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['product.repository', $productRepositoryMock],
+            ['translator', $this->getContainer()->get('translator')],
             [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);

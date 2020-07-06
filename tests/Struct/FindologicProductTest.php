@@ -552,7 +552,11 @@ class FindologicProductTest extends TestCase
                     ->getName()
             ]
         );
-        $attributes[] = new Attribute('shipping_free', [$productEntity->getShippingFree() ? 1 : 0]);
+
+        $value = $productEntity->getShippingFree() ? "yes" : "no";
+        $shippingFree = $this->getContainer()->get('translator')->trans(sprintf('finSearch.general.%s', $value));
+
+        $attributes[] = new Attribute('shipping_free', [$shippingFree]);
         $rating = $productEntity->getRatingAverage() ?? 0.0;
         $attributes[] = new Attribute('rating', [$rating]);
 
