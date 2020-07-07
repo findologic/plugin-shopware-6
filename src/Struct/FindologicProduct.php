@@ -456,7 +456,7 @@ class FindologicProduct extends Struct
 
     protected function setAdditionalAttributes(): void
     {
-        $translationKey = $this->product->getShippingFree() ? "finSearch.general.yes" : "finSearch.general.no";
+        $translationKey = $this->product->getShippingFree() ? 'finSearch.general.yes' : 'finSearch.general.no';
         $shippingFree = $this->translator->trans($translationKey);
         $this->attributes[] = new Attribute('shipping_free', [$shippingFree]);
         $rating = $this->product->getRatingAverage() ?? 0.0;
