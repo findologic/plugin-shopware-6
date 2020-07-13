@@ -12,6 +12,8 @@ use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
 
+use function var_export;
+
 class FilterHandler
 {
     protected const FILTER_DELIMITER = '|';
