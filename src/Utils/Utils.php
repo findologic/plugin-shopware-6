@@ -42,6 +42,11 @@ class Utils
         return $result ?? $string;
     }
 
+    public static function removeSpecialChars(string $string): string
+    {
+        return preg_replace('/[^äöüA-Za-z0-9:_-]/u', '', $string);
+    }
+
     /**
      * @throws InconsistentCriteriaIdsException
      */
