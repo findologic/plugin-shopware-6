@@ -160,6 +160,7 @@ class Config extends Struct
 
     /**
      * @param mixed $default
+     *
      * @return string|bool|null
      */
     private function getConfig(?string $salesChannelId, string $configKey, $default = null)

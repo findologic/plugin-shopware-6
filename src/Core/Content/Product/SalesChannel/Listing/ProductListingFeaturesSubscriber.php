@@ -29,7 +29,6 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSub
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSorting;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
-use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
