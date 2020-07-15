@@ -7,12 +7,11 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
-
-use function var_export;
 
 class FilterHandler
 {
@@ -120,7 +119,12 @@ class FilterHandler
         }
 
         if (in_array($filterName, $availableFilterNames, true)) {
-            $searchNavigationRequest->addAttribute($filterName, $filterValue);
+            // This resolves the SW-451 issue about filter value conflict in storefront
+            if ($filterName !== 'cat' && $this->isPropertyFilter($filterName, $filterValue)) {
+                $this->handlePropertyFilter($filterName, $filterValue, $searchNavigationRequest);
+            } else {
+                $searchNavigationRequest->addAttribute($filterName, $filterValue);
+            }
         }
     }
 
@@ -192,5 +196,20 @@ class FilterHandler
     private function isRatingFilter(string $filterName): bool
     {
         return $filterName === 'rating';
+    }
+
+    private function isPropertyFilter(string $filterName, string $filterValue): bool
+    {
+        return mb_strpos($filterValue, sprintf('%s%s', $filterName, FilterValue::DELIMITER)) === 0;
+    }
+
+    private function handlePropertyFilter(
+        string $filterName,
+        string $filterValue,
+        SearchNavigationRequest $searchNavigationRequest
+    ): void {
+        $parsedFilterValue = explode(sprintf('%s%s', $filterName, FilterValue::DELIMITER), $filterValue);
+        $filterValue = end($parsedFilterValue);
+        $searchNavigationRequest->addAttribute($filterName, $filterValue);
     }
 }
