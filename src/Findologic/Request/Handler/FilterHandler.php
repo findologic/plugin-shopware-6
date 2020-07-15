@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
@@ -78,7 +77,7 @@ class FilterHandler
                 if (is_array($catFilter)) {
                     $catFilter = end($catFilter);
                 }
-                $mappedParams['cat'] = $catFilter;
+                $mappedParams[BaseFilter::CAT_FILTER_NAME] = $catFilter;
             }
 
             unset($queryParams['catFilter']);
@@ -113,18 +112,19 @@ class FilterHandler
 
         if ($this->isRatingFilter($filterName)) {
             $searchNavigationRequest->addAttribute($filterName, $filterValue, 'min');
-            $searchNavigationRequest->addAttribute($filterName, 5, 'max');
 
             return;
         }
 
         if (in_array($filterName, $availableFilterNames, true)) {
             // This resolves the SW-451 issue about filter value conflict in storefront
-            if ($filterName !== 'cat' && $this->isPropertyFilter($filterName, $filterValue)) {
+            if ($filterName !== BaseFilter::CAT_FILTER_NAME && $this->isPropertyFilter($filterName, $filterValue)) {
                 $this->handlePropertyFilter($filterName, $filterValue, $searchNavigationRequest);
             } else {
                 $searchNavigationRequest->addAttribute($filterName, $filterValue);
             }
+
+            return;
         }
     }
 
@@ -195,7 +195,7 @@ class FilterHandler
 
     private function isRatingFilter(string $filterName): bool
     {
-        return $filterName === 'rating';
+        return $filterName === BaseFilter::RATING_FILTER_NAME;
     }
 
     private function isPropertyFilter(string $filterName, string $filterValue): bool

@@ -44,7 +44,7 @@ abstract class Filter extends BaseFilter
             case $filter instanceof ApiSelectDropdownFilter:
                 return static::handleSelectDropdownFilter($filter);
             case $filter instanceof ApiRangeSliderFilter:
-                if ($filter->getName() === 'rating') {
+                if ($filter->getName() === BaseFilter::RATING_FILTER_NAME) {
                     return static::handleRatingFilter($filter);
                 }
 
