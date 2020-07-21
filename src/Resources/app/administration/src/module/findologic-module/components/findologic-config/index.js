@@ -54,11 +54,21 @@ Component.register('findologic-config', {
 
     data() {
         return {
-            isLoading: false
+            isLoading: false,
+            categories: []
         };
     },
 
+    created () {
+        this.getCategories()
+    },
+
     methods: {
+        /**
+         * @public
+         * @param value
+         * @returns {boolean}
+         */
         checkTextFieldInheritance(value) {
             if (typeof value !== 'string') {
                 return true;
@@ -67,8 +77,35 @@ Component.register('findologic-config', {
             return value.length <= 0;
         },
 
+        /**
+         * @public
+         * @param value
+         * @returns {boolean}
+         */
         checkBoolFieldInheritance(value) {
             return typeof value !== 'boolean';
+        },
+
+        /**
+         * @public
+         * @param prop
+         * @param order
+         * @returns {function(*, *): number}
+         */
+        compare (prop = 'name', order = 'asc') {
+            return function (a, b) {
+                // Use toUpperCase() to ignore character casing
+                const case1 = typeof a[prop] === 'string' ? a[prop].toUpperCase() : a[prop]
+                const case2 = typeof b[prop] === 'string' ? b[prop].toUpperCase() : b[prop]
+
+                let comparison = 0
+                if (case1 > case2) {
+                    comparison = order === 'asc' ? 1 : -1
+                } else if (case1 < case2) {
+                    comparison = order === 'asc' ? -1 : 1
+                }
+                return comparison
+            }
         },
 
         /**
@@ -110,6 +147,36 @@ Component.register('findologic-config', {
             } else {
                 this._openDefaultUrl();
             }
+        },
+
+        /**
+         * @public
+         */
+        getCategories () {
+            const criteria = new Criteria(1, 500)
+
+            if (this.term) {
+                criteria.setTerm(this.term)
+            }
+
+            this.isLoading = true
+            const categoryRepository = this.repositoryFactory.create('category')
+
+            let translatedCategories = []
+            categoryRepository.search(criteria, Shopware.Context.api).then((items) => {
+                this.total = items.total
+                items.forEach((category) => {
+                    translatedCategories.push({
+                        value: category.id,
+                        label: category.translated.breadcrumb.join(' > ')
+                    })
+                })
+
+                this.categories = translatedCategories.sort(this.compare('label'))
+
+            }).finally(() => {
+                this.isLoading = false
+            })
         }
     },
 
