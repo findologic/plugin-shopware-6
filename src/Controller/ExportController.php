@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Controller;
 use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasCrossSellingCategoryException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
@@ -29,6 +30,7 @@ use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -39,6 +41,8 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validation;
+
+use function in_array;
 
 class ExportController extends AbstractController implements EventSubscriberInterface
 {
@@ -56,6 +60,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
      */
     private $headerHandler;
 
+    /**
+     * @var SalesChannelContextFactory
+     */
     private $salesChannelContextFactory;
 
     public function __construct(
@@ -78,7 +85,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
-     *
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
@@ -289,9 +295,17 @@ class ExportController extends AbstractController implements EventSubscriberInte
     ): array {
         $items = [];
 
+        $crossSellingCategories = $this->getConfig('crossSellingCategories', $salesChannelContext);
+
         /** @var ProductEntity $productEntity */
         foreach ($productEntities as $productEntity) {
             try {
+                $categories = $productEntity->getCategories();
+                $category = $categories ? $categories->first() : null;
+                $categoryId = $category ? $category->getId() : null;
+                if (!empty($crossSellingCategories) && in_array($categoryId, $crossSellingCategories, false)) {
+                    throw new ProductHasCrossSellingCategoryException($categoryId);
+                }
                 $xmlProduct = new XmlProduct(
                     $productEntity,
                     $this->router,
@@ -336,9 +350,23 @@ class ExportController extends AbstractController implements EventSubscriberInte
                         $productEntity->getId()
                     )
                 );
+            } catch (ProductHasCrossSellingCategoryException $e) {
+                $this->logger->warning(
+                    sprintf(
+                        'Product with id %s was not exported because it is assigned to cross selling category %s',
+                        $productEntity->getId(),
+                        $e->getMessage()
+                    )
+                );
             }
         }
 
         return $items;
+    }
+
+    private function getConfig(string $config, SalesChannelContext $context)
+    {
+        return $this->container->get(SystemConfigService::class)->get(sprintf('FinSearch.config.%s', $config),
+            $context->getSalesChannel()->getId());
     }
 }
