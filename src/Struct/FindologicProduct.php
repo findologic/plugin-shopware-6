@@ -26,7 +26,6 @@ use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -712,16 +711,17 @@ class FindologicProduct extends Struct
 
     protected function setUrl(): void
     {
-        if (!$this->product->hasExtension('canonicalUrl')) {
+        if (!$this->product->getSeoUrls() && $this->product->getSeoUrls()->first()->getSeoPathInfo()) {
             $productUrl = $this->router->generate(
                 'frontend.detail.page',
                 ['productId' => $this->product->getId()],
                 RouterInterface::ABSOLUTE_URL
             );
         } else {
-            /** @var SeoUrlEntity $canonical */
-            $canonical = $this->product->getExtension('canonicalUrl');
-            $productUrl = $canonical->getUrl();
+            $relativeProductUrl = $this->product->getSeoUrls()->first()->getSeoPathInfo();
+            $basePath = 'http://localhost:8000/'; // TODO: get base path of shop
+
+            $productUrl = $basePath . $relativeProductUrl;
         }
 
         $this->url = $productUrl;
