@@ -46,6 +46,9 @@ class Config extends Struct
     /** @var bool */
     private $initialized = false;
 
+    /** @var array */
+    private $crossSellingCategories = [];
+
     public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->systemConfigService = $systemConfigService;
@@ -61,6 +64,7 @@ class Config extends Struct
             'active',
             'staging',
             'activeOnCategoryPages',
+            'crossSellingCategories',
             'searchResultContainer',
             'navigationResultContainer',
             'integrationType',
@@ -120,6 +124,11 @@ class Config extends Struct
             'FinSearch.config.activeOnCategoryPages',
             false
         );
+        $this->crossSellingCategories = $this->getConfig(
+            $salesChannelId,
+            'FinSearch.config.crossSellingCategories',
+            []
+        );
         $this->searchResultContainer = $this->getConfig(
             $salesChannelId,
             'FinSearch.config.searchResultContainer',
@@ -134,6 +143,11 @@ class Config extends Struct
         $this->initializeReadonlyConfig($salesChannelId);
 
         $this->initialized = true;
+    }
+
+    public function getCrossSellingCategories(): array
+    {
+        return $this->crossSellingCategories;
     }
 
     /**
@@ -175,8 +189,6 @@ class Config extends Struct
     }
 
     /**
-     * @param mixed $default
-     *
      * @return string|bool|null
      */
     private function getConfig(?string $salesChannelId, string $configKey, $default = null)

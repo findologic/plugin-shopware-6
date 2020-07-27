@@ -59,8 +59,8 @@ Component.register('findologic-config', {
         };
     },
 
-    created () {
-        this.getCategories()
+    created() {
+        this.getCategories();
     },
 
     methods: {
@@ -92,20 +92,20 @@ Component.register('findologic-config', {
          * @param order
          * @returns {function(*, *): number}
          */
-        compare (prop = 'name', order = 'asc') {
+        compare(prop = 'name', order = 'asc') {
             return function (a, b) {
                 // Use toUpperCase() to ignore character casing
-                const case1 = typeof a[prop] === 'string' ? a[prop].toUpperCase() : a[prop]
-                const case2 = typeof b[prop] === 'string' ? b[prop].toUpperCase() : b[prop]
+                const case1 = typeof a[prop] === 'string' ? a[prop].toUpperCase() : a[prop];
+                const case2 = typeof b[prop] === 'string' ? b[prop].toUpperCase() : b[prop];
 
-                let comparison = 0
+                let comparison = 0;
                 if (case1 > case2) {
-                    comparison = order === 'asc' ? 1 : -1
+                    comparison = order === 'asc' ? 1 : -1;
                 } else if (case1 < case2) {
-                    comparison = order === 'asc' ? -1 : 1
+                    comparison = order === 'asc' ? -1 : 1;
                 }
-                return comparison
-            }
+                return comparison;
+            };
         },
 
         /**
@@ -152,31 +152,30 @@ Component.register('findologic-config', {
         /**
          * @public
          */
-        getCategories () {
-            const criteria = new Criteria(1, 500)
+        getCategories() {
+            const criteria = new Criteria(1, 500);
 
             if (this.term) {
-                criteria.setTerm(this.term)
+                criteria.setTerm(this.term);
             }
 
-            this.isLoading = true
-            const categoryRepository = this.repositoryFactory.create('category')
+            this.isLoading = true;
+            const categoryRepository = this.repositoryFactory.create('category');
 
-            let translatedCategories = []
+            const translatedCategories = [];
             categoryRepository.search(criteria, Shopware.Context.api).then((items) => {
-                this.total = items.total
+                this.total = items.total;
                 items.forEach((category) => {
                     translatedCategories.push({
                         value: category.id,
                         label: category.translated.breadcrumb.join(' > ')
-                    })
-                })
+                    });
+                });
 
-                this.categories = translatedCategories.sort(this.compare('label'))
-
+                this.categories = translatedCategories.sort(this.compare('label'));
             }).finally(() => {
-                this.isLoading = false
-            })
+                this.isLoading = false;
+            });
         }
     },
 

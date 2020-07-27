@@ -42,8 +42,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validation;
 
-use function in_array;
-
 class ExportController extends AbstractController implements EventSubscriberInterface
 {
     private const DEFAULT_START_PARAM = 0;
@@ -85,6 +83,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
+     *
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
@@ -295,7 +294,10 @@ class ExportController extends AbstractController implements EventSubscriberInte
     ): array {
         $items = [];
 
-        $crossSellingCategories = $this->getConfig('crossSellingCategories', $salesChannelContext);
+        $crossSellingCategories = $this->getConfig(
+            'crossSellingCategories',
+            $salesChannelContext->getSalesChannel()->getId()
+        );
 
         /** @var ProductEntity $productEntity */
         foreach ($productEntities as $productEntity) {
@@ -364,9 +366,11 @@ class ExportController extends AbstractController implements EventSubscriberInte
         return $items;
     }
 
-    private function getConfig(string $config, SalesChannelContext $context)
+    private function getConfig(string $config, ?string $salesChannelId)
     {
-        return $this->container->get(SystemConfigService::class)->get(sprintf('FinSearch.config.%s', $config),
-            $context->getSalesChannel()->getId());
+        return $this->container->get(SystemConfigService::class)->get(
+            sprintf('FinSearch.config.%s', $config),
+            $salesChannelId
+        );
     }
 }
