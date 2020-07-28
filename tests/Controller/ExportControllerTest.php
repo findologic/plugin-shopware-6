@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
@@ -49,6 +50,7 @@ class ExportControllerTest extends TestCase
     use IntegrationTestBehaviour;
     use ProductHelper;
     use ConfigHelper;
+    use ExportHelper;
 
     /** @var Router $router */
     private $router;
@@ -378,55 +380,11 @@ class ExportControllerTest extends TestCase
         array $crossSellingCategories,
         int $expectedCount
     ): void {
-        $salesChannelId = Defaults::SALES_CHANNEL;
 
-        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
-        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        /** @var SalesChannelEntity|MockObject $salesChannelMock */
-        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
-        $salesChannelMock->method('getId')->willReturn($salesChannelId);
-
-        $salesChannelContextMock->expects($this->exactly($expectedCount ? 5 : 4))
-            ->method('getContext')
-            ->willReturn($this->defaultContext);
-
-        $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
+        $salesChannelContextMock = $this->getDefaultSalesChannelContextMock();
 
         /** @var Request $request */
         $request = new Request(['shopkey' => $this->validShopkey]);
-
-        /** @var PsrContainerInterface|MockObject $containerMock */
-        $containerMock
-            = $this->getMockBuilder(PsrContainerInterface::class)->disableOriginalConstructor()->getMock();
-
-        /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
-        $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        /** @var SystemConfigEntity|MockObject $systemConfigEntity */
-        $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($this->validShopkey);
-        $systemConfigEntity->expects($this->once())->method('getSalesChannelId')->willReturn(null);
-
-        /** @var SystemConfigCollection $systemConfigCollection */
-        $systemConfigCollection = new SystemConfigCollection([$systemConfigEntity]);
-
-        /** @var EntitySearchResult $systemConfigEntitySearchResult */
-        $systemConfigEntitySearchResult = new EntitySearchResult(
-            1,
-            $systemConfigCollection,
-            null,
-            new Criteria(),
-            $this->defaultContext
-        );
-
-        $systemConfigRepositoryMock->expects($this->once())
-            ->method('search')
-            ->willReturn($systemConfigEntitySearchResult);
 
         /* @var ProductEntity $productEntity */
         $data['categories'] = $assignedCategories;
@@ -441,7 +399,7 @@ class ExportControllerTest extends TestCase
         $criteria->addFilter(new EqualsFilter('parent.id', null));
         $criteria->addFilter(
             new ProductAvailableFilter(
-                $salesChannelId,
+                Defaults::SALES_CHANNEL,
                 ProductVisibilityDefinition::VISIBILITY_SEARCH
             )
         );
@@ -469,21 +427,14 @@ class ExportControllerTest extends TestCase
             ->with($criteria, $this->defaultContext)
             ->willReturn($productEntitySearchResult);
 
-        /* @var SystemConfigService|MockObject $configServiceMock */
         $override['crossSellingCategories'] = $crossSellingCategories;
-        $override['salesChannelId'] = $salesChannelId;
+        $override['salesChannelId'] = Defaults::SALES_CHANNEL;
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $override);
 
-        $containerRepositoriesMap = [
-            ['system_config.repository', $systemConfigRepositoryMock],
-            ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
-            ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
-            ['product.repository', $productRepositoryMock],
-            [SystemConfigService::class, $configServiceMock],
-            [FindologicProductFactory::class, new FindologicProductFactory()]
-        ];
-        $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
+        $repositories['product.repository'] = $productRepositoryMock;
+        $repositories[SystemConfigService::class] = $configServiceMock;
 
+        $containerMock = $this->getContainerMock($repositories);
         $this->exportController->setContainer($containerMock);
 
         $result = $this->exportController->export($request, $salesChannelContextMock);

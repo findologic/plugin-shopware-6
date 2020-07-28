@@ -83,7 +83,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
-     *
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
@@ -306,7 +305,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
                 $category = $categories ? $categories->first() : null;
                 $categoryId = $category ? $category->getId() : null;
                 if (!empty($crossSellingCategories) && in_array($categoryId, $crossSellingCategories, false)) {
-                    throw new ProductHasCrossSellingCategoryException($categoryId);
+                    throw new ProductHasCrossSellingCategoryException();
                 }
                 $xmlProduct = new XmlProduct(
                     $productEntity,
@@ -355,9 +354,11 @@ class ExportController extends AbstractController implements EventSubscriberInte
             } catch (ProductHasCrossSellingCategoryException $e) {
                 $this->logger->warning(
                     sprintf(
-                        'Product with id %s was not exported because it is assigned to cross selling category %s',
+                        'Product with id %s %s was not exported because it is assigned to cross selling category %s %s',
                         $productEntity->getId(),
-                        $e->getMessage()
+                        $productEntity->getName(),
+                        $category->getId(),
+                        implode('>', $category->getBreadcrumb())
                     )
                 );
             }
