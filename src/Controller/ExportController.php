@@ -354,11 +354,12 @@ class ExportController extends AbstractController implements EventSubscriberInte
             } catch (ProductHasCrossSellingCategoryException $e) {
                 $this->logger->warning(
                     sprintf(
-                        'Product with id %s %s was not exported because it is assigned to cross selling category %s %s',
+                        'Product with id %s (%s) was not exported because it ' .
+                        'is assigned to cross selling category %s (%s)',
                         $productEntity->getId(),
                         $productEntity->getName(),
                         $category->getId(),
-                        implode('>', $category->getBreadcrumb())
+                        implode(' > ', $category->getBreadcrumb())
                     )
                 );
             }

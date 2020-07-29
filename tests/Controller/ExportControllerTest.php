@@ -32,6 +32,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Plugin\PluginCollection;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
@@ -316,11 +317,11 @@ class ExportControllerTest extends TestCase
         $this->assertSame($productEntity->getId(), (string)$xml->items->item['id']);
     }
 
-    public function crossSellingCategoryProvider()
+    public function crossSellingCategoryProvider(): array
     {
-        $categoryOne = '3f48c6c920e9972270b9730f97b395d2';
-        $categoryTwo = 'bd466201e971ead1265c2bb4ab72d5df';
-        $notInCrossSellingCategory = '0f26d5374acb10dddb2f3a027e92b85d';
+        $categoryOne = Uuid::randomHex();
+        $categoryTwo = Uuid::randomHex();
+        $notInCrossSellingCategory = Uuid::randomHex();
 
         return [
             'No cross-sell categories configured' => [
@@ -431,10 +432,10 @@ class ExportControllerTest extends TestCase
         $override['salesChannelId'] = Defaults::SALES_CHANNEL;
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $override);
 
-        $repositories['product.repository'] = $productRepositoryMock;
-        $repositories[SystemConfigService::class] = $configServiceMock;
+        $services['product.repository'] = $productRepositoryMock;
+        $services[SystemConfigService::class] = $configServiceMock;
 
-        $containerMock = $this->getContainerMock($repositories);
+        $containerMock = $this->getContainerMock($services);
         $this->exportController->setContainer($containerMock);
 
         $result = $this->exportController->export($request, $salesChannelContextMock);

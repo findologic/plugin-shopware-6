@@ -43,7 +43,12 @@ trait ExportHelper
         return $salesChannelContextMock;
     }
 
-    public function getContainerMock(array $repositories = []): PsrContainerInterface
+    /**
+     * @param mixed[] $services Service mapping array for dependency injection for the container. It can be either an
+     * actual service or a mock implementation. Use service name as key and implementation as value.
+     * e.g <code>['product.repository' => $customRepositoryMock]</code>
+     */
+    public function getContainerMock(array $services = []): PsrContainerInterface
     {
         /** @var PsrContainerInterface|MockObject $containerMock */
         $containerMock = $this->getMockBuilder(PsrContainerInterface::class)
@@ -51,18 +56,18 @@ trait ExportHelper
             ->getMock();
 
         $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();
-        $defaultRepositoresMap = [
+        $defaultServicesMap = [
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
 
-        foreach ($repositories as $key => $repository) {
-            $defaultRepositoresMap[] = [$key, $repository];
+        foreach ($services as $key => $service) {
+            $defaultServicesMap[] = [$key, $service];
         }
 
-        $containerMock->method('get')->willReturnMap($defaultRepositoresMap);
+        $containerMock->method('get')->willReturnMap($defaultServicesMap);
 
         return $containerMock;
     }
