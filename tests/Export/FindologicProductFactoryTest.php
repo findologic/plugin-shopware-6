@@ -12,19 +12,21 @@ use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class FindologicProductFactoryTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use ProductHelper;
     use ConfigHelper;
+    use SalesChannelHelper;
 
-    /** @var Context */
-    private $defaultContext;
+    /** @var SalesChannelContext */
+    private $salesChannelContext;
 
     /** @var string */
     private $shopkey;
@@ -32,7 +34,8 @@ class FindologicProductFactoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->defaultContext = Context::createDefaultContext();
+
+        $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->shopkey = $this->getShopkey();
     }
 
@@ -53,7 +56,7 @@ class FindologicProductFactoryTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
-            $this->defaultContext,
+            $this->salesChannelContext,
             $this->shopkey,
             [],
             new XMLItem('123')

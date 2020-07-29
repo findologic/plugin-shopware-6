@@ -19,17 +19,18 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProductTest extends TestCase
@@ -37,9 +38,10 @@ class FindologicProductTest extends TestCase
     use IntegrationTestBehaviour;
     use ProductHelper;
     use ConfigHelper;
+    use SalesChannelHelper;
 
-    /** @var Context */
-    private $defaultContext;
+    /** @var SalesChannelContext */
+    private $salesChannelContext;
 
     /** @var string */
     private $shopkey;
@@ -51,7 +53,7 @@ class FindologicProductTest extends TestCase
     {
         parent::setUp();
         $this->router = $this->getContainer()->get('router');
-        $this->defaultContext = Context::createDefaultContext();
+        $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->shopkey = $this->getShopkey();
     }
 
@@ -87,7 +89,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->defaultContext,
+            $this->salesChannelContext,
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -118,7 +120,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->defaultContext,
+            $this->salesChannelContext,
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -177,7 +179,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->defaultContext,
+            $this->salesChannelContext,
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -204,7 +206,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->defaultContext,
+            $this->salesChannelContext,
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -253,7 +255,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->defaultContext,
+            $this->salesChannelContext,
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -290,7 +292,7 @@ class FindologicProductTest extends TestCase
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
-            ->search(new Criteria(), $this->defaultContext)
+            ->search(new Criteria(), $this->salesChannelContext)
             ->getElements();
 
         $userGroup = $this->getUserGroups($customerGroupEntities);
@@ -302,7 +304,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->defaultContext,
+            $this->salesChannelContext,
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -354,12 +356,12 @@ class FindologicProductTest extends TestCase
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
 
-        $productEntity = $this->getContainer()->get('product.repository')->search($criteria, $this->defaultContext)
+        $productEntity = $this->getContainer()->get('product.repository')->search($criteria, $this->salesChannelContext)
             ->get($productEntity->getId());
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
-            ->search(new Criteria(), $this->defaultContext)
+            ->search(new Criteria(), $this->salesChannelContext)
             ->getElements();
 
         $findologicProductFactory = new FindologicProductFactory();
@@ -367,7 +369,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->defaultContext,
+            $this->salesChannelContext,
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -426,12 +428,12 @@ class FindologicProductTest extends TestCase
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
 
-        $productEntity = $this->getContainer()->get('product.repository')->search($criteria, $this->defaultContext)
+        $productEntity = $this->getContainer()->get('product.repository')->search($criteria, $this->salesChannelContext)
             ->get($productEntity->getId());
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
-            ->search(new Criteria(), $this->defaultContext)
+            ->search(new Criteria(), $this->salesChannelContext)
             ->getElements();
 
         $findologicProductFactory = new FindologicProductFactory();
@@ -439,7 +441,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->defaultContext,
+            $this->salesChannelContext,
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
