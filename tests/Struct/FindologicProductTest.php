@@ -292,7 +292,7 @@ class FindologicProductTest extends TestCase
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext)
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
         $userGroup = $this->getUserGroups($customerGroupEntities);
@@ -361,7 +361,7 @@ class FindologicProductTest extends TestCase
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext)
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
         $findologicProductFactory = new FindologicProductFactory();
@@ -433,7 +433,7 @@ class FindologicProductTest extends TestCase
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext)
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
         $findologicProductFactory = new FindologicProductFactory();

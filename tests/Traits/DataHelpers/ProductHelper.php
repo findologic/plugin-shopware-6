@@ -55,6 +55,14 @@ trait ProductHelper
                     ]
                 ],
             ],
+            'seoUrls' => [
+                [
+                    'pathInfo' => '/detail/' . $id,
+                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page'
+                ]
+            ],
             'translations' => [
                 'en-GB' => [
                     'customTranslated' => [
