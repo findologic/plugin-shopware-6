@@ -356,7 +356,8 @@ class FindologicProductTest extends TestCase
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
 
-        $productEntity = $this->getContainer()->get('product.repository')->search($criteria, $this->salesChannelContext)
+        $productEntity = $this->getContainer()->get('product.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
             ->get($productEntity->getId());
 
         $customerGroupEntities = $this->getContainer()
@@ -428,7 +429,9 @@ class FindologicProductTest extends TestCase
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
 
-        $productEntity = $this->getContainer()->get('product.repository')->search($criteria, $this->salesChannelContext)
+        $productEntity = $this->getContainer()
+            ->get('product.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
             ->get($productEntity->getId());
 
         $customerGroupEntities = $this->getContainer()
