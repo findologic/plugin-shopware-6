@@ -13,6 +13,7 @@ use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProductFactory
@@ -28,11 +29,12 @@ class FindologicProductFactory
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        Context $context,
+        SalesChannelContext $salesChannelContext,
         string $shopkey,
         array $customerGroups,
         Item $item
     ): FindologicProduct {
-        return new FindologicProduct($product, $router, $container, $context, $shopkey, $customerGroups, $item);
+        return new FindologicProduct(
+            $product, $router, $container, $salesChannelContext, $shopkey, $customerGroups, $item);
     }
 }

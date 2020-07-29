@@ -18,6 +18,7 @@ use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
 
 class XmlProduct
@@ -29,7 +30,7 @@ class XmlProduct
     private $router;
 
     /** @var Context */
-    private $context;
+    private $salesChannelContext;
 
     /** @var ContainerInterface */
     private $container;
@@ -62,22 +63,24 @@ class XmlProduct
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        Context $context,
+        SalesChannelContext $salesChannelContext,
         string $shopkey,
         array $customerGroups
     ) {
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
-        $this->context = $context;
+        $this->salesChannelContext = $salesChannelContext;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
 
         $this->exporter = Exporter::create(Exporter::TYPE_XML);
         $this->xmlItem = $this->exporter->createItem($product->getId());
 
-        $this->findologicProduct = $this->container->get(FindologicProductFactory::class)
-            ->buildInstance($product, $router, $container, $context, $shopkey, $customerGroups, $this->xmlItem);
+        /** @var FindologicProductFactory $findologicProductFactory */
+        $findologicProductFactory = $this->container->get(FindologicProductFactory::class);
+        $this->findologicProduct = $findologicProductFactory
+            ->buildInstance($product, $router, $container, $salesChannelContext, $shopkey, $customerGroups, $this->xmlItem);
 
         $this->buildXmlItem();
     }

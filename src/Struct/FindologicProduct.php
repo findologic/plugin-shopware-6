@@ -27,10 +27,14 @@ use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\Tag\TagEntity;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
@@ -47,7 +51,7 @@ class FindologicProduct extends Struct
     protected $container;
 
     /** @var Context */
-    protected $context;
+    protected $salesChannelContext;
 
     /** @var string */
     protected $shopkey;
@@ -95,7 +99,13 @@ class FindologicProduct extends Struct
     protected $item;
 
     /**
-     * @param CustomerGroupEntity[] $customerGroups
+     * @param ProductEntity $product
+     * @param RouterInterface $router
+     * @param ContainerInterface $container
+     * @param SalesChannelContext $salesChannelContext
+     * @param string $shopkey
+     * @param array $customerGroups
+     * @param Item $item
      *
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
@@ -105,7 +115,7 @@ class FindologicProduct extends Struct
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        Context $context,
+        SalesChannelContext $salesChannelContext,
         string $shopkey,
         array $customerGroups,
         Item $item
@@ -113,7 +123,7 @@ class FindologicProduct extends Struct
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
-        $this->context = $context;
+        $this->salesChannelContext = $salesChannelContext;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
         $this->item = $item;
@@ -711,17 +721,25 @@ class FindologicProduct extends Struct
 
     protected function setUrl(): void
     {
-        if (!$this->product->getSeoUrls() && $this->product->getSeoUrls()->first()->getSeoPathInfo()) {
+        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
+        /** @var SeoUrlCollection $seoUrls */
+        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannelId);
+        /** @var SalesChannelDomainCollection $domains */
+        $domains = $this->salesChannelContext->getSalesChannel()->getDomains();
+
+        if ($seoUrlCollection->count() > 0 && $domains->count() > 0) {
+            /** @var SalesChannelDomainEntity $salesChannelDomainEntity */
+            $salesChannelDomainEntity = $domains->first();
+            $baseUrl = $salesChannelDomainEntity->getUrl();
+            $seoPath = $seoUrlCollection->first()->getSeoPathInfo();
+            
+            $productUrl = $baseUrl . DIRECTORY_SEPARATOR . $seoPath;
+        } else {
             $productUrl = $this->router->generate(
                 'frontend.detail.page',
                 ['productId' => $this->product->getId()],
                 RouterInterface::ABSOLUTE_URL
             );
-        } else {
-            $relativeProductUrl = $this->product->getSeoUrls()->first()->getSeoPathInfo();
-            $basePath = 'http://localhost:8000/'; // TODO: get base path of shop
-
-            $productUrl = $basePath . $relativeProductUrl;
         }
 
         $this->url = $productUrl;
@@ -806,7 +824,10 @@ class FindologicProduct extends Struct
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('payload.productNumber', $this->product->getProductNumber()));
 
-        $orders = $this->container->get('order_line_item.repository')->search($criteria, $this->context);
+        /** @var EntityRepository $orderLineItemRepository */
+        $orderLineItemRepository = $this->container->get('order_line_item.repository');
+        $orders = $orderLineItemRepository->search($criteria, $this->salesChannelContext->getContext());
+
         $this->salesFrequency = $orders->count();
     }
 
