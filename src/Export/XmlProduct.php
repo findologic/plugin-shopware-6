@@ -79,8 +79,15 @@ class XmlProduct
 
         /** @var FindologicProductFactory $findologicProductFactory */
         $findologicProductFactory = $this->container->get(FindologicProductFactory::class);
-        $this->findologicProduct = $findologicProductFactory
-            ->buildInstance($product, $router, $container, $salesChannelContext, $shopkey, $customerGroups, $this->xmlItem);
+        $this->findologicProduct = $findologicProductFactory->buildInstance(
+            $product,
+            $router,
+            $container,
+            $salesChannelContext,
+            $shopkey,
+            $customerGroups,
+            $this->xmlItem
+        );
 
         $this->buildXmlItem();
     }

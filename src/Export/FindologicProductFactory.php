@@ -35,6 +35,13 @@ class FindologicProductFactory
         Item $item
     ): FindologicProduct {
         return new FindologicProduct(
-            $product, $router, $container, $salesChannelContext, $shopkey, $customerGroups, $item);
+            $product,
+            $router,
+            $container,
+            $salesChannelContext,
+            $shopkey,
+            $customerGroups,
+            $item
+        );
     }
 }

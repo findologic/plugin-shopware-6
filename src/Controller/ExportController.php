@@ -153,7 +153,10 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $criteria = $this->getProductCriteria();
 
         /** @var IdSearchResult $result */
-        $result = $this->container->get('product.repository')->searchIds($criteria, $this->salesChannelContext->getContext());
+        $result = $this->container->get('product.repository')->searchIds(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        );
 
         return $result->getTotal();
     }
@@ -258,8 +261,10 @@ class ExportController extends AbstractController implements EventSubscriberInte
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
-    private function getSalesChannelContextByShopkey(string $shopkey, SalesChannelContext $currentContext): SalesChannelContext
-    {
+    private function getSalesChannelContextByShopkey(
+        string $shopkey,
+        SalesChannelContext $currentContext
+    ): SalesChannelContext {
         $systemConfigRepository = $this->container->get('system_config.repository');
         $systemConfigEntities = $systemConfigRepository->search(
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
