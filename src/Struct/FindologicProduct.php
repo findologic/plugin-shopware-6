@@ -725,7 +725,7 @@ class FindologicProduct extends Struct
 
         $domains = $salesChannel->getDomains();
         $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
-        if ($domains->count() > 0 && $seoUrlCollection->count() > 0) {
+        if ($domains && $domains->count() > 0 && $seoUrlCollection && $seoUrlCollection->count() > 0) {
             $baseUrl = $domains->first()->getUrl();
             $seoPath = $seoUrlCollection->first()->getSeoPathInfo();
 
