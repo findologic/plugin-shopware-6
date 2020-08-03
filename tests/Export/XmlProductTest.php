@@ -43,6 +43,8 @@ class XmlProductTest extends TestCase
         parent::setUp();
         $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->shopkey = $this->getShopkey();
+
+        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
     /**
@@ -61,7 +63,7 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -106,7 +108,7 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $containerMock,
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             []
         );
@@ -133,7 +135,7 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -159,7 +161,7 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $containerMock,
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             []
         );

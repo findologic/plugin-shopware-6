@@ -37,6 +37,8 @@ class FindologicProductFactoryTest extends TestCase
 
         $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->shopkey = $this->getShopkey();
+
+        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
     /**
@@ -56,7 +58,7 @@ class FindologicProductFactoryTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')

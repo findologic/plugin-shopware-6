@@ -55,6 +55,8 @@ class FindologicProductTest extends TestCase
         $this->router = $this->getContainer()->get('router');
         $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->shopkey = $this->getShopkey();
+
+        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
     public function productNameProvider(): array
@@ -89,7 +91,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -120,7 +122,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -179,7 +181,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -206,7 +208,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -255,7 +257,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -298,7 +300,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -371,7 +373,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -445,7 +447,7 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')

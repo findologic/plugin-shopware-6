@@ -111,5 +111,7 @@
             <argument id="service_container" type="service" />
         </service>
 
+        <service id="fin_search.sales_channel_context" synthetic="true" public="true"/>
+
     </services>
 </container>

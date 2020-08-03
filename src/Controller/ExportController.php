@@ -17,6 +17,7 @@ use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
@@ -103,6 +104,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $customerGroups = $this->container->get('customer_group.repository')
             ->search(new Criteria(), $this->salesChannelContext->getContext())->getElements();
 
+        $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $items = $this->buildXmlProducts($productEntities, $shopkey, $customerGroups);
 
         $xmlExporter = Exporter::create(Exporter::TYPE_XML);
@@ -292,7 +294,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @param EntitySearchResult $productEntities
      * @param string $shopkey
-     * @param array $customerGroups
+     * @param CustomerGroupEntity[] $customerGroups
      *
      * @return Item[]
      */
@@ -310,7 +312,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
                     $productEntity,
                     $this->router,
                     $this->container,
-                    $this->salesChannelContext,
+                    $this->salesChannelContext->getContext(),
                     $shopkey,
                     $customerGroups
                 );

@@ -51,6 +51,9 @@ class FindologicProduct extends Struct
     protected $container;
 
     /** @var Context */
+    protected $context;
+
+    /** @var SalesChannelContext */
     protected $salesChannelContext;
 
     /** @var string */
@@ -102,7 +105,7 @@ class FindologicProduct extends Struct
      * @param ProductEntity $product
      * @param RouterInterface $router
      * @param ContainerInterface $container
-     * @param SalesChannelContext $salesChannelContext
+     * @param SalesChannelContext $context
      * @param string $shopkey
      * @param array $customerGroups
      * @param Item $item
@@ -115,7 +118,7 @@ class FindologicProduct extends Struct
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        SalesChannelContext $salesChannelContext,
+        Context $context,
         string $shopkey,
         array $customerGroups,
         Item $item
@@ -123,13 +126,15 @@ class FindologicProduct extends Struct
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
-        $this->salesChannelContext = $salesChannelContext;
+        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
         $this->item = $item;
         $this->prices = [];
         $this->attributes = [];
         $this->properties = [];
+
+        $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
 
         $this->setName();
         $this->setAttributes();

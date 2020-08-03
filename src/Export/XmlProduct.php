@@ -30,7 +30,7 @@ class XmlProduct
     private $router;
 
     /** @var Context */
-    private $salesChannelContext;
+    private $context;
 
     /** @var ContainerInterface */
     private $container;
@@ -63,14 +63,14 @@ class XmlProduct
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        SalesChannelContext $salesChannelContext,
+        Context $context,
         string $shopkey,
         array $customerGroups
     ) {
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
-        $this->salesChannelContext = $salesChannelContext;
+        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
 
@@ -83,7 +83,7 @@ class XmlProduct
             $product,
             $router,
             $container,
-            $salesChannelContext,
+            $context,
             $shopkey,
             $customerGroups,
             $this->xmlItem
