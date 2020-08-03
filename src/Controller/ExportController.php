@@ -164,9 +164,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
     }
 
     /**
-     * @param int $start
-     * @param int $count
-     *
      * @throws InconsistentCriteriaIdsException
      */
     public function getProductsFromShop(
@@ -256,10 +253,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
     }
 
     /**
-     * @param string $shopkey
-     * @param SalesChannelContext $currentContext
-     *
-     * @return SalesChannelContext
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
@@ -292,8 +285,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
     }
 
     /**
-     * @param EntitySearchResult $productEntities
-     * @param string $shopkey
      * @param CustomerGroupEntity[] $customerGroups
      *
      * @return Item[]

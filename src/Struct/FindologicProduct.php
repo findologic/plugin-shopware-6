@@ -102,13 +102,7 @@ class FindologicProduct extends Struct
     protected $item;
 
     /**
-     * @param ProductEntity $product
-     * @param RouterInterface $router
-     * @param ContainerInterface $container
-     * @param SalesChannelContext $context
-     * @param string $shopkey
-     * @param array $customerGroups
-     * @param Item $item
+     * @param CustomerGroupEntity[] $customerGroups
      *
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
