@@ -280,12 +280,6 @@ class FindologicProductTest extends TestCase
     {
         $productEntity = $this->createTestProduct();
 
-        $productUrl = $this->router->generate(
-            'frontend.detail.page',
-            ['productId' => $productEntity->getId()],
-            RouterInterface::ABSOLUTE_URL
-        );
-
         $productTag = new Keyword('FINDOLOGIC Tag');
         $images = $this->getImages();
         $attributes = $this->getAttributes($productEntity);
@@ -310,8 +304,15 @@ class FindologicProductTest extends TestCase
             new XMLItem('123')
         );
 
+        $salesChannel = $this->salesChannelContext->getSalesChannel();
+        $domain = $salesChannel->getDomains()->first()->getUrl();
+
+        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        $seoPath = $seoUrls->first()->getSeoPathInfo();
+        $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
+
+        $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals($productUrl, $findologicProduct->getUrl());
         $this->assertEquals([$productTag], $findologicProduct->getKeywords());
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());

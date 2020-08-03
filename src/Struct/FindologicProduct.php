@@ -721,19 +721,15 @@ class FindologicProduct extends Struct
 
     protected function setUrl(): void
     {
-        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
-        /** @var SeoUrlCollection $seoUrls */
-        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannelId);
-        /** @var SalesChannelDomainCollection $domains */
-        $domains = $this->salesChannelContext->getSalesChannel()->getDomains();
+        $salesChannel = $this->salesChannelContext->getSalesChannel();
 
-        if ($seoUrlCollection->count() > 0 && $domains->count() > 0) {
-            /** @var SalesChannelDomainEntity $salesChannelDomainEntity */
-            $salesChannelDomainEntity = $domains->first();
-            $baseUrl = $salesChannelDomainEntity->getUrl();
+        $domains = $salesChannel->getDomains();
+        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        if ($domains->count() > 0 && $seoUrlCollection->count() > 0) {
+            $baseUrl = $domains->first()->getUrl();
             $seoPath = $seoUrlCollection->first()->getSeoPathInfo();
-            
-            $productUrl = $baseUrl . DIRECTORY_SEPARATOR . $seoPath;
+
+            $productUrl = sprintf('%s/%s', $baseUrl, $seoPath);
         } else {
             $productUrl = $this->router->generate(
                 'frontend.detail.page',
