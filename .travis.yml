@@ -19,7 +19,7 @@ env:
   matrix:
     - SHOPWARE_VERSION="6.1"
     - SHOPWARE_VERSION="6.2"
-    - SHOPWARE_VERSION="6.3.0.0" # TODO: Use 6.3 branch once it is available.
+    - SHOPWARE_VERSION="master" # TODO: Use 6.3 branch once it is available.
   global:
     - PLUGIN_NAME=FinSearch
     - SHOPWARE_DIR=${HOME}/shopware

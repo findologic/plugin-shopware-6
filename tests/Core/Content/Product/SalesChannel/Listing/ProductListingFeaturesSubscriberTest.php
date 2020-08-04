@@ -735,7 +735,7 @@ XML;
             );
         } else {
             $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-                ['flEnabled', $findologicEnabled],
+                ['flEnabled', $findologicEnabled]
             );
         }
         $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
