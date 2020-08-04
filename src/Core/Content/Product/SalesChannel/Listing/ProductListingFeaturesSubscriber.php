@@ -17,6 +17,7 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
+use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\GuzzleHttp\Client;
 use Psr\Cache\InvalidArgumentException;
@@ -29,6 +30,7 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSub
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSorting;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -133,6 +135,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->handleFilters($event);
             $this->navigationRequestHandler->handleRequest($event);
+            $this->setSystemAwareExtension($event);
         }
     }
 
@@ -144,7 +147,16 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->handleFilters($event);
             $this->searchRequestHandler->handleRequest($event);
+            $this->setSystemAwareExtension($event);
         }
+    }
+
+    protected function setSystemAwareExtension(ShopwareEvent $event): void
+    {
+        /** @var SystemAware $systemAware */
+        $systemAware = $this->container->get(SystemAware::class);
+
+        $event->getContext()->addExtension(SystemAware::IDENTIFIER, $systemAware);
     }
 
     private function addTopResultSorting(ProductListingResultEvent $event): void

@@ -11,9 +11,13 @@
             } %}
         </div>
 
+        {% set searchWidget =
+            context.context.extensions.flSystemAware.supportsNewSearchWidget ?'widgets.search.pagelet.v2' : 'widgets.search.pagelet'
+        %}
+
         {% sw_include '@Storefront/storefront/component/product/listing.html.twig' with {
             searchResult: page.listing,
-            dataUrl: url('widgets.search.pagelet', { search: page.searchTerm ? page.searchTerm : ' ' }),
+            dataUrl: url(searchWidget, { search: page.searchTerm ? page.searchTerm : ' ' }),
             filterUrl: '',
             params: { search: page.searchTerm },
             sidebar: 0,

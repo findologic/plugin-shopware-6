@@ -2,7 +2,9 @@
 
 {% block component_filter_panel_items_container %}
 
-    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
+    {% if page.listing.criteria.extensions.flFilters.filters %}
+        {% set filters = page.listing.criteria.extensions.flFilters.filters %}
+    {% elseif not (slot.data.listing.criteria.extensions.flFilters.filters) %}
         {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
     {% else %}
         {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
