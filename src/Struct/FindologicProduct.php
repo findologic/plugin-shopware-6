@@ -28,10 +28,12 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
+use Shopware\Core\System\CustomField\Aggregate\CustomFieldSet\CustomFieldSetEntity;
 use Shopware\Core\System\Tag\TagEntity;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
@@ -169,9 +171,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Attribute[]
+     * @throws AccessEmptyPropertyException
      */
     public function getAttributes(): array
     {
@@ -183,9 +184,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Price[]
+     * @throws AccessEmptyPropertyException
      */
     public function getPrices(): array
     {
@@ -243,9 +243,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Keyword[]
+     * @throws AccessEmptyPropertyException
      */
     public function getKeywords(): array
     {
@@ -262,9 +261,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Image[]
+     * @throws AccessEmptyPropertyException
      */
     public function getImages(): array
     {
@@ -286,9 +284,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Usergroup[]
+     * @throws AccessEmptyPropertyException
      */
     public function getUserGroups(): array
     {
@@ -305,9 +302,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Ordernumber[]
+     * @throws AccessEmptyPropertyException
      */
     public function getOrdernumbers(): array
     {
@@ -324,9 +320,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Property[]
+     * @throws AccessEmptyPropertyException
      */
     public function getProperties(): array
     {
@@ -362,6 +357,7 @@ class FindologicProduct extends Struct
         $this->setCategoriesAndCatUrls();
         $this->setVendors();
         $this->setAttributeProperties();
+        $this->setCustomFieldAttributes();
         $this->setAdditionalAttributes();
     }
 
@@ -837,5 +833,58 @@ class FindologicProduct extends Struct
         $images->insert(0, $coverImage);
 
         return $images;
+    }
+
+    protected function setCustomFieldAttributes()
+    {
+        $this->attributes = array_merge($this->attributes, $this->getCustomFieldProperties($this->product));
+        foreach ($this->product->getChildren() as $productEntity) {
+            $this->attributes = array_merge($this->attributes, $this->getCustomFieldProperties($productEntity));
+        }
+    }
+
+    private function getCustomFieldProperties(ProductEntity $product): array
+    {
+        $attributes = [];
+
+        if (!$product->getCustomFields()) {
+            return [];
+        }
+
+        $productFields = $product->getCustomFields();
+
+        /** @var EntityRepositoryInterface $repo */
+        $repo = $this->container->get('custom_field_set.repository');
+        $criteria = new Criteria();
+        $criteria->addAssociation('customFields');
+        $criteria->addFilter(new EqualsFilter('relations.entityName', 'product'));
+        $criteria->addFilter(new EqualsFilter('customFields.active', true));
+        $customFields = $repo->search($criteria, $this->context)->getEntities();
+
+        /** @var CustomFieldSetEntity $customFieldSet */
+        foreach ($customFields->getElements() as $customFieldSet) {
+            if (!$customFieldSet->getCustomFields()) {
+                continue;
+            }
+            foreach ($customFieldSet->getCustomFields()->getElements() as $field) {
+                if (!isset($productFields[$field->getName()])) {
+                    continue;
+                }
+
+                if($field->getType() === 'string') {
+                    $value = Utils::removeControlCharacters($productFields[$field->getName()]);
+                } else {
+                    $value = $productFields[$field->getName()];
+                }
+                $customFieldAttribute = new Attribute(
+                    Utils::removeSpecialChars($field->getName()),
+                    [$value]
+                );
+                $attributes[] = $customFieldAttribute;
+            }
+
+        }
+
+        return $attributes;
     }
 }
