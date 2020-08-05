@@ -836,6 +836,9 @@ class FindologicProduct extends Struct
     protected function setCustomFieldAttributes(): void
     {
         $this->attributes = array_merge($this->attributes, $this->getCustomFieldProperties($this->product));
+        if (!$this->product->getChildCount()) {
+            return;
+        }
         foreach ($this->product->getChildren() as $productEntity) {
             $this->attributes = array_merge($this->attributes, $this->getCustomFieldProperties($productEntity));
         }
