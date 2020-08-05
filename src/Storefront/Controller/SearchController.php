@@ -111,7 +111,12 @@ class SearchController extends ShopwareSearchController
      * Route to load the listing filters
      *
      * @RouteScope(scopes={"storefront"})
-     * @Route("/widgets/search", name="widgets.search.pagelet.v2", methods={"GET", "POST"}, defaults={"XmlHttpRequest"=true})
+     * @Route(
+     *      "/widgets/search",
+     *      name="widgets.search.pagelet.v2",
+     *      methods={"GET", "POST"},
+     *      defaults={"XmlHttpRequest"=true}
+     * )
      *
      * @throws MissingRequestParameterException
      */
@@ -121,7 +126,10 @@ class SearchController extends ShopwareSearchController
 
         $page = $this->searchPageLoader->load($request, $context);
 
-        return $this->renderStorefront('@Storefront/storefront/page/search/search-pagelet.html.twig', ['page' => $page]);
+        return $this->renderStorefront(
+            '@Storefront/storefront/page/search/search-pagelet.html.twig',
+            ['page' => $page]
+        );
     }
 
     private function handleFindologicSearchParams(Request $request): ?Response
