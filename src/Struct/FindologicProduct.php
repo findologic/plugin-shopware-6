@@ -28,12 +28,10 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
-use Shopware\Core\System\CustomField\Aggregate\CustomFieldSet\CustomFieldSetEntity;
 use Shopware\Core\System\Tag\TagEntity;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
@@ -835,7 +833,7 @@ class FindologicProduct extends Struct
         return $images;
     }
 
-    protected function setCustomFieldAttributes()
+    protected function setCustomFieldAttributes(): void
     {
         $this->attributes = array_merge($this->attributes, $this->getCustomFieldProperties($this->product));
         foreach ($this->product->getChildren() as $productEntity) {
@@ -847,42 +845,14 @@ class FindologicProduct extends Struct
     {
         $attributes = [];
 
-        if (!$product->getCustomFields()) {
+        $productFields = $product->getCustomFields();
+        if (!$productFields) {
             return [];
         }
 
-        $productFields = $product->getCustomFields();
-
-        /** @var EntityRepositoryInterface $repo */
-        $repo = $this->container->get('custom_field_set.repository');
-        $criteria = new Criteria();
-        $criteria->addAssociation('customFields');
-        $criteria->addFilter(new EqualsFilter('relations.entityName', 'product'));
-        $criteria->addFilter(new EqualsFilter('customFields.active', true));
-        $customFields = $repo->search($criteria, $this->context)->getEntities();
-
-        /** @var CustomFieldSetEntity $customFieldSet */
-        foreach ($customFields->getElements() as $customFieldSet) {
-            if (!$customFieldSet->getCustomFields()) {
-                continue;
-            }
-            foreach ($customFieldSet->getCustomFields()->getElements() as $field) {
-                if (!isset($productFields[$field->getName()])) {
-                    continue;
-                }
-
-                if($field->getType() === 'string') {
-                    $value = Utils::removeControlCharacters($productFields[$field->getName()]);
-                } else {
-                    $value = $productFields[$field->getName()];
-                }
-                $customFieldAttribute = new Attribute(
-                    Utils::removeSpecialChars($field->getName()),
-                    [$value]
-                );
-                $attributes[] = $customFieldAttribute;
-            }
-
+        foreach ($productFields as $key => $value) {
+            $customFieldAttribute = new Attribute(Utils::removeSpecialChars($key), [$value]);
+            $attributes[] = $customFieldAttribute;
         }
 
         return $attributes;

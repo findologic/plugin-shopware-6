@@ -29,13 +29,14 @@ trait ProductHelper
 
         $productData = [
             'id' => $id,
-            'productNumber' => Uuid::randomHex(),
+            'productNumber' => 'FINDOLOGIC001',
             'stock' => 10,
             'ean' => Uuid::randomHex(),
             'description' => 'FINDOLOGIC Description',
             'tags' => [
                 ['id' => Uuid::randomHex(), 'name' => 'FINDOLOGIC Tag']
             ],
+            'customFields' => ['findologic_size' => 100, 'findologic_color' => 'yellow'],
             'name' => 'FINDOLOGIC Product',
             'manufacturerNumber' => Uuid::randomHex(),
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
@@ -92,9 +93,21 @@ trait ProductHelper
             ],
         ];
 
-        $productData = array_merge($productData, $data);
+        $productInfo[] = array_merge($productData, $data);
+        // Basic Variant Data
+        $productInfo[] = [
+            'id' => Uuid::randomHex(),
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT',
+            'stock' => 10,
+            'active' => true,
+            'parentId' => $id,
+            'tax' => ['name' => '9%', 'taxRate' => 9],
+            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
+            'customFields' => ['findologic_size' => 50, 'findologic_color' => 'blue'],
+        ];
 
-        $container->get('product.repository')->upsert([$productData], $context);
+        $container->get('product.repository')->upsert($productInfo, $context);
 
         try {
             $criteria = new Criteria([$id]);

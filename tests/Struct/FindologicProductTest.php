@@ -295,6 +295,9 @@ class FindologicProductTest extends TestCase
 
         $userGroup = $this->getUserGroups($customerGroupEntities);
         $ordernumbers = $this->getOrdernumber($productEntity);
+        foreach ($productEntity->getChildren() as $variant) {
+            $ordernumbers = \array_merge($ordernumbers, $this->getOrdernumber($variant));
+        }
         $properties = $this->getProperties($productEntity);
 
         $findologicProductFactory = new FindologicProductFactory();
@@ -634,6 +637,19 @@ class FindologicProductTest extends TestCase
                     ->getName()
             ]
         );
+
+        $productFields = $productEntity->getCustomFields();
+        foreach ($productFields as $key => $value) {
+            $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+        }
+
+        foreach ($productEntity->getChildren() as $variant) {
+            $productFields = $variant->getCustomFields();
+            foreach ($productFields as $key => $value) {
+                $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+            }
+        }
+
         $attributes[] = new Attribute('shipping_free', [$productEntity->getShippingFree() ? 1 : 0]);
         $rating = $productEntity->getRatingAverage() ?? 0.0;
         $attributes[] = new Attribute('rating', [$rating]);
