@@ -35,6 +35,10 @@
                 {% set filterRangeActiveMaxLabel = 'detail.priceDataInfoUntil'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RangeSliderFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-range.html.twig' with {
+                        price: {
+                            min: filter.min,
+                            max: filter.max
+                        },
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,

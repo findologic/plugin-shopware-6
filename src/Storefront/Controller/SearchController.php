@@ -105,6 +105,25 @@ class SearchController extends ShopwareSearchController
         );
     }
 
+    /**
+     * @HttpCache()
+     *
+     * Route to load the listing filters
+     *
+     * @RouteScope(scopes={"storefront"})
+     * @Route("/widgets/search", name="widgets.search.pagelet.v2", methods={"GET", "POST"}, defaults={"XmlHttpRequest"=true})
+     *
+     * @throws MissingRequestParameterException
+     */
+    public function ajax(Request $request, SalesChannelContext $context): Response
+    {
+        $request->request->set('no-aggregations', true);
+
+        $page = $this->searchPageLoader->load($request, $context);
+
+        return $this->renderStorefront('@Storefront/storefront/page/search/search-pagelet.html.twig', ['page' => $page]);
+    }
+
     private function handleFindologicSearchParams(Request $request): ?Response
     {
         if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {

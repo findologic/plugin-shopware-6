@@ -95,9 +95,23 @@ abstract class Filter extends BaseFilter
         if ($unit !== null) {
             $customFilter->setUnit($unit);
         }
+
         /** @var RangeSliderItem $item */
         foreach ($filter->getItems() as $item) {
             $customFilter->addValue(new FilterValue($item->getName(), $item->getName(), $filter->getName()));
+        }
+
+        /** @var RangeSliderItem[] $filterItems */
+        $filterItems = array_values($filter->getItems());
+
+        $firstFilterItem = $filterItems[0] ?? null;
+        if ($firstFilterItem && $filterItems[0]->getParameters()) {
+            $customFilter->setMin($filterItems[0]->getParameters()->getMin());
+        }
+
+        $lastFilterItem = end($filterItems) ?? null;
+        if ($lastFilterItem && $lastFilterItem->getParameters()) {
+            $customFilter->setMax($lastFilterItem->getParameters()->getMax());
         }
 
         return $customFilter;
