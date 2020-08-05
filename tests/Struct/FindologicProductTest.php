@@ -639,12 +639,14 @@ class FindologicProductTest extends TestCase
         );
 
         $productFields = $productEntity->getCustomFields();
+        \ksort($productFields);
         foreach ($productFields as $key => $value) {
             $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
         }
 
         foreach ($productEntity->getChildren() as $variant) {
             $productFields = $variant->getCustomFields();
+            \ksort($productFields);
             foreach ($productFields as $key => $value) {
                 $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
             }
