@@ -850,7 +850,6 @@ class FindologicProduct extends Struct
             return [];
         }
 
-        \ksort($productFields);
         foreach ($productFields as $key => $value) {
             $customFieldAttribute = new Attribute(Utils::removeSpecialChars($key), [$value]);
             $attributes[] = $customFieldAttribute;
