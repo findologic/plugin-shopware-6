@@ -8,6 +8,9 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 
 abstract class BaseFilter
 {
+    public const RATING_FILTER_NAME = 'rating';
+    public const CAT_FILTER_NAME = 'cat';
+
     /** @var string|null */
     protected $displayType;
 
