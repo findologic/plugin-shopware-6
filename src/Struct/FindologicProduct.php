@@ -32,8 +32,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
-use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
-use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\Tag\TagEntity;
 use Symfony\Component\Routing\RequestContext;
@@ -50,7 +48,10 @@ class FindologicProduct extends Struct
     /** @var ContainerInterface */
     protected $container;
 
-    /** @var Context */
+    /**
+     * @deprecated will be removed in 2.0. Use $salesChannelContext->getContext() instead.
+     * @var Context
+     */
     protected $context;
 
     /** @var SalesChannelContext */
