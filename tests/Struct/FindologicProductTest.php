@@ -70,7 +70,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider productNameProvider
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
@@ -165,7 +164,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider categorySeoProvider
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
@@ -233,7 +231,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider priceProvider
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
@@ -293,9 +290,6 @@ class FindologicProductTest extends TestCase
 
         $userGroup = $this->getUserGroups($customerGroupEntities);
         $ordernumbers = $this->getOrdernumber($productEntity);
-        foreach ($productEntity->getChildren() as $variant) {
-            $ordernumbers = array_merge($ordernumbers, $this->getOrdernumber($variant));
-        }
         $properties = $this->getProperties($productEntity);
 
         $findologicProductFactory = new FindologicProductFactory();
@@ -325,6 +319,32 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
         $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
         $this->assertEquals($properties, $findologicProduct->getProperties());
+    }
+
+    public function testProductWithCustomFields(): void
+    {
+        $data['customFields'] = ['findologic_size' => 100, 'findologic_color' => 'yellow'];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $attributes = $this->getAttributes($productEntity);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $this->assertEquals($attributes, $findologicProduct->getAttributes());
     }
 
     public function ratingProvider(): array
@@ -647,14 +667,18 @@ class FindologicProductTest extends TestCase
         );
 
         $productFields = $productEntity->getCustomFields();
-        foreach ($productFields as $key => $value) {
-            $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+        if ($productFields) {
+            foreach ($productFields as $key => $value) {
+                $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+            }
         }
 
         foreach ($productEntity->getChildren() as $variant) {
             $productFields = $variant->getCustomFields();
-            foreach ($productFields as $key => $value) {
-                $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+            if ($productFields) {
+                foreach ($productFields as $key => $value) {
+                    $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+                }
             }
         }
 

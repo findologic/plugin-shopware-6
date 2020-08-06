@@ -416,9 +416,8 @@ class FindologicProduct extends Struct
     /**
      * @return Attribute[]
      */
-    protected function getAttributeProperties(
-        ProductEntity $productEntity
-    ): array {
+    protected function getAttributeProperties(ProductEntity $productEntity): array
+    {
         $attributes = [];
 
         foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {

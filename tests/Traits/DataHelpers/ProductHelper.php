@@ -16,7 +16,7 @@ use Shopware\Core\Framework\Uuid\Uuid;
 
 trait ProductHelper
 {
-    public function createTestProduct(array $data = []): ?ProductEntity
+    public function createTestProduct(array $data = [], bool $withVariant = false): ?ProductEntity
     {
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();
@@ -36,7 +36,6 @@ trait ProductHelper
             'tags' => [
                 ['id' => Uuid::randomHex(), 'name' => 'FINDOLOGIC Tag']
             ],
-            'customFields' => ['findologic_size' => 100, 'findologic_color' => 'yellow'],
             'name' => 'FINDOLOGIC Product',
             'manufacturerNumber' => Uuid::randomHex(),
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
@@ -104,18 +103,22 @@ trait ProductHelper
         $productInfo = [];
         // Main product data
         $productInfo[] = array_merge($productData, $data);
-        // Standard variant data
-        $productInfo[] = [
-            'id' => Uuid::randomHex(),
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT',
-            'stock' => 10,
-            'active' => true,
-            'parentId' => $id,
-            'tax' => ['name' => '9%', 'taxRate' => 9],
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
-            'customFields' => ['findologic_size' => 50, 'findologic_color' => 'blue'],
-        ];
+
+        if ($withVariant) {
+            // Standard variant data
+            $variantData = [
+                'id' => Uuid::randomHex(),
+                'productNumber' => 'FINDOLOGIC001.1',
+                'name' => 'FINDOLOGIC VARIANT',
+                'stock' => 10,
+                'active' => true,
+                'parentId' => $id,
+                'tax' => ['name' => '9%', 'taxRate' => 9],
+                'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
+            ];
+
+            $productInfo[] = array_merge($variantData, $data);
+        }
 
         $container->get('product.repository')->upsert($productInfo, $context);
 
