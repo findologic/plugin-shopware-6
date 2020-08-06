@@ -35,12 +35,12 @@ class SearchPageLoader extends ShopwareSearchPageLoader
 
     public function __construct(
         GenericPageLoader $genericLoader,
-        ProductSearchGatewayInterface $searchGateway,
+        ProductSearchGatewayInterface $productSearchRoute,
         EventDispatcherInterface $eventDispatcher
     ) {
-        parent::__construct($genericLoader, $searchGateway, $eventDispatcher);
+        parent::__construct($genericLoader, $productSearchRoute, $eventDispatcher);
         $this->genericLoader = $genericLoader;
-        $this->searchGateway = $searchGateway;
+        $this->searchGateway = $productSearchRoute;
         $this->eventDispatcher = $eventDispatcher;
     }
 

@@ -119,7 +119,10 @@ class Utils
         // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
         $shopwareVersion = ltrim($shopwareVersion, 'v');
 
-        return version_compare($shopwareVersion, $version, '<');
+        // Development versions may add the versions with an "@" sign, which refers to the current commit.
+        $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '@'));
+
+        return version_compare($versionWithoutCommitHash, $version, '<');
     }
 
     public static function isFindologicEnabled(SalesChannelContext $context): bool
