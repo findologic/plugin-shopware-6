@@ -1,0 +1,11 @@
+{% sw_extends '@Storefront/storefront/section/cms-section-default.html.twig' %}
+
+{% block page_content_section_default %}
+    {% if context.context.extensions.flPromotion %}
+        <a href="{{ context.context.extensions.flPromotion.link }}">
+            <img src="{{ context.context.extensions.flPromotion.image }}" id="fl-promotion" alt="Promotion Image"/>
+        </a>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

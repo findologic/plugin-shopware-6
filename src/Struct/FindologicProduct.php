@@ -36,6 +36,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\Tag\TagEntity;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FindologicProduct extends Struct
 {
@@ -103,6 +104,11 @@ class FindologicProduct extends Struct
     protected $item;
 
     /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    /**
      * @param CustomerGroupEntity[] $customerGroups
      *
      * @throws ProductHasNoCategoriesException
@@ -128,6 +134,7 @@ class FindologicProduct extends Struct
         $this->prices = [];
         $this->attributes = [];
         $this->properties = [];
+        $this->translator = $container->get('translator');
 
         $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
 
@@ -178,9 +185,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Attribute[]
+     * @throws AccessEmptyPropertyException
      */
     public function getAttributes(): array
     {
@@ -192,9 +198,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Price[]
+     * @throws AccessEmptyPropertyException
      */
     public function getPrices(): array
     {
@@ -252,9 +257,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Keyword[]
+     * @throws AccessEmptyPropertyException
      */
     public function getKeywords(): array
     {
@@ -271,9 +275,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Image[]
+     * @throws AccessEmptyPropertyException
      */
     public function getImages(): array
     {
@@ -295,9 +298,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Usergroup[]
+     * @throws AccessEmptyPropertyException
      */
     public function getUserGroups(): array
     {
@@ -314,9 +316,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Ordernumber[]
+     * @throws AccessEmptyPropertyException
      */
     public function getOrdernumbers(): array
     {
@@ -333,9 +334,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Property[]
+     * @throws AccessEmptyPropertyException
      */
     public function getProperties(): array
     {
@@ -465,7 +465,9 @@ class FindologicProduct extends Struct
 
     protected function setAdditionalAttributes(): void
     {
-        $this->attributes[] = new Attribute('shipping_free', [$this->product->getShippingFree() ? 1 : 0]);
+        $translationKey = $this->product->getShippingFree() ? 'finSearch.general.yes' : 'finSearch.general.no';
+        $shippingFree = $this->translator->trans($translationKey);
+        $this->attributes[] = new Attribute('shipping_free', [$shippingFree]);
         $rating = $this->product->getRatingAverage() ?? 0.0;
         $this->attributes[] = new Attribute('rating', [$rating]);
     }
