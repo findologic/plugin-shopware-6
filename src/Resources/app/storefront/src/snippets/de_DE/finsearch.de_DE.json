@@ -10,6 +10,10 @@
       "filter": "Suchergebnisse für %filterName% <strong>%filterValue%</strong> (<strong>%hits%</strong> Treffer)",
       "query": "Suchergebnisse für <strong>%query%</strong> (<strong>%hits%</strong> Treffer)",
       "default": "Suchergebnisse (<strong>%hits%</strong> Treffer)"
+    },
+    "general": {
+      "yes": "Ja",
+      "no": "Nein"
     }
   }
 }
