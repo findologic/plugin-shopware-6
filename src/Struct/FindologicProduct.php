@@ -100,6 +100,9 @@ class FindologicProduct extends Struct
     /** @var Property[] */
     protected $properties;
 
+    /** @var Attribute[] */
+    protected $customFields = [];
+
     /** @var Item */
     protected $item;
 
@@ -470,6 +473,9 @@ class FindologicProduct extends Struct
         $this->attributes[] = new Attribute('shipping_free', [$shippingFree]);
         $rating = $this->product->getRatingAverage() ?? 0.0;
         $this->attributes[] = new Attribute('rating', [$rating]);
+
+        // Add custom fields in the attributes array for export
+        $this->attributes = array_merge($this->attributes, $this->customFields);
     }
 
     protected function setUserGroups(): void
@@ -860,12 +866,12 @@ class FindologicProduct extends Struct
 
     protected function setCustomFieldAttributes(): void
     {
-        $this->attributes = array_merge($this->attributes, $this->getCustomFieldProperties($this->product));
+        $this->customFields = array_merge($this->customFields, $this->getCustomFieldProperties($this->product));
         if (!$this->product->getChildCount()) {
             return;
         }
         foreach ($this->product->getChildren() as $productEntity) {
-            $this->attributes = array_merge($this->attributes, $this->getCustomFieldProperties($productEntity));
+            $this->customFields = array_merge($this->customFields, $this->getCustomFieldProperties($productEntity));
         }
     }
 
@@ -884,5 +890,21 @@ class FindologicProduct extends Struct
         }
 
         return $attributes;
+    }
+
+    /**
+     * @return Attribute[]
+     */
+    public function getCustomFields(): array
+    {
+        return $this->customFields;
+    }
+
+    /**
+     * @param Attribute[] $customFields
+     */
+    public function setCustomFields(array $customFields): void
+    {
+        $this->customFields = $customFields;
     }
 }

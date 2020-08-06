@@ -326,8 +326,7 @@ class FindologicProductTest extends TestCase
         $data['customFields'] = ['findologic_size' => 100, 'findologic_color' => 'yellow'];
         $productEntity = $this->createTestProduct($data, true);
 
-        $attributes = $this->getAttributes($productEntity);
-
+        $productFields = $productEntity->getCustomFields();
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
             ->search(new Criteria(), $this->salesChannelContext->getContext())
@@ -344,7 +343,10 @@ class FindologicProductTest extends TestCase
             new XMLItem('123')
         );
 
-        $this->assertEquals($attributes, $findologicProduct->getAttributes());
+        $attributes = $findologicProduct->getCustomFields();
+        foreach ($attributes as $attribute) {
+            $this->assertEquals(current($attribute->getValues()), $productFields[$attribute->getKey()]);
+        }
     }
 
     public function ratingProvider(): array
@@ -666,6 +668,14 @@ class FindologicProductTest extends TestCase
             ]
         );
 
+        $translationKey = $productEntity->getShippingFree() ? 'finSearch.general.yes' : 'finSearch.general.no';
+        $shippingFree = $this->getContainer()->get('translator')->trans($translationKey);
+        $attributes[] = new Attribute('shipping_free', [$shippingFree]);
+
+        $rating = $productEntity->getRatingAverage() ?? 0.0;
+        $attributes[] = new Attribute('rating', [$rating]);
+
+        // Custom fields as attributes
         $productFields = $productEntity->getCustomFields();
         if ($productFields) {
             foreach ($productFields as $key => $value) {
@@ -681,13 +691,6 @@ class FindologicProductTest extends TestCase
                 }
             }
         }
-
-        $translationKey = $productEntity->getShippingFree() ? 'finSearch.general.yes' : 'finSearch.general.no';
-        $shippingFree = $this->getContainer()->get('translator')->trans($translationKey);
-        $attributes[] = new Attribute('shipping_free', [$shippingFree]);
-
-        $rating = $productEntity->getRatingAverage() ?? 0.0;
-        $attributes[] = new Attribute('rating', [$rating]);
 
         return $attributes;
     }
