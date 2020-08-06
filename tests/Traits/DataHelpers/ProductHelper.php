@@ -101,8 +101,10 @@ trait ProductHelper
             ],
         ];
 
+        $productInfo = [];
+        // Main product data
         $productInfo[] = array_merge($productData, $data);
-        // Basic Variant Data
+        // Standard variant data
         $productInfo[] = [
             'id' => Uuid::randomHex(),
             'productNumber' => 'FINDOLOGIC001.1',
@@ -121,9 +123,7 @@ trait ProductHelper
             $criteria = new Criteria([$id]);
             $criteria = Utils::addProductAssociations($criteria);
 
-            $productEntity = $container->get('product.repository')->search($criteria, $context)->get($id);
-
-            return $productEntity;
+            return $container->get('product.repository')->search($criteria, $context)->get($id);
         } catch (InconsistentCriteriaIdsException $e) {
             return null;
         }

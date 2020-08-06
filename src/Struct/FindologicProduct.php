@@ -870,7 +870,7 @@ class FindologicProduct extends Struct
         }
     }
 
-    private function getCustomFieldProperties(ProductEntity $product): array
+    protected function getCustomFieldProperties(ProductEntity $product): array
     {
         $attributes = [];
 
