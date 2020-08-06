@@ -55,6 +55,14 @@ trait ProductHelper
                     ]
                 ],
             ],
+            'seoUrls' => [
+                [
+                    'pathInfo' => '/detail/' . $id,
+                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page'
+                ]
+            ],
             'translations' => [
                 'en-GB' => [
                     'customTranslated' => [
@@ -128,7 +136,7 @@ trait ProductHelper
             'title' => $title,
         ];
 
-        $this->getContainer()->get('product_review.repository')->upsert([$data], $this->defaultContext);
+        $this->getContainer()->get('product_review.repository')->upsert([$data], Context::createDefaultContext());
     }
 
     public function createCustomer(string $customerID): void

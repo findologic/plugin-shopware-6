@@ -76,8 +76,17 @@ class XmlProduct
         $this->exporter = Exporter::create(Exporter::TYPE_XML);
         $this->xmlItem = $this->exporter->createItem($product->getId());
 
-        $this->findologicProduct = $this->container->get(FindologicProductFactory::class)
-            ->buildInstance($product, $router, $container, $context, $shopkey, $customerGroups, $this->xmlItem);
+        /** @var FindologicProductFactory $findologicProductFactory */
+        $findologicProductFactory = $this->container->get(FindologicProductFactory::class);
+        $this->findologicProduct = $findologicProductFactory->buildInstance(
+            $product,
+            $router,
+            $container,
+            $context,
+            $shopkey,
+            $customerGroups,
+            $this->xmlItem
+        );
 
         $this->buildXmlItem();
     }

@@ -33,6 +33,14 @@ class FindologicProductFactory
         array $customerGroups,
         Item $item
     ): FindologicProduct {
-        return new FindologicProduct($product, $router, $container, $context, $shopkey, $customerGroups, $item);
+        return new FindologicProduct(
+            $product,
+            $router,
+            $container,
+            $context,
+            $shopkey,
+            $customerGroups,
+            $item
+        );
     }
 }

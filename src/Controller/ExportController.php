@@ -15,6 +15,7 @@ use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
@@ -56,6 +57,11 @@ class ExportController extends AbstractController implements EventSubscriberInte
      */
     private $headerHandler;
 
+    /**
+     * @var SalesChannelContext
+     */
+    private $salesChannelContext;
+
     private $salesChannelContextFactory;
 
     public function __construct(
@@ -85,22 +91,21 @@ class ExportController extends AbstractController implements EventSubscriberInte
     public function export(Request $request, SalesChannelContext $context): Response
     {
         $this->validateParams($request);
-
         $shopkey = $request->get('shopkey');
-
         // We can safely cast the values here as integers because the validation is already taken care of in the
         // previous step so if we reach till here, it means there are no invalid strings being passed as parameter here
         $start = (int)$request->get('start', self::DEFAULT_START_PARAM);
         $count = (int)$request->get('count', self::DEFAULT_COUNT_PARAM);
 
-        $salesChannelContext = $this->getSalesChannelContext($shopkey, $context);
+        $this->salesChannelContext = $this->getSalesChannelContextByShopkey($shopkey, $context);
 
-        $totalProductCount = $this->getTotalProductCount($salesChannelContext);
-        $productEntities = $this->getProductsFromShop($salesChannelContext, $start, $count);
+        $totalProductCount = $this->getTotalProductCount();
+        $productEntities = $this->getProductsFromShop($start, $count);
         $customerGroups = $this->container->get('customer_group.repository')
-            ->search(new Criteria(), $salesChannelContext->getContext())->getElements();
+            ->search(new Criteria(), $this->salesChannelContext->getContext())->getElements();
 
-        $items = $this->buildXmlProducts($productEntities, $salesChannelContext, $shopkey, $customerGroups);
+        $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
+        $items = $this->buildXmlProducts($productEntities, $shopkey, $customerGroups);
 
         $xmlExporter = Exporter::create(Exporter::TYPE_XML);
 
@@ -118,7 +123,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
      * @throws InconsistentCriteriaIdsException
      */
     public function getProductCriteria(
-        SalesChannelContext $salesChannelContext,
         ?int $offset = null,
         ?int $limit = null
     ): Criteria {
@@ -126,7 +130,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $criteria->addFilter(new EqualsFilter('parent.id', null));
         $criteria->addFilter(
             new ProductAvailableFilter(
-                $salesChannelContext->getSalesChannel()->getId(),
+                $this->salesChannelContext->getSalesChannel()->getId(),
                 ProductVisibilityDefinition::VISIBILITY_SEARCH
             )
         );
@@ -146,12 +150,15 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @throws InconsistentCriteriaIdsException
      */
-    public function getTotalProductCount(SalesChannelContext $salesChannelContext): int
+    public function getTotalProductCount(): int
     {
-        $criteria = $this->getProductCriteria($salesChannelContext);
+        $criteria = $this->getProductCriteria();
 
         /** @var IdSearchResult $result */
-        $result = $this->container->get('product.repository')->searchIds($criteria, $salesChannelContext->getContext());
+        $result = $this->container->get('product.repository')->searchIds(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        );
 
         return $result->getTotal();
     }
@@ -160,7 +167,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
      * @throws InconsistentCriteriaIdsException
      */
     public function getProductsFromShop(
-        SalesChannelContext $salesChannelContext,
         ?int $start,
         ?int $count
     ): EntitySearchResult {
@@ -171,9 +177,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $count = self::DEFAULT_COUNT_PARAM;
         }
 
-        $criteria = $this->getProductCriteria($salesChannelContext, $start, $count);
+        $criteria = $this->getProductCriteria($start, $count);
 
-        return $this->container->get('product.repository')->search($criteria, $salesChannelContext->getContext());
+        return $this->container->get('product.repository')->search($criteria, $this->salesChannelContext->getContext());
     }
 
     private function validateParams(Request $request): void
@@ -195,7 +201,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             ]
         );
         if (count($shopkeyViolations) > 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 sprintf(
                     'Required argument "shopkey" was not given, or does not match the shopkey schema "%s"',
                     $shopkey
@@ -221,7 +227,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             ]
         );
         if (count($startViolations) > 0) {
-            throw new \InvalidArgumentException($startViolations->get(0)->getMessage());
+            throw new InvalidArgumentException($startViolations->get(0)->getMessage());
         }
 
         $countViolations = $validator->validate(
@@ -242,7 +248,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             ]
         );
         if (count($countViolations) > 0) {
-            throw new \InvalidArgumentException($countViolations->get(0)->getMessage());
+            throw new InvalidArgumentException($countViolations->get(0)->getMessage());
         }
     }
 
@@ -250,8 +256,10 @@ class ExportController extends AbstractController implements EventSubscriberInte
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
-    private function getSalesChannelContext(string $shopkey, SalesChannelContext $currentContext): SalesChannelContext
-    {
+    private function getSalesChannelContextByShopkey(
+        string $shopkey,
+        SalesChannelContext $currentContext
+    ): SalesChannelContext {
         $systemConfigRepository = $this->container->get('system_config.repository');
         $systemConfigEntities = $systemConfigRepository->search(
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
@@ -283,7 +291,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
      */
     private function buildXmlProducts(
         EntitySearchResult $productEntities,
-        SalesChannelContext $salesChannelContext,
         string $shopkey,
         array $customerGroups
     ): array {
@@ -296,7 +303,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
                     $productEntity,
                     $this->router,
                     $this->container,
-                    $salesChannelContext->getContext(),
+                    $this->salesChannelContext->getContext(),
                     $shopkey,
                     $customerGroups
                 );

@@ -199,7 +199,7 @@ class ExportControllerTest extends TestCase
         $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
         $salesChannelMock->method('getId')->willReturn($salesChannelId);
 
-        $salesChannelContextMock->expects($this->exactly(5))
+        $salesChannelContextMock->expects($this->exactly(6))
             ->method('getContext')
             ->willReturn($this->defaultContext);
 
@@ -209,8 +209,13 @@ class ExportControllerTest extends TestCase
         $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
 
         /** @var PsrContainerInterface|MockObject $containerMock */
-        $containerMock
-            = $this->getMockBuilder(PsrContainerInterface::class)->disableOriginalConstructor()->getMock();
+        $containerMock = $this->getMockBuilder(PsrContainerInterface::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['set'])
+            ->onlyMethods(['get', 'has'])
+            ->getMock();
+
+        $containerMock->expects($this->once())->method('set');
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
@@ -298,7 +303,8 @@ class ExportControllerTest extends TestCase
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['translator', $this->getContainer()->get('translator')],
             ['product.repository', $productRepositoryMock],
-            [FindologicProductFactory::class, new FindologicProductFactory()]
+            [FindologicProductFactory::class, new FindologicProductFactory()],
+            ['fin_search.sales_channel_context', $salesChannelContextMock],
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
 
@@ -351,7 +357,7 @@ class ExportControllerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $salesChannelContextMock->expects($this->once())
+        $salesChannelContextMock->expects($this->exactly(2))
             ->method('getContext')
             ->willReturn($this->defaultContext);
 
@@ -359,8 +365,13 @@ class ExportControllerTest extends TestCase
         $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
 
         /** @var PsrContainerInterface|MockObject $containerMock */
-        $containerMock
-            = $this->getMockBuilder(PsrContainerInterface::class)->disableOriginalConstructor()->getMock();
+        $containerMock = $this->getMockBuilder(PsrContainerInterface::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['set'])
+            ->onlyMethods(['get', 'has'])
+            ->getMock();
+
+        $containerMock->expects($this->once())->method('set');
 
         /** @var EntityRepository|MockObject $productRepositoryMock */
         $productRepositoryMock
@@ -427,6 +438,7 @@ class ExportControllerTest extends TestCase
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             [FindologicProductFactory::class, $this->getContainer()->get(FindologicProductFactory::class)],
             [SalesChannelContextFactory::class, $this->getContainer()->get(SalesChannelContextFactory::class)],
+            ['fin_search.sales_channel_context', $salesChannelContextMock],
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
 
@@ -542,7 +554,7 @@ class ExportControllerTest extends TestCase
         $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
         $salesChannelMock->method('getId')->willReturn($salesChannelId);
 
-        $salesChannelContextMock->expects($this->exactly(5))
+        $salesChannelContextMock->expects($this->exactly(6))
             ->method('getContext')
             ->willReturn($this->defaultContext);
 
@@ -553,7 +565,12 @@ class ExportControllerTest extends TestCase
 
         /** @var PsrContainerInterface|MockObject $containerMock */
         $containerMock = $this->getMockBuilder(PsrContainerInterface::class)
-            ->disableOriginalConstructor()->getMock();
+            ->disableOriginalConstructor()
+            ->addMethods(['set'])
+            ->onlyMethods(['get', 'has'])
+            ->getMock();
+
+        $containerMock->expects($this->once())->method('set');
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
@@ -683,7 +700,8 @@ class ExportControllerTest extends TestCase
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['product.repository', $productRepositoryMock],
             ['translator', $this->getContainer()->get('translator')],
-            [FindologicProductFactory::class, new FindologicProductFactory()]
+            [FindologicProductFactory::class, new FindologicProductFactory()],
+            ['fin_search.sales_channel_context', $salesChannelContextMock],
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
 

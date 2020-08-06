@@ -26,12 +26,13 @@ use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\Tag\TagEntity;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
@@ -48,8 +49,14 @@ class FindologicProduct extends Struct
     /** @var ContainerInterface */
     protected $container;
 
-    /** @var Context */
+    /**
+     * @deprecated will be removed in 2.0. Use $salesChannelContext->getContext() instead.
+     * @var Context
+     */
     protected $context;
+
+    /** @var SalesChannelContext */
+    protected $salesChannelContext;
 
     /** @var string */
     protected $shopkey;
@@ -128,6 +135,8 @@ class FindologicProduct extends Struct
         $this->attributes = [];
         $this->properties = [];
         $this->translator = $container->get('translator');
+
+        $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
 
         $this->setName();
         $this->setAttributes();
@@ -714,16 +723,21 @@ class FindologicProduct extends Struct
 
     protected function setUrl(): void
     {
-        if (!$this->product->hasExtension('canonicalUrl')) {
+        $salesChannel = $this->salesChannelContext->getSalesChannel();
+
+        $domains = $salesChannel->getDomains();
+        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        if ($domains && $domains->count() > 0 && $seoUrlCollection && $seoUrlCollection->count() > 0) {
+            $baseUrl = $domains->first()->getUrl();
+            $seoPath = $seoUrlCollection->first()->getSeoPathInfo();
+
+            $productUrl = sprintf('%s/%s', $baseUrl, $seoPath);
+        } else {
             $productUrl = $this->router->generate(
                 'frontend.detail.page',
                 ['productId' => $this->product->getId()],
                 RouterInterface::ABSOLUTE_URL
             );
-        } else {
-            /** @var SeoUrlEntity $canonical */
-            $canonical = $this->product->getExtension('canonicalUrl');
-            $productUrl = $canonical->getUrl();
         }
 
         $this->url = $productUrl;
@@ -808,7 +822,10 @@ class FindologicProduct extends Struct
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('payload.productNumber', $this->product->getProductNumber()));
 
-        $orders = $this->container->get('order_line_item.repository')->search($criteria, $this->context);
+        /** @var EntityRepository $orderLineItemRepository */
+        $orderLineItemRepository = $this->container->get('order_line_item.repository');
+        $orders = $orderLineItemRepository->search($criteria, $this->salesChannelContext->getContext());
+
         $this->salesFrequency = $orders->count();
     }
 
