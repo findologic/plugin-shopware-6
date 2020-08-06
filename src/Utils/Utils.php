@@ -8,7 +8,6 @@ use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use PackageVersions\Versions;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -41,6 +40,11 @@ class Utils
         $result = preg_replace('/[\x{0000}-\x{001F}]|[\x{007F}]|[\x{0080}-\x{009F}]/u', '', $string);
 
         return $result ?? $string;
+    }
+
+    public static function removeSpecialChars(string $string): string
+    {
+        return preg_replace('/[^äöüA-Za-z0-9:_-]/u', '', $string);
     }
 
     /**
@@ -115,7 +119,10 @@ class Utils
         // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
         $shopwareVersion = ltrim($shopwareVersion, 'v');
 
-        return version_compare($shopwareVersion, $version, '<');
+        // Development versions may add the versions with an "@" sign, which refers to the current commit.
+        $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '@'));
+
+        return version_compare($versionWithoutCommitHash, $version, '<');
     }
 
     public static function isFindologicEnabled(SalesChannelContext $context): bool

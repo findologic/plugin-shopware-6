@@ -35,6 +35,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validation;
@@ -59,7 +60,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
     public function __construct(
         LoggerInterface $logger,
-        Router $router,
+        RouterInterface $router,
         HeaderHandler $headerHandler,
         SalesChannelContextFactory $salesChannelContextFactory
     ) {
@@ -151,6 +152,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
         /** @var IdSearchResult $result */
         $result = $this->container->get('product.repository')->searchIds($criteria, $salesChannelContext->getContext());
+
         return $result->getTotal();
     }
 

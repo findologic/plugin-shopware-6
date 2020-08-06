@@ -35,6 +35,7 @@ use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\Tag\TagEntity;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FindologicProduct extends Struct
 {
@@ -96,6 +97,11 @@ class FindologicProduct extends Struct
     protected $item;
 
     /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    /**
      * @param CustomerGroupEntity[] $customerGroups
      *
      * @throws ProductHasNoCategoriesException
@@ -121,6 +127,7 @@ class FindologicProduct extends Struct
         $this->prices = [];
         $this->attributes = [];
         $this->properties = [];
+        $this->translator = $container->get('translator');
 
         $this->setName();
         $this->setAttributes();
@@ -169,9 +176,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Attribute[]
+     * @throws AccessEmptyPropertyException
      */
     public function getAttributes(): array
     {
@@ -183,9 +189,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Price[]
+     * @throws AccessEmptyPropertyException
      */
     public function getPrices(): array
     {
@@ -243,9 +248,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Keyword[]
+     * @throws AccessEmptyPropertyException
      */
     public function getKeywords(): array
     {
@@ -262,9 +266,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Image[]
+     * @throws AccessEmptyPropertyException
      */
     public function getImages(): array
     {
@@ -286,9 +289,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Usergroup[]
+     * @throws AccessEmptyPropertyException
      */
     public function getUserGroups(): array
     {
@@ -305,9 +307,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Ordernumber[]
+     * @throws AccessEmptyPropertyException
      */
     public function getOrdernumbers(): array
     {
@@ -324,9 +325,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Property[]
+     * @throws AccessEmptyPropertyException
      */
     public function getProperties(): array
     {
@@ -415,7 +415,7 @@ class FindologicProduct extends Struct
             $group = $propertyGroupOptionEntity->getGroup();
             if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
                 $properyGroupAttrib = new Attribute(
-                    Utils::removeControlCharacters($group->getTranslation('name')),
+                    Utils::removeSpecialChars($group->getTranslation('name')),
                     [Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))]
                 );
 
@@ -434,7 +434,7 @@ class FindologicProduct extends Struct
                 $optionName = $settingOption->getTranslation('name');
                 if ($groupName && $optionName) {
                     $configAttrib = new Attribute(
-                        Utils::removeControlCharacters($groupName),
+                        Utils::removeSpecialChars($groupName),
                         [Utils::removeControlCharacters($optionName)]
                     );
 
@@ -456,7 +456,9 @@ class FindologicProduct extends Struct
 
     protected function setAdditionalAttributes(): void
     {
-        $this->attributes[] = new Attribute('shipping_free', [$this->product->getShippingFree() ? 1 : 0]);
+        $translationKey = $this->product->getShippingFree() ? 'finSearch.general.yes' : 'finSearch.general.no';
+        $shippingFree = $this->translator->trans($translationKey);
+        $this->attributes[] = new Attribute('shipping_free', [$shippingFree]);
         $rating = $this->product->getRatingAverage() ?? 0.0;
         $this->attributes[] = new Attribute('rating', [$rating]);
     }

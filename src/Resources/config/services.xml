@@ -111,5 +111,13 @@
             <argument id="service_container" type="service" />
         </service>
 
+        <service
+                id="FINDOLOGIC\FinSearch\Struct\SystemAware"
+                class="FINDOLOGIC\FinSearch\Struct\SystemAware"
+                public="true"
+        >
+            <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
+        </service>
+
     </services>
 </container>

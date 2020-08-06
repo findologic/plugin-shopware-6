@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\SelectDropdownFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
@@ -162,59 +163,71 @@ class Xml21ResponseParserTest extends TestCase
         $expectedCategoryFilter->addValue(
             (new CategoryFilterValue('Buch', 'Buch'))
                 ->setFrequency(5)
-            ->addValue(
-                (new CategoryFilterValue('Beste Bücher', 'Beste Bücher'))
-            )
+                ->addValue(
+                    (new CategoryFilterValue('Beste Bücher', 'Beste Bücher'))
+                )
         );
 
-        $expectedVendorFilter = new VendorImageFilter('vendor', 'Hersteller');
+        $vendor = 'vendor';
+        $expectedVendorFilter = new VendorImageFilter($vendor, 'Hersteller');
         $expectedVendorFilter->addValue(
-            (new ImageFilterValue('Anderson, Gusikowski and Barton', 'Anderson, Gusikowski and Barton'))
+            (new ImageFilterValue('Anderson, Gusikowski and Barton', 'Anderson, Gusikowski and Barton', $vendor))
                 ->setDisplayType('none')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/anderson_gusikowski_and_barton.png'))
         );
         $expectedVendorFilter->addValue(
-            (new ImageFilterValue('Bednar Ltd', 'Bednar Ltd'))
+            (new ImageFilterValue('Bednar Ltd', 'Bednar Ltd', $vendor))
                 ->setDisplayType('none')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/bednar_ltd.png'))
         );
         $expectedVendorFilter->addValue(
-            (new ImageFilterValue('Buckridge-Fisher', 'Buckridge-Fisher'))
+            (new ImageFilterValue('Buckridge-Fisher', 'Buckridge-Fisher', $vendor))
                 ->setDisplayType('none')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/buckridge_fisher.png'))
         );
         $expectedVendorFilter->addValue(
-            (new ImageFilterValue('Connelly, Eichmann and Weissnat', 'Connelly, Eichmann and Weissnat'))
+            (new ImageFilterValue('Connelly, Eichmann and Weissnat', 'Connelly, Eichmann and Weissnat', $vendor))
                 ->setDisplayType('none')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/connelly_eichmann_and_weissnat.png'))
         );
 
-        $expectedPriceFilter = new RangeSliderFilter('price', 'Preis');
-        $expectedPriceFilter->addValue(new FilterValue('0.39 - 13.4', '0.39 - 13.4'));
-        $expectedPriceFilter->addValue(new FilterValue('13.45 - 25.99', '13.45 - 25.99'));
-        $expectedPriceFilter->addValue(new FilterValue('26 - 40.3', '26 - 40.3'));
+        $price = 'price';
+        $expectedPriceFilter = new RangeSliderFilter($price, 'Preis');
+        $expectedPriceFilter->addValue(new FilterValue('0.39 - 13.4', '0.39 - 13.4', $price));
+        $expectedPriceFilter->addValue(new FilterValue('13.45 - 25.99', '13.45 - 25.99', $price));
+        $expectedPriceFilter->addValue(new FilterValue('26 - 40.3', '26 - 40.3', $price));
+        $expectedPriceFilter->setMin(0.39);
+        $expectedPriceFilter->setMax(40.3);
+
+        $color = 'Farbe';
+        $expectedColorFilter = new ColorPickerFilter($color, 'Farbe');
+        $expectedRatingFilter = new RatingFilter('rating', 'Rating');
+        $expectedRatingFilter->setMaxPoints(5.0);
+        $expectedRatingFilter->addValue(new FilterValue('0.0', '0.0'));
+        $expectedRatingFilter->addValue(new FilterValue('5.0', '5.0'));
 
         $expectedColorFilter = new ColorPickerFilter('Farbe', 'Farbe');
         $expectedColorFilter->addValue(
-            (new ColorFilterValue('beige', 'beige'))
+            (new ColorFilterValue('beige', 'beige', $color))
                 ->setColorHexCode('#F5F5DC')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/beige.gif'))
         );
         $expectedColorFilter->addValue(
-            (new ColorFilterValue('blau', 'blau'))
+            (new ColorFilterValue('blau', 'blau', $color))
                 ->setColorHexCode('#3c6380')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/blau.gif'))
         );
         $expectedColorFilter->addValue(
-            (new ColorFilterValue('braun', 'braun'))
+            (new ColorFilterValue('braun', 'braun', $color))
                 ->setColorHexCode('#94651e')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/braun.gif'))
         );
 
-        $expectedSelectDropdownFilter = new SelectDropdownFilter('Material', 'Material');
-        $expectedSelectDropdownFilter->addValue(new FilterValue('Hartgepäck', 'Hartgepäck'));
-        $expectedSelectDropdownFilter->addValue(new FilterValue('Leder', 'Leder'));
-        $expectedSelectDropdownFilter->addValue(new FilterValue('Nylon', 'Nylon'));
+        $material = 'Material';
+        $expectedSelectDropdownFilter = new SelectDropdownFilter($material, 'Material');
+        $expectedSelectDropdownFilter->addValue(new FilterValue('Hartgepäck', 'Hartgepäck', $material));
+        $expectedSelectDropdownFilter->addValue(new FilterValue('Leder', 'Leder', $material));
+        $expectedSelectDropdownFilter->addValue(new FilterValue('Nylon', 'Nylon', $material));
 
         return [
             'response including all filter types' => [
@@ -227,6 +240,7 @@ class Xml21ResponseParserTest extends TestCase
                     $expectedPriceFilter,
                     $expectedColorFilter,
                     $expectedSelectDropdownFilter,
+                    $expectedRatingFilter
                 ]
             ],
             'response without results' => [

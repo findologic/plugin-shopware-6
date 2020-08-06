@@ -52,14 +52,14 @@
                     {% block findologic_content_card_channel_config_sales_channel_card %}
                     <sw-card title="Sales Channel">
                         {% block findologic_content_card_channel_config_sales_channel_card_title %}
-                        <sw-single-select
-                                class="fl-sales-channel-field"
-                                v-model="selectedSalesChannelId"
-                                labelProperty="translated.name"
-                                valueProperty="id"
-                                :options="salesChannel"
-                                @input="onInput">
-                        </sw-single-select>
+                        <slot name="select" v-bind="{ onInput, selectedSalesChannelId, salesChannel }">
+                            <sw-single-select :options="salesChannel"
+                                              v-model="selectedSalesChannelId"
+                                              labelProperty="translated.name"
+                                              valueProperty="id"
+                                              @change="onInput">
+                            </sw-single-select>
+                        </slot>
                         {% endblock %}
                     </sw-card>
                     {% endblock %}

@@ -19,6 +19,7 @@ use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -125,30 +126,32 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             $eventMock = $this->setUpNavigationRequestMocks();
         }
 
+        $expectedAssign = [
+            'sorting' => [],
+            'filters' => [],
+            'postFilters' => [],
+            'aggregations' => [],
+            'queries' => [],
+            'groupFields' => [],
+            'offset' => null,
+            'limit' => null,
+            'totalCountMode' => 0,
+            'associations' => [],
+            'ids' => $expectedProducts,
+            'states' => [],
+            'inherited' => false,
+            'term' => null,
+            'extensions' => [
+                'flPagination' => new Pagination(24, 0, 1808)
+            ],
+            'includes' => null
+        ];
+        if (Utils::versionLowerThan('6.3.0.0')) {
+            $expectedAssign['source'] = null;
+        }
+
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $criteriaMock->expects($this->any())->method('assign')->with(
-            [
-                'source' => null,
-                'sorting' => [],
-                'filters' => [],
-                'postFilters' => [],
-                'aggregations' => [],
-                'queries' => [],
-                'groupFields' => [],
-                'offset' => null,
-                'limit' => null,
-                'totalCountMode' => 0,
-                'associations' => [],
-                'ids' => $expectedProducts,
-                'states' => [],
-                'inherited' => false,
-                'term' => null,
-                'extensions' => [
-                    'flPagination' => new Pagination(24, 0, 1808)
-                ],
-                'includes' => null
-            ]
-        );
+        $criteriaMock->expects($this->any())->method('assign')->with($expectedAssign);
 
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
@@ -229,7 +232,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         array $expectedProducts,
         bool $isNavigationRequest
     ): void {
-        $eventMock = $this->setUpSearchRequestMocks();
+        $eventMock = $this->setUpSearchRequestMocks(null, null, false);
 
         $this->apiClientMock->expects($this->any())->method('send')->willThrowException(
             new ServiceNotAliveException('dead: This service is currently unreachable.')
@@ -737,7 +740,7 @@ XML;
         $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
         $defaultExtensionMap = [
             ['flEnabled', $findologicEnabled],
-            ['flSmartDidYouMean', $smartDidYouMean]
+            ['flSmartDidYouMean', $smartDidYouMean],
         ];
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();

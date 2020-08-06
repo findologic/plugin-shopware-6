@@ -1,8 +1,8 @@
 {
   "name": "findologic/plugin-shopware-6",
   "description": "FINDOLOGIC plugin for Shopware 6 e-commerce system",
-  "version": "v1.0.0",
-  "license": "GPLv3",
+  "version": "v1.0.1",
+  "license": "GPL-3.0-or-later",
   "type": "shopware-platform-plugin",
   "authors": [
     {
@@ -28,6 +28,10 @@
     "supportLink": {
       "de-DE": "https://support.findologic.com/hc/de/requests/new",
       "en-GB": "https://support.findologic.com/hc/en/requests/new"
+    },
+    "manufacturerLink": {
+      "de-DE": "https://www.findologic.com/",
+      "en-GB": "https://www.findologic.com/en/"
     }
   },
   "autoload": {

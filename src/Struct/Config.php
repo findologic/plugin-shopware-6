@@ -52,6 +52,22 @@ class Config extends Struct
         $this->serviceConfigResource = $serviceConfigResource;
     }
 
+    public function __sleep(): array
+    {
+        // Only return instances that are actually serializable. For example the SystemConfigService is not
+        // serializable, as it has an PDO instance associated to it.
+        return [
+            'shopkey',
+            'active',
+            'staging',
+            'activeOnCategoryPages',
+            'searchResultContainer',
+            'navigationResultContainer',
+            'integrationType',
+            'initialized',
+        ];
+    }
+
     public function getShopkey(): ?string
     {
         return $this->shopkey;
@@ -160,6 +176,7 @@ class Config extends Struct
 
     /**
      * @param mixed $default
+     *
      * @return string|bool|null
      */
     private function getConfig(?string $salesChannelId, string $configKey, $default = null)
