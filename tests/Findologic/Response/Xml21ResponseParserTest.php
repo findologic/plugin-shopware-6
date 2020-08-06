@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\SelectDropdownFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
@@ -162,9 +163,9 @@ class Xml21ResponseParserTest extends TestCase
         $expectedCategoryFilter->addValue(
             (new CategoryFilterValue('Buch', 'Buch'))
                 ->setFrequency(5)
-            ->addValue(
-                (new CategoryFilterValue('Beste Bücher', 'Beste Bücher'))
-            )
+                ->addValue(
+                    (new CategoryFilterValue('Beste Bücher', 'Beste Bücher'))
+                )
         );
 
         $vendor = 'vendor';
@@ -195,9 +196,17 @@ class Xml21ResponseParserTest extends TestCase
         $expectedPriceFilter->addValue(new FilterValue('0.39 - 13.4', '0.39 - 13.4', $price));
         $expectedPriceFilter->addValue(new FilterValue('13.45 - 25.99', '13.45 - 25.99', $price));
         $expectedPriceFilter->addValue(new FilterValue('26 - 40.3', '26 - 40.3', $price));
+        $expectedPriceFilter->setMin(0.39);
+        $expectedPriceFilter->setMax(40.3);
 
         $color = 'Farbe';
         $expectedColorFilter = new ColorPickerFilter($color, 'Farbe');
+        $expectedRatingFilter = new RatingFilter('rating', 'Rating');
+        $expectedRatingFilter->setMaxPoints(5.0);
+        $expectedRatingFilter->addValue(new FilterValue('0.0', '0.0'));
+        $expectedRatingFilter->addValue(new FilterValue('5.0', '5.0'));
+
+        $expectedColorFilter = new ColorPickerFilter('Farbe', 'Farbe');
         $expectedColorFilter->addValue(
             (new ColorFilterValue('beige', 'beige', $color))
                 ->setColorHexCode('#F5F5DC')
@@ -230,7 +239,8 @@ class Xml21ResponseParserTest extends TestCase
                     $expectedVendorFilter,
                     $expectedPriceFilter,
                     $expectedColorFilter,
-                    $expectedSelectDropdownFilter
+                    $expectedSelectDropdownFilter,
+                    $expectedRatingFilter
                 ]
             ],
             'response without results' => [

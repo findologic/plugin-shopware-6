@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
+use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
@@ -31,7 +32,12 @@ class FilterHandler
         if ($selectedFilters) {
             foreach ($selectedFilters as $filterName => $filterValues) {
                 foreach ($this->getFilterValues($filterValues) as $filterValue) {
-                    $this->handleFilter($filterName, $filterValue, $searchNavigationRequest, $availableFilterNames);
+                    $this->handleFilter(
+                        $filterName,
+                        $filterValue,
+                        $searchNavigationRequest,
+                        $availableFilterNames
+                    );
                 }
             }
         }
@@ -71,7 +77,7 @@ class FilterHandler
                 if (is_array($catFilter)) {
                     $catFilter = end($catFilter);
                 }
-                $mappedParams['cat'] = $catFilter;
+                $mappedParams[BaseFilter::CAT_FILTER_NAME] = $catFilter;
             }
 
             unset($queryParams['catFilter']);
@@ -104,13 +110,21 @@ class FilterHandler
             return;
         }
 
+        if ($this->isRatingFilter($filterName)) {
+            $searchNavigationRequest->addAttribute($filterName, $filterValue, 'min');
+
+            return;
+        }
+
         if (in_array($filterName, $availableFilterNames, true)) {
             // This resolves the SW-451 issue about filter value conflict in storefront
-            if ($filterName !== 'cat' && $this->isPropertyFilter($filterName, $filterValue)) {
+            if ($filterName !== BaseFilter::CAT_FILTER_NAME && $this->isPropertyFilter($filterName, $filterValue)) {
                 $this->handlePropertyFilter($filterName, $filterValue, $searchNavigationRequest);
             } else {
                 $searchNavigationRequest->addAttribute($filterName, $filterValue);
             }
+
+            return;
         }
     }
 
@@ -122,7 +136,7 @@ class FilterHandler
         $filterValue,
         SearchNavigationRequest $searchNavigationRequest
     ): void {
-        if (mb_substr($filterName, 0, mb_strlen(self::MIN_PREFIX)) === self::MIN_PREFIX) {
+        if (mb_strpos($filterName, self::MIN_PREFIX) === 0) {
             $filterName = mb_substr($filterName, mb_strlen(self::MIN_PREFIX));
             $searchNavigationRequest->addAttribute($filterName, $filterValue, 'min');
         } else {
@@ -171,12 +185,17 @@ class FilterHandler
 
     private function isMinRangeSlider(string $name): bool
     {
-        return mb_substr($name, 0, mb_strlen(self::MIN_PREFIX)) === self::MIN_PREFIX;
+        return mb_strpos($name, self::MIN_PREFIX) === 0;
     }
 
     private function isMaxRangeSlider(string $name): bool
     {
-        return mb_substr($name, 0, mb_strlen(self::MAX_PREFIX)) === self::MAX_PREFIX;
+        return mb_strpos($name, self::MAX_PREFIX) === 0;
+    }
+
+    private function isRatingFilter(string $filterName): bool
+    {
+        return $filterName === BaseFilter::RATING_FILTER_NAME;
     }
 
     private function isPropertyFilter(string $filterName, string $filterValue): bool
