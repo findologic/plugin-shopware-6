@@ -665,7 +665,7 @@ class FindologicProduct extends Struct
 
     protected function setVariantPrices(): void
     {
-        if (!$this->product->getChildCount()) {
+        if ($this->product->getChildCount() === 0) {
             return;
         }
 
@@ -867,7 +867,7 @@ class FindologicProduct extends Struct
     protected function setCustomFieldAttributes(): void
     {
         $this->customFields = array_merge($this->customFields, $this->getCustomFieldProperties($this->product));
-        if (!$this->product->getChildCount()) {
+        if ($this->product->getChildCount() === 0) {
             return;
         }
         foreach ($this->product->getChildren() as $productEntity) {
@@ -885,6 +885,9 @@ class FindologicProduct extends Struct
         }
 
         foreach ($productFields as $key => $value) {
+            if (is_string($value)) {
+                $value = Utils::cleanString($value);
+            }
             $customFieldAttribute = new Attribute(Utils::removeSpecialChars($key), [$value]);
             $attributes[] = $customFieldAttribute;
         }
@@ -898,13 +901,5 @@ class FindologicProduct extends Struct
     public function getCustomFields(): array
     {
         return $this->customFields;
-    }
-
-    /**
-     * @param Attribute[] $customFields
-     */
-    public function setCustomFields(array $customFields): void
-    {
-        $this->customFields = $customFields;
     }
 }
