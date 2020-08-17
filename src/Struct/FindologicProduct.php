@@ -13,10 +13,10 @@ use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
-use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
@@ -178,7 +178,7 @@ class FindologicProduct extends Struct
     public function getName(): string
     {
         if (!$this->hasName()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->name;
@@ -191,7 +191,7 @@ class FindologicProduct extends Struct
     public function getAttributes(): array
     {
         if (!$this->hasAttributes()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->attributes;
@@ -204,7 +204,7 @@ class FindologicProduct extends Struct
     public function getPrices(): array
     {
         if (!$this->hasPrices()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->prices;
@@ -216,7 +216,7 @@ class FindologicProduct extends Struct
     public function getDescription(): string
     {
         if (!$this->hasDescription()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->description;
@@ -228,7 +228,7 @@ class FindologicProduct extends Struct
     public function getDateAdded(): DateAdded
     {
         if (!$this->hasDateAdded()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->dateAdded;
@@ -245,7 +245,7 @@ class FindologicProduct extends Struct
     public function getUrl(): string
     {
         if (!$this->hasUrl()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->url;
@@ -263,7 +263,7 @@ class FindologicProduct extends Struct
     public function getKeywords(): array
     {
         if (!$this->hasKeywords()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->keywords;
@@ -281,7 +281,7 @@ class FindologicProduct extends Struct
     public function getImages(): array
     {
         if (!$this->hasImages()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->images;
@@ -304,7 +304,7 @@ class FindologicProduct extends Struct
     public function getUserGroups(): array
     {
         if (!$this->hasUserGroups()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->userGroups;
@@ -322,7 +322,7 @@ class FindologicProduct extends Struct
     public function getOrdernumbers(): array
     {
         if (!$this->hasOrdernumbers()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->ordernumbers;
@@ -340,7 +340,7 @@ class FindologicProduct extends Struct
     public function getProperties(): array
     {
         if (!$this->hasProperties()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->properties;
@@ -357,7 +357,7 @@ class FindologicProduct extends Struct
     protected function setName(): void
     {
         if (empty($this->product->getTranslation('name'))) {
-            throw new ProductHasNoNameException();
+            throw new ProductHasNoNameException($this->product);
         }
 
         $this->name = Utils::removeControlCharacters($this->product->getTranslation('name'));
@@ -595,7 +595,7 @@ class FindologicProduct extends Struct
     protected function setCategoriesAndCatUrls(): void
     {
         if (!$this->product->getCategories() || empty($this->product->getCategories()->count())) {
-            throw new ProductHasNoCategoriesException();
+            throw new ProductHasNoCategoriesException($this->product);
         }
 
         /** @var Attribute $categoryAttribute */
@@ -715,7 +715,7 @@ class FindologicProduct extends Struct
     {
         $prices = $this->getPricesFromProduct($this->product);
         if (empty($prices)) {
-            throw new ProductHasNoPricesException();
+            throw new ProductHasNoPricesException($this->product);
         }
 
         $this->prices = array_merge($this->prices, $prices);

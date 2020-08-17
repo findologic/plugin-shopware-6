@@ -39,7 +39,7 @@ class Utils
 
         $result = preg_replace('/[\x{0000}-\x{001F}]|[\x{007F}]|[\x{0080}-\x{009F}]/u', '', $string);
 
-        return $result ?? $string;
+        return trim($result) ?? trim($string);
     }
 
     public static function removeSpecialChars(string $string): string

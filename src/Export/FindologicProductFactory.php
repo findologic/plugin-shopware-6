@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\Export\Data\Item;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;

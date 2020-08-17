@@ -42,8 +42,8 @@ class UtilsTest extends TestCase
             ],
             'Strings with whitespace' => [
                 ' Findologic123 ',
-                ' Findologic123 ',
-                'Expected string to not be trimmed'
+                'Findologic123',
+                'Expected string to be trimmed'
             ],
             'String with control characters' => [
                 "Findologic\n1\t2\r3",

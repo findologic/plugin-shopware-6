@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
 use FINDOLOGIC\FinSearch\Controller\ExportController;
-use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
@@ -27,6 +27,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Plugin\PluginCollection;
 use Shopware\Core\Framework\Plugin\PluginEntity;
@@ -91,49 +92,31 @@ class ExportControllerTest extends TestCase
                 'shopkey' => '',
                 'start' => 1,
                 'count' => 20,
-                'exceptionMessage' => sprintf(
-                    'Required argument "shopkey" was not given, or does not match the shopkey schema "%s"',
-                    ''
-                )
+                'exceptionMessage' => 'This value should not be blank.'
             ],
             'Malformed shopkey provided' => [
                 'shopkey' => 'ABCD01815',
                 'start' => 1,
                 'count' => 20,
-                'exceptionMessage' => sprintf(
-                    'Required argument "shopkey" was not given, or does not match the shopkey schema "%s"',
-                    'ABCD01815'
-                )
+                'exceptionMessage' => 'This value is not valid.'
             ],
             '"count" parameter is zero' => [
                 'shopkey' => $this->validShopkey,
                 'start' => 1,
                 'count' => 0,
-                'exceptionMessage' => 'The value 0 is not greater than zero'
-            ],
-            '"count" parameter is some string' => [
-                'shopkey' => $this->validShopkey,
-                'start' => 'some string',
-                'count' => 20,
-                'exceptionMessage' => 'The value "some string" is not a valid numeric'
+                'exceptionMessage' => 'This value should be greater than 0.'
             ],
             '"count" parameter is a negative number' => [
                 'shopkey' => $this->validShopkey,
                 'start' => 1,
                 'count' => -1,
-                'exceptionMessage' => 'The value -1 is not greater than zero'
-            ],
-            '"start" parameter is some string' => [
-                'shopkey' => $this->validShopkey,
-                'start' => 'some string',
-                'count' => 20,
-                'exceptionMessage' => 'The value "some string" is not a valid numeric'
+                'exceptionMessage' => 'This value should be greater than 0.'
             ],
             '"start" parameter is a negative number' => [
                 'shopkey' => $this->validShopkey,
                 'start' => -1,
                 'count' => 20,
-                'exceptionMessage' => 'The value -1 is not greater than or equal to zero'
+                'exceptionMessage' => 'This value should be greater than or equal to 0.'
             ],
         ];
     }
@@ -736,5 +719,208 @@ class ExportControllerTest extends TestCase
         unset($headers['cache-control'], $headers['date']);
 
         $this->assertEquals($expectedHeaders, $headers);
+    }
+
+    public function testExportReturnsOnlyProductWhenProductIdIsProvided(): void
+    {
+        $salesChannelId = Defaults::SALES_CHANNEL;
+
+        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
+        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var SalesChannelEntity|MockObject $salesChannelMock */
+        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
+        $salesChannelMock->method('getId')->willReturn($salesChannelId);
+
+        $salesChannelContextMock->expects($this->exactly(6))
+            ->method('getContext')
+            ->willReturn($this->defaultContext);
+
+        $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
+
+        /** @var ProductEntity $productEntity */
+        $productEntity = $this->createTestProduct();
+        $this->assertInstanceOf(ProductEntity::class, $productEntity);
+
+        /** @var Request $request */
+        $request = new Request(['shopkey' => $this->validShopkey, 'productId' => $productEntity->getId()]);
+
+        /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
+        $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var SystemConfigEntity|MockObject $systemConfigEntity */
+        $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
+        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($this->validShopkey);
+        $systemConfigEntity->expects($this->once())->method('getSalesChannelId')->willReturn(null);
+
+        /** @var SystemConfigCollection $systemConfigCollection */
+        $systemConfigCollection = new SystemConfigCollection([$systemConfigEntity]);
+
+        /** @var EntitySearchResult $systemConfigEntitySearchResult */
+        $systemConfigEntitySearchResult = new EntitySearchResult(
+            1,
+            $systemConfigCollection,
+            null,
+            new Criteria(),
+            $this->defaultContext
+        );
+
+        $systemConfigRepositoryMock->expects($this->once())
+            ->method('search')
+            ->willReturn($systemConfigEntitySearchResult);
+
+        /** @var ProductCollection $productCollection */
+        $productCollection = new ProductCollection([$productEntity]);
+
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('parent.id', null));
+        $criteria->addFilter(
+            new ProductAvailableFilter(
+                $salesChannelId,
+                ProductVisibilityDefinition::VISIBILITY_SEARCH
+            )
+        );
+        $criteria->addFilter(new MultiFilter(
+            MultiFilter::CONNECTION_OR,
+            [
+                new EqualsFilter('ean', $productEntity->getId()),
+                new EqualsFilter('manufacturerNumber', $productEntity->getId()),
+                new EqualsFilter('productNumber', $productEntity->getId()),
+                new EqualsFilter('id', $productEntity->getId()),
+            ]
+        ));
+
+        $criteria = Utils::addProductAssociations($criteria);
+        $criteria->setOffset(0);
+        $criteria->setLimit(20);
+
+        $productIdSearchResult = new IdSearchResult(
+            1,
+            [],
+            $criteria,
+            $this->defaultContext
+        );
+
+        /** @var EntitySearchResult $productEntitySearchResult */
+        $productEntitySearchResult = new EntitySearchResult(
+            1,
+            $productCollection,
+            null,
+            $criteria,
+            $this->defaultContext
+        );
+
+        $criteriaWithoutOffsetLimit = clone $criteria;
+        $criteriaWithoutOffsetLimit->setOffset(null);
+        $criteriaWithoutOffsetLimit->setLimit(null);
+
+        /** @var EntityRepository|MockObject $productRepositoryMock */
+        $productRepositoryMock = $this->getMockBuilder(EntityRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $productRepositoryMock->expects($this->at(0))
+            ->method('searchIds')
+            ->with($criteriaWithoutOffsetLimit, $this->defaultContext)
+            ->willReturn($productIdSearchResult);
+        $productRepositoryMock->expects($this->at(1))
+            ->method('search')
+            ->with($criteria, $this->defaultContext)
+            ->willReturn($productEntitySearchResult);
+
+        $pluginCriteria = new Criteria();
+        $pluginCriteria->addFilter(new EqualsFilter('name', 'FinSearch'));
+
+        $extensionCriteria = new Criteria();
+        $extensionCriteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
+
+        $pluginEntity = $this->getMockBuilder(PluginEntity::class)->disableOriginalConstructor()->getMock();
+        $pluginEntity->method('getVersion')->willReturn('0.1.0');
+
+        $pluginCollection = new PluginCollection([$pluginEntity]);
+
+        $pluginEntitySearchResult = new EntitySearchResult(
+            1,
+            $pluginCollection,
+            null,
+            $pluginCriteria,
+            $this->defaultContext
+        );
+
+        $extensionPluginEntity = $this->getMockBuilder(PluginEntity::class)->disableOriginalConstructor()->getMock();
+        $extensionPluginEntity->method('getVersion')->willReturn('1.0.1');
+
+        $extensionPluginCollection = new PluginCollection([$extensionPluginEntity]);
+
+        $extensionPluginEntitySearchResult = new EntitySearchResult(
+            1,
+            $extensionPluginCollection,
+            null,
+            $extensionCriteria,
+            $this->defaultContext
+        );
+
+        $pluginRepositoryMock = $this->getMockBuilder(EntityRepository::class)->disableOriginalConstructor()->getMock();
+        $pluginRepositoryMock->expects($this->at(0))
+            ->method('search')
+            ->with($pluginCriteria, $this->defaultContext)
+            ->willReturn($pluginEntitySearchResult);
+        $pluginRepositoryMock->expects($this->at(1))
+            ->method('search')
+            ->with($extensionCriteria, $this->defaultContext)
+            ->willReturn($extensionPluginEntitySearchResult);
+
+        $containerMock = $this->getContainerMock([
+            ['system_config.repository', $systemConfigRepositoryMock],
+            ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
+            ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
+            ['product.repository', $productRepositoryMock],
+            ['translator', $this->getContainer()->get('translator')],
+            [FindologicProductFactory::class, new FindologicProductFactory()],
+            ['fin_search.sales_channel_context', $salesChannelContextMock],
+        ]);
+
+        /** @var HeaderHandler|MockObject $headerHandler */
+        $headerHandler = $this->getMockBuilder(HeaderHandler::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $headerHandler->expects($this->once())->method('getHeaders')->willReturn([]);
+
+        $this->exportController = new ExportController(
+            $this->loggerMock,
+            $this->router,
+            $headerHandler,
+            $this->getContainer()->get(SalesChannelContextFactory::class)
+        );
+        $this->exportController->setContainer($containerMock);
+        $result = $this->exportController->export($request, $salesChannelContextMock);
+
+        $export = new SimpleXMLElement($result->getContent());
+
+        $this->assertSame(0, (int)$export->items->attributes()->start);
+        $this->assertSame(1, (int)$export->items->attributes()->count);
+        $this->assertSame(1, (int)$export->items->attributes()->total);
+
+        $this->assertSame($productEntity->getId(), (string)$export->items->item->attributes()->id);
+    }
+
+    private function getContainerMock(array $services): PsrContainerInterface
+    {
+        /** @var PsrContainerInterface|MockObject $containerMock */
+        $containerMock = $this->getMockBuilder(PsrContainerInterface::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['set'])
+            ->onlyMethods(['get', 'has'])
+            ->getMock();
+
+        $containerMock->expects($this->once())->method('set');
+        $containerMock->method('get')->willReturnMap($services);
+
+        return $containerMock;
     }
 }

@@ -8,11 +8,11 @@ use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Exporter;
-use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoAttributesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
@@ -125,7 +125,7 @@ class XmlProduct
     private function setName(): void
     {
         if (!$this->findologicProduct->hasName()) {
-            throw new ProductHasNoNameException();
+            throw new ProductHasNoNameException($this->product);
         }
 
         $this->xmlItem->addName($this->findologicProduct->getName());
@@ -138,7 +138,7 @@ class XmlProduct
     private function setAttributes(): void
     {
         if (!$this->findologicProduct->hasAttributes()) {
-            throw new ProductHasNoAttributesException();
+            throw new ProductHasNoAttributesException($this->product);
         }
 
         /** @var Attribute $attribute */
@@ -154,7 +154,7 @@ class XmlProduct
     private function setPrices(): void
     {
         if (!$this->findologicProduct->hasPrices()) {
-            throw new ProductHasNoPricesException();
+            throw new ProductHasNoPricesException($this->product);
         }
 
         /** @var Price $priceData */
