@@ -832,48 +832,6 @@ class ExportControllerTest extends TestCase
             ->with($criteria, $this->defaultContext)
             ->willReturn($productEntitySearchResult);
 
-        $pluginCriteria = new Criteria();
-        $pluginCriteria->addFilter(new EqualsFilter('name', 'FinSearch'));
-
-        $extensionCriteria = new Criteria();
-        $extensionCriteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
-
-        $pluginEntity = $this->getMockBuilder(PluginEntity::class)->disableOriginalConstructor()->getMock();
-        $pluginEntity->method('getVersion')->willReturn('0.1.0');
-
-        $pluginCollection = new PluginCollection([$pluginEntity]);
-
-        $pluginEntitySearchResult = new EntitySearchResult(
-            1,
-            $pluginCollection,
-            null,
-            $pluginCriteria,
-            $this->defaultContext
-        );
-
-        $extensionPluginEntity = $this->getMockBuilder(PluginEntity::class)->disableOriginalConstructor()->getMock();
-        $extensionPluginEntity->method('getVersion')->willReturn('1.0.1');
-
-        $extensionPluginCollection = new PluginCollection([$extensionPluginEntity]);
-
-        $extensionPluginEntitySearchResult = new EntitySearchResult(
-            1,
-            $extensionPluginCollection,
-            null,
-            $extensionCriteria,
-            $this->defaultContext
-        );
-
-        $pluginRepositoryMock = $this->getMockBuilder(EntityRepository::class)->disableOriginalConstructor()->getMock();
-        $pluginRepositoryMock->expects($this->at(0))
-            ->method('search')
-            ->with($pluginCriteria, $this->defaultContext)
-            ->willReturn($pluginEntitySearchResult);
-        $pluginRepositoryMock->expects($this->at(1))
-            ->method('search')
-            ->with($extensionCriteria, $this->defaultContext)
-            ->willReturn($extensionPluginEntitySearchResult);
-
         $containerMock = $this->getContainerMock([
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
