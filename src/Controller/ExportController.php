@@ -14,24 +14,18 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductInvalidException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
+use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
@@ -67,6 +61,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /** @var ExportConfiguration */
     private $config;
 
+    /** @var ProductService */
+    private $productService;
+
     /** @var string[] */
     private $errors = [];
 
@@ -98,8 +95,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
     {
         $this->config = $this->getConfiguration($request);
         $this->salesChannelContext = $this->getSalesChannelContext($context);
+        $this->productService = new ProductService($this->container, $this->salesChannelContext);
 
-        $totalProductCount = $this->getTotalProductCount();
         $productEntities = $this->getProductsFromShop();
         $customerGroups = $this->container->get('customer_group.repository')
             ->search(new Criteria(), $this->salesChannelContext->getContext())
@@ -123,80 +120,10 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $items,
             $this->config->getStart(),
             count($items),
-            $totalProductCount
+            $this->productService->getTotalProductCount()
         );
 
         return new Response($response, Response::HTTP_OK, $this->headerHandler->getHeaders());
-    }
-
-    /**
-     * @throws InconsistentCriteriaIdsException
-     */
-    public function getProductCriteria(
-        ?int $offset = null,
-        ?int $limit = null,
-        bool $withVisibilityFilter = true
-    ): Criteria {
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('parent.id', null));
-
-        if ($withVisibilityFilter) {
-            $criteria->addFilter(
-                new ProductAvailableFilter(
-                    $this->salesChannelContext->getSalesChannel()->getId(),
-                    ProductVisibilityDefinition::VISIBILITY_SEARCH
-                )
-            );
-        }
-
-        $productId = $this->config->getProductId();
-        if ($productId) {
-            $productFilter = [
-                new EqualsFilter('ean', $productId),
-                new EqualsFilter('manufacturerNumber', $productId),
-                new EqualsFilter('productNumber', $productId),
-            ];
-
-            // Only add the id filter in case the provided value is a valid uuid, to prevent Shopware
-            // from throwing an exception in case it is not.
-            if (Uuid::isValid($productId)) {
-                $productFilter[] = new EqualsFilter('id', $productId);
-            }
-
-            $criteria->addFilter(
-                new MultiFilter(
-                    MultiFilter::CONNECTION_OR,
-                    $productFilter
-                )
-            );
-        }
-
-        $criteria = Utils::addProductAssociations($criteria);
-
-        if ($offset !== null) {
-            $criteria->setOffset($offset);
-        }
-        if ($limit !== null) {
-            $criteria->setLimit($limit);
-        }
-
-        return $criteria;
-    }
-
-    /**
-     * @throws InconsistentCriteriaIdsException
-     */
-    public function getTotalProductCount(): int
-    {
-        $criteria = $this->getProductCriteria();
-
-        /** @var IdSearchResult $result */
-        $result = $this->container->get('product.repository')->searchIds(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        );
-
-        return $result->getTotal();
     }
 
     /**
@@ -207,19 +134,10 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $start = $this->config->getStart();
         $count = $this->config->getCount();
 
-        $criteria = $this->getProductCriteria($start, $count);
-
-        /** @var EntityRepository $productRepo */
-        $productRepo = $this->container->get('product.repository');
-        $products = $productRepo->search($criteria, $this->salesChannelContext->getContext());
+        $products = $this->productService->searchVisibleProducts($count, $start, $this->config->getProductId());
 
         if ($this->config->getProductId() && $products->count() === 0) {
-            $criteriaWithoutProductVisibility = $this->getProductCriteria($start, $count, false);
-
-            $products = $productRepo->search(
-                $criteriaWithoutProductVisibility,
-                $this->salesChannelContext->getContext()
-            );
+            $products = $this->productService->searchAllProducts($count, $start, $this->config->getProductId());
 
             if ($products->count() > 0) {
                 $this->errors[] = 'The product could not be exported, since it is not available for search.';

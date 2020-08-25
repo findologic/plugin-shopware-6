@@ -271,11 +271,11 @@ class ExportControllerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $productRepositoryMock->expects($this->at(0))
+        $productRepositoryMock->expects($this->any())
             ->method('searchIds')
             ->with($criteriaWithoutOffsetLimit, $this->defaultContext)
             ->willReturn($productIdSearchResult);
-        $productRepositoryMock->expects($this->at(1))
+        $productRepositoryMock->expects($this->any())
             ->method('search')
             ->with($criteria, $this->defaultContext)
             ->willReturn($productEntitySearchResult);
@@ -626,11 +626,11 @@ class ExportControllerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $productRepositoryMock->expects($this->at(0))
+        $productRepositoryMock->expects($this->any())
             ->method('searchIds')
             ->with($criteriaWithoutOffsetLimit, $this->defaultContext)
             ->willReturn($productIdSearchResult);
-        $productRepositoryMock->expects($this->at(1))
+        $productRepositoryMock->expects($this->any())
             ->method('search')
             ->with($criteria, $this->defaultContext)
             ->willReturn($productEntitySearchResult);
@@ -784,6 +784,13 @@ class ExportControllerTest extends TestCase
                 ProductVisibilityDefinition::VISIBILITY_SEARCH
             )
         );
+
+        $criteria = Utils::addProductAssociations($criteria);
+
+        $criteriaWithoutOffsetLimit = clone $criteria;
+
+        $criteria->setOffset(0);
+        $criteria->setLimit(20);
         $criteria->addFilter(new MultiFilter(
             MultiFilter::CONNECTION_OR,
             [
@@ -793,10 +800,6 @@ class ExportControllerTest extends TestCase
                 new EqualsFilter('id', $productEntity->getId()),
             ]
         ));
-
-        $criteria = Utils::addProductAssociations($criteria);
-        $criteria->setOffset(0);
-        $criteria->setLimit(20);
 
         $productIdSearchResult = new IdSearchResult(
             1,
@@ -814,20 +817,16 @@ class ExportControllerTest extends TestCase
             $this->defaultContext
         );
 
-        $criteriaWithoutOffsetLimit = clone $criteria;
-        $criteriaWithoutOffsetLimit->setOffset(null);
-        $criteriaWithoutOffsetLimit->setLimit(null);
-
         /** @var EntityRepository|MockObject $productRepositoryMock */
         $productRepositoryMock = $this->getMockBuilder(EntityRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $productRepositoryMock->expects($this->at(0))
+        $productRepositoryMock->expects($this->any())
             ->method('searchIds')
             ->with($criteriaWithoutOffsetLimit, $this->defaultContext)
             ->willReturn($productIdSearchResult);
-        $productRepositoryMock->expects($this->at(1))
+        $productRepositoryMock->expects($this->any())
             ->method('search')
             ->with($criteria, $this->defaultContext)
             ->willReturn($productEntitySearchResult);
