@@ -140,9 +140,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $products = $this->productService->searchAllProducts($count, $start, $this->config->getProductId());
 
             if ($products->count() > 0) {
-                $this->errors[] = 'The product could not be exported, since it is not available for search.';
+                $this->addErrorMessage('The product could not be exported, since it is not available for search.');
             } else {
-                $this->errors[] = 'No product could be found for the given id.';
+                $this->addErrorMessage('No product could be found for the given id.');
             }
         }
 
@@ -275,11 +275,16 @@ class ExportController extends AbstractController implements EventSubscriberInte
         }
 
         $this->logger->warning($message);
+        $this->addErrorMessage($message);
+    }
 
-        // Show the error explicitly, when a specific product was requested. Otherwise the export should just continue
-        // as usual.
-        if ($this->config->getProductId()) {
-            $this->errors[] = $message;
+    private function addErrorMessage(string $message): void
+    {
+        // Only add error messages in case a product id has been supplied.
+        if (!$this->config->getProductId()) {
+            return;
         }
+
+        $this->errors[] = htmlentities($message);
     }
 }
