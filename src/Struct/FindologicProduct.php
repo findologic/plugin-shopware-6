@@ -425,6 +425,11 @@ class FindologicProduct extends Struct
 
         foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {
             $group = $propertyGroupOptionEntity->getGroup();
+            // Method getFilterable exists since Shopware 6.2.x.
+            if (method_exists($group, 'getFilterable') && !$group->getFilterable()) {
+                continue;
+            }
+
             if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
                 $properyGroupAttrib = new Attribute(
                     Utils::removeSpecialChars($group->getTranslation('name')),

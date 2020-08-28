@@ -494,6 +494,60 @@ class FindologicProductTest extends TestCase
         );
     }
 
+    public function testFilterablePropertiesAreNotExported(): void
+    {
+        if (Utils::versionLowerThan('6.2.0')) {
+            $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
+        }
+
+        $productEntity = $this->createTestProduct([
+            'properties' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'name' => 'some value',
+                    'group' => [
+                        'id' => Uuid::randomHex(),
+                        'name' => 'blub',
+                        'filterable' => false
+                    ],
+                ]
+            ]
+        ]);
+
+        $criteria = new Criteria([$productEntity->getId()]);
+        $criteria = Utils::addProductAssociations($criteria);
+
+        $productEntity = $this->getContainer()
+            ->get('product.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->get($productEntity->getId());
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $foundAttributes = array_filter(
+            $findologicProduct->getAttributes(),
+            function (Attribute $attribute) {
+                return $attribute->getKey() === 'blub';
+            }
+        );
+
+        $this->assertEmpty($foundAttributes);
+    }
+
     /**
      * @return Property[]
      */
