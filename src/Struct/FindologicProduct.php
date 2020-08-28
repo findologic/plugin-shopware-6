@@ -25,6 +25,8 @@ use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionCollection;
+use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -427,36 +429,95 @@ class FindologicProduct extends Struct
             $group = $propertyGroupOptionEntity->getGroup();
             // Method getFilterable exists since Shopware 6.2.x.
             if (method_exists($group, 'getFilterable') && !$group->getFilterable()) {
+                // Non filterable properties should be available in the properties field.
+                $this->properties = array_merge(
+                    $this->properties,
+                    $this->getAttributePropertyAsProperty($propertyGroupOptionEntity)
+                );
+
                 continue;
             }
 
-            if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-                $properyGroupAttrib = new Attribute(
-                    Utils::removeSpecialChars($group->getTranslation('name')),
-                    [Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))]
-                );
+            $attributes = array_merge($attributes, $this->getAttributePropertyAsAttribute($propertyGroupOptionEntity));
+        }
 
-                $attributes[] = $properyGroupAttrib;
+        return $attributes;
+    }
+
+    /**
+     * @return Property[]
+     */
+    protected function getAttributePropertyAsProperty(
+        PropertyGroupOptionEntity $propertyGroupOptionEntity
+    ): array {
+        $properties = [];
+
+        $group = $propertyGroupOptionEntity->getGroup();
+        if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
+            $propertyGroupProperty = new Property(Utils::removeSpecialChars($group->getTranslation('name')));
+            $propertyGroupProperty->addValue(
+                Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))
+            );
+
+            $properties[] = $propertyGroupProperty;
+        }
+
+        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
+            $group = $setting->getOption()->getGroup();
+            $settingOption = $setting->getOption();
+
+            if (!$group || !$settingOption) {
+                continue;
             }
 
-            foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-                $group = $setting->getOption()->getGroup();
-                $settingOption = $setting->getOption();
+            $groupName = $group->getTranslation('name');
+            $optionName = $settingOption->getTranslation('name');
+            if ($groupName && $optionName) {
+                $configProperty = new Property(Utils::removeSpecialChars($groupName));
+                $configProperty->addValue(Utils::removeControlCharacters($optionName));
 
-                if (!$group || !$settingOption) {
-                    continue;
-                }
+                $properties[] = $configProperty;
+            }
+        }
 
-                $groupName = $group->getTranslation('name');
-                $optionName = $settingOption->getTranslation('name');
-                if ($groupName && $optionName) {
-                    $configAttrib = new Attribute(
-                        Utils::removeSpecialChars($groupName),
-                        [Utils::removeControlCharacters($optionName)]
-                    );
+        return $properties;
+    }
 
-                    $attributes[] = $configAttrib;
-                }
+    /**
+     * @return Attribute[]
+     */
+    protected function getAttributePropertyAsAttribute(
+        PropertyGroupOptionEntity $propertyGroupOptionEntity
+    ): array {
+        $attributes = [];
+
+        $group = $propertyGroupOptionEntity->getGroup();
+        if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
+            $properyGroupAttrib = new Attribute(
+                Utils::removeSpecialChars($group->getTranslation('name')),
+                [Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))]
+            );
+
+            $attributes[] = $properyGroupAttrib;
+        }
+
+        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
+            $group = $setting->getOption()->getGroup();
+            $settingOption = $setting->getOption();
+
+            if (!$group || !$settingOption) {
+                continue;
+            }
+
+            $groupName = $group->getTranslation('name');
+            $optionName = $settingOption->getTranslation('name');
+            if ($groupName && $optionName) {
+                $configAttrib = new Attribute(
+                    Utils::removeSpecialChars($groupName),
+                    [Utils::removeControlCharacters($optionName)]
+                );
+
+                $attributes[] = $configAttrib;
             }
         }
 

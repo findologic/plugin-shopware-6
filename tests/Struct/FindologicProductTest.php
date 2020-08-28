@@ -494,7 +494,7 @@ class FindologicProductTest extends TestCase
         );
     }
 
-    public function testFilterablePropertiesAreNotExported(): void
+    public function testNonFilterablePropertiesAreExportedAsPropertiesInsteadOfAttributes(): void
     {
         if (Utils::versionLowerThan('6.2.0')) {
             $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
@@ -546,6 +546,17 @@ class FindologicProductTest extends TestCase
         );
 
         $this->assertEmpty($foundAttributes);
+
+        $foundProperties = array_filter(
+            $findologicProduct->getProperties(),
+            function (Property $property) {
+                return $property->getKey() === 'blub';
+            }
+        );
+
+        /** @var Property $property */
+        $property = reset($foundProperties);
+        $this->assertEquals('some value', $property->getAllValues()['']); // '' = Empty usergroup.
     }
 
     /**
