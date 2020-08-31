@@ -20,6 +20,9 @@ class ServiceConfig extends Struct
     /** @var DateTime */
     protected $expireDateTime;
 
+    /** @var array */
+    protected $blocks;
+
     public function __construct()
     {
         // Add 24 hours to the current time to set expiration date
@@ -52,5 +55,15 @@ class ServiceConfig extends Struct
     public function setIsStagingShop(bool $isStagingShop): void
     {
         $this->isStagingShop = $isStagingShop;
+    }
+
+    public function getBlocks(): array
+    {
+        return $this->blocks;
+    }
+
+    public function setBlocks(array $blocks): void
+    {
+        $this->blocks = $blocks;
     }
 }

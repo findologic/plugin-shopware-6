@@ -50,4 +50,6 @@ abstract class ResponseParser
     abstract public function getPaginationExtension(?int $limit, ?int $offset): Pagination;
 
     abstract public function getQueryInfoMessage(ShopwareEvent $event): QueryInfoMessage;
+
+    abstract public function getFiltersWithSmartSuggestBlocks(FiltersExtension $flFilters, array $flBlocks, ShopwareEvent $event);
 }

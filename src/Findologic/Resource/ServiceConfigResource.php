@@ -66,13 +66,21 @@ class ServiceConfigResource
 
     /**
      * @throws InvalidArgumentException
+     * @throws ClientException
+     */
+    public function getSmartSuggestBlocks(?string $shopkey): array
+    {
+        return $this->get($shopkey, 'blocks');
+    }
+
+    /**
+     * @throws InvalidArgumentException
      */
     private function getFromCache(): ?ServiceConfig
     {
-        /** @var ServiceConfig $config */
         $config = $this->cache->getItem(self::CACHE_KEY)->get();
         if ($config !== null) {
-            return unserialize($config, [ServiceConfig::class]);
+            return unserialize($config);
         }
 
         return null;

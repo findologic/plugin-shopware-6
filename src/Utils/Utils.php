@@ -9,6 +9,7 @@ use PackageVersions\Versions;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class Utils
@@ -108,19 +109,15 @@ class Utils
             . (isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : '');
     }
 
-    public static function versionLowerThan(string $version): bool
+    public static function versionLowerThan(ContainerInterface $container, string $version): bool
     {
-        $versions = Versions::VERSIONS;
-        if (isset($versions['shopware/core'])) {
-            $shopwareVersion = Versions::getVersion('shopware/core');
-        } else {
-            $shopwareVersion = Versions::getVersion('shopware/platform');
-        }
+        $shopwareVersion = $container->getParameter('kernel.shopware_version');
+
         // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
         $shopwareVersion = ltrim($shopwareVersion, 'v');
 
         // Development versions may add the versions with an "@" sign, which refers to the current commit.
-        $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '@'));
+        $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '-dev'));
 
         return version_compare($versionWithoutCommitHash, $version, '<');
     }

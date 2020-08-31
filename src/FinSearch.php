@@ -23,7 +23,7 @@ class FinSearch extends Plugin
         // For maintaining compatibility with Shopware 6.1.x we load relevant services due to several
         // breaking changes introduced in Shopware 6.2
         // @link https://github.com/shopware/platform/blob/master/UPGRADE-6.2.md
-        $this->loadServiceXml($container, $this->getServiceXml());
+        $this->loadServiceXml($container, $this->getServiceXml($container));
 
         parent::build($container);
     }
@@ -50,9 +50,9 @@ class FinSearch extends Plugin
         parent::uninstall($uninstallContext);
     }
 
-    private function getServiceXml(): string
+    private function getServiceXml($container): string
     {
-        if (Utils::versionLowerThan('6.2')) {
+        if (Utils::versionLowerThan($container, '6.2')) {
             $file = 'sw61_services';
         } else {
             $file = 'services';

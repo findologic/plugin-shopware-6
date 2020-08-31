@@ -146,7 +146,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ],
             'includes' => null
         ];
-        if (Utils::versionLowerThan('6.3.0.0')) {
+        if (Utils::versionLowerThan($this->containerMock, '6.3.0.0')) {
             $expectedAssign['source'] = null;
         }
 
@@ -621,6 +621,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->containerMock = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
+        $this->containerMock->method('getParameter')->with('kernel.shopware_version')->willReturn('6.3');
+
         $this->configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
         $this->apiConfigMock = $this->getMockBuilder(ApiConfig::class)->disableOriginalConstructor()->getMock();
         $this->apiClientMock = $this->getMockBuilder(ApiClient::class)->disableOriginalConstructor()->getMock();

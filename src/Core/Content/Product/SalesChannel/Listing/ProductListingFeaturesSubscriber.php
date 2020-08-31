@@ -180,7 +180,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     private function getCurrentSorting(Request $request, string $default): ?string
     {
         $key = $request->get('order', $default);
-        if (Utils::versionLowerThan('6.2')) {
+        if (Utils::versionLowerThan($this->container, '6.2')) {
             $key = $request->get('sort', $default);
         }
 
@@ -204,7 +204,13 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
                 $response = $this->navigationRequestHandler->doRequest($event, self::RESULT_LIMIT_FILTER);
             }
             $responseParser = ResponseParser::getInstance($response);
-            $event->getCriteria()->addExtension('flFilters', $responseParser->getFiltersExtension());
+            $flFilters = $responseParser->getFiltersExtension();
+            $flFilters = $responseParser->getFiltersWithSmartSuggestBlocks(
+                $flFilters,
+                $this->serviceConfigResource->getSmartSuggestBlocks($this->config->getShopkey()),
+                $event);
+            
+            $event->getCriteria()->addExtension('flFilters', $flFilters);
         } catch (ServiceNotAliveException $e) {
             /** @var FindologicEnabled $flEnabled */
             $flEnabled = $event->getContext()->getExtension('flEnabled');

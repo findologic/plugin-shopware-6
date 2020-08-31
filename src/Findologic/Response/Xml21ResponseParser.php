@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
+use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\VendorImageItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\VendorImageFilter;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\LandingPage as LandingPageExtension;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
@@ -146,7 +152,7 @@ class Xml21ResponseParser extends ResponseParser
         $categoryInfoMessage = QueryInfoMessage::buildInstance(
             QueryInfoMessage::TYPE_CATEGORY,
             null,
-            $filters['cat']->getDisplay(),
+            isset($filters['cat']) ? $filters['cat']->getDisplay() : 'Category',
             $category
         );
 
@@ -161,7 +167,7 @@ class Xml21ResponseParser extends ResponseParser
         $vendorInfoMessage = QueryInfoMessage::buildInstance(
             QueryInfoMessage::TYPE_VENDOR,
             null,
-            $filters['vendor']->getDisplay(),
+            isset($filters['vendor']) ? $filters['vendor']->getDisplay() : 'Manufacturer',
             $params['vendor']
         );
 
@@ -183,5 +189,49 @@ class Xml21ResponseParser extends ResponseParser
     private function isFilterSet(array $params, string $name): bool
     {
         return isset($params[$name]) && !empty($params[$name]);
+    }
+
+    public function getFiltersWithSmartSuggestBlocks(FiltersExtension $flFilters, array $flBlocks, ShopwareEvent $event): FiltersExtension
+    {
+        $params = $event->getRequest()->query->all();
+        $hasCategoryFilter = $hasVendorFilter = false;
+
+        foreach ($flFilters->getFilters() as $filter) {
+            if ($filter instanceof CategoryFilter) {
+                $hasCategoryFilter = true;
+            }
+            if ($filter instanceof VendorImageFilter) {
+                $hasVendorFilter = true;
+            }
+        }
+
+        if (!$hasVendorFilter || !$hasCategoryFilter) {
+
+            if (!$hasCategoryFilter && $this->isFilterSet($params, 'cat')) {
+                $display = $flBlocks['cat'];
+                $value = $params['cat'];
+
+                $customFilter = new CategoryFilter('cat', $display);
+                $filterValue = new FilterValue($value, $value, 'cat');
+                $customFilter->addValue($filterValue);
+                $customFilter->setHidden(true);
+
+                $flFilters->addFilter($customFilter);
+            }
+
+            if (!$hasVendorFilter && $this->isFilterSet($params, 'vendor')) {
+                $display = $flBlocks['vendor'];
+                $value = $params['vendor'];
+
+                $customFilter = new VendorImageFilter('vendor', $display);
+                $filterValue = new FilterValue($value, $value, 'vendor');
+                $customFilter->addValue($filterValue);
+                $customFilter->setHidden(true);
+
+                $flFilters->addFilter($customFilter);
+            }
+        }
+
+        return $flFilters;
     }
 }
