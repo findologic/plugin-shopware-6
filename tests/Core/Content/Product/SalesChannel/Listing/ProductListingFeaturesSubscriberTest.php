@@ -146,8 +146,10 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ],
             'includes' => null
         ];
-        if (Utils::versionLowerThan($this->containerMock, '6.3.0.0')) {
+        if (Utils::versionLowerThan($this->containerMock, '6.3')) {
             $expectedAssign['source'] = null;
+        } else {
+            $expectedAssign['title'] = null;
         }
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
@@ -677,6 +679,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->method('getInt')
             ->willReturn(1);
         $queryMock->expects($this->any())->method('get')->willReturn('');
+        $queryMock->expects($this->any())->method('all')->willReturn([]);
 
         $requestMock->query = $queryMock;
 

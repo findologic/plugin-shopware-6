@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Utils;
 
 use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
-use PackageVersions\Versions;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -116,10 +115,14 @@ class Utils
         // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
         $shopwareVersion = ltrim($shopwareVersion, 'v');
 
-        // Development versions may add the versions with an "@" sign, which refers to the current commit.
-        $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '-dev'));
+        if (strpos($shopwareVersion, '-dev')) {
+            // Development versions may add the versions with an "-dev" sign, which identifies it as a dev branch
+            $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '-dev'));
 
-        return version_compare($versionWithoutCommitHash, $version, '<');
+            return version_compare($versionWithoutCommitHash, $version, '<');
+        }
+
+        return version_compare($shopwareVersion, $version, '<');
     }
 
     public static function isFindologicEnabled(SalesChannelContext $context): bool

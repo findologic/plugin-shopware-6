@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\Item\VendorImageItem;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\VendorImageFilter;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\LandingPage as LandingPageExtension;
@@ -191,8 +188,11 @@ class Xml21ResponseParser extends ResponseParser
         return isset($params[$name]) && !empty($params[$name]);
     }
 
-    public function getFiltersWithSmartSuggestBlocks(FiltersExtension $flFilters, array $flBlocks, ShopwareEvent $event): FiltersExtension
-    {
+    public function getFiltersWithSmartSuggestBlocks(
+        FiltersExtension $flFilters,
+        array $flBlocks,
+        ShopwareEvent $event
+    ): FiltersExtension {
         $params = $event->getRequest()->query->all();
         $hasCategoryFilter = $hasVendorFilter = false;
 
@@ -206,8 +206,7 @@ class Xml21ResponseParser extends ResponseParser
         }
 
         if (!$hasVendorFilter || !$hasCategoryFilter) {
-
-            if (!$hasCategoryFilter && $this->isFilterSet($params, 'cat')) {
+            if (!$hasCategoryFilter && in_array('cat', $flBlocks, true) && $this->isFilterSet($params, 'cat')) {
                 $display = $flBlocks['cat'];
                 $value = $params['cat'];
 
@@ -219,7 +218,7 @@ class Xml21ResponseParser extends ResponseParser
                 $flFilters->addFilter($customFilter);
             }
 
-            if (!$hasVendorFilter && $this->isFilterSet($params, 'vendor')) {
+            if (!$hasVendorFilter && in_array('vendor', $flBlocks, true) && $this->isFilterSet($params, 'vendor')) {
                 $display = $flBlocks['vendor'];
                 $value = $params['vendor'];
 

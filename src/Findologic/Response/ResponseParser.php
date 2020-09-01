@@ -51,5 +51,9 @@ abstract class ResponseParser
 
     abstract public function getQueryInfoMessage(ShopwareEvent $event): QueryInfoMessage;
 
-    abstract public function getFiltersWithSmartSuggestBlocks(FiltersExtension $flFilters, array $flBlocks, ShopwareEvent $event);
+    abstract public function getFiltersWithSmartSuggestBlocks(
+        FiltersExtension $flFilters,
+        array $flBlocks,
+        ShopwareEvent $event
+    );
 }

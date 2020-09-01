@@ -208,7 +208,8 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $flFilters = $responseParser->getFiltersWithSmartSuggestBlocks(
                 $flFilters,
                 $this->serviceConfigResource->getSmartSuggestBlocks($this->config->getShopkey()),
-                $event);
+                $event
+            );
             
             $event->getCriteria()->addExtension('flFilters', $flFilters);
         } catch (ServiceNotAliveException $e) {
