@@ -494,6 +494,74 @@ class FindologicProductTest extends TestCase
         );
     }
 
+    public function testNonFilterablePropertiesAreExportedAsPropertiesInsteadOfAttributes(): void
+    {
+        if (Utils::versionLowerThan('6.2.0')) {
+            $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
+        }
+
+        $expectedPropertyName = 'blub';
+        $expectedPropertyValue = 'some value';
+
+        $productEntity = $this->createTestProduct([
+            'properties' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'name' => $expectedPropertyValue,
+                    'group' => [
+                        'id' => Uuid::randomHex(),
+                        'name' => $expectedPropertyName,
+                        'filterable' => false
+                    ],
+                ]
+            ]
+        ]);
+
+        $criteria = new Criteria([$productEntity->getId()]);
+        $criteria = Utils::addProductAssociations($criteria);
+
+        $productEntity = $this->getContainer()
+            ->get('product.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->get($productEntity->getId());
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $foundAttributes = array_filter(
+            $findologicProduct->getAttributes(),
+            function (Attribute $attribute) use ($expectedPropertyName) {
+                return $attribute->getKey() === $expectedPropertyName;
+            }
+        );
+
+        $this->assertEmpty($foundAttributes);
+
+        $foundProperties = array_filter(
+            $findologicProduct->getProperties(),
+            function (Property $property) use ($expectedPropertyName) {
+                return $property->getKey() === $expectedPropertyName;
+            }
+        );
+
+        /** @var Property $property */
+        $property = reset($foundProperties);
+        $this->assertEquals($expectedPropertyValue, $property->getAllValues()['']); // '' = Empty usergroup.
+    }
+
     /**
      * @return Property[]
      */
