@@ -500,14 +500,17 @@ class FindologicProductTest extends TestCase
             $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
         }
 
+        $expectedPropertyName = 'blub';
+        $expectedPropertyValue = 'some value';
+
         $productEntity = $this->createTestProduct([
             'properties' => [
                 [
                     'id' => Uuid::randomHex(),
-                    'name' => 'some value',
+                    'name' => $expectedPropertyValue,
                     'group' => [
                         'id' => Uuid::randomHex(),
-                        'name' => 'blub',
+                        'name' => $expectedPropertyName,
                         'filterable' => false
                     ],
                 ]
@@ -540,8 +543,8 @@ class FindologicProductTest extends TestCase
 
         $foundAttributes = array_filter(
             $findologicProduct->getAttributes(),
-            function (Attribute $attribute) {
-                return $attribute->getKey() === 'blub';
+            function (Attribute $attribute) use ($expectedPropertyName) {
+                return $attribute->getKey() === $expectedPropertyName;
             }
         );
 
@@ -549,14 +552,14 @@ class FindologicProductTest extends TestCase
 
         $foundProperties = array_filter(
             $findologicProduct->getProperties(),
-            function (Property $property) {
-                return $property->getKey() === 'blub';
+            function (Property $property) use ($expectedPropertyName) {
+                return $property->getKey() === $expectedPropertyName;
             }
         );
 
         /** @var Property $property */
         $property = reset($foundProperties);
-        $this->assertEquals('some value', $property->getAllValues()['']); // '' = Empty usergroup.
+        $this->assertEquals($expectedPropertyValue, $property->getAllValues()['']); // '' = Empty usergroup.
     }
 
     /**
