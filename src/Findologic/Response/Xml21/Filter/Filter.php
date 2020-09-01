@@ -211,12 +211,16 @@ abstract class Filter extends BaseFilter
         }
     }
 
-    private static function handleRatingFilter(ApiRangeSliderFilter $filter): RatingFilter
+    private static function handleRatingFilter(ApiRangeSliderFilter $filter): ?RatingFilter
     {
+        $totalRange = $filter->getAttributes()->getTotalRange();
+        if ($totalRange->getMin() === $totalRange->getMax()) {
+            return null;
+        }
+
         $customFilter = new RatingFilter($filter->getName(), $filter->getDisplay());
         $attributes = $filter->getAttributes();
         if ($attributes) {
-            $totalRange = $attributes->getTotalRange();
             $customFilter->setMaxPoints(ceil($totalRange->getMax()));
         }
 
