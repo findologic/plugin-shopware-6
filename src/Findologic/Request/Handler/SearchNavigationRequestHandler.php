@@ -114,10 +114,6 @@ abstract class SearchNavigationRequestHandler
         if (!empty($vars) && !array_key_exists('includes', $vars)) {
             $vars['includes'] = null;
         }
-        // `title` is added in Shopware >= 6.3, so we manually add this for compatibility with older versions
-        if (!empty($vars) && !array_key_exists('title', $vars)) {
-            $vars['title'] = null;
-        }
         $event->getCriteria()->assign($vars);
     }
 
