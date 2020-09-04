@@ -19,6 +19,7 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\QueryInfoMessage;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -112,6 +113,10 @@ abstract class SearchNavigationRequestHandler
         // `includes` is added in Shopware >= 6.2, so we manually add this for compatibility with older versions
         if (!empty($vars) && !array_key_exists('includes', $vars)) {
             $vars['includes'] = null;
+        }
+        // `title` is added in Shopware >= 6.3, so we manually add this for compatibility with older versions
+        if (!empty($vars) && !array_key_exists('title', $vars)) {
+            $vars['title'] = null;
         }
         $event->getCriteria()->assign($vars);
     }

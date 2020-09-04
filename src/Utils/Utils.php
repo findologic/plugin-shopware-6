@@ -110,19 +110,10 @@ class Utils
 
     public static function versionLowerThan(ContainerInterface $container, string $version): bool
     {
-        $shopwareVersion = getenv('SHOPWARE_VERSION');
-
-        if (!$shopwareVersion || $shopwareVersion === 'master') {
-            $shopwareVersion = $container->getParameter('kernel.shopware_version');
-        }
+        $shopwareVersion = $container->getParameter('kernel.shopware_version');
 
         // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
         $shopwareVersion = ltrim($shopwareVersion, 'v');
-
-        if (strpos($shopwareVersion, '-dev')) {
-            // Development versions may add the versions with an "-dev" sign, which identifies it as a dev branch
-            $shopwareVersion = substr($shopwareVersion, 0, strpos($shopwareVersion, '-dev'));
-        }
 
         return version_compare($shopwareVersion, $version, '<');
     }
