@@ -191,9 +191,8 @@ class Xml21ResponseParser extends ResponseParser
     public function getFiltersWithSmartSuggestBlocks(
         FiltersExtension $flFilters,
         array $flBlocks,
-        ShopwareEvent $event
+        array $params
     ): FiltersExtension {
-        $params = $event->getRequest()->query->all();
         $hasCategoryFilter = $hasVendorFilter = false;
 
         foreach ($flFilters->getFilters() as $filter) {
@@ -206,7 +205,7 @@ class Xml21ResponseParser extends ResponseParser
         }
 
         if (!$hasVendorFilter || !$hasCategoryFilter) {
-            if (!$hasCategoryFilter && in_array('cat', $flBlocks, true) && $this->isFilterSet($params, 'cat')) {
+            if (!$hasCategoryFilter && array_key_exists('cat', $flBlocks) && $this->isFilterSet($params, 'cat')) {
                 $display = $flBlocks['cat'];
                 $value = $params['cat'];
 
@@ -218,7 +217,7 @@ class Xml21ResponseParser extends ResponseParser
                 $flFilters->addFilter($customFilter);
             }
 
-            if (!$hasVendorFilter && in_array('vendor', $flBlocks, true) && $this->isFilterSet($params, 'vendor')) {
+            if (!$hasVendorFilter && array_key_exists('vendor', $flBlocks) && $this->isFilterSet($params, 'vendor')) {
                 $display = $flBlocks['vendor'];
                 $value = $params['vendor'];
 

@@ -92,7 +92,11 @@ class ServiceConfigResourceTest extends TestCase
         return [
             'Direct Integration is enabled and Shop is live' => [
                 'directionIntegration' => ['enabled' => true],
-                'isStagingShop' => false
+                'isStagingShop' => false,
+                'blocks' => [
+                    'cat' => 'Kategorie',
+                    'vendor' => 'Hersteller'
+                ]
             ],
         ];
     }
@@ -101,12 +105,14 @@ class ServiceConfigResourceTest extends TestCase
      * @dataProvider findologicConfigDataProvider
      *
      * @param bool[] $directIntegration
+     * @param string[] $flBlocks
      *
      * @throws InvalidArgumentException
      */
     public function testConfigIsFetchedFromFindologic(
         array $directIntegration,
-        bool $isStagingShop
+        bool $isStagingShop,
+        array $flBlocks
     ): void {
         $shopkey = $this->getShopkey();
         $cacheKey = 'finsearch_serviceconfig';
@@ -148,6 +154,10 @@ class ServiceConfigResourceTest extends TestCase
 
         $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
         $this->assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
+        $this->assertArrayHasKey('cat', $flBlocks);
+        $this->assertArrayHasKey('vendor', $flBlocks);
+        $this->assertSame('Kategorie', $flBlocks['cat']);
+        $this->assertSame('Hersteller', $flBlocks['vendor']);
     }
 
     public function expiredTimeProvider(): array

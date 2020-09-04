@@ -54,6 +54,6 @@ abstract class ResponseParser
     abstract public function getFiltersWithSmartSuggestBlocks(
         FiltersExtension $flFilters,
         array $flBlocks,
-        ShopwareEvent $event
+        array $params
     );
 }

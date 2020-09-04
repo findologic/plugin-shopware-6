@@ -199,14 +199,13 @@ class Xml21ResponseParserTest extends TestCase
         $expectedPriceFilter->setMin(0.39);
         $expectedPriceFilter->setMax(40.3);
 
-        $color = 'Farbe';
-        $expectedColorFilter = new ColorPickerFilter($color, 'Farbe');
         $expectedRatingFilter = new RatingFilter('rating', 'Rating');
         $expectedRatingFilter->setMaxPoints(5.0);
         $expectedRatingFilter->addValue(new FilterValue('0.0', '0.0'));
         $expectedRatingFilter->addValue(new FilterValue('5.0', '5.0'));
 
-        $expectedColorFilter = new ColorPickerFilter('Farbe', 'Farbe');
+        $color = 'Farbe';
+        $expectedColorFilter = new ColorPickerFilter($color, 'Farbe');
         $expectedColorFilter->addValue(
             (new ColorFilterValue('beige', 'beige', $color))
                 ->setColorHexCode('#F5F5DC')
@@ -269,6 +268,65 @@ class Xml21ResponseParserTest extends TestCase
         $filters = $filtersExtension->getFilters();
 
         $this->assertEquals($expectedFilters, $filters);
+    }
+
+    public function smartSuggestBlocksProvider()
+    {
+        return [
+            'No smart suggest blocks are sent and category filter is not in response' => [
+                'demoResponse' => 'demoResponseWithoutCategoryFilter.xml',
+                'flBlocks' => [],
+                'expectedFilterName' => null,
+                'isHidden' => null
+            ],
+            'Smart suggest blocks are sent and category filter is not in response' => [
+                'demoResponse' => 'demoResponseWithoutCategoryFilter.xml',
+                'flBlocks' => ['cat' => 'Category'],
+                'expectedFilterName' => 'Category',
+                'isHidden' => true
+
+            ],
+            'No smart suggest blocks are sent and category filter is available in response' => [
+                'demoResponse' => 'demoResponseWithCategoryFilter.xml',
+                'flBlocks' => [],
+                'expectedFilterName' => 'Kategorie',
+                'isHidden' => false
+
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider smartSuggestBlocksProvider
+     */
+    public function testSmartSuggestBlocks(
+        string $demoResponse,
+        array $flBlocks,
+        ?string $expectedFilterName,
+        ?bool $isHidden
+    ): void {
+        $response = new Xml21Response(
+            $this->getMockResponse(sprintf('XMLResponse/%s', $demoResponse))
+        );
+
+        $responseParser = new Xml21ResponseParser($response);
+
+        $filtersExtension = $responseParser->getFiltersExtension();
+        $filtersExtension = $responseParser->getFiltersWithSmartSuggestBlocks(
+            $filtersExtension,
+            $flBlocks,
+            ['cat' => 'Some category']
+        );
+
+        $filters = $filtersExtension->getFilters();
+        $filter = end($filters);
+        if ($expectedFilterName === null) {
+            $this->assertNotInstanceOf(CategoryFilter::class, $filter);
+        } else {
+            $this->assertInstanceOf(CategoryFilter::class, $filter);
+            $this->assertSame($expectedFilterName, $filter->getName());
+            $this->assertSame($isHidden, $filter->isHidden());
+        }
     }
 
     public function paginationResponseProvider(): array
