@@ -180,7 +180,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     private function getCurrentSorting(Request $request, string $default): ?string
     {
         $key = $request->get('order', $default);
-        if (Utils::versionLowerThan($this->container, '6.2')) {
+        if (Utils::versionLowerThan('6.2')) {
             $key = $request->get('sort', $default);
         }
 

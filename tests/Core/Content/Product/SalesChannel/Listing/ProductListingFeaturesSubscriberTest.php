@@ -146,7 +146,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ],
             'includes' => null
         ];
-        if (Utils::versionLowerThan($this->containerMock, '6.3')) {
+        if (Utils::versionLowerThan('6.3')) {
             $expectedAssign['source'] = null;
         } else {
             $expectedAssign['title'] = null;

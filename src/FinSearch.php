@@ -52,7 +52,7 @@ class FinSearch extends Plugin
 
     private function getServiceXml($container): string
     {
-        if (Utils::versionLowerThan($container, '6.2')) {
+        if (Utils::versionLowerThan('6.2')) {
             $file = 'sw61_services';
         } else {
             $file = 'services';
