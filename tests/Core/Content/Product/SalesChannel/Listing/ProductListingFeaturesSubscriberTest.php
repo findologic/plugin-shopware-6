@@ -148,9 +148,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         ];
         if (Utils::versionLowerThan('6.3')) {
             $expectedAssign['source'] = null;
-        } else {
-            $expectedAssign['title'] = null;
         }
+        $expectedAssign['title'] = null;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $criteriaMock->expects($this->any())->method('assign')->with($expectedAssign);
