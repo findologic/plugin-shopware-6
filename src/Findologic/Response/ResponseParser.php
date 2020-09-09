@@ -6,6 +6,8 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
@@ -19,19 +21,32 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class ResponseParser
 {
-    /** @var Response */
+    /**
+     * @var Response
+     */
     protected $response;
 
-    public function __construct(Response $response)
+    /**
+     * @var ServiceConfigResource
+     */
+    protected $serviceConfigResource;
+
+    /**
+     * @var Config
+     */
+    protected $config;
+
+    public function __construct(ServiceConfigResource $serviceConfigResource, Response $response)
     {
         $this->response = $response;
+        $this->serviceConfigResource = $serviceConfigResource;
     }
 
-    public static function getInstance(Response $response): ResponseParser
+    public static function getInstance(ServiceConfigResource $serviceConfigResource, Response $response): ResponseParser
     {
         switch (true) {
             case $response instanceof Xml21Response:
-                return new Xml21ResponseParser($response);
+                return new Xml21ResponseParser($serviceConfigResource, $response);
             default:
                 throw new InvalidArgumentException('Unsupported response format.');
         }
@@ -53,7 +68,7 @@ abstract class ResponseParser
 
     abstract public function getFiltersWithSmartSuggestBlocks(
         FiltersExtension $flFilters,
-        array $flBlocks,
+        array $smartSuggestBlocks,
         array $params
     );
 }

@@ -8,6 +8,7 @@ use FINDOLOGIC\Api\Responses\Autocomplete\SuggestResponse;
 use FINDOLOGIC\Api\Responses\Html\GenericHtmlResponse;
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21ResponseParser;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
@@ -38,7 +39,8 @@ class ResponseParserTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported response format.');
 
-        ResponseParser::getInstance($response);
+        $serviceConfigResourceMock = $this->createMock(ServiceConfigResource::class);
+        ResponseParser::getInstance($serviceConfigResourceMock, $response);
     }
 
     public function supportedResponseInstanceProvider(): array
@@ -58,7 +60,8 @@ class ResponseParserTest extends TestCase
         Response $response,
         string $expectedParser
     ): void {
-        $parser = ResponseParser::getInstance($response);
+        $serviceConfigResourceMock = $this->createMock(ServiceConfigResource::class);
+        $parser = ResponseParser::getInstance($serviceConfigResourceMock, $response);
 
         $this->assertInstanceOf($expectedParser, $parser);
     }

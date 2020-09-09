@@ -20,7 +20,7 @@ class ServiceConfig extends Struct
     /** @var DateTime */
     protected $expireDateTime;
 
-    /** @var array */
+    /** @var array<string,string> */
     protected $blocks;
 
     public function __construct()

@@ -8,6 +8,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
@@ -145,11 +146,17 @@ class Xml21ResponseParser extends ResponseParser
         $categories = explode('_', $params['cat']);
         $category = end($categories);
 
+        if (isset($filters['cat'])) {
+            $filterName = $filters['cat']->getDisplay();
+        } else {
+            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks()['cat'];
+        }
+
         /** @var CategoryInfoMessage $categoryInfoMessage */
         $categoryInfoMessage = QueryInfoMessage::buildInstance(
             QueryInfoMessage::TYPE_CATEGORY,
             null,
-            isset($filters['cat']) ? $filters['cat']->getDisplay() : 'Category',
+            $filterName,
             $category
         );
 
@@ -160,11 +167,17 @@ class Xml21ResponseParser extends ResponseParser
     {
         $filters = array_merge($this->response->getMainFilters(), $this->response->getOtherFilters());
 
+        if (isset($filters['vendor'])) {
+            $filterName = $filters['vendor']->getDisplay();
+        } else {
+            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks()['vendor'];
+        }
+
         /** @var VendorInfoMessage $vendorInfoMessage */
         $vendorInfoMessage = QueryInfoMessage::buildInstance(
             QueryInfoMessage::TYPE_VENDOR,
             null,
-            isset($filters['vendor']) ? $filters['vendor']->getDisplay() : 'Manufacturer',
+            $filterName,
             $params['vendor']
         );
 
@@ -190,7 +203,7 @@ class Xml21ResponseParser extends ResponseParser
 
     public function getFiltersWithSmartSuggestBlocks(
         FiltersExtension $flFilters,
-        array $flBlocks,
+        array $smartSuggestBlocks,
         array $params
     ): FiltersExtension {
         $hasCategoryFilter = $hasVendorFilter = false;
@@ -204,32 +217,52 @@ class Xml21ResponseParser extends ResponseParser
             }
         }
 
-        if (!$hasVendorFilter || !$hasCategoryFilter) {
-            if (!$hasCategoryFilter && array_key_exists('cat', $flBlocks) && $this->isFilterSet($params, 'cat')) {
-                $display = $flBlocks['cat'];
-                $value = $params['cat'];
+        $allowCatHiddenFilter = !$hasCategoryFilter && array_key_exists('cat', $smartSuggestBlocks);
+        $allowVendorHiddenFilter = !$hasVendorFilter && array_key_exists('vendor', $smartSuggestBlocks);
 
-                $customFilter = new CategoryFilter('cat', $display);
-                $filterValue = new FilterValue($value, $value, 'cat');
-                $customFilter->addValue($filterValue);
-                $customFilter->setHidden(true);
-
+        if ($allowCatHiddenFilter && $this->isFilterSet($params, 'cat')) {
+            $customFilter = $this->buildHiddenFilter($smartSuggestBlocks, $params, 'cat');
+            if ($customFilter) {
                 $flFilters->addFilter($customFilter);
             }
+        }
 
-            if (!$hasVendorFilter && array_key_exists('vendor', $flBlocks) && $this->isFilterSet($params, 'vendor')) {
-                $display = $flBlocks['vendor'];
-                $value = $params['vendor'];
-
-                $customFilter = new VendorImageFilter('vendor', $display);
-                $filterValue = new FilterValue($value, $value, 'vendor');
-                $customFilter->addValue($filterValue);
-                $customFilter->setHidden(true);
-
+        if ($allowVendorHiddenFilter && $this->isFilterSet($params, 'vendor')) {
+            $customFilter = $this->buildHiddenFilter($smartSuggestBlocks, $params, 'vendor');
+            if ($customFilter) {
                 $flFilters->addFilter($customFilter);
             }
         }
 
         return $flFilters;
+    }
+
+    /**
+     * @param string[] $flBlocks
+     * @param string[] $params
+     *
+     * @return BaseFilter
+     */
+    private function buildHiddenFilter(array $flBlocks, array $params, string $type): ?BaseFilter
+    {
+        $display = $flBlocks[$type];
+        $value = $params[$type];
+
+        switch ($type) {
+            case 'cat':
+                $customFilter = new CategoryFilter($type, $display);
+                break;
+            case 'vendor':
+                $customFilter = new VendorImageFilter($type, $display);
+                break;
+            default:
+                return null;
+        }
+
+        $filterValue = new FilterValue($value, $value, $type);
+        $customFilter->addValue($filterValue);
+        $customFilter->setHidden(true);
+
+        return $customFilter;
     }
 }

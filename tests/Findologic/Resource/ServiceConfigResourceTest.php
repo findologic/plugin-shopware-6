@@ -56,9 +56,8 @@ class ServiceConfigResourceTest extends TestCase
         array $directIntegration,
         bool $isStagingShop
     ): void {
-        $shopkey = $this->getShopkey();
         $cacheKey = 'finsearch_serviceconfig';
-
+        $shopkey = $this->getShopkey();
         $serviceConfig = new ServiceConfig();
         $serviceConfig->assign(['directIntegration' => $directIntegration, 'isStagingShop' => $isStagingShop]);
 
@@ -105,18 +104,17 @@ class ServiceConfigResourceTest extends TestCase
      * @dataProvider findologicConfigDataProvider
      *
      * @param bool[] $directIntegration
-     * @param string[] $flBlocks
+     * @param string[] $smartSuggestBlocks
      *
      * @throws InvalidArgumentException
      */
     public function testConfigIsFetchedFromFindologic(
         array $directIntegration,
         bool $isStagingShop,
-        array $flBlocks
+        array $smartSuggestBlocks
     ): void {
-        $shopkey = $this->getShopkey();
         $cacheKey = 'finsearch_serviceconfig';
-
+        $directIntegrationConfig = $directIntegration ? 'Direct Integration' : 'API';
         $serviceConfig = new ServiceConfig();
         $serviceConfig->assign($this->getConfig());
 
@@ -152,12 +150,13 @@ class ServiceConfigResourceTest extends TestCase
             $client
         );
 
+        $shopkey = $this->getShopkey();
         $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
         $this->assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
-        $this->assertArrayHasKey('cat', $flBlocks);
-        $this->assertArrayHasKey('vendor', $flBlocks);
-        $this->assertSame('Kategorie', $flBlocks['cat']);
-        $this->assertSame('Hersteller', $flBlocks['vendor']);
+        $this->assertArrayHasKey('cat', $smartSuggestBlocks);
+        $this->assertArrayHasKey('vendor', $smartSuggestBlocks);
+        $this->assertSame('Kategorie', $smartSuggestBlocks['cat']);
+        $this->assertSame('Hersteller', $smartSuggestBlocks['vendor']);
     }
 
     public function expiredTimeProvider(): array
@@ -185,7 +184,7 @@ class ServiceConfigResourceTest extends TestCase
     {
         $expiredDateTime = new DateTime();
         $expiredDateTime = $expiredDateTime->modify($expiredTime);
-
+        $directIntegrationConfig = $directIntegration ? 'Direct Integration' : 'API';
         $shopkey = $this->getShopkey();
         $cacheKey = 'finsearch_serviceconfig';
 

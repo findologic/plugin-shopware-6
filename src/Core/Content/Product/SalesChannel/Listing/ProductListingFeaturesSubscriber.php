@@ -203,7 +203,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             } else {
                 $response = $this->navigationRequestHandler->doRequest($event, self::RESULT_LIMIT_FILTER);
             }
-            $responseParser = ResponseParser::getInstance($response);
+            $responseParser = ResponseParser::getInstance($this->serviceConfigResource, $response);
             $flFilters = $responseParser->getFiltersExtension();
             $flFilters = $responseParser->getFiltersWithSmartSuggestBlocks(
                 $flFilters,
