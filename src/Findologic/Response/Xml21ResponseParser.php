@@ -149,7 +149,7 @@ class Xml21ResponseParser extends ResponseParser
         if (isset($filters['cat'])) {
             $filterName = $filters['cat']->getDisplay();
         } else {
-            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks()['cat'];
+            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks($this->shopkey)['cat'];
         }
 
         /** @var CategoryInfoMessage $categoryInfoMessage */
@@ -170,7 +170,7 @@ class Xml21ResponseParser extends ResponseParser
         if (isset($filters['vendor'])) {
             $filterName = $filters['vendor']->getDisplay();
         } else {
-            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks()['vendor'];
+            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks($this->shopkey)['vendor'];
         }
 
         /** @var VendorInfoMessage $vendorInfoMessage */

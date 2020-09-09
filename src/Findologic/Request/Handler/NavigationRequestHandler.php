@@ -65,7 +65,11 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             /** @var Xml21Response $response */
             $response = $this->doRequest($event);
 
-            $responseParser = ResponseParser::getInstance($this->serviceConfigResource, $response);
+            $responseParser = ResponseParser::getInstance(
+                $this->serviceConfigResource,
+                $response,
+                $this->config->getShopkey()
+            );
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
 

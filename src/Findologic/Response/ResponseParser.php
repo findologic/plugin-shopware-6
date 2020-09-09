@@ -36,17 +36,26 @@ abstract class ResponseParser
      */
     protected $config;
 
-    public function __construct(ServiceConfigResource $serviceConfigResource, Response $response)
+    /**
+     * @var string|null
+     */
+    protected $shopkey;
+
+    public function __construct(ServiceConfigResource $serviceConfigResource, Response $response, ?string $shopkey)
     {
         $this->response = $response;
         $this->serviceConfigResource = $serviceConfigResource;
+        $this->shopkey = $shopkey;
     }
 
-    public static function getInstance(ServiceConfigResource $serviceConfigResource, Response $response): ResponseParser
-    {
+    public static function getInstance(
+        ServiceConfigResource $serviceConfigResource,
+        Response $response,
+        ?string $shopkey
+    ): ResponseParser {
         switch (true) {
             case $response instanceof Xml21Response:
-                return new Xml21ResponseParser($serviceConfigResource, $response);
+                return new Xml21ResponseParser($serviceConfigResource, $response, $shopkey);
             default:
                 throw new InvalidArgumentException('Unsupported response format.');
         }

@@ -130,7 +130,7 @@ class Xml21ResponseParserTest extends TestCase
      */
     public function testProductIdsAreParsedAsExpected(Response $response, array $expectedIds): void
     {
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response);
+        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
 
         $this->assertEquals($expectedIds, $responseParser->getProductIds());
     }
@@ -138,7 +138,7 @@ class Xml21ResponseParserTest extends TestCase
     public function testSmartDidYouMeanExtensionIsReturned(): void
     {
         $response = new Xml21Response($this->getMockResponse());
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response);
+        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
 
         $request = new Request();
         $extension = $responseParser->getSmartDidYouMeanExtension($request);
@@ -152,7 +152,7 @@ class Xml21ResponseParserTest extends TestCase
     public function testLandingPageUriIsReturned(): void
     {
         $response = new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithLandingPage.xml'));
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response);
+        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
 
         $this->assertEquals('https://blubbergurken.io', $responseParser->getLandingPageExtension()->getLink());
     }
@@ -160,7 +160,7 @@ class Xml21ResponseParserTest extends TestCase
     public function testNoLandingPageIsReturnedIfResponseDoesNotHaveALandingPage(): void
     {
         $response = new Xml21Response($this->getMockResponse());
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response);
+        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
 
         $this->assertNull($responseParser->getLandingPageExtension());
     }
@@ -168,7 +168,7 @@ class Xml21ResponseParserTest extends TestCase
     public function testPromotionExtensionIsReturned(): void
     {
         $response = new Xml21Response($this->getMockResponse());
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response);
+        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
         $promotion = $responseParser->getPromotionExtension();
 
         $this->assertInstanceOf(Promotion::class, $promotion);
@@ -281,7 +281,7 @@ class Xml21ResponseParserTest extends TestCase
      */
     public function testFiltersAreReturnedAsExpected(Xml21Response $response, array $expectedFilters): void
     {
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response);
+        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
 
         $filtersExtension = $responseParser->getFiltersExtension();
         $filters = $filtersExtension->getFilters();
@@ -360,7 +360,7 @@ class Xml21ResponseParserTest extends TestCase
             $this->getMockResponse(sprintf('XMLResponse/%s', $demoResponse))
         );
 
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response);
+        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
 
         $filtersExtension = $responseParser->getFiltersExtension();
         $filtersExtension = $responseParser->getFiltersWithSmartSuggestBlocks(
@@ -421,7 +421,7 @@ class Xml21ResponseParserTest extends TestCase
         int $expectedOffset,
         int $expectedLimit
     ): void {
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response);
+        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
 
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
 
@@ -499,7 +499,7 @@ class Xml21ResponseParserTest extends TestCase
         string $expectedInstance,
         array $expectedVars
     ): void {
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response);
+        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
 
         $contextMock = $this->getMockBuilder(Context::class)
             ->onlyMethods(['getExtension'])
