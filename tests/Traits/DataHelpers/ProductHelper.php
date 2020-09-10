@@ -16,7 +16,7 @@ use Shopware\Core\Framework\Uuid\Uuid;
 
 trait ProductHelper
 {
-    public function createTestProduct(array $data = []): ?ProductEntity
+    public function createTestProduct(array $data = [], bool $withVariant = false): ?ProductEntity
     {
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();
@@ -29,7 +29,7 @@ trait ProductHelper
 
         $productData = [
             'id' => $id,
-            'productNumber' => Uuid::randomHex(),
+            'productNumber' => 'FINDOLOGIC001',
             'stock' => 10,
             'ean' => Uuid::randomHex(),
             'description' => 'FINDOLOGIC Description',
@@ -100,17 +100,33 @@ trait ProductHelper
             ],
         ];
 
-        $productData = array_merge($productData, $data);
+        $productInfo = [];
+        // Main product data
+        $productInfo[] = array_merge($productData, $data);
 
-        $container->get('product.repository')->upsert([$productData], $context);
+        if ($withVariant) {
+            // Standard variant data
+            $variantData = [
+                'id' => Uuid::randomHex(),
+                'productNumber' => 'FINDOLOGIC001.1',
+                'name' => 'FINDOLOGIC VARIANT',
+                'stock' => 10,
+                'active' => true,
+                'parentId' => $id,
+                'tax' => ['name' => '9%', 'taxRate' => 9],
+                'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
+            ];
+
+            $productInfo[] = array_merge($variantData, $data);
+        }
+
+        $container->get('product.repository')->upsert($productInfo, $context);
 
         try {
             $criteria = new Criteria([$id]);
             $criteria = Utils::addProductAssociations($criteria);
 
-            $productEntity = $container->get('product.repository')->search($criteria, $context)->get($id);
-
-            return $productEntity;
+            return $container->get('product.repository')->search($criteria, $context)->get($id);
         } catch (InconsistentCriteriaIdsException $e) {
             return null;
         }

@@ -523,4 +523,14 @@ class Xml21ResponseParserTest extends TestCase
         $this->assertInstanceOf($expectedInstance, $queryInfoMessage);
         $this->assertEquals($expectedVars, $queryInfoMessage->getVars());
     }
+
+    public function testRatingFilterIsNotShownIfMinAndMaxAreTheSame(): void
+    {
+        $responseParser = new Xml21ResponseParser(
+            new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithRatingFilterMinMaxAreSame.xml'))
+        );
+        $filtersExtension = $responseParser->getFiltersExtension();
+
+        $this->assertEmpty($filtersExtension->getFilters());
+    }
 }

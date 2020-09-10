@@ -70,7 +70,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider productNameProvider
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
@@ -165,7 +164,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider categorySeoProvider
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
@@ -233,7 +231,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider priceProvider
-     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
@@ -322,6 +319,34 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
         $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
         $this->assertEquals($properties, $findologicProduct->getProperties());
+    }
+
+    public function testProductWithCustomFields(): void
+    {
+        $data['customFields'] = ['findologic_size' => 100, 'findologic_color' => 'yellow'];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $productFields = $productEntity->getCustomFields();
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+        foreach ($attributes as $attribute) {
+            $this->assertEquals(current($attribute->getValues()), $productFields[$attribute->getKey()]);
+        }
     }
 
     public function ratingProvider(): array
@@ -467,6 +492,74 @@ class FindologicProductTest extends TestCase
             $attribute,
             sprintf('Attribute "%s" not present in attributes.', $expectedName)
         );
+    }
+
+    public function testNonFilterablePropertiesAreExportedAsPropertiesInsteadOfAttributes(): void
+    {
+        if (Utils::versionLowerThan('6.2.0')) {
+            $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
+        }
+
+        $expectedPropertyName = 'blub';
+        $expectedPropertyValue = 'some value';
+
+        $productEntity = $this->createTestProduct([
+            'properties' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'name' => $expectedPropertyValue,
+                    'group' => [
+                        'id' => Uuid::randomHex(),
+                        'name' => $expectedPropertyName,
+                        'filterable' => false
+                    ],
+                ]
+            ]
+        ]);
+
+        $criteria = new Criteria([$productEntity->getId()]);
+        $criteria = Utils::addProductAssociations($criteria);
+
+        $productEntity = $this->getContainer()
+            ->get('product.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->get($productEntity->getId());
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $foundAttributes = array_filter(
+            $findologicProduct->getAttributes(),
+            function (Attribute $attribute) use ($expectedPropertyName) {
+                return $attribute->getKey() === $expectedPropertyName;
+            }
+        );
+
+        $this->assertEmpty($foundAttributes);
+
+        $foundProperties = array_filter(
+            $findologicProduct->getProperties(),
+            function (Property $property) use ($expectedPropertyName) {
+                return $property->getKey() === $expectedPropertyName;
+            }
+        );
+
+        /** @var Property $property */
+        $property = reset($foundProperties);
+        $this->assertEquals($expectedPropertyValue, $property->getAllValues()['']); // '' = Empty usergroup.
     }
 
     /**
@@ -649,6 +742,23 @@ class FindologicProductTest extends TestCase
 
         $rating = $productEntity->getRatingAverage() ?? 0.0;
         $attributes[] = new Attribute('rating', [$rating]);
+
+        // Custom fields as attributes
+        $productFields = $productEntity->getCustomFields();
+        if ($productFields) {
+            foreach ($productFields as $key => $value) {
+                $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+            }
+        }
+
+        foreach ($productEntity->getChildren() as $variant) {
+            $productFields = $variant->getCustomFields();
+            if ($productFields) {
+                foreach ($productFields as $key => $value) {
+                    $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+                }
+            }
+        }
 
         return $attributes;
     }
