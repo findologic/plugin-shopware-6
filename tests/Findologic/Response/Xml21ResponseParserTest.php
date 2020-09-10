@@ -34,7 +34,6 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\KernelTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Request;
 
 class Xml21ResponseParserTest extends TestCase
@@ -526,8 +525,13 @@ class Xml21ResponseParserTest extends TestCase
 
     public function testRatingFilterIsNotShownIfMinAndMaxAreTheSame(): void
     {
+        $response = new Xml21Response(
+            $this->getMockResponse('XMLResponse/demoResponseWithRatingFilterMinMaxAreSame.xml')
+        );
         $responseParser = new Xml21ResponseParser(
-            new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithRatingFilterMinMaxAreSame.xml'))
+            $this->serviceConfigResource,
+            $response,
+            $this->getShopkey()
         );
         $filtersExtension = $responseParser->getFiltersExtension();
 
