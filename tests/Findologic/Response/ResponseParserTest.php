@@ -41,8 +41,7 @@ class ResponseParserTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported response format.');
 
-        $serviceConfigResourceMock = $this->createMock(ServiceConfigResource::class);
-        ResponseParser::getInstance($serviceConfigResourceMock, $response, $this->getShopkey());
+        ResponseParser::getInstance($response);
     }
 
     public function supportedResponseInstanceProvider(): array
@@ -62,8 +61,7 @@ class ResponseParserTest extends TestCase
         Response $response,
         string $expectedParser
     ): void {
-        $serviceConfigResourceMock = $this->createMock(ServiceConfigResource::class);
-        $parser = ResponseParser::getInstance($serviceConfigResourceMock, $response, $this->getShopkey());
+        $parser = ResponseParser::getInstance($response);
 
         $this->assertInstanceOf($expectedParser, $parser);
     }

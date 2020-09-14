@@ -80,7 +80,7 @@ class ServiceConfigResource
     {
         $config = $this->cache->getItem(self::CACHE_KEY)->get();
         if ($config !== null) {
-            return unserialize($config);
+            return unserialize($config, [ServiceConfig::class]);
         }
 
         return null;

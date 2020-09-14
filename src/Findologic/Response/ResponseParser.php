@@ -27,7 +27,7 @@ abstract class ResponseParser
     protected $response;
 
     /**
-     * @var ServiceConfigResource
+     * @var ServiceConfigResource|null
      */
     protected $serviceConfigResource;
 
@@ -36,26 +36,24 @@ abstract class ResponseParser
      */
     protected $config;
 
-    /**
-     * @var string|null
-     */
-    protected $shopkey;
-
-    public function __construct(ServiceConfigResource $serviceConfigResource, Response $response, ?string $shopkey)
-    {
+    public function __construct(
+        Response $response,
+        ?ServiceConfigResource $serviceConfigResource = null,
+        ?Config $config = null
+    ) {
         $this->response = $response;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->shopkey = $shopkey;
+        $this->config = $config;
     }
 
     public static function getInstance(
-        ServiceConfigResource $serviceConfigResource,
         Response $response,
-        ?string $shopkey
+        ?ServiceConfigResource $serviceConfigResource = null,
+        ?Config $config = null
     ): ResponseParser {
         switch (true) {
             case $response instanceof Xml21Response:
-                return new Xml21ResponseParser($serviceConfigResource, $response, $shopkey);
+                return new Xml21ResponseParser($response, $serviceConfigResource, $config);
             default:
                 throw new InvalidArgumentException('Unsupported response format.');
         }
@@ -75,6 +73,10 @@ abstract class ResponseParser
 
     abstract public function getQueryInfoMessage(ShopwareEvent $event): QueryInfoMessage;
 
+    /**
+     * It must be possible to select a category or vendor filter from the Smart Suggest even if that filter is disabled
+     * in the filter configuration. For that we need to manually add the inactive filter from the smart suggest blocks.
+     */
     abstract public function getFiltersWithSmartSuggestBlocks(
         FiltersExtension $flFilters,
         array $smartSuggestBlocks,

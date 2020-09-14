@@ -149,7 +149,7 @@ class Xml21ResponseParser extends ResponseParser
         if (isset($filters['cat'])) {
             $filterName = $filters['cat']->getDisplay();
         } else {
-            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks($this->shopkey)['cat'];
+            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks($this->config->getShopkey())['cat'];
         }
 
         /** @var CategoryInfoMessage $categoryInfoMessage */
@@ -238,28 +238,29 @@ class Xml21ResponseParser extends ResponseParser
     }
 
     /**
-     * @param string[] $flBlocks
+     * @param string[] $smartSuggestBlocks
      * @param string[] $params
+     * @param string $filterName
      *
-     * @return BaseFilter
+     * @return BaseFilter|null
      */
-    private function buildHiddenFilter(array $flBlocks, array $params, string $type): ?BaseFilter
+    private function buildHiddenFilter(array $smartSuggestBlocks, array $params, string $filterName): ?BaseFilter
     {
-        $display = $flBlocks[$type];
-        $value = $params[$type];
+        $display = $smartSuggestBlocks[$filterName];
+        $value = $params[$filterName];
 
-        switch ($type) {
+        switch ($filterName) {
             case 'cat':
-                $customFilter = new CategoryFilter($type, $display);
+                $customFilter = new CategoryFilter($filterName, $display);
                 break;
             case 'vendor':
-                $customFilter = new VendorImageFilter($type, $display);
+                $customFilter = new VendorImageFilter($filterName, $display);
                 break;
             default:
                 return null;
         }
 
-        $filterValue = new FilterValue($value, $value, $type);
+        $filterValue = new FilterValue($value, $value, $filterName);
         $customFilter->addValue($filterValue);
         $customFilter->setHidden(true);
 

@@ -129,7 +129,7 @@ class Xml21ResponseParserTest extends TestCase
      */
     public function testProductIdsAreParsedAsExpected(Response $response, array $expectedIds): void
     {
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
+        $responseParser = new Xml21ResponseParser($response);
 
         $this->assertEquals($expectedIds, $responseParser->getProductIds());
     }
@@ -137,7 +137,7 @@ class Xml21ResponseParserTest extends TestCase
     public function testSmartDidYouMeanExtensionIsReturned(): void
     {
         $response = new Xml21Response($this->getMockResponse());
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
+        $responseParser = new Xml21ResponseParser($response);
 
         $request = new Request();
         $extension = $responseParser->getSmartDidYouMeanExtension($request);
@@ -151,7 +151,7 @@ class Xml21ResponseParserTest extends TestCase
     public function testLandingPageUriIsReturned(): void
     {
         $response = new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithLandingPage.xml'));
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
+        $responseParser = new Xml21ResponseParser($response);
 
         $this->assertEquals('https://blubbergurken.io', $responseParser->getLandingPageExtension()->getLink());
     }
@@ -159,7 +159,7 @@ class Xml21ResponseParserTest extends TestCase
     public function testNoLandingPageIsReturnedIfResponseDoesNotHaveALandingPage(): void
     {
         $response = new Xml21Response($this->getMockResponse());
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
+        $responseParser = new Xml21ResponseParser($response);
 
         $this->assertNull($responseParser->getLandingPageExtension());
     }
@@ -167,7 +167,7 @@ class Xml21ResponseParserTest extends TestCase
     public function testPromotionExtensionIsReturned(): void
     {
         $response = new Xml21Response($this->getMockResponse());
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
+        $responseParser = new Xml21ResponseParser($response);
         $promotion = $responseParser->getPromotionExtension();
 
         $this->assertInstanceOf(Promotion::class, $promotion);
@@ -280,7 +280,7 @@ class Xml21ResponseParserTest extends TestCase
      */
     public function testFiltersAreReturnedAsExpected(Xml21Response $response, array $expectedFilters): void
     {
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
+        $responseParser = new Xml21ResponseParser($response);
 
         $filtersExtension = $responseParser->getFiltersExtension();
         $filters = $filtersExtension->getFilters();
@@ -306,7 +306,6 @@ class Xml21ResponseParserTest extends TestCase
                 'expectedFilterName' => 'Category',
                 'expectedInstanceOf' => CategoryFilter::class,
                 'isHidden' => true
-
             ],
             'No smart suggest blocks are sent and category filter is available in response' => [
                 'type' => 'cat',
@@ -315,7 +314,6 @@ class Xml21ResponseParserTest extends TestCase
                 'expectedFilterName' => 'Kategorie',
                 'expectedInstanceOf' => CategoryFilter::class,
                 'isHidden' => false
-
             ],
             'No smart suggest blocks are sent and vendor filter is not in response' => [
                 'type' => 'vendor',
@@ -359,7 +357,7 @@ class Xml21ResponseParserTest extends TestCase
             $this->getMockResponse(sprintf('XMLResponse/%s', $demoResponse))
         );
 
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
+        $responseParser = new Xml21ResponseParser($response);
 
         $filtersExtension = $responseParser->getFiltersExtension();
         $filtersExtension = $responseParser->getFiltersWithSmartSuggestBlocks(
@@ -420,7 +418,7 @@ class Xml21ResponseParserTest extends TestCase
         int $expectedOffset,
         int $expectedLimit
     ): void {
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
+        $responseParser = new Xml21ResponseParser($response);
 
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
 
@@ -498,7 +496,7 @@ class Xml21ResponseParserTest extends TestCase
         string $expectedInstance,
         array $expectedVars
     ): void {
-        $responseParser = new Xml21ResponseParser($this->serviceConfigResource, $response, $this->getShopkey());
+        $responseParser = new Xml21ResponseParser($response);
 
         $contextMock = $this->getMockBuilder(Context::class)
             ->onlyMethods(['getExtension'])
@@ -528,11 +526,7 @@ class Xml21ResponseParserTest extends TestCase
         $response = new Xml21Response(
             $this->getMockResponse('XMLResponse/demoResponseWithRatingFilterMinMaxAreSame.xml')
         );
-        $responseParser = new Xml21ResponseParser(
-            $this->serviceConfigResource,
-            $response,
-            $this->getShopkey()
-        );
+        $responseParser = new Xml21ResponseParser($response);
         $filtersExtension = $responseParser->getFiltersExtension();
 
         $this->assertEmpty($filtersExtension->getFilters());
