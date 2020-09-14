@@ -138,6 +138,11 @@
                             :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
                             @change="props.updateCurrentValue"
                     >
+
+                        <template #selection-label-property="{ item }">
+                            {{ $tc(item.name) }}
+                        </template>
+
                     </sw-multi-select>
                 </template>
             </sw-inherit-wrapper>

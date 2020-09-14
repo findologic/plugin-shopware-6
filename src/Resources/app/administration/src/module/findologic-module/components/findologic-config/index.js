@@ -153,22 +153,25 @@ Component.register('findologic-config', {
          * @public
          */
         getCategories() {
-            const criteria = new Criteria(1, 500);
-
-            if (this.term) {
-                criteria.setTerm(this.term);
-            }
 
             this.isLoading = true;
+            const criteria = new Criteria(1, 25);
+
+            if (this.term) {
+                criteria.addFilter(Criteria.contains('name', this.term))
+            }
+
             const categoryRepository = this.repositoryFactory.create('category');
 
             const translatedCategories = [];
             categoryRepository.search(criteria, Shopware.Context.api).then((items) => {
+                this.term = null
                 this.total = items.total;
                 items.forEach((category) => {
                     translatedCategories.push({
                         value: category.id,
-                        label: category.translated.breadcrumb.join(' > ')
+                        name: category.name,
+                        label: category.translated.breadcrumb.join('>')
                     });
                 });
 
