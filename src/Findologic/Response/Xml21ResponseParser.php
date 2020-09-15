@@ -170,7 +170,7 @@ class Xml21ResponseParser extends ResponseParser
         if (isset($filters['vendor'])) {
             $filterName = $filters['vendor']->getDisplay();
         } else {
-            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks($this->shopkey)['vendor'];
+            $filterName = $this->serviceConfigResource->getSmartSuggestBlocks($this->config->getShopkey())['vendor'];
         }
 
         /** @var VendorInfoMessage $vendorInfoMessage */
