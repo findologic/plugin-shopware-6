@@ -146,9 +146,10 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ],
             'includes' => null
         ];
-        if (Utils::versionLowerThan('6.3.0.0')) {
+        if (Utils::versionLowerThan('6.3')) {
             $expectedAssign['source'] = null;
         }
+        $expectedAssign['title'] = null;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $criteriaMock->expects($this->any())->method('assign')->with($expectedAssign);
@@ -621,6 +622,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->containerMock = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
+        $this->containerMock->method('getParameter')->with('kernel.shopware_version')->willReturn('6.3');
+
         $this->configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
         $this->apiConfigMock = $this->getMockBuilder(ApiConfig::class)->disableOriginalConstructor()->getMock();
         $this->apiClientMock = $this->getMockBuilder(ApiClient::class)->disableOriginalConstructor()->getMock();
@@ -675,6 +678,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->method('getInt')
             ->willReturn(1);
         $queryMock->expects($this->any())->method('get')->willReturn('');
+        $queryMock->expects($this->any())->method('all')->willReturn([]);
 
         $requestMock->query = $queryMock;
 

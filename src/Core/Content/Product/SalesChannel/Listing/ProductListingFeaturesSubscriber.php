@@ -203,8 +203,19 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             } else {
                 $response = $this->navigationRequestHandler->doRequest($event, self::RESULT_LIMIT_FILTER);
             }
-            $responseParser = ResponseParser::getInstance($response);
-            $event->getCriteria()->addExtension('flFilters', $responseParser->getFiltersExtension());
+            $responseParser = ResponseParser::getInstance(
+                $response,
+                $this->serviceConfigResource,
+                $this->config
+            );
+            $filters = $responseParser->getFiltersExtension();
+            $filtersWithSmartSuggestBlocks = $responseParser->getFiltersWithSmartSuggestBlocks(
+                $filters,
+                $this->serviceConfigResource->getSmartSuggestBlocks($this->config->getShopkey()),
+                $event->getRequest()->query->all()
+            );
+
+            $event->getCriteria()->addExtension('flFilters', $filtersWithSmartSuggestBlocks);
         } catch (ServiceNotAliveException $e) {
             /** @var FindologicEnabled $flEnabled */
             $flEnabled = $event->getContext()->getExtension('flEnabled');

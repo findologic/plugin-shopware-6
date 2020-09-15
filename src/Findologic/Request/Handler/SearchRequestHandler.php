@@ -34,7 +34,11 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         try {
             /** @var Xml21Response $response */
             $response = $this->doRequest($event);
-            $responseParser = ResponseParser::getInstance($response);
+            $responseParser = ResponseParser::getInstance(
+                $response,
+                $this->serviceConfigResource,
+                $this->config
+            );
         } catch (ServiceNotAliveException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
 
