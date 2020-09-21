@@ -95,7 +95,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     {
         $this->config = $this->getConfiguration($request);
         $this->salesChannelContext = $this->getSalesChannelContext($context);
-        $this->productService = new ProductService($this->container, $this->salesChannelContext);
+        $this->productService = $this->getProductService();
 
         $productEntities = $this->getProductsFromShop();
         $customerGroups = $this->container->get('customer_group.repository')
@@ -164,6 +164,22 @@ class ExportController extends AbstractController implements EventSubscriberInte
         }
 
         return $config;
+    }
+
+    private function getProductService(): ProductService
+    {
+        if ($this->container->has('fin_search.product_service')) {
+            $productService = $this->container->get('fin_search.product_service');
+        } else {
+            $productService = new ProductService($this->container, $this->salesChannelContext);
+            $this->container->set('fin_search.product_service', $productService);
+        }
+
+        if (!$this->productService->getSalesChannelContext()) {
+            $this->productService->setSalesChannelContext($this->salesChannelContext);
+        }
+
+        return $productService;
     }
 
     /**
@@ -278,7 +294,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $this->addErrorMessage($message);
     }
 
-    private function addErrorMessage(string $message): void
+    private function addErrorMessage(string $message, ?string $id = null): void
     {
         // Only add error messages in case a product id has been supplied.
         if (!$this->config->getProductId()) {

@@ -18,14 +18,26 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class ProductService
 {
+    /** @var ContainerInterface */
     private $container;
 
+    /** @var SalesChannelContext|null */
     private $salesChannelContext;
 
-    public function __construct(ContainerInterface $container, SalesChannelContext $salesChannelContext)
+    public function __construct(ContainerInterface $container, ?SalesChannelContext $salesChannelContext = null)
     {
         $this->container = $container;
         $this->salesChannelContext = $salesChannelContext;
+    }
+
+    public function setSalesChannelContext(SalesChannelContext $salesChannelContext): void
+    {
+        $this->salesChannelContext = $salesChannelContext;
+    }
+
+    public function getSalesChannelContext(): ?SalesChannelContext
+    {
+        return $this->salesChannelContext;
     }
 
     public function getTotalProductCount(): int
