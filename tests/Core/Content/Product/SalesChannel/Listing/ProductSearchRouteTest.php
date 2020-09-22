@@ -30,7 +30,7 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->eventDispatcherMock,
             $this->productRepositoryMock,
             $this->productDefinitionMock,
-            $this->criteriaBuilderMock,
+            $this->criteriaBuilderMock
         );
     }
 
