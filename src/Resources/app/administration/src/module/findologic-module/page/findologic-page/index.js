@@ -109,21 +109,23 @@ Component.register('findologic-page', {
          * @public
          */
         onSave() {
-            // If shopkey is not according to schema, we do not call the validate service.
-            if (!this.shopkeyAvailable || !this.isValidShopkey) {
+            // If shopkey available but not according to schema, we do not call the validate service.
+            // If shopkey is valid, we will check if it is registered, otherwise we allow empty shopkey to be saved
+            if (this.shopkeyAvailable && !this.isValidShopkey) {
                 this._setErrorStates(true);
                 return;
+            } else if(this.shopkeyAvailable) {
+                this._validateShopkeyFromService().then((status) => {
+                    this.isRegisteredShopkey = status;
+                }).then(() => {
+                    if (!this.isRegisteredShopkey) {
+                        this._setErrorStates(true);
+                    }
+
+                });
             }
 
-            this._validateShopkeyFromService().then((status) => {
-                this.isRegisteredShopkey = status;
-            }).then(() => {
-                if (!this.isRegisteredShopkey) {
-                    this._setErrorStates(true);
-                    return;
-                }
-                this._save();
-            });
+            this._save();
         },
 
         /**
