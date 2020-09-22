@@ -48,7 +48,8 @@ before_script:
   - cd ${PLUGIN_DIR}/${PLUGIN_NAME}
 
 script:
-  - composer test
+  # TODO: Re-enable the deprecation helper in SW-497.
+  - SYMFONY_DEPRECATIONS_HELPER=disabled composer test
 
 addons:
   hosts:
