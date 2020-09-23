@@ -2,6 +2,18 @@
 
 {% set listingColumns = 'col-sm-6 col-lg-4 col-xl-3' %}
 
+{#
+ Override product/filter columns in case the theme differs. Columns will only be used in case the filter position
+ is configured on the left side.
+#}
+{% if filterColumns is not defined %}
+    {% set filterColumns = 'col-lg-4 col-xl-3' %}
+{% endif %}
+
+{% if productColumns is not defined %}
+    {% set productColumns = 'col-lg-8 col-xl-9' %}
+{% endif %}
+
 {% block element_product_listing_wrapper %}
     {% if not context.context.extensions.flEnabled.enabled %}
         {{ parent() }}
@@ -11,9 +23,9 @@
             {% set isInSidebar = true %}
         {% endif %}
 
-        <div class="cms-element-sidebar-filter">
+        <div class="cms-element-sidebar-filter{% if isInSidebar %} row{% endif %}">
             <div id="filter-panel-wrapper"
-                 class="filter-panel-wrapper"
+                 class="filter-panel-wrapper{% if isInSidebar %} {{ filterColumns }}{% endif %}"
                  data-offcanvas-filter-content="true">
                 {% sw_include '@Storefront/storefront/component/listing/filter-panel.html.twig' with {
                     listing: page.listing,
@@ -27,6 +39,7 @@
                     url('widgets.search.pagelet', { search: page.searchTerm ? page.searchTerm : ' ' })
             %}
 
+            {% if isInSidebar %}<div class="{{ productColumns }}">{% endif %}
             {% sw_include '@Storefront/storefront/component/product/listing.html.twig' with {
                 searchResult: page.listing,
                 dataUrl: dataUrl,
@@ -36,6 +49,7 @@
                 boxLayout: 'minimal',
                 displayMode: ''
             } %}
+            {% if isInSidebar %}</div>{% endif %}
         </div>
     {% endif %}
 {% endblock %}

@@ -1,7 +1,7 @@
-import template from './findologic-config.html.twig'
+import template from './findologic-config.html.twig';
 
-const { Component, Mixin } = Shopware
-const { Criteria } = Shopware.Data
+const { Component, Mixin } = Shopware;
+const { Criteria } = Shopware.Data;
 
 Component.register('findologic-config', {
   template,
@@ -55,20 +55,18 @@ Component.register('findologic-config', {
   data () {
     return {
       isLoading: false
-    }
+    };
   },
 
   methods: {
-    checkTextFieldInheritance (value) {
+    isString (value) {
       if (typeof value !== 'string') {
-        return true
+        return true;
       }
-
-      return value.length <= 0
     },
 
-    checkBoolFieldInheritance (value) {
-      return typeof value !== 'boolean'
+    isBoolean (value) {
+      return typeof value !== 'boolean';
     },
 
     /**
@@ -76,18 +74,18 @@ Component.register('findologic-config', {
      */
     openSalesChannelUrl () {
       if (this.selectedSalesChannelId !== null) {
-        const criteria = new Criteria()
+        const criteria = new Criteria();
         criteria.addFilter(
           Criteria.equals('id', this.selectedSalesChannelId)
-        )
-        criteria.setLimit(1)
-        criteria.addAssociation('domains')
+        );
+        criteria.setLimit(1);
+        criteria.addAssociation('domains');
         this.salesChannelRepository.search(criteria, Shopware.Context.api).then((searchresult) => {
-          const domain = searchresult.first().domains.first()
-          this._openStagingUrl(domain)
-        })
+          const domain = searchresult.first().domains.first();
+          this._openStagingUrl(domain);
+        });
       } else {
-        this._openDefaultUrl()
+        this._openDefaultUrl();
       }
     },
 
@@ -95,8 +93,8 @@ Component.register('findologic-config', {
      * @private
      */
     _openDefaultUrl () {
-      const url = `${window.location.origin}?findologic=on`
-      window.open(url, '_blank')
+      const url = `${window.location.origin}?findologic=on`;
+      window.open(url, '_blank');
     },
 
     /**
@@ -105,10 +103,10 @@ Component.register('findologic-config', {
      */
     _openStagingUrl (domain) {
       if (domain) {
-        const url = `${domain.url}?findologic=on`
-        window.open(url, '_blank')
+        const url = `${domain.url}?findologic=on`;
+        window.open(url, '_blank');
       } else {
-        this._openDefaultUrl()
+        this._openDefaultUrl();
       }
     }
   },
@@ -119,19 +117,19 @@ Component.register('findologic-config', {
      * @returns {boolean}
      */
     showTestButton () {
-      return this.isActive && this.shopkeyAvailable && this.isValidShopkey && this.isStagingShop
+      return this.isActive && this.shopkeyAvailable && this.isValidShopkey && this.isStagingShop;
     },
 
     salesChannelRepository () {
-      return this.repositoryFactory.create('sales_channel')
+      return this.repositoryFactory.create('sales_channel');
     },
 
     showAPIConfig () {
-      return this.$refs.integrationType === undefined || this.$refs.integrationType === 'API'
+      return this.$refs.integrationType === undefined || this.$refs.integrationType === 'API';
     },
 
     showDIConfig () {
-      return this.$refs.integrationType === undefined || this.$refs.integrationType === 'Direct Integration'
+      return this.$refs.integrationType === undefined || this.$refs.integrationType === 'Direct Integration';
     },
 
     filterPositionOptions () {
@@ -143,8 +141,8 @@ Component.register('findologic-config', {
         {
           label: this.$tc('findologic.settingForm.config.filterPosition.left.label'),
           value: 'left'
-        }]
+        }];
     }
 
   }
-})
+});

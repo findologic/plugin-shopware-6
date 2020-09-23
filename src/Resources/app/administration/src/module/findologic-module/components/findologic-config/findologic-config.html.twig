@@ -16,7 +16,7 @@
                                 <sw-inherit-wrapper
                                         v-model="actualConfigData['FinSearch.config.shopkey']"
                                         :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.shopkey']"
-                                        :customInheritationCheckFunction="checkTextFieldInheritance"
+                                        :customInheritationCheckFunction="isString"
                                 >
                                     <template #content="props">
                                         <sw-text-field
@@ -38,7 +38,7 @@
                                 <sw-inherit-wrapper
                                         v-model="actualConfigData['FinSearch.config.active']"
                                         :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.active']"
-                                        :customInheritationCheckFunction="checkBoolFieldInheritance"
+                                        :customInheritationCheckFunction="isBoolean"
                                 >
                                     <template #content="props">
                                         <sw-switch-field
@@ -59,7 +59,7 @@
                                 <sw-inherit-wrapper
                                         v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
                                         :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.activeOnCategoryPages']"
-                                        :customInheritationCheckFunction="checkBoolFieldInheritance"
+                                        :customInheritationCheckFunction="isBoolean"
                                 >
                                     <template #content="props">
                                         <sw-switch-field
