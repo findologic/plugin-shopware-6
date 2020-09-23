@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
 
+use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use GuzzleHttp\Exception\ClientException;
@@ -15,7 +16,6 @@ class Config extends Struct
 {
     public const DEFAULT_SEARCH_RESULT_CONTAINER = 'fl-result';
     public const DEFAULT_NAVIGATION_RESULT_CONTAINER = 'fl-navigation-result';
-    public const DEFAULT_FILTER_POSITION = 'top';
 
     /** @var SystemConfigService */
     private $systemConfigService;
@@ -138,7 +138,7 @@ class Config extends Struct
         $this->filterPosition = $this->getConfig(
             $salesChannelId,
             'FinSearch.config.filterPosition',
-            self::DEFAULT_FILTER_POSITION
+            FilterPosition::TOP
         );
 
         $this->initializeReadonlyConfig($salesChannelId);
