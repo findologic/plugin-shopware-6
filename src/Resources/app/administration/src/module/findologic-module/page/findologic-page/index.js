@@ -113,18 +113,21 @@ Component.register('findologic-page', {
       // If shopkey is valid, we will check if it is registered, otherwise we allow empty shopkey to be saved
       if (this.shopkeyAvailable && !this.isValidShopkey) {
         this._setErrorStates(true);
-        return;
       } else if (this.shopkeyAvailable) {
-        this._validateShopkeyFromService().then((status) => {
-          this.isRegisteredShopkey = status;
-        }).then(() => {
-          if (!this.isRegisteredShopkey) {
-            this._setErrorStates(true);
-          }
-        });
+        this._validateShopkeyFromService()
+          .then((status) => {
+            this.isRegisteredShopkey = status;
+          })
+          .then(() => {
+            if (!this.isRegisteredShopkey) {
+              this._setErrorStates(true);
+            } else {
+              this._save();
+            }
+          });
+      } else {
+        this._save();
       }
-
-      this._save();
     },
 
     /**

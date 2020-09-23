@@ -125,11 +125,11 @@ Component.register('findologic-config', {
     },
 
     showAPIConfig () {
-      return this.$refs.integrationType === undefined || this.$refs.integrationType === 'API';
+      return this.actualConfigData['FinSearch.config.integrationType'] === undefined || this.actualConfigData['FinSearch.config.integrationType'] === 'API';
     },
 
     showDIConfig () {
-      return this.$refs.integrationType === undefined || this.$refs.integrationType === 'Direct Integration';
+      return this.actualConfigData['FinSearch.config.integrationType'] === undefined || this.actualConfigData['FinSearch.config.integrationType'] === 'Direct Integration';
     },
 
     filterPositionOptions () {
