@@ -2,7 +2,9 @@
 
 {% block component_filter_panel_items_container %}
 
-    {% if not (slot.data.listing.criteria.extensions.flFilters.filters) %}
+    {% if page.listing.criteria.extensions.flFilters.filters %}
+        {% set filters = page.listing.criteria.extensions.flFilters.filters %}
+    {% elseif not (slot.data.listing.criteria.extensions.flFilters.filters) %}
         {% set filters = page.searchResult.criteria.extensions.flFilters.filters %}
     {% else %}
         {% set filters = slot.data.listing.criteria.extensions.flFilters.filters %}
@@ -14,10 +16,11 @@
             {% for filter in filters %}
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\LabelTextFilter") or
                     filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\SelectDropdownFilter") %}
-                    {% sw_include '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' with {
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-multi-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
+                        hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
                         pluginSelector: 'filter-property-select'
@@ -33,9 +36,14 @@
                 {% set filterRangeActiveMaxLabel = 'detail.priceDataInfoUntil'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RangeSliderFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-range.html.twig' with {
+                        price: {
+                            min: filter.min,
+                            max: filter.max
+                        },
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
+                        hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
                         minKey: filter.minKey,
@@ -51,6 +59,7 @@
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
+                        hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: filter.displayType,
                         pluginSelector: 'filter-property-select'
@@ -62,9 +71,22 @@
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
+                        hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
                         pluginSelector: 'filter-category-select'
+                    } %}
+                {% endif %}
+
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RatingFilter") %}
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating.html.twig' with {
+                        elements: filter.values,
+                        maxPoints: filter.maxPoints,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        hidden: filter.hidden,
+                        displayName: filter.name,
+                        pluginSelector: 'filter-rating'
                     } %}
                 {% endif %}
 

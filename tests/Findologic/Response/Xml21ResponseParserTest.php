@@ -6,10 +6,12 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Response;
 
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\SelectDropdownFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
@@ -22,6 +24,7 @@ use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\DefaultInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -29,13 +32,29 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\Test\TestCaseBase\KernelTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
 class Xml21ResponseParserTest extends TestCase
 {
+    use KernelTestBehaviour;
     use MockResponseHelper;
     use ExtensionHelper;
+    use ConfigHelper;
+
+    /**
+     * @var ServiceConfigResource|MockObject
+     */
+    private $serviceConfigResource;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
+        $this->serviceConfigResource = $this->createMock(ServiceConfigResource::class);
+    }
 
     public function productIdsResponseProvider(): array
     {
@@ -162,9 +181,9 @@ class Xml21ResponseParserTest extends TestCase
         $expectedCategoryFilter->addValue(
             (new CategoryFilterValue('Buch', 'Buch'))
                 ->setFrequency(5)
-            ->addValue(
-                (new CategoryFilterValue('Beste Bücher', 'Beste Bücher'))
-            )
+                ->addValue(
+                    (new CategoryFilterValue('Beste Bücher', 'Beste Bücher'))
+                )
         );
 
         $vendor = 'vendor';
@@ -195,6 +214,13 @@ class Xml21ResponseParserTest extends TestCase
         $expectedPriceFilter->addValue(new FilterValue('0.39 - 13.4', '0.39 - 13.4', $price));
         $expectedPriceFilter->addValue(new FilterValue('13.45 - 25.99', '13.45 - 25.99', $price));
         $expectedPriceFilter->addValue(new FilterValue('26 - 40.3', '26 - 40.3', $price));
+        $expectedPriceFilter->setMin(0.39);
+        $expectedPriceFilter->setMax(40.3);
+
+        $expectedRatingFilter = new RatingFilter('rating', 'Rating');
+        $expectedRatingFilter->setMaxPoints(5.0);
+        $expectedRatingFilter->addValue(new FilterValue('0.0', '0.0'));
+        $expectedRatingFilter->addValue(new FilterValue('5.0', '5.0'));
 
         $color = 'Farbe';
         $expectedColorFilter = new ColorPickerFilter($color, 'Farbe');
@@ -230,7 +256,8 @@ class Xml21ResponseParserTest extends TestCase
                     $expectedVendorFilter,
                     $expectedPriceFilter,
                     $expectedColorFilter,
-                    $expectedSelectDropdownFilter
+                    $expectedSelectDropdownFilter,
+                    $expectedRatingFilter
                 ]
             ],
             'response without results' => [
@@ -259,6 +286,95 @@ class Xml21ResponseParserTest extends TestCase
         $filters = $filtersExtension->getFilters();
 
         $this->assertEquals($expectedFilters, $filters);
+    }
+
+    public function smartSuggestBlocksProvider()
+    {
+        return [
+            'No smart suggest blocks are sent and category filter is not in response' => [
+                'type' => 'cat',
+                'demoResponse' => 'demoResponseWithoutCategoryFilter.xml',
+                'flBlocks' => [],
+                'expectedFilterName' => null,
+                'expectedInstanceOf' => CategoryFilter::class,
+                'isHidden' => null
+            ],
+            'Smart suggest blocks are sent and category filter is not in response' => [
+                'type' => 'cat',
+                'demoResponse' => 'demoResponseWithoutCategoryFilter.xml',
+                'flBlocks' => ['cat' => 'Category'],
+                'expectedFilterName' => 'Category',
+                'expectedInstanceOf' => CategoryFilter::class,
+                'isHidden' => true
+            ],
+            'No smart suggest blocks are sent and category filter is available in response' => [
+                'type' => 'cat',
+                'demoResponse' => 'demoResponseWithCategoryFilter.xml',
+                'flBlocks' => [],
+                'expectedFilterName' => 'Kategorie',
+                'expectedInstanceOf' => CategoryFilter::class,
+                'isHidden' => false
+            ],
+            'No smart suggest blocks are sent and vendor filter is not in response' => [
+                'type' => 'vendor',
+                'demoResponse' => 'demoResponseWithoutVendorFilter.xml',
+                'flBlocks' => [],
+                'expectedFilterName' => null,
+                'expectedInstanceOf' => VendorImageFilter::class,
+                'isHidden' => null
+            ],
+            'Smart suggest blocks are sent and vendor filter is not in response' => [
+                'type' => 'vendor',
+                'demoResponse' => 'demoResponseWithoutVendorFilter.xml',
+                'flBlocks' => ['vendor' => 'Manufacturer'],
+                'expectedFilterName' => 'Manufacturer',
+                'expectedInstanceOf' => VendorImageFilter::class,
+                'isHidden' => true
+            ],
+            'No smart suggest blocks are sent and vendor filter is available in response' => [
+                'type' => 'vendor',
+                'demoResponse' => 'demoResponseWithVendorFilter.xml',
+                'flBlocks' => [],
+                'expectedFilterName' => 'Hersteller',
+                'expectedInstanceOf' => VendorImageFilter::class,
+                'isHidden' => false
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider smartSuggestBlocksProvider
+     */
+    public function testHiddenFiltersBasedOnSmartSuggestBlocks(
+        string $type,
+        string $demoResponse,
+        array $smartSuggestBlocks,
+        ?string $expectedFilterName,
+        ?string $expectedInstanceOf,
+        ?bool $isHidden
+    ): void {
+        $response = new Xml21Response(
+            $this->getMockResponse(sprintf('XMLResponse/%s', $demoResponse))
+        );
+
+        $responseParser = new Xml21ResponseParser($response);
+
+        $filtersExtension = $responseParser->getFiltersExtension();
+        $filtersExtension = $responseParser->getFiltersWithSmartSuggestBlocks(
+            $filtersExtension,
+            $smartSuggestBlocks,
+            [$type => 'Some Value']
+        );
+
+        $filters = $filtersExtension->getFilters();
+        $filter = end($filters);
+        if ($expectedFilterName === null) {
+            $this->assertNotInstanceOf($expectedInstanceOf, $filter);
+        } else {
+            $this->assertInstanceOf($expectedInstanceOf, $filter);
+            $this->assertSame($expectedFilterName, $filter->getName());
+            $this->assertSame($isHidden, $filter->isHidden());
+        }
     }
 
     public function paginationResponseProvider(): array
@@ -403,5 +519,16 @@ class Xml21ResponseParserTest extends TestCase
         $queryInfoMessage = $responseParser->getQueryInfoMessage($event);
         $this->assertInstanceOf($expectedInstance, $queryInfoMessage);
         $this->assertEquals($expectedVars, $queryInfoMessage->getVars());
+    }
+
+    public function testRatingFilterIsNotShownIfMinAndMaxAreTheSame(): void
+    {
+        $response = new Xml21Response(
+            $this->getMockResponse('XMLResponse/demoResponseWithRatingFilterMinMaxAreSame.xml')
+        );
+        $responseParser = new Xml21ResponseParser($response);
+        $filtersExtension = $responseParser->getFiltersExtension();
+
+        $this->assertEmpty($filtersExtension->getFilters());
     }
 }

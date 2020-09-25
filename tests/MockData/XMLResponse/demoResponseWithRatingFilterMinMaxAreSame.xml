@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<searchResult xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/findologic/xml-response-schema/master/schema.xsd">
+    <servers>
+        <frontend>martell.frontend.findologic.com</frontend>
+        <backend>hydra.backend.findologic.com</backend>
+    </servers>
+    <query>
+        <limit first="0" count="24" />
+        <queryString type="corrected">ps3</queryString>
+        <originalQuery allow-override="1">original query</originalQuery>
+        <didYouMeanQuery>ps4</didYouMeanQuery>
+    </query>
+    <promotion link="https://promotion.com/" image="https://promotion.com/promotion.png" />
+    <results>
+        <count>1808</count>
+    </results>
+    <products>
+        <product id="019111105-37900" relevance="1.3862943649292">
+            <properties>
+                <property name="ordernumber">019111105-37900</property>
+            </properties>
+        </product>
+        <product id="029214085-37860" relevance="1.3862943649292" />
+    </products>
+    <filters>
+        <main>
+            <filter>
+                <name>rating</name>
+                <display>Rating</display>
+                <select>single</select>
+                <type>range-slider</type>
+                <attributes>
+                    <selectedRange>
+                        <min>0.0</min>
+                        <max>0.0</max>
+                    </selectedRange>
+                    <totalRange>
+                        <min>0.0</min>
+                        <max>0.0</max>
+                    </totalRange>
+                    <stepSize>0.1</stepSize>
+                    <unit/>
+                </attributes>
+                <items>
+                    <item>
+                        <name>0.0</name>
+                        <weight>0</weight>
+                    </item>
+                </items>
+            </filter>
+        </main>
+        <other />
+    </filters>
+</searchResult>

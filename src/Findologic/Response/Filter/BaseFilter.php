@@ -8,6 +8,9 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 
 abstract class BaseFilter
 {
+    public const RATING_FILTER_NAME = 'rating';
+    public const CAT_FILTER_NAME = 'cat';
+
     /** @var string|null */
     protected $displayType;
 
@@ -19,6 +22,9 @@ abstract class BaseFilter
 
     /** @var FilterValue[] */
     protected $values;
+
+    /** @var bool */
+    protected $hidden = false;
 
     public function __construct(string $id, string $name, array $values = [])
     {
@@ -45,5 +51,15 @@ abstract class BaseFilter
     public function getValues(): array
     {
         return $this->values;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->hidden;
+    }
+
+    public function setHidden(bool $hidden): void
+    {
+        $this->hidden = $hidden;
     }
 }

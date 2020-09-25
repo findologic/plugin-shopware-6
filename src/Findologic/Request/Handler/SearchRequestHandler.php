@@ -34,7 +34,11 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         try {
             /** @var Xml21Response $response */
             $response = $this->doRequest($event);
-            $responseParser = ResponseParser::getInstance($response);
+            $responseParser = ResponseParser::getInstance(
+                $response,
+                $this->serviceConfigResource,
+                $this->config
+            );
         } catch (ServiceNotAliveException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
 
@@ -95,15 +99,5 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             'flLandingPage',
             $responseParser->getLandingPageExtension()
         );
-    }
-
-    /**
-     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
-     */
-    protected function setPromotionExtension(ShopwareEvent $event, ResponseParser $responseParser): void
-    {
-        if ($promotion = $responseParser->getPromotionExtension()) {
-            $event->getContext()->addExtension('flPromotion', $promotion);
-        }
     }
 }

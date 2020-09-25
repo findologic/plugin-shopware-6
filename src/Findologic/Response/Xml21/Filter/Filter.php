@@ -23,7 +23,6 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValu
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
 use GuzzleHttp\Client;
-use InvalidArgumentException;
 
 abstract class Filter extends BaseFilter
 {
@@ -45,6 +44,10 @@ abstract class Filter extends BaseFilter
             case $filter instanceof ApiSelectDropdownFilter:
                 return static::handleSelectDropdownFilter($filter);
             case $filter instanceof ApiRangeSliderFilter:
+                if ($filter->getName() === BaseFilter::RATING_FILTER_NAME) {
+                    return static::handleRatingFilter($filter);
+                }
+
                 return static::handleRangeSliderFilter($filter);
             case $filter instanceof ApiColorPickerFilter:
                 return static::handleColorPickerFilter($filter, $client);
@@ -53,7 +56,7 @@ abstract class Filter extends BaseFilter
             case $filter instanceof ApiCategoryFilter:
                 return static::handleCategoryFilter($filter);
             default:
-                throw new InvalidArgumentException('The submitted filter is unknown.');
+                throw new \InvalidArgumentException('The submitted filter is unknown.');
         }
     }
 
@@ -92,12 +95,27 @@ abstract class Filter extends BaseFilter
     {
         $customFilter = new RangeSliderFilter($filter->getName(), $filter->getDisplay());
         $unit = $filter->getAttributes()->getUnit();
+
         if ($unit !== null) {
             $customFilter->setUnit($unit);
         }
+
         /** @var RangeSliderItem $item */
         foreach ($filter->getItems() as $item) {
             $customFilter->addValue(new FilterValue($item->getName(), $item->getName(), $filter->getName()));
+        }
+
+        /** @var RangeSliderItem[] $filterItems */
+        $filterItems = array_values($filter->getItems());
+
+        $firstFilterItem = $filterItems[0] ?? null;
+        if ($firstFilterItem && $filterItems[0]->getParameters()) {
+            $customFilter->setMin($filterItems[0]->getParameters()->getMin());
+        }
+
+        $lastFilterItem = end($filterItems) ?? null;
+        if ($lastFilterItem && $lastFilterItem->getParameters()) {
+            $customFilter->setMax($lastFilterItem->getParameters()->getMax());
         }
 
         return $customFilter;
@@ -191,5 +209,26 @@ abstract class Filter extends BaseFilter
 
             $filterValue->addValue($filter);
         }
+    }
+
+    private static function handleRatingFilter(ApiRangeSliderFilter $filter): ?RatingFilter
+    {
+        $totalRange = $filter->getAttributes()->getTotalRange();
+        if ($totalRange->getMin() === $totalRange->getMax()) {
+            return null;
+        }
+
+        $customFilter = new RatingFilter($filter->getName(), $filter->getDisplay());
+        $attributes = $filter->getAttributes();
+        if ($attributes) {
+            $customFilter->setMaxPoints(ceil($totalRange->getMax()));
+        }
+
+        /** @var RangeSliderItem $item */
+        foreach ($filter->getItems() as $item) {
+            $customFilter->addValue(new FilterValue($item->getName(), $item->getName()));
+        }
+
+        return $customFilter;
     }
 }

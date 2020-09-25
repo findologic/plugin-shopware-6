@@ -12,6 +12,12 @@ class RangeSliderFilter extends Filter
     /** @var string */
     private $maxKey;
 
+    /** @var float|null */
+    private $min = null;
+
+    /** @var float|null */
+    private $max = null;
+
     /** @var string */
     private $unit = '€';
 
@@ -42,5 +48,29 @@ class RangeSliderFilter extends Filter
     public function getUnit(): string
     {
         return $this->unit;
+    }
+
+    public function setMin(float $min): self
+    {
+        $this->min = $min;
+
+        return $this;
+    }
+
+    public function getMin(): ?float
+    {
+        return $this->min;
+    }
+
+    public function setMax(float $max): self
+    {
+        $this->max = $max;
+
+        return $this;
+    }
+
+    public function getMax(): ?float
+    {
+        return $this->max;
     }
 }

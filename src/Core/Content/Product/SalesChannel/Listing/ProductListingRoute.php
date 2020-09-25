@@ -76,6 +76,10 @@ class ProductListingRoute extends AbstractProductListingRoute
         Request $request,
         SalesChannelContext $salesChannelContext
     ): ProductListingRouteResponse {
+        if (!Utils::isFindologicEnabled($salesChannelContext)) {
+            return $this->decorated->load($categoryId, $request, $salesChannelContext);
+        }
+
         $criteria = new Criteria();
         $criteria->addFilter(
             new ProductAvailableFilter(
@@ -112,10 +116,6 @@ class ProductListingRoute extends AbstractProductListingRoute
 
     protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
-        if (!Utils::isFindologicEnabled($context)) {
-            return $this->productRepository->search($criteria, $context);
-        }
-
         $this->assignPaginationToCriteria($criteria);
 
         if (empty($criteria->getIds())) {

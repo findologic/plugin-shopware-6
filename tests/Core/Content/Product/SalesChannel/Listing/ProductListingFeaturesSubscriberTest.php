@@ -19,12 +19,14 @@ use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionObject;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Tree\Tree;
+use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Framework\Context;
@@ -118,38 +120,41 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         array $expectedProducts,
         bool $isNavigationRequest
     ): void {
-        $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
+        if (!$isNavigationRequest) {
+            $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
+        } else {
+            $eventMock = $this->setUpNavigationRequestMocks();
+        }
+
+        $expectedAssign = [
+            'sorting' => [],
+            'filters' => [],
+            'postFilters' => [],
+            'aggregations' => [],
+            'queries' => [],
+            'groupFields' => [],
+            'offset' => null,
+            'limit' => null,
+            'totalCountMode' => 0,
+            'associations' => [],
+            'ids' => $expectedProducts,
+            'states' => [],
+            'inherited' => false,
+            'term' => null,
+            'extensions' => [
+                'flPagination' => new Pagination(24, 0, 1808)
+            ],
+            'includes' => null
+        ];
+        if (Utils::versionLowerThan('6.3')) {
+            $expectedAssign['source'] = null;
+        }
+        $expectedAssign['title'] = null;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $criteriaMock->expects($this->any())->method('assign')->with(
-            [
-                'source' => null,
-                'sorting' => [],
-                'filters' => [],
-                'postFilters' => [],
-                'aggregations' => [],
-                'queries' => [],
-                'groupFields' => [],
-                'offset' => null,
-                'limit' => null,
-                'totalCountMode' => 0,
-                'associations' => [],
-                'ids' => $expectedProducts,
-                'states' => [],
-                'inherited' => false,
-                'term' => null,
-                'extensions' => [
-                    'flPagination' => new Pagination(24, 0, 1808)
-                ],
-                'includes' => null
-            ]
-        );
+        $criteriaMock->expects($this->any())->method('assign')->with($expectedAssign);
 
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
-
-        if ($isNavigationRequest) {
-            $this->setUpNavigationRequestMocks();
-        }
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->{$endpoint}($eventMock);
@@ -228,7 +233,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         array $expectedProducts,
         bool $isNavigationRequest
     ): void {
-        $eventMock = $this->setUpSearchRequestMocks();
+        $eventMock = $this->setUpSearchRequestMocks(null, null, false);
 
         $this->apiClientMock->expects($this->any())->method('send')->willThrowException(
             new ServiceNotAliveException('dead: This service is currently unreachable.')
@@ -243,9 +248,24 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->{$endpoint}($eventMock);
     }
 
-    public function testResponseHasPromotion(): void
+    public function promotionRequestProvider()
     {
-        $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
+        return [
+            'Search response has promotion' => ['search' => true, 'endpoint' => 'handleSearchRequest'],
+            'Navigation response has promotion' => ['search' => false, 'endpoint' => 'handleListingRequest'],
+        ];
+    }
+
+    /**
+     * @dataProvider promotionRequestProvider
+     */
+    public function testResponseHasPromotion(bool $isSearch, string $endpoint): void
+    {
+        if ($isSearch) {
+            $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
+        } else {
+            $eventMock = $this->setUpNavigationRequestMocks();
+        }
 
         $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
             ->disableOriginalConstructor()
@@ -265,7 +285,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
-        $subscriber->handleSearchRequest($eventMock);
+        $subscriber->{$endpoint}($eventMock);
     }
 
     public function testResponseHasNoPromotion(): void
@@ -602,6 +622,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->containerMock = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
+        $this->containerMock->method('getParameter')->with('kernel.shopware_version')->willReturn('6.3');
+
         $this->configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
         $this->apiConfigMock = $this->getMockBuilder(ApiConfig::class)->disableOriginalConstructor()->getMock();
         $this->apiClientMock = $this->getMockBuilder(ApiClient::class)->disableOriginalConstructor()->getMock();
@@ -656,6 +678,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->method('getInt')
             ->willReturn(1);
         $queryMock->expects($this->any())->method('get')->willReturn('');
+        $queryMock->expects($this->any())->method('all')->willReturn([]);
 
         $requestMock->query = $queryMock;
 
@@ -721,7 +744,7 @@ XML;
         $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
         $defaultExtensionMap = [
             ['flEnabled', $findologicEnabled],
-            ['flSmartDidYouMean', $smartDidYouMean]
+            ['flSmartDidYouMean', $smartDidYouMean],
         ];
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
@@ -742,7 +765,7 @@ XML;
         return $eventMock;
     }
 
-    private function setUpNavigationRequestMocks(): void
+    private function setUpNavigationRequestMocks(): ProductListingCriteriaEvent
     {
         $headerMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
@@ -758,16 +781,36 @@ XML;
         $this->genericPageLoaderMock->expects($this->any())->method('load')->willReturn($pageMock);
 
         $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
-        $headerMock->expects($this->once())->method('getNavigation')->willReturn($categoryTreeMock);
+        $headerMock->expects($this->any())->method('getNavigation')->willReturn($categoryTreeMock);
 
         $categoryEntityMock = $this->getMockBuilder(CategoryEntity::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $categoryTreeMock->expects($this->once())->method('getActive')->willReturn($categoryEntityMock);
+        $categoryTreeMock->expects($this->any())->method('getActive')->willReturn($categoryEntityMock);
 
-        $categoryEntityMock->expects($this->once())->method('getBreadcrumb')
+        $categoryEntityMock->expects($this->any())->method('getBreadcrumb')
             ->willReturn(['Deutsch', 'Freizeit & Elektro']);
+
+        /** @var ProductListingCriteriaEvent|MockObject $eventMock */
+        $eventMock = $this->getMockBuilder(ProductListingCriteriaEvent::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $request = $this->getDefaultRequestMock();
+        $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
+
+        $findologicEnabled = new FindologicEnabled();
+        $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
+        $defaultExtensionMap = [
+            ['flEnabled', $findologicEnabled],
+            ['flSmartDidYouMean', $smartDidYouMean]
+        ];
+
+        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
+        $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
+
+        return $eventMock;
     }
 
     private function getDefaultSessionMock(): SessionInterface

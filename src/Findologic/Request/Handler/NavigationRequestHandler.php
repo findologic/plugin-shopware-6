@@ -65,7 +65,11 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             /** @var Xml21Response $response */
             $response = $this->doRequest($event);
 
-            $responseParser = ResponseParser::getInstance($response);
+            $responseParser = ResponseParser::getInstance(
+                $response,
+                $this->serviceConfigResource,
+                $this->config
+            );
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
             $this->assignCriteriaToEvent($event, $originalCriteria);
 
@@ -74,6 +78,9 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         /** @var Criteria $criteria */
         $criteria = $event->getCriteria();
+
+        $this->setPromotionExtension($event, $responseParser);
+
         $this->setPagination(
             $criteria,
             $responseParser,

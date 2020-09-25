@@ -25,16 +25,20 @@ use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionCollection;
+use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\Tag\TagEntity;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FindologicProduct extends Struct
 {
@@ -47,8 +51,14 @@ class FindologicProduct extends Struct
     /** @var ContainerInterface */
     protected $container;
 
-    /** @var Context */
+    /**
+     * @deprecated will be removed in 2.0. Use $salesChannelContext->getContext() instead.
+     * @var Context
+     */
     protected $context;
+
+    /** @var SalesChannelContext */
+    protected $salesChannelContext;
 
     /** @var string */
     protected $shopkey;
@@ -92,8 +102,16 @@ class FindologicProduct extends Struct
     /** @var Property[] */
     protected $properties;
 
+    /** @var Attribute[] */
+    protected $customFields = [];
+
     /** @var Item */
     protected $item;
+
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
 
     /**
      * @param CustomerGroupEntity[] $customerGroups
@@ -121,6 +139,9 @@ class FindologicProduct extends Struct
         $this->prices = [];
         $this->attributes = [];
         $this->properties = [];
+        $this->translator = $container->get('translator');
+
+        $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
 
         $this->setName();
         $this->setAttributes();
@@ -169,9 +190,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Attribute[]
+     * @throws AccessEmptyPropertyException
      */
     public function getAttributes(): array
     {
@@ -183,9 +203,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Price[]
+     * @throws AccessEmptyPropertyException
      */
     public function getPrices(): array
     {
@@ -243,9 +262,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Keyword[]
+     * @throws AccessEmptyPropertyException
      */
     public function getKeywords(): array
     {
@@ -262,9 +280,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Image[]
+     * @throws AccessEmptyPropertyException
      */
     public function getImages(): array
     {
@@ -286,9 +303,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Usergroup[]
+     * @throws AccessEmptyPropertyException
      */
     public function getUserGroups(): array
     {
@@ -305,9 +321,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Ordernumber[]
+     * @throws AccessEmptyPropertyException
      */
     public function getOrdernumbers(): array
     {
@@ -324,9 +339,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     *
      * @return Property[]
+     * @throws AccessEmptyPropertyException
      */
     public function getProperties(): array
     {
@@ -362,6 +376,7 @@ class FindologicProduct extends Struct
         $this->setCategoriesAndCatUrls();
         $this->setVendors();
         $this->setAttributeProperties();
+        $this->setCustomFieldAttributes();
         $this->setAdditionalAttributes();
     }
 
@@ -406,40 +421,103 @@ class FindologicProduct extends Struct
     /**
      * @return Attribute[]
      */
-    protected function getAttributeProperties(
-        ProductEntity $productEntity
-    ): array {
+    protected function getAttributeProperties(ProductEntity $productEntity): array
+    {
         $attributes = [];
 
         foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {
             $group = $propertyGroupOptionEntity->getGroup();
-            if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-                $properyGroupAttrib = new Attribute(
-                    Utils::removeSpecialChars($group->getTranslation('name')),
-                    [Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))]
+            // Method getFilterable exists since Shopware 6.2.x.
+            if (method_exists($group, 'getFilterable') && !$group->getFilterable()) {
+                // Non filterable properties should be available in the properties field.
+                $this->properties = array_merge(
+                    $this->properties,
+                    $this->getAttributePropertyAsProperty($propertyGroupOptionEntity)
                 );
 
-                $attributes[] = $properyGroupAttrib;
+                continue;
             }
 
-            foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-                $group = $setting->getOption()->getGroup();
-                $settingOption = $setting->getOption();
+            $attributes = array_merge($attributes, $this->getAttributePropertyAsAttribute($propertyGroupOptionEntity));
+        }
 
-                if (!$group || !$settingOption) {
-                    continue;
-                }
+        return $attributes;
+    }
 
-                $groupName = $group->getTranslation('name');
-                $optionName = $settingOption->getTranslation('name');
-                if ($groupName && $optionName) {
-                    $configAttrib = new Attribute(
-                        Utils::removeSpecialChars($groupName),
-                        [Utils::removeControlCharacters($optionName)]
-                    );
+    /**
+     * @return Property[]
+     */
+    protected function getAttributePropertyAsProperty(
+        PropertyGroupOptionEntity $propertyGroupOptionEntity
+    ): array {
+        $properties = [];
 
-                    $attributes[] = $configAttrib;
-                }
+        $group = $propertyGroupOptionEntity->getGroup();
+        if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
+            $propertyGroupProperty = new Property(Utils::removeSpecialChars($group->getTranslation('name')));
+            $propertyGroupProperty->addValue(
+                Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))
+            );
+
+            $properties[] = $propertyGroupProperty;
+        }
+
+        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
+            $group = $setting->getOption()->getGroup();
+            $settingOption = $setting->getOption();
+
+            if (!$group || !$settingOption) {
+                continue;
+            }
+
+            $groupName = $group->getTranslation('name');
+            $optionName = $settingOption->getTranslation('name');
+            if ($groupName && $optionName) {
+                $configProperty = new Property(Utils::removeSpecialChars($groupName));
+                $configProperty->addValue(Utils::removeControlCharacters($optionName));
+
+                $properties[] = $configProperty;
+            }
+        }
+
+        return $properties;
+    }
+
+    /**
+     * @return Attribute[]
+     */
+    protected function getAttributePropertyAsAttribute(
+        PropertyGroupOptionEntity $propertyGroupOptionEntity
+    ): array {
+        $attributes = [];
+
+        $group = $propertyGroupOptionEntity->getGroup();
+        if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
+            $properyGroupAttrib = new Attribute(
+                Utils::removeSpecialChars($group->getTranslation('name')),
+                [Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))]
+            );
+
+            $attributes[] = $properyGroupAttrib;
+        }
+
+        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
+            $group = $setting->getOption()->getGroup();
+            $settingOption = $setting->getOption();
+
+            if (!$group || !$settingOption) {
+                continue;
+            }
+
+            $groupName = $group->getTranslation('name');
+            $optionName = $settingOption->getTranslation('name');
+            if ($groupName && $optionName) {
+                $configAttrib = new Attribute(
+                    Utils::removeSpecialChars($groupName),
+                    [Utils::removeControlCharacters($optionName)]
+                );
+
+                $attributes[] = $configAttrib;
             }
         }
 
@@ -456,9 +534,14 @@ class FindologicProduct extends Struct
 
     protected function setAdditionalAttributes(): void
     {
-        $this->attributes[] = new Attribute('shipping_free', [$this->product->getShippingFree() ? 1 : 0]);
+        $translationKey = $this->product->getShippingFree() ? 'finSearch.general.yes' : 'finSearch.general.no';
+        $shippingFree = $this->translator->trans($translationKey);
+        $this->attributes[] = new Attribute('shipping_free', [$shippingFree]);
         $rating = $this->product->getRatingAverage() ?? 0.0;
         $this->attributes[] = new Attribute('rating', [$rating]);
+
+        // Add custom fields in the attributes array for export
+        $this->attributes = array_merge($this->attributes, $this->customFields);
     }
 
     protected function setUserGroups(): void
@@ -648,7 +731,7 @@ class FindologicProduct extends Struct
 
     protected function setVariantPrices(): void
     {
-        if (!$this->product->getChildCount()) {
+        if ($this->product->getChildCount() === 0) {
             return;
         }
 
@@ -712,16 +795,21 @@ class FindologicProduct extends Struct
 
     protected function setUrl(): void
     {
-        if (!$this->product->hasExtension('canonicalUrl')) {
+        $salesChannel = $this->salesChannelContext->getSalesChannel();
+
+        $domains = $salesChannel->getDomains();
+        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        if ($domains && $domains->count() > 0 && $seoUrlCollection && $seoUrlCollection->count() > 0) {
+            $baseUrl = $domains->first()->getUrl();
+            $seoPath = $seoUrlCollection->first()->getSeoPathInfo();
+
+            $productUrl = sprintf('%s/%s', $baseUrl, $seoPath);
+        } else {
             $productUrl = $this->router->generate(
                 'frontend.detail.page',
                 ['productId' => $this->product->getId()],
                 RouterInterface::ABSOLUTE_URL
             );
-        } else {
-            /** @var SeoUrlEntity $canonical */
-            $canonical = $this->product->getExtension('canonicalUrl');
-            $productUrl = $canonical->getUrl();
         }
 
         $this->url = $productUrl;
@@ -806,7 +894,10 @@ class FindologicProduct extends Struct
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('payload.productNumber', $this->product->getProductNumber()));
 
-        $orders = $this->container->get('order_line_item.repository')->search($criteria, $this->context);
+        /** @var EntityRepository $orderLineItemRepository */
+        $orderLineItemRepository = $this->container->get('order_line_item.repository');
+        $orders = $orderLineItemRepository->search($criteria, $this->salesChannelContext->getContext());
+
         $this->salesFrequency = $orders->count();
     }
 
@@ -837,5 +928,44 @@ class FindologicProduct extends Struct
         $images->insert(0, $coverImage);
 
         return $images;
+    }
+
+    protected function setCustomFieldAttributes(): void
+    {
+        $this->customFields = array_merge($this->customFields, $this->getCustomFieldProperties($this->product));
+        if ($this->product->getChildCount() === 0) {
+            return;
+        }
+        foreach ($this->product->getChildren() as $productEntity) {
+            $this->customFields = array_merge($this->customFields, $this->getCustomFieldProperties($productEntity));
+        }
+    }
+
+    protected function getCustomFieldProperties(ProductEntity $product): array
+    {
+        $attributes = [];
+
+        $productFields = $product->getCustomFields();
+        if (!$productFields) {
+            return [];
+        }
+
+        foreach ($productFields as $key => $value) {
+            if (is_string($value)) {
+                $value = Utils::cleanString($value);
+            }
+            $customFieldAttribute = new Attribute(Utils::removeSpecialChars($key), [$value]);
+            $attributes[] = $customFieldAttribute;
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @return Attribute[]
+     */
+    public function getCustomFields(): array
+    {
+        return $this->customFields;
     }
 }

@@ -18,23 +18,25 @@
     {% else %}
         {% block page_search_headline_text %}
             <h1 class="search-headline">
+                {% set hits = page.searchResult.criteria.extensions.flPagination.total ? page.searchResult.criteria.extensions.flPagination.total : page.listing.criteria.extensions.flPagination.total %}
+
                 {% if context.context.extensions.flQueryInfoMessage %}
                     {% set queryInfoMessage = context.context.extensions.flQueryInfoMessage %}
                     {% if queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\SearchTermQueryInfoMessage") %}
                         {{ 'finSearch.queryInfoMessage.query'|trans({
                             '%query%': queryInfoMessage.query,
-                            '%hits%': page.searchResult.criteria.extensions.flPagination.total
+                            '%hits%': hits
                         })|sw_sanitize }}
                     {% elseif queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\CategoryInfoMessage") or
                         queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\VendorInfoMessage") %}
                         {{ 'finSearch.queryInfoMessage.filter'|trans({
                             '%filterName%': queryInfoMessage.filterName,
                             '%filterValue%': queryInfoMessage.filterValue,
-                            '%hits%': page.searchResult.criteria.extensions.flPagination.total
+                            '%hits%': hits
                         })|sw_sanitize }}
                     {% else %}
                         {{ 'finSearch.queryInfoMessage.default'|trans({
-                            '%hits%': page.searchResult.criteria.extensions.flPagination.total
+                            '%hits%': hits
                         })|sw_sanitize }}
                     {% endif %}
                 {% else %}
