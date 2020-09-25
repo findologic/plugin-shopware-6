@@ -86,7 +86,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
-     *
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
@@ -300,7 +299,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
         $crossSellingCategories = $this->getConfig(
             'crossSellingCategories',
-            $salesChannelContext->getSalesChannel()->getId()
+            $this->salesChannelContext->getSalesChannel()->getId()
         );
 
         /** @var ProductEntity $productEntity */

@@ -53,13 +53,30 @@ trait ExportHelper
         /** @var PsrContainerInterface|MockObject $containerMock */
         $containerMock = $this->getMockBuilder(PsrContainerInterface::class)
             ->disableOriginalConstructor()
+            ->addMethods(['set'])
+            ->onlyMethods(['get', 'has'])
             ->getMock();
+
+        $salesChannelId = Defaults::SALES_CHANNEL;
+
+        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
+        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var SalesChannelEntity|MockObject $salesChannelMock */
+        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
+        $salesChannelMock->method('getId')->willReturn($salesChannelId);
+        $salesChannelContextMock->method('getContext')->willReturn($this->defaultContext);
+        $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
 
         $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();
         $defaultServicesMap = [
+            ['translator', $this->getContainer()->get('translator')],
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
+            ['fin_search.sales_channel_context', $salesChannelContextMock],
             [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
 
