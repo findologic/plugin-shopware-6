@@ -154,4 +154,18 @@ class Utils
 
         return false;
     }
+
+    public static function isEmpty($value): bool
+    {
+        if (is_numeric($value) || is_object($value)) {
+            return false;
+        }
+
+        if (empty($value) || (is_array($value) && empty(array_filter($value))) ||
+            (!is_array($value) && empty(trim($value)))) {
+            return true;
+        }
+
+        return false;
+    }
 }
