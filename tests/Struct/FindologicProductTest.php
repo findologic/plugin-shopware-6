@@ -17,6 +17,7 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Tests\Constants;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -136,6 +137,7 @@ class FindologicProductTest extends TestCase
             'Category does not have SEO path assigned' => [
                 'data' => [
                     [
+                        'parentId' => Constants::NAVIGATION_CATEGORY,
                         'id' => $categoryId,
                         'name' => 'FINDOLOGIC Category'
                     ]
@@ -145,6 +147,7 @@ class FindologicProductTest extends TestCase
             'Category have a pseudo empty SEO path assigned' => [
                 'data' => [
                     [
+                        'parentId' => Constants::NAVIGATION_CATEGORY,
                         'id' => $categoryId,
                         'name' => 'FINDOLOGIC Category',
                         'seoUrls' => [

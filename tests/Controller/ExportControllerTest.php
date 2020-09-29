@@ -8,6 +8,7 @@ use FINDOLOGIC\FinSearch\Controller\ExportController;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
+use FINDOLOGIC\FinSearch\Tests\Constants;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -189,6 +190,7 @@ class ExportControllerTest extends TestCase
         int $count
     ): void {
         $salesChannelId = Defaults::SALES_CHANNEL;
+        $navigationCategoryId = Constants::NAVIGATION_CATEGORY;
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
@@ -198,6 +200,7 @@ class ExportControllerTest extends TestCase
         /** @var SalesChannelEntity|MockObject $salesChannelMock */
         $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
         $salesChannelMock->method('getId')->willReturn($salesChannelId);
+        $salesChannelMock->method('getNavigationCategoryId')->willReturn($navigationCategoryId);
 
         $salesChannelContextMock->expects($this->exactly(6))
             ->method('getContext')
@@ -328,10 +331,12 @@ class ExportControllerTest extends TestCase
         $count = 20;
 
         $salesChannelId = Defaults::SALES_CHANNEL;
+        $navigationCategoryId = Constants::NAVIGATION_CATEGORY;
 
         /** @var SalesChannelEntity|MockObject $salesChannelMock */
         $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
         $salesChannelMock->method('getId')->willReturn($salesChannelId);
+        $salesChannelMock->method('getNavigationCategoryId')->willReturn($navigationCategoryId);
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
@@ -360,6 +365,8 @@ class ExportControllerTest extends TestCase
         $salesChannelContextMock->expects($this->exactly(2))
             ->method('getContext')
             ->willReturn($this->defaultContext);
+
+        $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
 
         /** @var Request $request */
         $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
@@ -544,6 +551,7 @@ class ExportControllerTest extends TestCase
     public function testExportHeaders(array $expectedHeaders): void
     {
         $salesChannelId = Defaults::SALES_CHANNEL;
+        $navigationCategoryId = Constants::NAVIGATION_CATEGORY;
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
@@ -553,6 +561,7 @@ class ExportControllerTest extends TestCase
         /** @var SalesChannelEntity|MockObject $salesChannelMock */
         $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
         $salesChannelMock->method('getId')->willReturn($salesChannelId);
+        $salesChannelMock->method('getNavigationCategoryId')->willReturn($navigationCategoryId);
 
         $salesChannelContextMock->expects($this->exactly(6))
             ->method('getContext')

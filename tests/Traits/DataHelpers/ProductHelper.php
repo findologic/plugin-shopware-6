@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
+use FINDOLOGIC\FinSearch\Tests\Constants;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
@@ -21,11 +22,26 @@ trait ProductHelper
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();
         $categoryId = Uuid::randomHex();
+        $newCategoryId = Uuid::randomHex();
         $redId = Uuid::randomHex();
         $colorId = Uuid::randomHex();
 
         /** @var ContainerInterface $container */
         $container = $this->getContainer();
+
+        $categoryData = [
+            [
+                'id' => Uuid::randomHex(),
+                'name' => 'FINDOLOGIC Main 2',
+                'children' => [
+                    [
+                        'id' => $newCategoryId,
+                        'name' => 'FINDOLOIGC Sub'
+                    ]
+                ]
+            ]
+        ];
+        $container->get('category.repository')->upsert($categoryData, $context );
 
         $productData = [
             'id' => $id,
@@ -43,6 +59,7 @@ trait ProductHelper
             'tax' => ['name' => '9%', 'taxRate' => 9],
             'categories' => [
                 [
+                    'parentId' => Constants::NAVIGATION_CATEGORY,
                     'id' => $categoryId,
                     'name' => 'FINDOLOGIC Category',
                     'seoUrls' => [
@@ -54,6 +71,11 @@ trait ProductHelper
                         ]
                     ]
                 ],
+                [
+                    'parentId' => $newCategoryId,
+                    'id' => Uuid::randomHex(),
+                    'name' => 'FINDOLOGIC Sub of Sub'
+                ]
             ],
             'seoUrls' => [
                 [
