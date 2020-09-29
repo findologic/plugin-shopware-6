@@ -157,12 +157,19 @@ class Utils
 
     public static function isEmpty($value): bool
     {
-        if (is_numeric($value) || is_object($value)) {
+        if (is_numeric($value) || is_object($value) || is_bool($value)) {
             return false;
         }
 
-        if (empty($value) || (is_array($value) && empty(array_filter($value))) ||
-            (!is_array($value) && empty(trim($value)))) {
+        if (empty($value)) {
+            return true;
+        }
+
+        if (is_array($value) && empty(array_filter($value))) {
+            return true;
+        }
+
+        if (is_string($value) && empty(trim($value))) {
             return true;
         }
 

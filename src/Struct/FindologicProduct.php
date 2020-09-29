@@ -841,12 +841,12 @@ class FindologicProduct extends Struct
             }
         }
 
-        if (!empty($catUrls)) {
+        if (!Utils::isEmpty($catUrls)) {
             $catUrlAttribute->setValues(array_unique($catUrls));
             $this->attributes[] = $catUrlAttribute;
         }
 
-        if (!empty($categories)) {
+        if (!Utils::isEmpty($categories)) {
             $categoryAttribute->setValues(array_unique($categories));
             $this->attributes[] = $categoryAttribute;
         }
@@ -877,6 +877,10 @@ class FindologicProduct extends Struct
         foreach ($variant->getPrice() as $item) {
             foreach ($this->customerGroups as $customerGroup) {
                 $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
+                if (!Utils::isEmpty($userGroupHash)) {
+                    continue;
+                }
+
                 $price = new Price();
                 if ($customerGroup->getDisplayGross()) {
                     $price->setValue($item->getGross(), $userGroupHash);
@@ -901,7 +905,7 @@ class FindologicProduct extends Struct
     protected function setProductPrices(): void
     {
         $prices = $this->getPricesFromProduct($this->product);
-        if (empty($prices)) {
+        if (Utils::isEmpty($prices)) {
             throw new ProductHasNoPricesException();
         }
 
@@ -992,10 +996,16 @@ class FindologicProduct extends Struct
         }
 
         foreach ($productFields as $key => $value) {
-            if (is_string($value)) {
-                $value = Utils::cleanString($value);
-            }
             if (!Utils::isEmpty($value)) {
+                if (is_string($value)) {
+                    $value = Utils::cleanString($value);
+                }
+
+                if (is_bool($value)) {
+                    $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
+                    $value = $this->translator->trans($translationKey);
+                }
+
                 $customFieldAttribute = new Attribute(Utils::removeSpecialChars($key), [$value]);
                 $attributes[] = $customFieldAttribute;
             }
