@@ -112,7 +112,7 @@ composer require shopware/platform:x.x.x.x-dev
 
 Delete cache
 ```
-rm -R var/cache/*
+./psh.phar cache
 ```
 
 Execute install script
