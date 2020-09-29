@@ -670,6 +670,8 @@ class FindologicProduct extends Struct
             throw new ProductHasNoCategoriesException();
         }
 
+        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
         /** @var Attribute $categoryAttribute */
         $categoryAttribute = new Attribute('cat');
 
@@ -682,6 +684,10 @@ class FindologicProduct extends Struct
         /** @var CategoryEntity $categoryEntity */
         foreach ($this->product->getCategories() as $categoryEntity) {
             if (!$categoryEntity->getActive()) {
+                continue;
+            }
+
+            if (!strpos($categoryEntity->getPath(), $navigationCategoryId)) {
                 continue;
             }
 
