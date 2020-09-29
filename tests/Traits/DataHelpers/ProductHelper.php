@@ -41,7 +41,7 @@ trait ProductHelper
                 ]
             ]
         ];
-        $container->get('category.repository')->upsert($categoryData, $context );
+        $container->get('category.repository')->upsert($categoryData, $context);
 
         $productData = [
             'id' => $id,
