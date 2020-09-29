@@ -74,4 +74,21 @@ class FilterHandlerTest extends TestCase
         $this->assertArrayHasKey($filterName, $result['attrib']);
         $this->assertSame($expectedValue, current($result['attrib'][$filterName]));
     }
+
+    public function testHandleFindologicSearchParams()
+    {
+        $filterHandler = new FilterHandler();
+        $request = new Request([
+            'search' => '',
+            'attrib' => [
+                'vendor' => ['shopware'],
+                'cat' => ['Test_Test Sub']
+            ]
+        ]);
+
+        $actualUrl = $filterHandler->handleFindologicSearchParams($request);
+        $expectedUrl = '?search=&vendor=shopware&cat=Test_Test%20Sub';
+
+        $this->assertEquals($expectedUrl, $actualUrl);
+    }
 }
