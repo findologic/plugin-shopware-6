@@ -10,6 +10,7 @@
 1. [Development](#development)
    1. [Running tests locally](#running-tests-locally)
 1. [Deployment and Release](#deployment-and-release)
+1. [Test Shopware release candidates](#test-shopware-release-candidates)
 
 ## Installation
 
@@ -96,3 +97,25 @@ Before starting the deployment make sure that a release is already created.
  required checkboxes.
 1. Once the release is available require an *automatic code review*.
 1. Notify everyone at Basecamp that the new release is available.
+
+## Test Shopware release candidates
+
+Access the application container
+```
+./psh.phar docker:ssh
+```
+
+Use the branch for the next release
+```
+composer require shopware/platform:x.x.x.x-dev
+```
+
+Delete cache
+```
+rm -R var/cache/*
+```
+
+Execute install script
+```
+./psh.phar install
+```
