@@ -56,6 +56,7 @@ class Utils
             'seoUrls',
             'categories',
             'categories.seoUrls',
+            'categories.parents',
             'translations',
             'tags',
             'media',
