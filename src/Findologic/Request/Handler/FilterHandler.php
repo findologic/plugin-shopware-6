@@ -90,8 +90,7 @@ class FilterHandler
         $params = array_merge($queryParams, $mappedParams);
 
         return sprintf(
-            '%s?%s',
-            $request->getBasePath(),
+            '?%s',
             http_build_query($params, '', '&', PHP_QUERY_RFC3986)
         );
     }
