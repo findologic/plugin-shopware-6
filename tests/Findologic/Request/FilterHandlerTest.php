@@ -75,7 +75,8 @@ class FilterHandlerTest extends TestCase
         $this->assertSame($expectedValue, current($result['attrib'][$filterName]));
     }
 
-    public function testHandleFindologicSearchParams() {
+    public function testHandleFindologicSearchParams()
+    {
         $filterHandler = new FilterHandler();
         $request = new Request([
             'search' => '',
