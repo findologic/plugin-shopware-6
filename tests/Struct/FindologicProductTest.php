@@ -224,7 +224,7 @@ class FindologicProductTest extends TestCase
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-        $this->assertSame('/Findologic-Category', current($attribute->getValues()));
+        $this->assertContains('/Findologic-Category', $attribute->getValues());
     }
 
     public function priceProvider(): array

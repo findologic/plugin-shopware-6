@@ -42,7 +42,7 @@ trait ProductHelper
                 'children' => [
                     [
                         'id' => $newCategoryId,
-                        'name' => 'FINDOLOIGC Sub'
+                        'name' => 'FINDOLOGIC Sub'
                     ]
                 ]
             ]
