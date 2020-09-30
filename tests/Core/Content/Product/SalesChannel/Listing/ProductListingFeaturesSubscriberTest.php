@@ -10,6 +10,9 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+// phpcs:disable
+use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware631\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as OldProductListingFeaturesSubscriber;
+// phpcs:enable
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
@@ -29,9 +32,12 @@ use Shopware\Core\Content\Category\Tree\Tree;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
+use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
+use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoader;
@@ -606,6 +612,17 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->productListingSortingRegistry = $this->getMockBuilder(ProductListingSortingRegistry::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        // Sorting is handles via database since Shopware 6.3.2.
+        if (!Utils::versionLowerThan('6.3.2')) {
+            $sorting = new ProductSortingEntity();
+            $sorting->setKey('score');
+            $sorting->setFields(['score' => ['field' => '_score', 'order' => 'asc']]);
+            $sorting->setUniqueIdentifier('score');
+            $this->productListingSortingRegistry->expects($this->any())
+                ->method('getProductSortingEntities')
+                ->willReturn(new ProductSortingCollection([$sorting]));
+        }
         $this->navigationRequestFactoryMock = $this->getMockBuilder(NavigationRequestFactory::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -629,22 +646,43 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->apiClientMock = $this->getMockBuilder(ApiClient::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function getDefaultProductListingFeaturesSubscriber(): ProductListingFeaturesSubscriber
+    /**
+     * @return OldProductListingFeaturesSubscriber|ProductListingFeaturesSubscriber
+     */
+    private function getDefaultProductListingFeaturesSubscriber()
     {
-        return new ProductListingFeaturesSubscriber(
-            $this->connectionMock,
-            $this->entityRepositoryMock,
-            $this->productListingSortingRegistry,
-            $this->navigationRequestFactoryMock,
-            $this->searchRequestFactoryMock,
-            $this->systemConfigServiceMock,
-            $this->serviceConfigResourceMock,
-            $this->genericPageLoaderMock,
-            $this->containerMock,
-            $this->configMock,
-            $this->apiConfigMock,
-            $this->apiClientMock
-        );
+        if (Utils::versionLowerThan('6.3.2')) {
+            return new OldProductListingFeaturesSubscriber(
+                $this->connectionMock,
+                $this->entityRepositoryMock,
+                $this->productListingSortingRegistry,
+                $this->navigationRequestFactoryMock,
+                $this->searchRequestFactoryMock,
+                $this->systemConfigServiceMock,
+                $this->serviceConfigResourceMock,
+                $this->genericPageLoaderMock,
+                $this->containerMock,
+                $this->configMock,
+                $this->apiConfigMock,
+                $this->apiClientMock
+            );
+        } else {
+            return new ProductListingFeaturesSubscriber(
+                $this->connectionMock,
+                $this->entityRepositoryMock,
+                $this->entityRepositoryMock,
+                $this->productListingSortingRegistry,
+                $this->navigationRequestFactoryMock,
+                $this->searchRequestFactoryMock,
+                $this->systemConfigServiceMock,
+                $this->serviceConfigResourceMock,
+                $this->genericPageLoaderMock,
+                $this->containerMock,
+                $this->configMock,
+                $this->apiConfigMock,
+                $this->apiClientMock
+            );
+        }
     }
 
     private function getRawResponse(string $file = 'demo.xml'): SimpleXMLElement
@@ -680,7 +718,10 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $queryMock->expects($this->any())->method('get')->willReturn('');
         $queryMock->expects($this->any())->method('all')->willReturn([]);
 
+        $requestMock->expects($this->any())->method('get')->willReturn('score');
+
         $requestMock->query = $queryMock;
+        $requestMock->request = $queryMock;
 
         return $requestMock;
     }
@@ -721,6 +762,8 @@ XML;
         ?Request $request = null,
         bool $withSmartDidYouMean = true
     ): ProductSearchCriteriaEvent {
+        $this->setUpCategoryRepositoryMock();
+
         $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
         if ($response === null) {
             $response = $this->getDefaultResponse();
@@ -763,6 +806,35 @@ XML;
         $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         return $eventMock;
+    }
+
+    /**
+     * @return EntityRepository|MockObject
+     */
+    private function setUpCategoryRepositoryMock(): EntityRepository
+    {
+        $categoryMock = $this->getMockBuilder(CategoryEntity::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $categoryCollectionMock = $this->getMockBuilder(EntitySearchResult::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $entityRepoMock = $this->getMockBuilder(EntityRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $entityRepoMock->expects($this->any())->method('search')->willReturn($categoryCollectionMock);
+        $categoryCollectionMock->expects($this->any())->method('get')->willReturn($categoryMock);
+
+        $this->containerMock->expects($this->any())->method('get')
+            ->willReturnCallback(function (string $name) use ($entityRepoMock) {
+                if ($name === 'category.repository') {
+                    return $entityRepoMock;
+                }
+
+                return null;
+            });
+
+        return $entityRepoMock;
     }
 
     private function setUpNavigationRequestMocks(): ProductListingCriteriaEvent
