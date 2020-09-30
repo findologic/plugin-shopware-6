@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware631\Core\Content\Product\SalesChannel\Listing;
 
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\Api\Client as ApiClient;
@@ -74,7 +74,6 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     public function __construct(
         Connection $connection,
         EntityRepositoryInterface $optionRepository,
-        EntityRepositoryInterface $productSortingRepository,
         ProductListingSortingRegistry $sortingRegistry,
         NavigationRequestFactory $navigationRequestFactory,
         SearchRequestFactory $searchRequestFactory,
@@ -85,7 +84,8 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         ?Config $config = null,
         ?ApiConfig $apiConfig = null,
         ?ApiClient $apiClient = null
-    ) {
+    )
+    {
         // TODO: Check how we can improve the high amount of constructor arguments.
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
@@ -114,7 +114,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $this->sortingRegistry = $sortingRegistry;
         $this->navigationRequestFactory = $navigationRequestFactory;
         $this->searchRequestFactory = $searchRequestFactory;
-        parent::__construct($connection, $optionRepository, $productSortingRepository, $systemConfigService, $sortingRegistry);
+        parent::__construct($connection, $optionRepository, $sortingRegistry);
     }
 
     public function handleResult(ProductListingResultEvent $event): void

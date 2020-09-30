@@ -18,12 +18,14 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 class FinSearch extends Plugin
 {
+    public const COMPATIBILITY_PATH = '/Resources/config/compatibility';
+
     public function build(ContainerBuilder $container): void
     {
         // For maintaining compatibility with Shopware 6.1.x we load relevant services due to several
         // breaking changes introduced in Shopware 6.2
         // @link https://github.com/shopware/platform/blob/master/UPGRADE-6.2.md
-        $this->loadServiceXml($container, $this->getServiceXml());
+        $this->loadServiceXml($container, $this->getCompatibilityLayerServicesFilePath());
 
         parent::build($container);
     }
@@ -50,24 +52,25 @@ class FinSearch extends Plugin
         parent::uninstall($uninstallContext);
     }
 
-    private function getServiceXml(): string
+    private function getCompatibilityLayerServicesFilePath(): string
     {
         if (Utils::versionLowerThan('6.2')) {
-            $file = 'sw61_services';
+            return self::COMPATIBILITY_PATH .  '/shopware61';
+        } elseif (Utils::versionLowerThan('6.3.2')) {
+            return self::COMPATIBILITY_PATH . '/shopware631';
         } else {
-            $file = 'services';
+            return self::COMPATIBILITY_PATH . '/latest';
         }
-
-        return $file;
     }
 
-    private function loadServiceXml($container, string $file): void
+    private function loadServiceXml($container, string $filePath): void
     {
         $loader = new XmlFileLoader(
             $container,
-            new FileLocator($this->getPath() . '/Resources/config/services')
+            new FileLocator($this->getPath() . $filePath)
         );
-        $loader->load(sprintf('%s.xml', $file));
+
+        $loader->load('services.xml');
     }
 }
 
