@@ -197,7 +197,7 @@ class FindologicProductTest extends TestCase
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-        $this->assertSame(sprintf('/navigation/%s', $categoryId), current($attribute->getValues()));
+        $this->assertContains(sprintf('/navigation/%s', $categoryId), $attribute->getValues());
     }
 
     /**
@@ -709,7 +709,8 @@ class FindologicProductTest extends TestCase
      */
     private function getAttributes(ProductEntity $productEntity): array
     {
-        $catUrl = '/Findologic-Category';
+        $catUrl1 = '/Findologic-Category';
+        $catUrl2 = '/FINDOLOGIC-Category/';
         $defaultCatUrl = '';
 
         foreach ($productEntity->getCategories() as $category) {
@@ -719,10 +720,12 @@ class FindologicProductTest extends TestCase
         }
 
         $attributes = [];
-        $catUrlAttribute = new Attribute('cat_url', [$catUrl, $defaultCatUrl]);
+        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $catUrl2, $defaultCatUrl]);
+        $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
         $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
 
         $attributes[] = $catUrlAttribute;
+        $attributes[] = $catAttribute;
         $attributes[] = $vendorAttribute;
 
         $attributes[] = new Attribute(
