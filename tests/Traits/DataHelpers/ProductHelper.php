@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
-use FINDOLOGIC\FinSearch\Tests\Constants;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
@@ -14,6 +13,8 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 trait ProductHelper
 {
@@ -28,6 +29,13 @@ trait ProductHelper
 
         /** @var ContainerInterface $container */
         $container = $this->getContainer();
+
+        $contextFactory = $container->get(SalesChannelContextFactory::class);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
+        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
+        var_dump($navigationCategoryId);
 
         $categoryData = [
             [
@@ -59,7 +67,7 @@ trait ProductHelper
             'tax' => ['name' => '9%', 'taxRate' => 9],
             'categories' => [
                 [
-                    'parentId' => Constants::NAVIGATION_CATEGORY,
+                    'parentId' => $navigationCategoryId,
                     'id' => $categoryId,
                     'name' => 'FINDOLOGIC Category',
                     'seoUrls' => [

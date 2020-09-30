@@ -8,7 +8,6 @@ use FINDOLOGIC\FinSearch\Controller\ExportController;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
-use FINDOLOGIC\FinSearch\Tests\Constants;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -189,8 +188,12 @@ class ExportControllerTest extends TestCase
         int $start,
         int $count
     ): void {
+        $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
+
         $salesChannelId = Defaults::SALES_CHANNEL;
-        $navigationCategoryId = Constants::NAVIGATION_CATEGORY;
+        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
@@ -330,8 +333,12 @@ class ExportControllerTest extends TestCase
         $start = 0;
         $count = 20;
 
+        $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
+
         $salesChannelId = Defaults::SALES_CHANNEL;
-        $navigationCategoryId = Constants::NAVIGATION_CATEGORY;
+        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
         /** @var SalesChannelEntity|MockObject $salesChannelMock */
         $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
@@ -550,8 +557,12 @@ class ExportControllerTest extends TestCase
      */
     public function testExportHeaders(array $expectedHeaders): void
     {
+        $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
+
         $salesChannelId = Defaults::SALES_CHANNEL;
-        $navigationCategoryId = Constants::NAVIGATION_CATEGORY;
+        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)

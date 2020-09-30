@@ -17,7 +17,6 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
-use FINDOLOGIC\FinSearch\Tests\Constants;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -26,11 +25,13 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -133,11 +134,16 @@ class FindologicProductTest extends TestCase
     {
         $categoryId = Uuid::randomHex();
 
+        $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
+        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
         return [
             'Category does not have SEO path assigned' => [
                 'data' => [
                     [
-                        'parentId' => Constants::NAVIGATION_CATEGORY,
+                        'parentId' => $navigationCategoryId,
                         'id' => $categoryId,
                         'name' => 'FINDOLOGIC Category'
                     ]
@@ -147,7 +153,7 @@ class FindologicProductTest extends TestCase
             'Category have a pseudo empty SEO path assigned' => [
                 'data' => [
                     [
-                        'parentId' => Constants::NAVIGATION_CATEGORY,
+                        'parentId' => $navigationCategoryId,
                         'id' => $categoryId,
                         'name' => 'FINDOLOGIC Category',
                         'seoUrls' => [
