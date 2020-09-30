@@ -66,6 +66,10 @@ Component.register('findologic-config', {
   },
 
   methods: {
+    createdComponent () {
+      this.getCategories();
+    },
+
     isString (value) {
       if (typeof value !== 'string') {
         return true;
@@ -141,6 +145,30 @@ Component.register('findologic-config', {
       } else {
         this._openDefaultUrl();
       }
+    },
+
+    /**
+     * @public
+     */
+    getCategories () {
+      this.isLoading = true;
+
+      const translatedCategories = [];
+      this.categoryRepository.search(this.categoryCriteria, Shopware.Context.api).then((items) => {
+        this.term = null;
+        this.total = items.total;
+        items.forEach((category) => {
+          translatedCategories.push({
+            value: category.id,
+            name: category.name,
+            label: category.translated.breadcrumb.join(' > ')
+          });
+        });
+
+        this.categories = this.sortByProperty(translatedCategories, 'label');
+      }).finally(() => {
+        this.isLoading = false;
+      });
     }
   },
 
@@ -151,10 +179,6 @@ Component.register('findologic-config', {
      */
     showTestButton () {
       return this.isActive && this.shopkeyAvailable && this.isValidShopkey && this.isStagingShop;
-    },
-
-    salesChannelRepository () {
-      return this.repositoryFactory.create('sales_channel');
     },
 
     showAPIConfig () {
@@ -175,7 +199,8 @@ Component.register('findologic-config', {
           label: this.$tc('findologic.settingForm.config.filterPosition.left.label'),
           value: 'left'
         }];
-    }
+    },
+
     salesChannelRepository () {
       return this.repositoryFactory.create('sales_channel');
     },
@@ -195,6 +220,5 @@ Component.register('findologic-config', {
 
       return criteria;
     }
-  }
   }
 });
