@@ -908,6 +908,16 @@ class FindologicProduct extends Struct
 
     protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
     {
+        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
+        $seoUrls = new SeoUrlCollection();
+
+        foreach ($categoryEntity->getSeoUrls()->getElements() as $seoUrlEntity) {
+            if ($seoUrlEntity->getSalesChannelId() !== $salesChannelId || $seoUrlEntity->getSalesChannelId() === null) {
+                continue;
+            }
+            $seoUrls->add($seoUrlEntity);
+        }
+
         return $categoryEntity->getSeoUrls();
     }
 

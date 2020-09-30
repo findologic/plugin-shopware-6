@@ -324,7 +324,7 @@ class FindologicProductTest extends TestCase
         $this->assertEquals([$productTag], $findologicProduct->getKeywords());
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
-        $this->assertEquals($attributes, $findologicProduct->getAttributes());
+        $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
         $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
         $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
         $this->assertEquals($properties, $findologicProduct->getProperties());
