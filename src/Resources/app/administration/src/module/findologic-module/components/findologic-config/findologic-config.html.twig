@@ -166,6 +166,56 @@
         <sw-card class="sw-card--grid" v-if="showAPIConfig" :title="$tc('findologic.settingForm.api.title')">
             <sw-container>
 
+            {% block findologic_credentials_settings_cross_selling_container %}
+            <sw-inherit-wrapper
+                    v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
+                    :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.crossSellingCategories']"
+            >
+                <template #content="props">
+                    <sw-multi-select
+                            name="FinSearch.config.crossSellingCategories"
+                            :mapInheritance="props"
+                            :options="categories"
+                            :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
+                            :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
+                            :disabled="props.isInherited"
+                            :value="props.currentValue"
+                            :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                            @change="props.updateCurrentValue"
+                    >
+                        <template #selection-label-property="{ item }">
+                            {{ item.name }}
+                        </template>
+
+                    </sw-multi-select>
+                </template>
+            </sw-inherit-wrapper>
+            {% endblock %}
+
+            {% block findologic_credentials_settings_integration_type %}
+            <sw-inherit-wrapper
+                    v-model="actualConfigData['FinSearch.config.integrationType']"
+                    :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.integrationType']"
+            >
+                <template #content="props">
+                    <sw-text-field
+                            name="FinSearch.config.integrationType"
+                            :mapInheritance="props"
+                            :label="$tc('findologic.settingForm.config.integrationType.label')"
+                            :helpText="$tc('findologic.settingForm.config.integrationType.tooltipText')"
+                            :disabled="true"
+                            :value="props.currentValue"
+                    >
+                    </sw-text-field>
+                </template>
+            </sw-inherit-wrapper>
+            {% endblock %}
+        </div>
+        {% endblock %}
+    </sw-container>
+    {% endblock %}
+</sw-card>
+{% endblock %}
                 <div class="findologic-settings-credentials-fields" v-if="actualConfigData">
 
                     {% block findologic_credentials_settings_search_filter_position_container %}

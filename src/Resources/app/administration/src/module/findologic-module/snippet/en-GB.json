@@ -40,6 +40,11 @@
           "placeholder": "fl-navigation-result",
           "tooltipText": "This option has an effect for Direct Integration only, when empty fl-navigation-result is used."
         },
+        "crossSellingCategories": {
+          "label": "Cross-Selling categories",
+          "placeholder": "Search categories...",
+          "tooltipText": "If you have multiple subcategories in your Cross-Selling category, make sure to add all subcategories. Products in these categories are excluded from the export"
+        },
         "integrationType": {
           "label": "Integration (read-only)",
           "tooltipText": "Currently used integration type. Either one of Direct Integration or API."

@@ -54,8 +54,15 @@ Component.register('findologic-config', {
 
   data () {
     return {
-      isLoading: false
+      isLoading: false,
+      term: null,
+      categories: [],
+      categoryIds: []
     };
+  },
+
+  created () {
+    this.createdComponent();
   },
 
   methods: {
@@ -67,6 +74,32 @@ Component.register('findologic-config', {
 
     isBoolean (value) {
       return typeof value !== 'boolean';
+    },
+
+    /**
+     * @public
+     * @param result
+     * @param prop
+     * @param order
+     * @returns {function(*, *): number}
+     */
+    sortByProperty (result, prop = 'name', order = 'asc') {
+
+      result.sort(function (a, b) {
+        // Use toUpperCase() to ignore character casing
+        const case1 = typeof a[prop] === 'string' ? a[prop].toUpperCase() : a[prop];
+        const case2 = typeof b[prop] === 'string' ? b[prop].toUpperCase() : b[prop];
+
+        let sort = 0;
+        if (case1 > case2) {
+          sort = order === 'asc' ? 1 : -1;
+        } else if (case1 < case2) {
+          sort = order === 'asc' ? -1 : 1;
+        }
+        return sort;
+      });
+
+      return result;
     },
 
     /**
@@ -143,6 +176,25 @@ Component.register('findologic-config', {
           value: 'left'
         }];
     }
+    salesChannelRepository () {
+      return this.repositoryFactory.create('sales_channel');
+    },
 
+    categoryRepository () {
+      return this.repositoryFactory.create('category');
+    },
+
+    categoryCriteria () {
+      const criteria = new Criteria(1, 500);
+      criteria.addSorting(Criteria.sort('name', 'ASC'));
+      criteria.addSorting(Criteria.sort('parentId', 'ASC'));
+
+      if (this.term) {
+        criteria.addFilter(Criteria.contains('name', this.term));
+      }
+
+      return criteria;
+    }
+  }
   }
 });

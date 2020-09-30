@@ -17,8 +17,11 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
+use Shopware\Core\Defaults;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
@@ -90,6 +93,16 @@ class FrontendSubscriberTest extends TestCase
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        /** @var SalesChannelEntity|MockObject $salesChannelMock */
+        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
+        $salesChannelMock->method('getId')->willReturn(Defaults::SALES_CHANNEL);
+
+        $salesChannelContextMock->expects($this->any())
+            ->method('getContext')
+            ->willReturn(Context::createDefaultContext());
+
+        $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
 
         /** @var CustomerGroupEntity|MockObject $customerGroupEntityMock */
         $customerGroupEntityMock = $this->getMockBuilder(CustomerGroupEntity::class)

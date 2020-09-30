@@ -89,11 +89,7 @@ class FilterHandler
 
         $params = array_merge($queryParams, $mappedParams);
 
-        return sprintf(
-            '%s?%s',
-            $request->getBasePath(),
-            http_build_query($params, '', '&', PHP_QUERY_RFC3986)
-        );
+        return '?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
     }
 
     protected function handleFilter(

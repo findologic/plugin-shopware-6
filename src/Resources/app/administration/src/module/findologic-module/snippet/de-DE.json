@@ -40,6 +40,11 @@
           "placeholder": "fl-navigation-result",
           "tooltipText": "Diese Option ist nur bei Direct Integration wirksam, wenn kein Wert gegeben ist wird fl-navigation-result verwendet."
         },
+        "crossSellingCategories": {
+          "label": "Cross-Selling Kategorien",
+          "placeholder": "Kategorien suchen...",
+          "tooltipText": "Sollten Sie mehrere Subkategorien in Ihrer Cross-Selling Kategorie haben, fügen sie jede Subkategorie ein. Produkte in diesen Kategorien werden vom Export ausgeschlossen"
+        },
         "integrationType": {
           "label": "Integration (schreibgeschützt)",
           "tooltipText": "Die aktuell verwendete Integrationsart. Entweder Direct Integration oder API."
