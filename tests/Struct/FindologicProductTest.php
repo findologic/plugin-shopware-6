@@ -710,7 +710,13 @@ class FindologicProductTest extends TestCase
     private function getAttributes(ProductEntity $productEntity): array
     {
         $catUrl = '/Findologic-Category';
-        $defaultCatUrl = sprintf('/navigation/%s', $productEntity->getCategories()->first()->getId());
+        $defaultCatUrl = '';
+
+        foreach ($productEntity->getCategories() as $category) {
+            if ($category->getName() === 'FINDOLOGIC Category') {
+                $defaultCatUrl = sprintf('/navigation/%s', $category->getId());
+            }
+        }
 
         $attributes = [];
         $catUrlAttribute = new Attribute('cat_url', [$catUrl, $defaultCatUrl]);
