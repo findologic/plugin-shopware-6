@@ -119,7 +119,8 @@ trait ExportHelper
         return $systemConfigRepositoryMock;
     }
 
-    public function getNavigationCategoryId(): string {
+    public function getNavigationCategoryId(): string
+    {
         $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
         /** @var SalesChannelContext $salesChannelContext */
         $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
