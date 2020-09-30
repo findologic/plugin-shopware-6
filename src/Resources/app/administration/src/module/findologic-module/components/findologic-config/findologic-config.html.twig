@@ -121,6 +121,32 @@
             </sw-inherit-wrapper>
             {% endblock %}
 
+            {% block findologic_credentials_settings_cross_selling_container %}
+            <sw-inherit-wrapper
+                    v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
+                    :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.crossSellingCategories']"
+            >
+                <template #content="props">
+                    <sw-multi-select
+                            name="FinSearch.config.crossSellingCategories"
+                            :mapInheritance="props"
+                            :options="categories"
+                            :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
+                            :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
+                            :disabled="props.isInherited"
+                            :value="props.currentValue"
+                            :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                            @change="props.updateCurrentValue"
+                    >
+                        <template #selection-label-property="{ item }">
+                            {{ item.name }}
+                        </template>
+
+                    </sw-multi-select>
+                </template>
+            </sw-inherit-wrapper>
+            {% endblock %}
+
             {% block findologic_credentials_settings_integration_type %}
             <sw-inherit-wrapper
                     v-model="actualConfigData['FinSearch.config.integrationType']"

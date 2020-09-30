@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
@@ -31,11 +32,13 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Plugin\PluginCollection;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Framework\Routing\Router;
 use SimpleXMLElement;
 use Symfony\Component\DependencyInjection\Container;
@@ -48,6 +51,7 @@ class ExportControllerTest extends TestCase
     use IntegrationTestBehaviour;
     use ProductHelper;
     use ConfigHelper;
+    use ExportHelper;
 
     /** @var Router $router */
     private $router;
@@ -303,14 +307,18 @@ class ExportControllerTest extends TestCase
             ->with($criteria, $this->defaultContext)
             ->willReturn($productEntitySearchResult);
 
+        /** @var SystemConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
+
         $containerRepositoriesMap = [
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['translator', $this->getContainer()->get('translator')],
             ['product.repository', $productRepositoryMock],
-            [FindologicProductFactory::class, new FindologicProductFactory()],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
+            [SystemConfigService::class, $configServiceMock],
+            [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
 
@@ -320,8 +328,136 @@ class ExportControllerTest extends TestCase
 
         $this->assertEquals(200, $result->getStatusCode());
         $xml = new SimpleXMLElement($result->getContent());
-        $this->assertSame(1, $xml->items->count());
+        $this->assertSame(1, (int)$xml->items[0]->attributes()['count']);
         $this->assertSame($productEntity->getId(), (string)$xml->items->item['id']);
+    }
+
+    public function crossSellingCategoryProvider(): array
+    {
+        $categoryOne = Uuid::randomHex();
+        $categoryTwo = Uuid::randomHex();
+        $notInCrossSellingCategory = Uuid::randomHex();
+
+        return [
+            'No cross-sell categories configured' => [
+                'assignedCategory' => [
+                    [
+                        'id' => $notInCrossSellingCategory,
+                        'name' => 'NotInCrossSellingCategory'
+                    ]
+                ],
+                'crossSellingCategories' => [],
+                'expectedCount' => 1
+            ],
+            'Article does not exist in cross-sell category configured' => [
+                'assignedCategory' => [
+                    [
+                        'id' => $notInCrossSellingCategory,
+                        'name' => 'NotInCrossSellingCategory'
+                    ]
+                ],
+                'crossSellingCategories' => [$categoryOne],
+                'expectedCount' => 1
+            ],
+            'Article exists in one of the cross-sell categories configured' => [
+                'assignedCategory' => [
+                    [
+                        'id' => $categoryOne,
+                        'name' => 'Category 1'
+                    ]
+                ],
+                'crossSellingCategories' => [$categoryOne, $categoryTwo],
+                'expectedCount' => 0
+            ],
+            'Article exists in all of cross-sell categories configured' => [
+                'assignedCategory' => [
+                    [
+                        'id' => $categoryOne,
+                        'name' => 'Category 1',
+                    ],
+                    [
+                        'id' => $categoryTwo,
+                        'name' => 'Someothercategory',
+                    ]
+                ],
+                'crossSellingCategories' => [$categoryOne, $categoryTwo],
+                'expectedCount' => 0
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider crossSellingCategoryProvider
+     * @throws InconsistentCriteriaIdsException
+     * @throws UnknownShopkeyException
+     */
+    public function testExportWithCrossSellingCategories(
+        array $assignedCategories,
+        array $crossSellingCategories,
+        int $expectedCount
+    ): void {
+
+        $salesChannelContextMock = $this->getDefaultSalesChannelContextMock();
+
+        /** @var Request $request */
+        $request = new Request(['shopkey' => $this->validShopkey]);
+
+        /* @var ProductEntity $productEntity */
+        $data['categories'] = $assignedCategories;
+
+        $productEntity = $this->createTestProduct($data);
+        $this->assertInstanceOf(ProductEntity::class, $productEntity);
+
+        /** @var ProductCollection $productCollection */
+        $productCollection = new ProductCollection([$productEntity]);
+
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('parent.id', null));
+        $criteria->addFilter(
+            new ProductAvailableFilter(
+                Defaults::SALES_CHANNEL,
+                ProductVisibilityDefinition::VISIBILITY_SEARCH
+            )
+        );
+
+        $criteria = Utils::addProductAssociations($criteria);
+        $criteria->setOffset(0);
+        $criteria->setLimit(20);
+
+        /** @var EntitySearchResult $productEntitySearchResult */
+        $productEntitySearchResult = new EntitySearchResult(
+            1,
+            $productCollection,
+            null,
+            $criteria,
+            $this->defaultContext
+        );
+
+        /** @var EntityRepository|MockObject $productRepositoryMock */
+        $productRepositoryMock = $this->getMockBuilder(EntityRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $productRepositoryMock->expects($this->once())
+            ->method('search')
+            ->with($criteria, $this->defaultContext)
+            ->willReturn($productEntitySearchResult);
+
+        $override['crossSellingCategories'] = $crossSellingCategories;
+        $override['salesChannelId'] = Defaults::SALES_CHANNEL;
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $override);
+
+        $services['product.repository'] = $productRepositoryMock;
+        $services[SystemConfigService::class] = $configServiceMock;
+
+        $containerMock = $this->getContainerMock($services);
+        $this->exportController->setContainer($containerMock);
+
+        $result = $this->exportController->export($request, $salesChannelContextMock);
+
+        $this->assertEquals(200, $result->getStatusCode());
+        $xml = new SimpleXMLElement($result->getContent());
+        $this->assertSame($expectedCount, (int)$xml->items[0]->attributes()['count']);
     }
 
     /**
@@ -435,6 +571,9 @@ class ExportControllerTest extends TestCase
             ->method('search')
             ->willReturn($productEntitySearchResult);
 
+        /** @var SystemConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
+
         $containerRepositoriesMap = [
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
@@ -450,6 +589,7 @@ class ExportControllerTest extends TestCase
             ['shipping_method.repository', $this->getContainer()->get('shipping_method.repository')],
             ['country_state.repository', $this->getContainer()->get('country_state.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
+            [SystemConfigService::class, $configServiceMock],
             [FindologicProductFactory::class, $this->getContainer()->get(FindologicProductFactory::class)],
             [SalesChannelContextFactory::class, $this->getContainer()->get(SalesChannelContextFactory::class)],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
@@ -714,14 +854,18 @@ class ExportControllerTest extends TestCase
             ->with($extensionCriteria, $this->defaultContext)
             ->willReturn($extensionPluginEntitySearchResult);
 
+        /** @var SystemConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
+
         $containerRepositoriesMap = [
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['product.repository', $productRepositoryMock],
             ['translator', $this->getContainer()->get('translator')],
-            [FindologicProductFactory::class, new FindologicProductFactory()],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
+            [SystemConfigService::class, $configServiceMock],
+            [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
 
