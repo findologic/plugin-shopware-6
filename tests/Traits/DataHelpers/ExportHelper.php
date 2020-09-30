@@ -12,6 +12,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigCollection;
@@ -22,6 +23,7 @@ trait ExportHelper
     public function getDefaultSalesChannelContextMock(): SalesChannelContext
     {
         $salesChannelId = Defaults::SALES_CHANNEL;
+        $navigationCategoryId = $this->getNavigationCategoryId();
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
@@ -33,6 +35,7 @@ trait ExportHelper
             ->disableOriginalConstructor()
             ->getMock();
         $salesChannelMock->method('getId')->willReturn($salesChannelId);
+        $salesChannelMock->method('getNavigationCategoryId')->willReturn($navigationCategoryId);
 
         $salesChannelContextMock->expects($this->any())
             ->method('getContext')
@@ -57,20 +60,12 @@ trait ExportHelper
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $salesChannelId = Defaults::SALES_CHANNEL;
-
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
-        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $salesChannelContextMock = $this->getDefaultSalesChannelContextMock();
 
         /** @var SalesChannelEntity|MockObject $salesChannelMock */
-        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
-        $salesChannelMock->method('getId')->willReturn($salesChannelId);
-        $salesChannelContextMock->method('getContext')->willReturn($this->defaultContext);
-        $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
-
         $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();
+
         $defaultServicesMap = [
             ['translator', $this->getContainer()->get('translator')],
             ['system_config.repository', $systemConfigRepositoryMock],
@@ -89,19 +84,21 @@ trait ExportHelper
         return $containerMock;
     }
 
-    public function getSystemConfigRepositoryMock(): EntityRepository
+    public function getSystemConfigRepositoryMock(MockObject $systemConfigEntity = null): EntityRepository
     {
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var SystemConfigEntity|MockObject $systemConfigEntity */
-        $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->expects($this->once())
-            ->method('getConfigurationValue')
-            ->willReturn($this->validShopkey);
-        $systemConfigEntity->expects($this->once())->method('getSalesChannelId')->willReturn(null);
+        if (!$systemConfigEntity) {
+            /** @var SystemConfigEntity|MockObject $systemConfigEntity */
+            $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
+            $systemConfigEntity->expects($this->once())
+                ->method('getConfigurationValue')
+                ->willReturn($this->validShopkey);
+            $systemConfigEntity->expects($this->once())->method('getSalesChannelId')->willReturn(null);
+        }
 
         /** @var SystemConfigCollection $systemConfigCollection */
         $systemConfigCollection = new SystemConfigCollection([$systemConfigEntity]);
@@ -120,5 +117,12 @@ trait ExportHelper
             ->willReturn($systemConfigEntitySearchResult);
 
         return $systemConfigRepositoryMock;
+    }
+
+    public function getNavigationCategoryId(): string {
+        $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
+        return $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
     }
 }

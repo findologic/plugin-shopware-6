@@ -709,8 +709,8 @@ class FindologicProductTest extends TestCase
      */
     private function getAttributes(ProductEntity $productEntity): array
     {
-        $catUrl1 = '/Findologic-Category';
-        $catUrl2 = '/FINDOLOGIC-Category/';
+        $catUrl1 = '/FINDOLOGIC-Category/';
+        $catUrl2 = '/Findologic-Category';
         $defaultCatUrl = '';
 
         foreach ($productEntity->getCategories() as $category) {
