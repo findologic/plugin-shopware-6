@@ -80,7 +80,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
 
     public function load(Request $request, SalesChannelContext $context): ProductSearchRouteResponse
     {
-        if (!Utils::isFindologicEnabled($context)) {
+        if (!Utils::isStagingSession($request) && !Utils::isFindologicEnabled($context)) {
             return $this->decorated->load($request, $context);
         }
 

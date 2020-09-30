@@ -76,7 +76,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         Request $request,
         SalesChannelContext $salesChannelContext
     ): ProductListingRouteResponse {
-        if (!Utils::isFindologicEnabled($salesChannelContext)) {
+        if (!Utils::isStagingSession($request) && !Utils::isFindologicEnabled($salesChannelContext)) {
             return $this->decorated->load($categoryId, $request, $salesChannelContext);
         }
 

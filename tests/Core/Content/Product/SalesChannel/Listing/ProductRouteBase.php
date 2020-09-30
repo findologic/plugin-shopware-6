@@ -18,6 +18,7 @@ use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 abstract class ProductRouteBase extends TestCase
 {
@@ -107,10 +108,21 @@ abstract class ProductRouteBase extends TestCase
         return $salesChannelContextMock;
     }
 
+    /**
+     * @return Session|MockObject
+     */
+    protected function getSessionMock(): Session
+    {
+        return $this->getMockBuilder(Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+    }
+
     public function testFindologicHandlesRequestWhenActive(): void
     {
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true);
         $request = Request::create('http://your-shop.de/some-category');
+        $request->setSession($this->getSessionMock());
 
         $productRoute = $this->getRoute();
 
@@ -122,6 +134,7 @@ abstract class ProductRouteBase extends TestCase
     {
         $salesChannelContextMock = $this->getMockedSalesChannelContext(false);
         $request = Request::create('http://your-shop.de/some-category');
+        $request->setSession($this->getSessionMock());
 
         $productRoute = $this->getRoute();
 
