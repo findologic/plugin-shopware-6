@@ -686,8 +686,7 @@ class FindologicProduct extends Struct
             if (!$categoryEntity->getActive()) {
                 continue;
             }
-//            var_dump($categoryEntity->getBreadcrumb());
-            var_dump('navigation_category_id of context ' . $navigationCategoryId);
+
             if (!strpos($categoryEntity->getPath(), $navigationCategoryId)) {
                 continue;
             }
@@ -719,8 +718,6 @@ class FindologicProduct extends Struct
             }
 
             $categoryPath = $this->buildCategoryPath($categoryEntity);
-
-//            var_dump($categoryEntity->getBreadcrumb());
 
             if (!empty($categoryPath)) {
                 $categories[] = $categoryPath;

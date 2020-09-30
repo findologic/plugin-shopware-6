@@ -35,8 +35,6 @@ trait ProductHelper
         $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
         $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
-        var_dump($navigationCategoryId);
-
         $categoryData = [
             [
                 'id' => Uuid::randomHex(),
