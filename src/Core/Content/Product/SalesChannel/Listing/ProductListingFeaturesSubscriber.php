@@ -114,7 +114,14 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $this->sortingRegistry = $sortingRegistry;
         $this->navigationRequestFactory = $navigationRequestFactory;
         $this->searchRequestFactory = $searchRequestFactory;
-        parent::__construct($connection, $optionRepository, $productSortingRepository, $systemConfigService, $sortingRegistry);
+
+        parent::__construct(
+            $connection,
+            $optionRepository,
+            $productSortingRepository,
+            $systemConfigService,
+            $sortingRegistry
+        );
     }
 
     public function handleResult(ProductListingResultEvent $event): void

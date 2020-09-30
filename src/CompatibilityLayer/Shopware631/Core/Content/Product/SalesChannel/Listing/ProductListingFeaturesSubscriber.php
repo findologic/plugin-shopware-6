@@ -84,8 +84,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         ?Config $config = null,
         ?ApiConfig $apiConfig = null,
         ?ApiClient $apiClient = null
-    )
-    {
+    ) {
         // TODO: Check how we can improve the high amount of constructor arguments.
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
