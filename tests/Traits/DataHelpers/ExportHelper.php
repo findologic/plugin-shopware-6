@@ -12,6 +12,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
@@ -84,7 +85,11 @@ trait ExportHelper
         return $containerMock;
     }
 
-    public function getSystemConfigRepositoryMock(MockObject $systemConfigEntity = null): EntityRepository
+    /**
+     * @param SystemConfigEntity|MockObject|null $systemConfigEntity
+     * @return EntityRepository
+     */
+    public function getSystemConfigRepositoryMock(?SystemConfigEntity $systemConfigEntity = null): EntityRepository
     {
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
@@ -123,7 +128,7 @@ trait ExportHelper
     {
         $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
         /** @var SalesChannelContext $salesChannelContext */
-        $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
+        $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
         return $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
     }
 }

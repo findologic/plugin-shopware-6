@@ -669,8 +669,6 @@ class FindologicProduct extends Struct
             throw new ProductHasNoCategoriesException();
         }
 
-        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-
         /** @var Attribute $categoryAttribute */
         $categoryAttribute = new Attribute('cat');
 
@@ -679,6 +677,8 @@ class FindologicProduct extends Struct
 
         $catUrls = [];
         $categories = [];
+
+        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
         /** @var CategoryEntity $categoryEntity */
         foreach ($this->product->getCategories() as $categoryEntity) {
@@ -912,13 +912,12 @@ class FindologicProduct extends Struct
         $seoUrls = new SeoUrlCollection();
 
         foreach ($categoryEntity->getSeoUrls()->getElements() as $seoUrlEntity) {
-            if ($seoUrlEntity->getSalesChannelId() !== $salesChannelId || $seoUrlEntity->getSalesChannelId() === null) {
-                continue;
+            if ($seoUrlEntity->getSalesChannelId() === $salesChannelId || $seoUrlEntity->getSalesChannelId() === null) {
+                $seoUrls->add($seoUrlEntity);
             }
-            $seoUrls->add($seoUrlEntity);
         }
 
-        return $categoryEntity->getSeoUrls();
+        return $seoUrls;
     }
 
     protected function buildCategoryPath(CategoryEntity $categoryEntity): string
