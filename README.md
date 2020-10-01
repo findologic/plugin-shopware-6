@@ -73,7 +73,7 @@ Before continuing make sure that you have a running MySQL instance. Create a use
 `app` with password `app`, which should have privileges to create and modify all
 databases.
 
-Now run `./psh.phar install`. In order to run this command successfully you may require certain [packages that are
+Now run `./psh.phar init`. In order to run this command successfully you may require certain [packages that are
 required by Shopware](https://docs.shopware.com/en/shopware-platform-dev-en/getting-started/requirements).
 
 After that initialize the test database by running `./psh.phar init-test-databases`.
