@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,6 +18,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -47,6 +50,21 @@ abstract class ProductRouteBase extends TestCase
      */
     protected $productSearchBuilderMock;
 
+    /**
+     * @var ServiceConfigResource|MockObject
+     */
+    protected $serviceConfigResourceMock;
+
+    /**
+     * @var SystemConfigService|MockObject
+     */
+    protected $systemConfigServiceMock;
+
+    /**
+     * @var Config|MockObject
+     */
+    protected $configMock;
+
     protected function setUp(): void
     {
         $this->eventDispatcherMock = $this->getMockBuilder(EventDispatcherInterface::class)
@@ -66,6 +84,18 @@ abstract class ProductRouteBase extends TestCase
             ->getMock();
 
         $this->productSearchBuilderMock = $this->getMockBuilder(ProductSearchBuilderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->serviceConfigResourceMock = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->systemConfigServiceMock = $this->getMockBuilder(SystemConfigService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->configMock = $this->getMockBuilder(Config::class)
             ->disableOriginalConstructor()
             ->getMock();
     }
