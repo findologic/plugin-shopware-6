@@ -32,7 +32,7 @@ trait ProductHelper
 
         $contextFactory = $container->get(SalesChannelContextFactory::class);
         /** @var SalesChannelContext $salesChannelContext */
-        $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
+        $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
         $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
         $categoryData = [

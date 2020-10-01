@@ -26,13 +26,17 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProductTest extends TestCase
@@ -136,8 +140,18 @@ class FindologicProductTest extends TestCase
 
         $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
         /** @var SalesChannelContext $salesChannelContext */
-        $salesChannelContext = $contextFactory->create('', Defaults::SALES_CHANNEL);
+        $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
         $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
+        /** @var SalesChannelRepository $repos */
+        $repos = $this->getContainer()->get('sales_channel.repository');
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'Storefront'));
+
+        $result = $repos->search($criteria, Context::createDefaultContext());
+        /** @var SalesChannelEntity $additionalSalesChannel */
+        $additionalSalesChannel = $result->first();
+        $additionalSalesChannelId = $additionalSalesChannel->getId();
 
         return [
             'Category does not have SEO path assigned' => [
@@ -145,7 +159,25 @@ class FindologicProductTest extends TestCase
                     [
                         'parentId' => $navigationCategoryId,
                         'id' => $categoryId,
-                        'name' => 'FINDOLOGIC Category'
+                        'name' => 'FINDOLOGIC Category',
+                        'seoUrls' => [
+                            [
+                                'id' => Uuid::randomHex(),
+                                'salesChannelId' => Defaults::SALES_CHANNEL,
+                                'pathInfo' => 'navigation/' . $categoryId,
+                                'seoPathInfo' => 'Main',
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page'
+                            ],
+                            [
+                                'id' => Uuid::randomHex(),
+                                'salesChannelId' => $additionalSalesChannelId,
+                                'pathInfo' => 'navigation/' . $categoryId,
+                                'seoPathInfo' => 'Additional Main',
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page'
+                            ]
+                        ]
                     ]
                 ],
                 'categoryId' => $categoryId
@@ -197,6 +229,7 @@ class FindologicProductTest extends TestCase
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
+        $this->assertNotContains('/Additional Main', $attribute->getValues());
         $this->assertContains(sprintf('/navigation/%s', $categoryId), $attribute->getValues());
     }
 

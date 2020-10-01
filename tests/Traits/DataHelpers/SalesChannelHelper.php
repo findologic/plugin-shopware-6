@@ -15,32 +15,19 @@ trait SalesChannelHelper
 {
     public function buildSalesChannelContext(): SalesChannelContext
     {
-        $id = Uuid::randomHex();
         $salesChannel = [
-            'id' => $id,
-            'name' => 'test',
-            'typeId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
-            'customerGroupId' => Defaults::FALLBACK_CUSTOMER_GROUP,
-            'currencyId' => Defaults::CURRENCY,
-            'paymentMethodId' => $this->fetchIdFromDatabase('payment_method'),
-            'shippingMethodId' => $this->fetchIdFromDatabase('shipping_method'),
-            'countryId' => $this->fetchIdFromDatabase('country'),
-            'navigationCategoryId' => $this->fetchIdFromDatabase('category'),
-            'accessKey' => 'test',
-            'languages' => [
-                ['id' => Defaults::LANGUAGE_SYSTEM],
-            ],
+            'id' => Defaults::SALES_CHANNEL,
             'domains' => [
                 [
                     'url' => 'http://test.de',
                     'currencyId' => Defaults::CURRENCY,
                     'languageId' => Defaults::LANGUAGE_SYSTEM,
                     'snippetSetId' => $this->fetchIdFromDatabase('snippet_set'),
-                ],
-            ],
+                ]
+            ]
         ];
 
-        $this->getContainer()->get('sales_channel.repository')->create(
+        $this->getContainer()->get('sales_channel.repository')->update(
             [$salesChannel],
             Context::createDefaultContext()
         );
@@ -48,7 +35,7 @@ trait SalesChannelHelper
         /** @var SalesChannelContextFactory $salesChannelContextFactory */
         $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
 
-        return $salesChannelContextFactory->create(Uuid::randomHex(), $id);
+        return $salesChannelContextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
     }
 
     /**
