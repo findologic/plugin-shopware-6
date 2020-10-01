@@ -25,7 +25,6 @@ use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionCollection;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Framework\Context;
@@ -679,9 +678,15 @@ class FindologicProduct extends Struct
         $catUrls = [];
         $categories = [];
 
+        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
         /** @var CategoryEntity $categoryEntity */
         foreach ($this->product->getCategories() as $categoryEntity) {
             if (!$categoryEntity->getActive()) {
+                continue;
+            }
+
+            if (!strpos($categoryEntity->getPath(), $navigationCategoryId)) {
                 continue;
             }
 
@@ -903,7 +908,16 @@ class FindologicProduct extends Struct
 
     protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
     {
-        return $categoryEntity->getSeoUrls();
+        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
+        $seoUrls = new SeoUrlCollection();
+
+        foreach ($categoryEntity->getSeoUrls()->getElements() as $seoUrlEntity) {
+            if ($seoUrlEntity->getSalesChannelId() === $salesChannelId || $seoUrlEntity->getSalesChannelId() === null) {
+                $seoUrls->add($seoUrlEntity);
+            }
+        }
+
+        return $seoUrls;
     }
 
     protected function buildCategoryPath(CategoryEntity $categoryEntity): string

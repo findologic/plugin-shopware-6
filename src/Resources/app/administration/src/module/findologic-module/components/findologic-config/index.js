@@ -66,25 +66,17 @@ Component.register('findologic-config', {
   },
 
   methods: {
-    /**
-     * @public
-     * @param value
-     * @returns {boolean}
-     */
-    checkTextFieldInheritance (value) {
+    createdComponent () {
+      this.getCategories();
+    },
+
+    isString (value) {
       if (typeof value !== 'string') {
         return true;
       }
-
-      return value.length <= 0;
     },
 
-    /**
-     * @public
-     * @param value
-     * @returns {boolean}
-     */
-    checkBoolFieldInheritance (value) {
+    isBoolean (value) {
       return typeof value !== 'boolean';
     },
 
@@ -155,10 +147,6 @@ Component.register('findologic-config', {
       }
     },
 
-    createdComponent () {
-      this.getCategories();
-    },
-
     /**
      * @public
      */
@@ -191,6 +179,26 @@ Component.register('findologic-config', {
      */
     showTestButton () {
       return this.isActive && this.shopkeyAvailable && this.isValidShopkey && this.isStagingShop;
+    },
+
+    showAPIConfig () {
+      return this.actualConfigData['FinSearch.config.integrationType'] === undefined || this.actualConfigData['FinSearch.config.integrationType'] === 'API';
+    },
+
+    showDIConfig () {
+      return this.actualConfigData['FinSearch.config.integrationType'] === undefined || this.actualConfigData['FinSearch.config.integrationType'] === 'Direct Integration';
+    },
+
+    filterPositionOptions () {
+      return [
+        {
+          label: this.$tc('findologic.settingForm.config.filterPosition.top.label'),
+          value: 'top'
+        },
+        {
+          label: this.$tc('findologic.settingForm.config.filterPosition.left.label'),
+          value: 'left'
+        }];
     },
 
     salesChannelRepository () {

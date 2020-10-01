@@ -8,6 +8,12 @@
     "invalidShopkey": "Invalid Shopkey.",
     "notRegisteredShopkey": "The given shopkey is not associated to any known service.",
     "settingForm": {
+      "directIntegration": {
+        "title": "Direct Integration"
+      },
+      "api": {
+        "title": "API"
+      },
       "configSaved": "Configuration saved.",
       "testButton": "Test mode",
       "config": {
@@ -42,6 +48,16 @@
         "integrationType": {
           "label": "Integration (read-only)",
           "tooltipText": "Currently used integration type. Either one of Direct Integration or API."
+        },
+        "filterPosition": {
+          "label": "Filter position for search result pages",
+          "tooltipText": "Top: Shows the filters above the search results. Left: Shows the filters on the left side, next to the search results.",
+          "top": {
+            "label": "Top"
+          },
+          "left": {
+            "label": "Left"
+          }
         }
       },
       "titleSuccess": "Success",
