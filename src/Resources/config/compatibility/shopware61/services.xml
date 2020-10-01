@@ -6,7 +6,7 @@
     <services>
 
         <service
-                id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
+                id="FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware631\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
                 decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
                 public="true"
         >
