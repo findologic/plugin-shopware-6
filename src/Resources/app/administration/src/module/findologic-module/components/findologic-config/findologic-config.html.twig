@@ -1,173 +1,217 @@
 {% block findologic_credentials %}
-<sw-card class="sw-card--grid" :title="$tc('findologic.settingForm.config.title')"
->
-    {% block findologic_credentials_card_container %}
-    <sw-container>
-        {% block findologic_credentials_settings %}
-        <div class="findologic-settings-credentials-fields" v-if="actualConfigData">
-            {% block findologic_credentials_settings_shopkey %}
-                <sw-inherit-wrapper
-                        v-model="actualConfigData['FinSearch.config.shopkey']"
-                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.shopkey']"
-                        :customInheritationCheckFunction="checkTextFieldInheritance"
-                >
-                    <template #content="props">
-                        <sw-text-field
-                                name="FinSearch.config.shopkey"
-                                :mapInheritance="props"
-                                :label="$tc('findologic.settingForm.config.shopkey.label')"
-                                :helpText="$tc('findologic.settingForm.config.shopkey.tooltipText')"
-                                :disabled="props.isInherited"
-                                :required="true"
-                                :error="shopkeyErrorState"
-                                :value="props.currentValue"
-                                @change="props.updateCurrentValue">
-                        </sw-text-field>
-                    </template>
-                </sw-inherit-wrapper>
-            {% endblock %}
+<sw-container slot="grid" rows="auto auto">
+    <sw-card-section>
+        <sw-card class="sw-card--grid"
+                 :title="$tc('findologic.settingForm.config.title')">
+            <sw-container>
+                {% block findologic_credentials_card_container %}
 
-            {% block findologic_credentials_settings_active %}
-                <sw-inherit-wrapper
-                        v-model="actualConfigData['FinSearch.config.active']"
-                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.active']"
-                        :customInheritationCheckFunction="checkBoolFieldInheritance"
-                >
-                    <template #content="props">
-                        <sw-switch-field
-                                name="FinSearch.config.active"
-                                :mapInheritance="props"
-                                :label="$tc('findologic.settingForm.config.active.label')"
-                                :helpText="$tc('findologic.settingForm.config.active.tooltipText')"
-                                :disabled="props.isInherited"
-                                :value="props.currentValue"
-                                @change="props.updateCurrentValue"
+                    {% block findologic_credentials_settings %}
+                        <div class="findologic-settings-credentials-fields" v-if="actualConfigData">
+                            {% block findologic_credentials_settings_shopkey %}
+                                <sw-inherit-wrapper
+                                        v-model="actualConfigData['FinSearch.config.shopkey']"
+                                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.shopkey']"
+                                        :customInheritationCheckFunction="isString"
+                                >
+                                    <template #content="props">
+                                        <sw-text-field
+                                                name="FinSearch.config.shopkey"
+                                                :mapInheritance="props"
+                                                :label="$tc('findologic.settingForm.config.shopkey.label')"
+                                                :helpText="$tc('findologic.settingForm.config.shopkey.tooltipText')"
+                                                :disabled="props.isInherited"
+                                                :required="true"
+                                                :error="shopkeyErrorState"
+                                                :value="props.currentValue"
+                                                @change="props.updateCurrentValue">
+                                        </sw-text-field>
+                                    </template>
+                                </sw-inherit-wrapper>
+                            {% endblock %}
+
+                            {% block findologic_credentials_settings_active %}
+                                <sw-inherit-wrapper
+                                        v-model="actualConfigData['FinSearch.config.active']"
+                                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.active']"
+                                        :customInheritationCheckFunction="isBoolean"
+                                >
+                                    <template #content="props">
+                                        <sw-switch-field
+                                                name="FinSearch.config.active"
+                                                :mapInheritance="props"
+                                                :label="$tc('findologic.settingForm.config.active.label')"
+                                                :helpText="$tc('findologic.settingForm.config.active.tooltipText')"
+                                                :disabled="props.isInherited"
+                                                :value="props.currentValue"
+                                                @change="props.updateCurrentValue"
+                                        >
+                                        </sw-switch-field>
+                                    </template>
+                                </sw-inherit-wrapper>
+                            {% endblock %}
+
+                            {% block findologic_credentials_settings_active_on_category_pages %}
+                                <sw-inherit-wrapper
+                                        v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
+                                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.activeOnCategoryPages']"
+                                        :customInheritationCheckFunction="isBoolean"
+                                >
+                                    <template #content="props">
+                                        <sw-switch-field
+                                                name="FinSearch.config.activeOnCategoryPages"
+                                                :mapInheritance="props"
+                                                :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
+                                                :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
+                                                :disabled="props.isInherited"
+                                                :value="props.currentValue"
+                                                @change="props.updateCurrentValue"
+                                        >
+                                        </sw-switch-field>
+                                    </template>
+                                </sw-inherit-wrapper>
+                            {% endblock %}
+
+                            {% block findologic_credentials_settings_test_mode %}
+                                <sw-button
+                                        v-show="showTestButton"
+                                        @click="openSalesChannelUrl"
+                                >
+                                    {{ $tc('findologic.settingForm.testButton') }}
+                                </sw-button>
+                                <span class="divider"></span>
+                            {% endblock %}
+
+                            {% block findologic_credentials_settings_cross_selling_container %}
+                                <sw-inherit-wrapper
+                                        v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
+                                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.crossSellingCategories']"
+                                >
+                                    <template #content="props">
+                                        <sw-multi-select
+                                                name="FinSearch.config.crossSellingCategories"
+                                                :mapInheritance="props"
+                                                :options="categories"
+                                                :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
+                                                :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
+                                                :disabled="props.isInherited"
+                                                :value="props.currentValue"
+                                                :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                                                @change="props.updateCurrentValue"
+                                        >
+                                            <template #selection-label-property="{ item }">
+                                                {{ item.name }}
+                                            </template>
+
+                                        </sw-multi-select>
+                                    </template>
+                                </sw-inherit-wrapper>
+                            {% endblock %}
+
+                            {% block findologic_credentials_settings_integration_type %}
+                                <sw-inherit-wrapper
+                                        v-model="actualConfigData['FinSearch.config.integrationType']"
+                                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.integrationType']"
+                                >
+                                    <template #content="props">
+                                        <sw-text-field
+                                                ref="integrationType"
+                                                name="FinSearch.config.integrationType"
+                                                :mapInheritance="props"
+                                                :label="$tc('findologic.settingForm.config.integrationType.label')"
+                                                :helpText="$tc('findologic.settingForm.config.integrationType.tooltipText')"
+                                                :disabled="true"
+                                                :value="props.currentValue"
+                                        >
+                                        </sw-text-field>
+                                    </template>
+                                </sw-inherit-wrapper>
+                            {% endblock %}
+                        </div>
+                    {% endblock %}
+                {% endblock %}
+            </sw-container>
+
+        </sw-card>
+
+        <sw-card class="sw-card--grid"
+                 v-if="showDIConfig"
+                 :title="$tc('findologic.settingForm.directIntegration.title')">
+            <sw-container>
+
+                <div class="findologic-settings-credentials-fields" v-if="actualConfigData">
+                    {% block findologic_credentials_settings_search_result_container %}
+                        <sw-inherit-wrapper
+                                v-model="actualConfigData['FinSearch.config.searchResultContainer']"
+                                :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.searchResultContainer']"
                         >
-                        </sw-switch-field>
-                    </template>
-                </sw-inherit-wrapper>
-            {% endblock %}
+                            <template #content="props">
+                                <sw-text-field
+                                        name="FinSearch.config.searchResultContainer"
+                                        :mapInheritance="props"
+                                        :label="$tc('findologic.settingForm.config.searchResultContainer.label')"
+                                        :helpText="$tc('findologic.settingForm.config.searchResultContainer.tooltipText')"
+                                        :disabled="props.isInherited"
+                                        :value="props.currentValue"
+                                        :placeholder="$tc('findologic.settingForm.config.searchResultContainer.placeholder')"
+                                        @change="props.updateCurrentValue"
+                                >
+                                </sw-text-field>
+                            </template>
+                        </sw-inherit-wrapper>
+                    {% endblock %}
 
-            {% block findologic_credentials_settings_active_on_category_pages %}
-                <sw-inherit-wrapper
-                        v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
-                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.activeOnCategoryPages']"
-                        :customInheritationCheckFunction="checkBoolFieldInheritance"
-                >
-                    <template #content="props">
-                        <sw-switch-field
-                                name="FinSearch.config.activeOnCategoryPages"
-                                :mapInheritance="props"
-                                :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
-                                :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
-                                :disabled="props.isInherited"
-                                :value="props.currentValue"
-                                @change="props.updateCurrentValue"
+                    {% block findologic_credentials_settings_navigation_result_container %}
+                        <sw-inherit-wrapper
+                                v-model="actualConfigData['FinSearch.config.navigationResultContainer']"
+                                :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.navigationResultContainer']"
                         >
-                        </sw-switch-field>
-                    </template>
-                </sw-inherit-wrapper>
-            {% endblock %}
+                            <template #content="props">
+                                <sw-text-field
+                                        name="FinSearch.config.navigationResultContainer"
+                                        :mapInheritance="props"
+                                        :label="$tc('findologic.settingForm.config.navigationResultContainer.label')"
+                                        :helpText="$tc('findologic.settingForm.config.navigationResultContainer.tooltipText')"
+                                        :disabled="props.isInherited"
+                                        :value="props.currentValue"
+                                        :placeholder="$tc('findologic.settingForm.config.navigationResultContainer.placeholder')"
+                                        @change="props.updateCurrentValue"
+                                >
+                                </sw-text-field>
+                            </template>
+                        </sw-inherit-wrapper>
+                    {% endblock %}
+                </div>
+            </sw-container>
+        </sw-card>
 
-            {% block findologic_credentials_settings_test_mode %}
-            <sw-button
-                    v-show="showTestButton"
-                    @click="openSalesChannelUrl"
-            >
-                {{ $tc('findologic.settingForm.testButton') }}
-            </sw-button>
-            <span class="divider"></span>
-            {% endblock %}
+        <sw-card class="sw-card--grid" v-if="showAPIConfig" :title="$tc('findologic.settingForm.api.title')">
+            <sw-container>
 
-            {% block findologic_credentials_settings_search_result_container %}
-            <sw-inherit-wrapper
-                    v-model="actualConfigData['FinSearch.config.searchResultContainer']"
-                    :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.searchResultContainer']"
-            >
-                <template #content="props">
-                    <sw-text-field
-                            name="FinSearch.config.searchResultContainer"
-                            :mapInheritance="props"
-                            :label="$tc('findologic.settingForm.config.searchResultContainer.label')"
-                            :helpText="$tc('findologic.settingForm.config.searchResultContainer.tooltipText')"
-                            :disabled="props.isInherited"
-                            :value="props.currentValue"
-                            :placeholder="$tc('findologic.settingForm.config.searchResultContainer.placeholder')"
-                            @change="props.updateCurrentValue"
-                    >
-                    </sw-text-field>
-                </template>
-            </sw-inherit-wrapper>
-            {% endblock %}
+                <div class="findologic-settings-credentials-fields" v-if="actualConfigData">
 
-            {% block findologic_credentials_settings_navigation_result_container %}
-            <sw-inherit-wrapper
-                    v-model="actualConfigData['FinSearch.config.navigationResultContainer']"
-                    :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.navigationResultContainer']"
-            >
-                <template #content="props">
-                    <sw-text-field
-                            name="FinSearch.config.navigationResultContainer"
-                            :mapInheritance="props"
-                            :label="$tc('findologic.settingForm.config.navigationResultContainer.label')"
-                            :helpText="$tc('findologic.settingForm.config.navigationResultContainer.tooltipText')"
-                            :disabled="props.isInherited"
-                            :value="props.currentValue"
-                            :placeholder="$tc('findologic.settingForm.config.navigationResultContainer.placeholder')"
-                            @change="props.updateCurrentValue"
-                    >
-                    </sw-text-field>
-                </template>
-            </sw-inherit-wrapper>
-            {% endblock %}
-
-            {% block findologic_credentials_settings_cross_selling_container %}
-            <sw-inherit-wrapper
-                    v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
-                    :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.crossSellingCategories']"
-            >
-                <template #content="props">
-                    <sw-multi-select
-                            name="FinSearch.config.crossSellingCategories"
-                            :mapInheritance="props"
-                            :options="categories"
-                            :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
-                            :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
-                            :disabled="props.isInherited"
-                            :value="props.currentValue"
-                            :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
-                            @change="props.updateCurrentValue"
-                    >
-                        <template #selection-label-property="{ item }">
-                            {{ item.name }}
-                        </template>
-
-                    </sw-multi-select>
-                </template>
-            </sw-inherit-wrapper>
-            {% endblock %}
-
-            {% block findologic_credentials_settings_integration_type %}
-            <sw-inherit-wrapper
-                    v-model="actualConfigData['FinSearch.config.integrationType']"
-                    :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.integrationType']"
-            >
-                <template #content="props">
-                    <sw-text-field
-                            name="FinSearch.config.integrationType"
-                            :mapInheritance="props"
-                            :label="$tc('findologic.settingForm.config.integrationType.label')"
-                            :helpText="$tc('findologic.settingForm.config.integrationType.tooltipText')"
-                            :disabled="true"
-                            :value="props.currentValue"
-                    >
-                    </sw-text-field>
-                </template>
-            </sw-inherit-wrapper>
-            {% endblock %}
-        </div>
-        {% endblock %}
-    </sw-container>
-    {% endblock %}
-</sw-card>
+                    {% block findologic_credentials_settings_search_filter_position_container %}
+                        <sw-inherit-wrapper
+                                v-model="actualConfigData['FinSearch.config.filterPosition']"
+                                :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.filterPosition']"
+                        >
+                            <template #content="props">
+                                <sw-single-select
+                                        :options="filterPositionOptions"
+                                        name="FinSearch.config.filterPosition"
+                                        :mapInheritance="props"
+                                        :label="$tc('findologic.settingForm.config.filterPosition.label')"
+                                        :helpText="$tc('findologic.settingForm.config.filterPosition.tooltipText')"
+                                        :disabled="props.isInherited"
+                                        :value="props.currentValue ?? 'top'"
+                                        @change="props.updateCurrentValue">
+                                </sw-single-select>
+                            </template>
+                        </sw-inherit-wrapper>
+                    {% endblock %}
+                </div>
+            </sw-container>
+        </sw-card>
+    </sw-card-section>
+</sw-container>
 {% endblock %}

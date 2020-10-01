@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
 
+use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use GuzzleHttp\Exception\ClientException;
@@ -46,6 +47,9 @@ class Config extends Struct
     /** @var bool */
     private $initialized = false;
 
+    /** @var string */
+    private $filterPosition;
+
     /** @var array */
     private $crossSellingCategories = [];
 
@@ -69,6 +73,7 @@ class Config extends Struct
             'navigationResultContainer',
             'integrationType',
             'initialized',
+            'filterPosition'
         ];
     }
 
@@ -139,6 +144,11 @@ class Config extends Struct
             'FinSearch.config.navigationResultContainer',
             self::DEFAULT_NAVIGATION_RESULT_CONTAINER
         );
+        $this->filterPosition = $this->getConfig(
+            $salesChannelId,
+            'FinSearch.config.filterPosition',
+            FilterPosition::TOP
+        );
 
         $this->initializeReadonlyConfig($salesChannelId);
 
@@ -199,5 +209,13 @@ class Config extends Struct
         }
 
         return $configValue;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilterPosition(): string
+    {
+        return $this->filterPosition;
     }
 }
