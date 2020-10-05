@@ -1,7 +1,7 @@
 {
   "name": "findologic/plugin-shopware-6",
   "description": "FINDOLOGIC plugin for Shopware 6 e-commerce system",
-  "version": "v1.2.0",
+  "version": "v1.3.0-rc.1",
   "license": "GPL-3.0-or-later",
   "type": "shopware-platform-plugin",
   "authors": [

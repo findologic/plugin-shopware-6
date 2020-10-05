@@ -70,7 +70,7 @@ abstract class FindologicRequestFactory
         SearchNavigationRequest $searchNavigationRequest
     ): SearchNavigationRequest {
         $searchNavigationRequest->setUserIp($this->fetchClientIp());
-        $searchNavigationRequest->setRevision($this->getPluginVersion());
+        $searchNavigationRequest->setRevision(trim($this->getPluginVersion(), '-rc.1'));
         $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
         // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
         //  Shopware themselves have it hardcoded at 24.
