@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Subscriber;
 
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
+use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\InvalidArgumentException;
@@ -55,10 +55,10 @@ class FrontendSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $flEnabled = new FindologicEnabled();
-        $event->getContext()->addExtension('flEnabled', $flEnabled);
+        $findologicService = new FindologicService();
+        $event->getContext()->addExtension('findologicService', $findologicService);
         if ($this->config->isStaging() && !Utils::isStagingSession($event->getRequest())) {
-            $flEnabled->setDisabled();
+            $findologicService->setDisabled();
         }
 
         $shopkey = $this->config->getShopkey();

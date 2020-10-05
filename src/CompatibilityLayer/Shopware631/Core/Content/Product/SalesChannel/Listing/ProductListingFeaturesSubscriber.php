@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware631\Core\Content\Product\SalesChannel\Listing;
 
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\Api\Client as ApiClient;
@@ -74,7 +74,6 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     public function __construct(
         Connection $connection,
         EntityRepositoryInterface $optionRepository,
-        EntityRepositoryInterface $productSortingRepository,
         ProductListingSortingRegistry $sortingRegistry,
         NavigationRequestFactory $navigationRequestFactory,
         SearchRequestFactory $searchRequestFactory,
@@ -114,14 +113,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $this->sortingRegistry = $sortingRegistry;
         $this->navigationRequestFactory = $navigationRequestFactory;
         $this->searchRequestFactory = $searchRequestFactory;
-
-        parent::__construct(
-            $connection,
-            $optionRepository,
-            $productSortingRepository,
-            $systemConfigService,
-            $sortingRegistry
-        );
+        parent::__construct($connection, $optionRepository, $sortingRegistry);
     }
 
     public function handleResult(ProductListingResultEvent $event): void
@@ -251,9 +243,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
         $isCategoryPage = !($event instanceof ProductSearchCriteriaEvent);
         if (!$this->config->isActive() || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
-            $findologicService->setDisabled();
-
-            return false;
+            return $findologicService->setDisabled();
         }
 
         $shopkey = $this->config->getShopkey();

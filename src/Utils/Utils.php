@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Utils;
 
-use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use InvalidArgumentException;
 use PackageVersions\Versions;
+use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -125,12 +130,54 @@ class Utils
         return version_compare($versionWithoutCommitHash, $version, '<');
     }
 
+    /**
+     * Determines based on the current request and settings, if the Findologic Search should be handle the request
+     * or not. In case this method has already been called once, the same state will be returned.
+     */
+    public static function shouldHandleRequest(
+        Request $request,
+        Context $context,
+        ServiceConfigResource $serviceConfigResource,
+        Config $config,
+        bool $isCategoryPage = false
+    ): bool {
+        /** @var FindologicService $findologicService */
+        if ($findologicService = $context->getExtension('findologicService')) {
+            return $findologicService->getEnabled();
+        }
+
+        if (!$config->isInitialized()) {
+            throw new InvalidArgumentException('Config needs to be initialized first!');
+        }
+
+        $findologicService = new FindologicService();
+        $context->addExtension('findologicService', $findologicService);
+
+        if (!$config->isActive() || ($isCategoryPage && !$config->isActiveOnCategoryPages())) {
+            return $findologicService->setDisabled();
+        }
+
+        $shopkey = $config->getShopkey();
+        $isDirectIntegration = $serviceConfigResource->isDirectIntegration($shopkey);
+        $isStagingShop = $serviceConfigResource->isStaging($shopkey);
+        $isStagingSession = static::isStagingSession($request);
+
+        // Allow request if shop is not staging or is staging with findologic=on flag set
+        $allowRequestForStaging = (!$isStagingShop || ($isStagingShop && $isStagingSession));
+
+        if ($isDirectIntegration || !$allowRequestForStaging) {
+            return $findologicService->setDisabled();
+        }
+
+        return $findologicService->setEnabled();
+    }
+
     public static function isFindologicEnabled(SalesChannelContext $context): bool
     {
-        /** @var FindologicEnabled $findologicEnabled */
-        $findologicEnabled = $context->getContext()->getExtension('flEnabled');
+        /** @var FindologicService $findologicService */
+        $findologicService = $context->getContext()->getExtension('findologicService');
 
-        return $findologicEnabled ? $findologicEnabled->getEnabled() : false;
+        return $findologicService ? $findologicService->getEnabled() : false;
     }
 
     public static function isStagingSession(Request $request): bool

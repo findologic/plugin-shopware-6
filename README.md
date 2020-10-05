@@ -8,7 +8,9 @@
 1. [Libraries](#libraries)
 1. [Export customization](#export-customization)
 1. [Development](#development)
+   1. [Developing custom JavaScript plugins](#developing-custom-javascript-plugins)
    1. [Running tests locally](#running-tests-locally)
+   1. [Compatibility layer](#compatibility-layer)
 1. [Deployment and Release](#deployment-and-release)
 1. [Test Shopware release candidates](#test-shopware-release-candidates)
 
@@ -81,6 +83,29 @@ Move the plugin folder inside of `custom/plugins` and make sure that you have wr
 edit the plugin inside of the `custom/plugins` folder. If you haven't already, run `composer dump-autoload`.
 
 That's basically it. When running tests just do not forget to add `phpunit.xml.dist` as default configuration file.
+
+### Compatibility layer
+
+Shopware 6 had some big breaking changes in the past. Therefore, we've introduced a compatibility layer in
+`src/CompatibilityLayer`. The directory structure is as follows:
+
+```
+CompatibilityLayer/Shopware<version>/<shopware-override-path>
+```
+
+* `<version>` Sanitized Shopware version without minor version. E.g. `6.3.1.2` => `631` or `6.1.6` => `61`.
+* `<shopware-override-path>` Path to the file, which is overridden by the plugin. E.g. `Storefront/Page/Search/SearchPageLoader.php`.
+
+---
+
+**General rules**
+
+* A class **MUST NOT** be used for a version, newer than its namespace suggests.
+* A class **MUST** be used when the namespace matches the used version.
+* A class **MAY** be used for a version, older than its namespace suggests.
+
+If you are not sure which classes are used for which versions, you can always check out the `services.xml` for the
+respective version in `src/Resources/config/compatibility`.
 
 ## Deployment and Release
 Before starting the deployment make sure that a release is already created.

@@ -1,7 +1,7 @@
 {% sw_extends '@Storefront/storefront/component/pagination.html.twig' %}
 
 {% block component_pagination_nav %}
-    {% if not context.context.extensions.flEnabled.enabled %}
+    {% if not context.context.extensions.findologicService.enabled %}
         {{ parent() }}
     {% else %}
 

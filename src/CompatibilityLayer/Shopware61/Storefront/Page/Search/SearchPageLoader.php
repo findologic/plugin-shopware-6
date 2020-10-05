@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Storefront\Page\Legacy\Search;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search;
 
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchGatewayInterface;
