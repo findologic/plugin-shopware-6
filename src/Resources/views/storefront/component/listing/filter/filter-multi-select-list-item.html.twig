@@ -1,14 +1,14 @@
 {% sw_extends '@Storefront/storefront/component/listing/filter/filter-multi-select-list-item.html.twig' %}
 
 {% block component_filter_multi_select_list_item %}
-    {% if not context.context.extensions.flEnabled.enabled %}
+    {% if not context.context.extensions.findologicService.enabled %}
         {{ parent() }}
     {% else %}
         <div class="custom-control custom-checkbox">
             {% set id = element.id %}
             {% set name = element.translated.name %}
             {% block component_filter_multi_select_list_item_checkbox_input %}
-                {% if not context.context.extensions.flEnabled.enabled %}
+                {% if not context.context.extensions.findologicService.enabled %}
                     {{ parent() }}
                 {% else %}
                     <input type="checkbox"
@@ -20,7 +20,7 @@
             {% endblock %}
 
             {% block component_filter_multi_select_list_item_label_element %}
-                {% if not context.context.extensions.flEnabled.enabled %}
+                {% if not context.context.extensions.findologicService.enabled %}
                     {{ parent() }}
                 {% else %}
                     <label class="filter-multi-select-item-label custom-control-label" for="{{ element.uuid }}">

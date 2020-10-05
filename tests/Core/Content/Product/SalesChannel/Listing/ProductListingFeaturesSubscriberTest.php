@@ -18,7 +18,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
+use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
@@ -273,15 +273,15 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             $eventMock = $this->setUpNavigationRequestMocks();
         }
 
-        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
+        $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
+        $findologicServiceMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicServiceMock);
         $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-            ['flEnabled'],
+            ['findologicService'],
             ['flSmartDidYouMean'],
             ['flPromotion', new Promotion('https://promotion.com/promotion.png', 'https://promotion.com/')]
         );
@@ -302,15 +302,15 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
 
-        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
+        $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
+        $findologicServiceMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicServiceMock);
         $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-            ['flEnabled'],
+            ['findologicService'],
             ['flSmartDidYouMean']
         );
         $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
@@ -329,15 +329,15 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
 
-        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
+        $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
+        $findologicServiceMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicServiceMock);
         $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-            ['flEnabled'],
+            ['findologicService'],
             [
                 'flSmartDidYouMean',
                 $this->getDefaultSmartDidYouMeanExtension('ps4', null, 'ps4')
@@ -359,15 +359,15 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
 
-        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
+        $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
+        $findologicServiceMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicServiceMock);
         $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-            ['flEnabled'],
+            ['findologicService'],
             [
                 'flSmartDidYouMean',
                 $this->getDefaultSmartDidYouMeanExtension('', 'ps4', null, 'corrected')
@@ -389,15 +389,15 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
 
-        $findologicEnabledMock = $this->getMockBuilder(FindologicEnabled::class)
+        $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $findologicEnabledMock->expects($this->any())->method('getEnabled')->willReturn(true);
+        $findologicServiceMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicEnabledMock);
+        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicServiceMock);
         $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-            ['flEnabled'],
+            ['findologicService'],
             [
                 'flSmartDidYouMean',
                 $this->getDefaultSmartDidYouMeanExtension('', 'ps4', null, 'improved')
@@ -613,7 +613,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        // Sorting is handles via database since Shopware 6.3.2.
+        // Sorting is handled via database since Shopware 6.3.2.
         if (!Utils::versionLowerThan('6.3.2')) {
             $sorting = new ProductSortingEntity();
             $sorting->setKey('score');
@@ -783,10 +783,10 @@ XML;
         }
         $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
 
-        $findologicEnabled = new FindologicEnabled();
+        $findologicService = new FindologicService();
         $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
         $defaultExtensionMap = [
-            ['flEnabled', $findologicEnabled],
+            ['findologicService', $findologicService],
             ['flSmartDidYouMean', $smartDidYouMean],
         ];
 
@@ -794,12 +794,12 @@ XML;
 
         if ($withSmartDidYouMean) {
             $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-                ['flEnabled', $findologicEnabled],
+                ['findologicService', $findologicService],
                 ['flSmartDidYouMean', $smartDidYouMean]
             );
         } else {
             $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-                ['flEnabled', $findologicEnabled]
+                ['findologicService', $findologicService]
             );
         }
         $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
@@ -871,10 +871,10 @@ XML;
         $request = $this->getDefaultRequestMock();
         $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
 
-        $findologicEnabled = new FindologicEnabled();
+        $findologicService = new FindologicService();
         $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
         $defaultExtensionMap = [
-            ['flEnabled', $findologicEnabled],
+            ['findologicService', $findologicService],
             ['flSmartDidYouMean', $smartDidYouMean]
         ];
 

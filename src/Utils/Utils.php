@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Utils;
 
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
+use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use InvalidArgumentException;
 use PackageVersions\Versions;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -141,22 +141,20 @@ class Utils
         Config $config,
         bool $isCategoryPage = false
     ): bool {
-        /** @var FindologicEnabled $flEnabled */
-        if ($flEnabled = $context->getExtension('flEnabled')) {
-            return $flEnabled->getEnabled();
+        /** @var FindologicService $findologicService */
+        if ($findologicService = $context->getExtension('findologicService')) {
+            return $findologicService->getEnabled();
         }
 
         if (!$config->isInitialized()) {
             throw new InvalidArgumentException('Config needs to be initialized first!');
         }
 
-        $findologicEnabled = new FindologicEnabled();
-        $context->addExtension('flEnabled', $findologicEnabled);
-        $findologicEnabled->setEnabled();
+        $findologicService = new FindologicService();
+        $context->addExtension('findologicService', $findologicService);
 
         if (!$config->isActive() || ($isCategoryPage && !$config->isActiveOnCategoryPages())) {
-            $findologicEnabled->setDisabled();
-            return false;
+            return $findologicService->setDisabled();
         }
 
         $shopkey = $config->getShopkey();
@@ -168,20 +166,18 @@ class Utils
         $allowRequestForStaging = (!$isStagingShop || ($isStagingShop && $isStagingSession));
 
         if ($isDirectIntegration || !$allowRequestForStaging) {
-            $findologicEnabled->setDisabled();
-            return false;
+            return $findologicService->setDisabled();
         }
 
-        $findologicEnabled->setEnabled();
-        return true;
+        return $findologicService->setEnabled();
     }
 
     public static function isFindologicEnabled(SalesChannelContext $context): bool
     {
-        /** @var FindologicEnabled $findologicEnabled */
-        $findologicEnabled = $context->getContext()->getExtension('flEnabled');
+        /** @var FindologicService $findologicService */
+        $findologicService = $context->getContext()->getExtension('findologicService');
 
-        return $findologicEnabled ? $findologicEnabled->getEnabled() : false;
+        return $findologicService ? $findologicService->getEnabled() : false;
     }
 
     public static function isStagingSession(Request $request): bool

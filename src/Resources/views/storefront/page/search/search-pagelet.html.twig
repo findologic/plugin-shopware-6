@@ -15,7 +15,7 @@
 {% endif %}
 
 {% block element_product_listing_wrapper %}
-    {% if not context.context.extensions.flEnabled.enabled %}
+    {% if not context.context.extensions.findologicService.enabled %}
         {{ parent() }}
     {% else %}
         {% if page.header.extensions.flConfig.filterPosition is constant('\\FINDOLOGIC\\FinSearch\\Findologic\\FilterPosition::LEFT') %}

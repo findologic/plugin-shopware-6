@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Struct\FindologicEnabled;
+use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -125,15 +125,15 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $findologicEnabled = $this->getMockBuilder(FindologicEnabled::class)
+        $findologicService = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $salesChannelContextMock->expects($this->any())->method('getContext')->willReturn($context);
         $context->expects($this->any())->method('getExtension')
-            ->with('flEnabled')
-            ->willReturn($findologicEnabled);
-        $findologicEnabled->expects($this->any())->method('getEnabled')->willReturn($findologicActive);
+            ->with('findologicService')
+            ->willReturn($findologicService);
+        $findologicService->expects($this->any())->method('getEnabled')->willReturn($findologicActive);
 
         return $salesChannelContextMock;
     }
