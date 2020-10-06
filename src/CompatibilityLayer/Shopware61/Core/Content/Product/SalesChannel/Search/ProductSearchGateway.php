@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel\Search;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Core\Content\Product\SalesChannel\Search;
 
-use FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel\FindologicProductListingGateway;
-use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchGateway as ShopwareProductSearchGateway;
+use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Core\Content\Product\SalesChannel\FindologicProductListingGateway
+    as DecoratedProductListingGateway;
+use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchGateway
+    as ShopwareProductSearchGateway;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
@@ -43,8 +45,8 @@ class ProductSearchGateway extends ShopwareProductSearchGateway
 
     public function search(Request $request, SalesChannelContext $context): EntitySearchResult
     {
-        $findologicProductListingSearchGateway = FindologicProductListingGateway::getInstance(
-            FindologicProductListingGateway::TYPE_SEARCH,
+        $findologicProductListingSearchGateway = DecoratedProductListingGateway::getInstance(
+            DecoratedProductListingGateway::TYPE_SEARCH,
             $this->repository,
             $this->eventDispatcher,
             $this->searchBuilder

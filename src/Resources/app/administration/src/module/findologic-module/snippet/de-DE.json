@@ -8,6 +8,12 @@
     "invalidShopkey": "Ungültiger Shopkey.",
     "notRegisteredShopkey": "Der eingegebene Shopkey ist keinem bekannten Service zugeordnet.",
     "settingForm": {
+      "directIntegration": {
+        "title": "Direct Integration"
+      },
+      "api": {
+        "title": "API"
+      },
       "configSaved": "Konfiguration gespeichert.",
       "testButton": "Testmodus",
       "config": {
@@ -34,9 +40,24 @@
           "placeholder": "fl-navigation-result",
           "tooltipText": "Diese Option ist nur bei Direct Integration wirksam, wenn kein Wert gegeben ist wird fl-navigation-result verwendet."
         },
+        "crossSellingCategories": {
+          "label": "Cross-Selling Kategorien",
+          "placeholder": "Kategorien suchen...",
+          "tooltipText": "Sollten Sie mehrere Subkategorien in Ihrer Cross-Selling Kategorie haben, fügen sie jede Subkategorie ein. Produkte in diesen Kategorien werden vom Export ausgeschlossen"
+        },
         "integrationType": {
           "label": "Integration (schreibgeschützt)",
           "tooltipText": "Die aktuell verwendete Integrationsart. Entweder Direct Integration oder API."
+        },
+        "filterPosition": {
+          "label": "Position der Filter auf Suchergebnisseiten",
+          "tooltipText": "Oben: Zeigt die Filter über dem Suchergebnis an. Links: Zeigt die Filter auf der linken Seite, neben dem Suchergebnis, an",
+          "top": {
+            "label": "Oben"
+          },
+          "left": {
+            "label": "Links"
+          }
         }
       },
       "titleSuccess": "Erfolgreich",

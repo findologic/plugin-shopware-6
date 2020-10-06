@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Core\Content\Product\SalesChannel;
 
 use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\SalesChannel;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Core\Content\Product\SalesChannel;
 
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;

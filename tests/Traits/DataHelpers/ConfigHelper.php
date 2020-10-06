@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Defaults;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use SimpleXMLElement;
 
@@ -45,14 +46,17 @@ trait ConfigHelper
         array $overrides = []
     ): SystemConfigService {
         /** @var SystemConfigService|MockObject $configServiceMock */
-        $configServiceMock = $testClass->getMockBuilder(SystemConfigService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
+        $configServiceMock = $this->createMock(SystemConfigService::class);
+        $salesChannelId = Defaults::SALES_CHANNEL;
+        if (isset($overrides['salesChannelId'])) {
+            $salesChannelId = $overrides['salesChannelId'];
+            unset($overrides['salesChannelId']);
+        }
         $defaultConfig = [
             'active' => true,
             'shopkey' => $this->getShopkey(),
             'activeOnCategoryPages' => true,
+            'crossSellingCategories' => [],
             'searchResultContainer' => 'fl-result',
             'navigationResultContainer' => 'fl-navigation-result',
             'integrationType' => 'Direct Integration',
@@ -61,13 +65,20 @@ trait ConfigHelper
         $config = array_merge($defaultConfig, $overrides);
 
         $configServiceMock->method('get')
-            ->willReturnOnConsecutiveCalls(
-                $config['active'],
-                $config['shopkey'],
-                $config['activeOnCategoryPages'],
-                $config['searchResultContainer'],
-                $config['navigationResultContainer'],
-                $config['integrationType']
+            ->willReturnMap(
+                [
+                    ['FinSearch.config.active', $salesChannelId, $config['active']],
+                    ['FinSearch.config.shopkey', $salesChannelId, $config['shopkey']],
+                    ['FinSearch.config.activeOnCategoryPages', $salesChannelId, $config['activeOnCategoryPages']],
+                    ['FinSearch.config.crossSellingCategories', $salesChannelId, $config['crossSellingCategories']],
+                    ['FinSearch.config.searchResultContainer', $salesChannelId, $config['searchResultContainer']],
+                    [
+                        'FinSearch.config.navigationResultContainer',
+                        $salesChannelId,
+                        $config['navigationResultContainer']
+                    ],
+                    ['FinSearch.config.integrationType', $salesChannelId, $config['integrationType']]
+                ]
             );
 
         return $configServiceMock;

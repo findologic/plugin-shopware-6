@@ -35,8 +35,6 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-use const DATE_ATOM;
-
 class FindologicProduct extends Struct
 {
     /** @var ProductEntity */
@@ -803,8 +801,15 @@ class FindologicProduct extends Struct
         $catUrls = [];
         $categories = [];
 
+        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
+        /** @var CategoryEntity $categoryEntity */
         foreach ($this->product->getCategories() as $categoryEntity) {
             if (!$categoryEntity->getActive() || Utils::isEmpty($categoryEntity->getName())) {
+                continue;
+            }
+
+            if (!strpos($categoryEntity->getPath(), $navigationCategoryId)) {
                 continue;
             }
 
@@ -947,7 +952,16 @@ class FindologicProduct extends Struct
 
     protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
     {
-        return $categoryEntity->getSeoUrls();
+        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
+        $seoUrls = new SeoUrlCollection();
+
+        foreach ($categoryEntity->getSeoUrls()->getElements() as $seoUrlEntity) {
+            if ($seoUrlEntity->getSalesChannelId() === $salesChannelId || $seoUrlEntity->getSalesChannelId() === null) {
+                $seoUrls->add($seoUrlEntity);
+            }
+        }
+
+        return $seoUrls;
     }
 
     protected function buildCategoryPath(CategoryEntity $categoryEntity): string

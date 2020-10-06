@@ -8,6 +8,7 @@ use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasCrossSellingCategoryException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
@@ -31,6 +32,7 @@ use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -298,9 +300,20 @@ class ExportController extends AbstractController implements EventSubscriberInte
     ): array {
         $items = [];
 
+        $crossSellingCategories = $this->getConfig(
+            'crossSellingCategories',
+            $this->salesChannelContext->getSalesChannel()->getId()
+        );
+
         /** @var ProductEntity $productEntity */
         foreach ($productEntities as $productEntity) {
             try {
+                $categories = $productEntity->getCategories();
+                $category = $categories ? $categories->first() : null;
+                $categoryId = $category ? $category->getId() : null;
+                if (!empty($crossSellingCategories) && in_array($categoryId, $crossSellingCategories, false)) {
+                    throw new ProductHasCrossSellingCategoryException();
+                }
                 $xmlProduct = new XmlProduct(
                     $productEntity,
                     $this->router,
@@ -345,6 +358,17 @@ class ExportController extends AbstractController implements EventSubscriberInte
                         $productEntity->getId()
                     )
                 );
+            } catch (ProductHasCrossSellingCategoryException $e) {
+                $this->logger->warning(
+                    sprintf(
+                        'Product with id %s (%s) was not exported because it ' .
+                        'is assigned to cross selling category %s (%s)',
+                        $productEntity->getId(),
+                        $productEntity->getName(),
+                        $category->getId(),
+                        implode(' > ', $category->getBreadcrumb())
+                    )
+                );
             } catch (EmptyValueNotAllowedException $e) {
                 $this->logger->warning(
                     sprintf(
@@ -366,5 +390,13 @@ class ExportController extends AbstractController implements EventSubscriberInte
         }
 
         return $items;
+    }
+
+    private function getConfig(string $config, ?string $salesChannelId)
+    {
+        return $this->container->get(SystemConfigService::class)->get(
+            sprintf('FinSearch.config.%s', $config),
+            $salesChannelId
+        );
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
 
+use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use GuzzleHttp\Exception\ClientException;
@@ -46,6 +47,12 @@ class Config extends Struct
     /** @var bool */
     private $initialized = false;
 
+    /** @var string */
+    private $filterPosition;
+
+    /** @var array */
+    private $crossSellingCategories = [];
+
     public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
     {
         $this->systemConfigService = $systemConfigService;
@@ -61,10 +68,12 @@ class Config extends Struct
             'active',
             'staging',
             'activeOnCategoryPages',
+            'crossSellingCategories',
             'searchResultContainer',
             'navigationResultContainer',
             'integrationType',
             'initialized',
+            'filterPosition'
         ];
     }
 
@@ -120,6 +129,11 @@ class Config extends Struct
             'FinSearch.config.activeOnCategoryPages',
             false
         );
+        $this->crossSellingCategories = $this->getConfig(
+            $salesChannelId,
+            'FinSearch.config.crossSellingCategories',
+            []
+        );
         $this->searchResultContainer = $this->getConfig(
             $salesChannelId,
             'FinSearch.config.searchResultContainer',
@@ -130,10 +144,20 @@ class Config extends Struct
             'FinSearch.config.navigationResultContainer',
             self::DEFAULT_NAVIGATION_RESULT_CONTAINER
         );
+        $this->filterPosition = $this->getConfig(
+            $salesChannelId,
+            'FinSearch.config.filterPosition',
+            FilterPosition::TOP
+        );
 
         $this->initializeReadonlyConfig($salesChannelId);
 
         $this->initialized = true;
+    }
+
+    public function getCrossSellingCategories(): array
+    {
+        return $this->crossSellingCategories;
     }
 
     /**
@@ -175,8 +199,6 @@ class Config extends Struct
     }
 
     /**
-     * @param mixed $default
-     *
      * @return string|bool|null
      */
     private function getConfig(?string $salesChannelId, string $configKey, $default = null)
@@ -187,5 +209,13 @@ class Config extends Struct
         }
 
         return $configValue;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilterPosition(): string
+    {
+        return $this->filterPosition;
     }
 }

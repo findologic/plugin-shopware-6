@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\Legacy\Cms;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Core\Content\Product\Cms;
 
 use Shopware\Core\Content\Product\Cms\ProductListingCmsElementResolver as ShopwareProductListingCmsElementResolver;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingGatewayInterface;

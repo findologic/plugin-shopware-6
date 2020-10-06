@@ -13,6 +13,8 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 trait ProductHelper
 {
@@ -21,11 +23,31 @@ trait ProductHelper
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();
         $categoryId = Uuid::randomHex();
+        $newCategoryId = Uuid::randomHex();
         $redId = Uuid::randomHex();
         $colorId = Uuid::randomHex();
 
         /** @var ContainerInterface $container */
         $container = $this->getContainer();
+
+        $contextFactory = $container->get(SalesChannelContextFactory::class);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
+        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
+        $categoryData = [
+            [
+                'id' => Uuid::randomHex(),
+                'name' => 'FINDOLOGIC Main 2',
+                'children' => [
+                    [
+                        'id' => $newCategoryId,
+                        'name' => 'FINDOLOGIC Sub'
+                    ]
+                ]
+            ]
+        ];
+        $container->get('category.repository')->upsert($categoryData, $context);
 
         $productData = [
             'id' => $id,
@@ -43,6 +65,7 @@ trait ProductHelper
             'tax' => ['name' => '9%', 'taxRate' => 9],
             'categories' => [
                 [
+                    'parentId' => $navigationCategoryId,
                     'id' => $categoryId,
                     'name' => 'FINDOLOGIC Category',
                     'seoUrls' => [
@@ -54,6 +77,11 @@ trait ProductHelper
                         ]
                     ]
                 ],
+                [
+                    'parentId' => $newCategoryId,
+                    'id' => Uuid::randomHex(),
+                    'name' => 'FINDOLOGIC Sub of Sub'
+                ]
             ],
             'seoUrls' => [
                 [
