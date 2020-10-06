@@ -161,15 +161,15 @@ class Utils
             return false;
         }
 
-        if (empty($value)) {
-            return true;
-        }
-
         if (is_array($value) && empty(array_filter($value))) {
             return true;
         }
 
         if (is_string($value) && empty(trim($value))) {
+            return true;
+        }
+
+        if (empty($value)) {
             return true;
         }
 

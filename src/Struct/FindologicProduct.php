@@ -156,22 +156,22 @@ class FindologicProduct extends Struct
 
     public function hasName(): bool
     {
-        return $this->name && !empty($this->name);
+        return !Utils::isEmpty($this->name);
     }
 
     public function hasAttributes(): bool
     {
-        return $this->attributes && !empty($this->attributes);
+        return !Utils::isEmpty($this->attributes);
     }
 
     public function hasPrices(): bool
     {
-        return $this->prices && !empty($this->prices);
+        return !Utils::isEmpty($this->prices);
     }
 
     public function hasDescription(): bool
     {
-        return $this->description && !empty($this->description);
+        return !Utils::isEmpty($this->description);
     }
 
     /**
@@ -766,8 +766,7 @@ class FindologicProduct extends Struct
 
     protected function setAdditionalAttributes(): void
     {
-        $translationKey = $this->product->getShippingFree() ? 'finSearch.general.yes' : 'finSearch.general.no';
-        $shippingFree = $this->translator->trans($translationKey);
+        $shippingFree = $this->translateBooleanValue($this->product->getShippingFree());
         $this->attributes[] = new Attribute('shipping_free', [$shippingFree]);
         $rating = $this->product->getRatingAverage() ?? 0.0;
         $this->attributes[] = new Attribute('rating', [$rating]);
@@ -805,7 +804,7 @@ class FindologicProduct extends Struct
         $categories = [];
 
         foreach ($this->product->getCategories() as $categoryEntity) {
-            if (!$categoryEntity->getActive()) {
+            if (!$categoryEntity->getActive() || Utils::isEmpty($categoryEntity->getName())) {
                 continue;
             }
 
@@ -996,14 +995,13 @@ class FindologicProduct extends Struct
         }
 
         foreach ($productFields as $key => $value) {
-            if (!Utils::isEmpty($value)) {
+            if (!Utils::isEmpty($key) && !Utils::isEmpty($value)) {
                 if (is_string($value)) {
                     $value = Utils::cleanString($value);
                 }
 
                 if (is_bool($value)) {
-                    $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
-                    $value = $this->translator->trans($translationKey);
+                    $value = $this->translateBooleanValue($value);
                 }
 
                 $customFieldAttribute = new Attribute(Utils::removeSpecialChars($key), [$value]);
@@ -1020,5 +1018,12 @@ class FindologicProduct extends Struct
     public function getCustomFields(): array
     {
         return $this->customFields;
+    }
+
+    private function translateBooleanValue(bool $value)
+    {
+        $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
+
+        return $this->translator->trans($translationKey);
     }
 }
