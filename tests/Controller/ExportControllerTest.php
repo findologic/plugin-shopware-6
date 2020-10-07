@@ -35,6 +35,8 @@ use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
+use Shopware\Core\System\SystemConfig\SystemConfigCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Framework\Routing\Router;
@@ -429,8 +431,13 @@ class ExportControllerTest extends TestCase
 
         $salesChannelId = Defaults::SALES_CHANNEL;
 
+        /** @var SystemConfigEntity|MockObject $systemConfigEntity */
+        $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
+        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($this->validShopkey);
+        $systemConfigEntity->expects($this->exactly(2))->method('getSalesChannelId')->willReturn($salesChannelId);
+
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
-        $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();
+        $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock($systemConfigEntity);
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getDefaultSalesChannelContextMock();
@@ -797,37 +804,11 @@ class ExportControllerTest extends TestCase
 
         $salesChannelId = Defaults::SALES_CHANNEL;
 
-        /** @var SalesChannelEntity|MockObject $salesChannelMock */
-        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
-        $salesChannelMock->method('getId')->willReturn($salesChannelId);
-
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
-        $systemConfigRepositoryMock = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        /** @var SystemConfigEntity|MockObject $systemConfigEntity */
-        $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-        $systemConfigEntity->expects($this->once())->method('getConfigurationValue')->willReturn($this->validShopkey);
-        $systemConfigEntity->expects($this->exactly(2))->method('getSalesChannelId')->willReturn($salesChannelId);
-
-        /** @var SystemConfigCollection $entities */
-        $entities = new SystemConfigCollection([$systemConfigEntity]);
-
-        /** @var EntitySearchResult $entitySearchResult */
-        $entitySearchResult
-            = new EntitySearchResult(1, $entities, null, new Criteria(), $this->defaultContext);
-
-        $systemConfigRepositoryMock->expects($this->once())->method('search')->willReturn($entitySearchResult);
+        $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();
 
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
-        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $salesChannelContextMock->expects($this->exactly(2))
-            ->method('getContext')
-            ->willReturn($this->defaultContext);
+        $salesChannelContextMock = $this->getDefaultSalesChannelContextMock();
 
         /** @var Request $request */
         $request = new Request(['shopkey' => $this->validShopkey, 'start' => $start, 'count' => $count]);
@@ -838,8 +819,6 @@ class ExportControllerTest extends TestCase
             ->addMethods(['set'])
             ->onlyMethods(['get', 'has'])
             ->getMock();
-
-        $containerMock->expects($this->once())->method('set');
 
         /** @var EntityRepository|MockObject $productRepositoryMock */
         $productRepositoryMock
@@ -889,6 +868,9 @@ class ExportControllerTest extends TestCase
             ->method('search')
             ->willReturn($productEntitySearchResult);
 
+        /** @var SystemConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
+
         $containerRepositoriesMap = [
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
@@ -906,6 +888,7 @@ class ExportControllerTest extends TestCase
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             [FindologicProductFactory::class, $this->getContainer()->get(FindologicProductFactory::class)],
             [SalesChannelContextFactory::class, $this->getContainer()->get(SalesChannelContextFactory::class)],
+            [SystemConfigService::class, $configServiceMock],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
