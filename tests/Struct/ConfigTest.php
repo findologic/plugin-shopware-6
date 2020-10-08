@@ -28,6 +28,7 @@ class ConfigTest extends TestCase
                     'active' => true,
                     'shopkey' => $this->getShopkey(),
                     'activeOnCategoryPages' => true,
+                    'crossSellingCategories' => [],
                     'searchResultContainer' => 'fl-result',
                     'navigationResultContainer' => 'fl-navigation-result',
                     'integrationType' => 'API'
@@ -39,6 +40,7 @@ class ConfigTest extends TestCase
                     'active' => true,
                     'shopkey' => $this->getShopkey(),
                     'activeOnCategoryPages' => true,
+                    'crossSellingCategories' => [],
                     'searchResultContainer' => 'fl-result',
                     'navigationResultContainer' => 'fl-navigation-result',
                     'integrationType' => null
@@ -79,6 +81,7 @@ class ConfigTest extends TestCase
         $this->assertSame($data['active'], $config->isActive());
         $this->assertSame($data['shopkey'], $config->getShopkey());
         $this->assertSame($data['activeOnCategoryPages'], $config->isActiveOnCategoryPages());
+        $this->assertSame($data['crossSellingCategories'], $config->getCrossSellingCategories());
         $this->assertSame($data['searchResultContainer'], $config->getSearchResultContainer());
         $this->assertSame($data['navigationResultContainer'], $config->getNavigationResultContainer());
         $this->assertSame($data['integrationType'], $config->getIntegrationType());

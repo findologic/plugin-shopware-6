@@ -25,12 +25,18 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Defaults;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProductTest extends TestCase
@@ -132,12 +138,46 @@ class FindologicProductTest extends TestCase
     {
         $categoryId = Uuid::randomHex();
 
+        $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
+        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
+        /** @var SalesChannelRepository $repos */
+        $repos = $this->getContainer()->get('sales_channel.repository');
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'Storefront'));
+
+        $result = $repos->search($criteria, Context::createDefaultContext());
+        /** @var SalesChannelEntity $additionalSalesChannel */
+        $additionalSalesChannel = $result->first();
+        $additionalSalesChannelId = $additionalSalesChannel->getId();
+
         return [
             'Category does not have SEO path assigned' => [
                 'data' => [
                     [
+                        'parentId' => $navigationCategoryId,
                         'id' => $categoryId,
-                        'name' => 'FINDOLOGIC Category'
+                        'name' => 'FINDOLOGIC Category',
+                        'seoUrls' => [
+                            [
+                                'id' => Uuid::randomHex(),
+                                'salesChannelId' => Defaults::SALES_CHANNEL,
+                                'pathInfo' => 'navigation/' . $categoryId,
+                                'seoPathInfo' => 'Main',
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page'
+                            ],
+                            [
+                                'id' => Uuid::randomHex(),
+                                'salesChannelId' => $additionalSalesChannelId,
+                                'pathInfo' => 'navigation/' . $categoryId,
+                                'seoPathInfo' => 'Additional Main',
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page'
+                            ]
+                        ]
                     ]
                 ],
                 'categoryId' => $categoryId
@@ -145,6 +185,7 @@ class FindologicProductTest extends TestCase
             'Category have a pseudo empty SEO path assigned' => [
                 'data' => [
                     [
+                        'parentId' => $navigationCategoryId,
                         'id' => $categoryId,
                         'name' => 'FINDOLOGIC Category',
                         'seoUrls' => [
@@ -188,7 +229,8 @@ class FindologicProductTest extends TestCase
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-        $this->assertSame(sprintf('/navigation/%s', $categoryId), current($attribute->getValues()));
+        $this->assertNotContains('/Additional Main', $attribute->getValues());
+        $this->assertContains(sprintf('/navigation/%s', $categoryId), $attribute->getValues());
     }
 
     /**
@@ -215,7 +257,7 @@ class FindologicProductTest extends TestCase
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-        $this->assertSame('/Findologic-Category', current($attribute->getValues()));
+        $this->assertContains('/Findologic-Category', $attribute->getValues());
     }
 
     public function priceProvider(): array
@@ -315,7 +357,7 @@ class FindologicProductTest extends TestCase
         $this->assertEquals([$productTag], $findologicProduct->getKeywords());
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
-        $this->assertEquals($attributes, $findologicProduct->getAttributes());
+        $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
         $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
         $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
         $this->assertEquals($properties, $findologicProduct->getProperties());
@@ -494,6 +536,74 @@ class FindologicProductTest extends TestCase
         );
     }
 
+    public function testNonFilterablePropertiesAreExportedAsPropertiesInsteadOfAttributes(): void
+    {
+        if (Utils::versionLowerThan('6.2.0')) {
+            $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
+        }
+
+        $expectedPropertyName = 'blub';
+        $expectedPropertyValue = 'some value';
+
+        $productEntity = $this->createTestProduct([
+            'properties' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'name' => $expectedPropertyValue,
+                    'group' => [
+                        'id' => Uuid::randomHex(),
+                        'name' => $expectedPropertyName,
+                        'filterable' => false
+                    ],
+                ]
+            ]
+        ]);
+
+        $criteria = new Criteria([$productEntity->getId()]);
+        $criteria = Utils::addProductAssociations($criteria);
+
+        $productEntity = $this->getContainer()
+            ->get('product.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->get($productEntity->getId());
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $foundAttributes = array_filter(
+            $findologicProduct->getAttributes(),
+            function (Attribute $attribute) use ($expectedPropertyName) {
+                return $attribute->getKey() === $expectedPropertyName;
+            }
+        );
+
+        $this->assertEmpty($foundAttributes);
+
+        $foundProperties = array_filter(
+            $findologicProduct->getProperties(),
+            function (Property $property) use ($expectedPropertyName) {
+                return $property->getKey() === $expectedPropertyName;
+            }
+        );
+
+        /** @var Property $property */
+        $property = reset($foundProperties);
+        $this->assertEquals($expectedPropertyValue, $property->getAllValues()['']); // '' = Empty usergroup.
+    }
+
     /**
      * @return Property[]
      */
@@ -632,14 +742,23 @@ class FindologicProductTest extends TestCase
      */
     private function getAttributes(ProductEntity $productEntity): array
     {
-        $catUrl = '/Findologic-Category';
-        $defaultCatUrl = sprintf('/navigation/%s', $productEntity->getCategories()->first()->getId());
+        $catUrl1 = '/FINDOLOGIC-Category/';
+        $catUrl2 = '/Findologic-Category';
+        $defaultCatUrl = '';
+
+        foreach ($productEntity->getCategories() as $category) {
+            if ($category->getName() === 'FINDOLOGIC Category') {
+                $defaultCatUrl = sprintf('/navigation/%s', $category->getId());
+            }
+        }
 
         $attributes = [];
-        $catUrlAttribute = new Attribute('cat_url', [$catUrl, $defaultCatUrl]);
+        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $catUrl2, $defaultCatUrl]);
+        $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
         $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
 
         $attributes[] = $catUrlAttribute;
+        $attributes[] = $catAttribute;
         $attributes[] = $vendorAttribute;
 
         $attributes[] = new Attribute(

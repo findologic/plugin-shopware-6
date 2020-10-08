@@ -19,7 +19,7 @@ env:
   matrix:
     - SHOPWARE_VERSION="6.1"
     - SHOPWARE_VERSION="6.2"
-    - SHOPWARE_VERSION="master" # TODO: Use 6.3 branch once it is available.
+    - SHOPWARE_VERSION="master" # TODO change to 6.3 when available
   global:
     - PLUGIN_NAME=FinSearch
     - SHOPWARE_DIR=${HOME}/shopware
@@ -48,7 +48,8 @@ before_script:
   - cd ${PLUGIN_DIR}/${PLUGIN_NAME}
 
 script:
-  - composer test
+  # TODO: Re-enable the deprecation helper in SW-497.
+  - SYMFONY_DEPRECATIONS_HELPER=disabled composer test
 
 addons:
   hosts:

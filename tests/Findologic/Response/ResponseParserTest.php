@@ -8,8 +8,10 @@ use FINDOLOGIC\Api\Responses\Autocomplete\SuggestResponse;
 use FINDOLOGIC\Api\Responses\Html\GenericHtmlResponse;
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21ResponseParser;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -17,6 +19,7 @@ use PHPUnit\Framework\TestCase;
 class ResponseParserTest extends TestCase
 {
     use MockResponseHelper;
+    use ConfigHelper;
 
     public function unsupportedResponseInstanceProvider(): array
     {

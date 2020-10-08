@@ -23,6 +23,9 @@ abstract class BaseFilter
     /** @var FilterValue[] */
     protected $values;
 
+    /** @var bool */
+    protected $hidden = false;
+
     public function __construct(string $id, string $name, array $values = [])
     {
         $this->id = $id;
@@ -48,5 +51,15 @@ abstract class BaseFilter
     public function getValues(): array
     {
         return $this->values;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->hidden;
+    }
+
+    public function setHidden(bool $hidden): void
+    {
+        $this->hidden = $hidden;
     }
 }

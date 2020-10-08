@@ -7,6 +7,25 @@
     <services>
 
         <service
+                id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
+                decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
+                public="true"
+        >
+            <tag name="kernel.event_subscriber" />
+            <argument type="service" id="Doctrine\DBAL\Connection" />
+            <argument type="service" id="property_group_option.repository" />
+            <argument type="service" id="product_sorting.repository"/>
+            <argument type="service"
+                      id="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" />
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
+            <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
+            <argument type="service" id="Symfony\Component\DependencyInjection\ContainerInterface" />
+        </service>
+
+        <service
             id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
             decorates="Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
         >

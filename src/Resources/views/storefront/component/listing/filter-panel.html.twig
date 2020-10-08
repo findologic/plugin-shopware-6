@@ -16,10 +16,11 @@
             {% for filter in filters %}
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\LabelTextFilter") or
                     filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\SelectDropdownFilter") %}
-                    {% sw_include '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' with {
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-multi-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
+                        hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
                         pluginSelector: 'filter-property-select'
@@ -42,6 +43,7 @@
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
+                        hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
                         minKey: filter.minKey,
@@ -57,6 +59,7 @@
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
+                        hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: filter.displayType,
                         pluginSelector: 'filter-property-select'
@@ -68,6 +71,7 @@
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
+                        hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
                         pluginSelector: 'filter-category-select'
@@ -80,6 +84,7 @@
                         maxPoints: filter.maxPoints,
                         sidebar: sidebar,
                         name: filter.id,
+                        hidden: filter.hidden,
                         displayName: filter.name,
                         pluginSelector: 'filter-rating'
                     } %}
