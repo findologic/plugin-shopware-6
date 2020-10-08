@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
+use Exception;
+use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\FinSearch\Controller\ExportController;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
@@ -35,8 +37,6 @@ use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SalesChannel\SalesChannelEntity;
-use Shopware\Core\System\SystemConfig\SystemConfigCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Framework\Routing\Router;
@@ -45,6 +45,7 @@ use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Throwable;
 
 class ExportControllerTest extends TestCase
 {
@@ -779,12 +780,14 @@ class ExportControllerTest extends TestCase
     {
         return [
             'EmptyValueNotAllowedException is logged' => [
-                'Product with id "%s" could not be exported. It appears to have empty values assigned to it. ' .
-                'If you see this message in your logs, please report this as a bug.'
+                'exception' => new EmptyValueNotAllowedException('some value'),
+                'message' => 'Product with id "%s" could not be exported. It appears to have empty values ' .
+                    'assigned to it. If you see this message in your logs, please report this as a bug.'
             ],
-            'General Exception is logged' => [
-                'Error while exporting the product with id "%s". If you see this message in your logs, ' .
-                'please report this as a bug. Error message: Test Exception'
+            'Throwable is logged' => [
+                'exception' => new Exception('Test Exception'),
+                'message' => 'Error while exporting the product with id "%s". If you see this message in your logs, ' .
+                    'please report this as a bug. Error message: Test Exception'
             ]
         ];
     }
@@ -792,7 +795,7 @@ class ExportControllerTest extends TestCase
     /**
      * @dataProvider exceptionMessageProvider
      */
-    public function testExceptionIsNotLogged(string $exceptionMessage): void
+    public function testExceptionIsLogged(Throwable $exception, string $message): void
     {
         $data = [
             'description' => '  ',
@@ -871,6 +874,10 @@ class ExportControllerTest extends TestCase
         /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
 
+        $findologicProductFactoryMock =
+            $this->getMockBuilder(FindologicProductFactory::class)->disableOriginalConstructor()->getMock();
+        $findologicProductFactoryMock->expects($this->once())->method('buildInstance')->willThrowException($exception);
+
         $containerRepositoriesMap = [
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
@@ -886,18 +893,17 @@ class ExportControllerTest extends TestCase
             ['shipping_method.repository', $this->getContainer()->get('shipping_method.repository')],
             ['country_state.repository', $this->getContainer()->get('country_state.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
-            [FindologicProductFactory::class, $this->getContainer()->get(FindologicProductFactory::class)],
+            [FindologicProductFactory::class, $findologicProductFactoryMock],
             [SalesChannelContextFactory::class, $this->getContainer()->get(SalesChannelContextFactory::class)],
             [SystemConfigService::class, $configServiceMock],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
 
-        $exceptionMessage = sprintf($exceptionMessage, $productEntity->getId());
+        $exceptionMessage = sprintf($message, $productEntity->getId());
 
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
-        // We check for never here because the exception should not be thrown
-        $this->loggerMock->expects($this->never())->method('warning')->with($exceptionMessage);
+        $this->loggerMock->expects($this->once())->method('warning')->with($exceptionMessage);
 
         $this->exportController = new ExportController(
             $this->loggerMock,

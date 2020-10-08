@@ -502,128 +502,72 @@ class FindologicProduct extends Struct
     {
         if ($this->product->getTax()) {
             $value = (string)$this->product->getTax()->getTaxRate();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('tax');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('tax', $value);
         }
 
         if ($this->product->getDeliveryDate()->getLatest()) {
             $value = $this->product->getDeliveryDate()->getLatest()->format(DATE_ATOM);
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('latestdeliverydate');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('latestdeliverydate', $value);
         }
 
         if ($this->product->getDeliveryDate()->getEarliest()) {
             $value = $this->product->getDeliveryDate()->getEarliest()->format(DATE_ATOM);
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('earliestdeliverydate');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('earliestdeliverydate', $value);
         }
 
         if ($this->product->getPurchaseUnit()) {
             $value = (string)$this->product->getPurchaseUnit();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('purchaseunit');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('purchaseunit', $value);
         }
 
         if ($this->product->getReferenceUnit()) {
             $value = (string)$this->product->getReferenceUnit();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('referenceunit');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('referenceunit', $value);
         }
 
         if ($this->product->getPackUnit()) {
             $value = (string)$this->product->getPackUnit();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('packunit');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('packunit', $value);
         }
 
         if ($this->product->getStock()) {
             $value = (string)$this->product->getStock();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('stock');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('stock', $value);
         }
 
         if ($this->product->getAvailableStock()) {
             $value = (string)$this->product->getAvailableStock();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('availableStock');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('availableStock', $value);
         }
 
         if ($this->product->getWeight()) {
             $value = (string)$this->product->getWeight();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('weight');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('weight', $value);
         }
 
         if ($this->product->getWidth()) {
             $value = (string)$this->product->getWidth();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('width');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('width', $value);
         }
 
         if ($this->product->getHeight()) {
             $value = (string)$this->product->getHeight();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('height');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('height', $value);
         }
 
         if ($this->product->getLength()) {
             $value = (string)$this->product->getLength();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('length');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('length', $value);
         }
 
         if ($this->product->getReleaseDate()) {
             $value = (string)$this->product->getReleaseDate()->format(DATE_ATOM);
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('releasedate');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('releasedate', $value);
         }
 
         if ($this->product->getManufacturer() && $this->product->getManufacturer()->getMedia()) {
             $value = $this->product->getManufacturer()->getMedia()->getUrl();
-            if (!Utils::isEmpty($value)) {
-                $property = new Property('vendorlogo');
-                $property->addValue($value);
-                $this->properties[] = $property;
-            }
+            $this->addProperty('vendorlogo', $value);
         }
     }
 
@@ -923,13 +867,9 @@ class FindologicProduct extends Struct
     protected function getEncodedUrl(string $url): string
     {
         $parsedUrl = parse_url($url);
-        $parsedUrl['path'] = implode(
-            '/',
-            array_map(
-                '\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode',
-                explode('/', $parsedUrl['path'])
-            )
-        );
+        $urlPath = explode('/', $parsedUrl['path']);
+        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
+        $parsedUrl['path'] = implode('/', $encodedPath);
 
         return Utils::buildUrl($parsedUrl);
     }
@@ -1039,5 +979,14 @@ class FindologicProduct extends Struct
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
 
         return $this->translator->trans($translationKey);
+    }
+
+    private function addProperty(string $name, $value)
+    {
+        if (!Utils::isEmpty($value)) {
+            $property = new Property($name);
+            $property->addValue($value);
+            $this->properties[] = $property;
+        }
     }
 }
