@@ -981,7 +981,7 @@ class FindologicProduct extends Struct
         return $this->translator->trans($translationKey);
     }
 
-    private function addProperty(string $name, $value)
+    protected function addProperty(string $name, $value)
     {
         if (!Utils::isEmpty($value)) {
             $property = new Property($name);
