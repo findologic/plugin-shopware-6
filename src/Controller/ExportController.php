@@ -71,6 +71,9 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /** @var CustomerGroupEntity[] */
     private $customerGroups = [];
 
+    /** @var string[] */
+    private $crossSellingCategories = [];
+
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
@@ -241,33 +244,14 @@ class ExportController extends AbstractController implements EventSubscriberInte
     ): array {
         $items = [];
 
-        $crossSellingCategories = $this->getConfig(
-            'crossSellingCategories',
-            $this->salesChannelContext->getSalesChannel()->getId()
-        );
-
         /** @var ProductEntity $productEntity */
         foreach ($productEntities as $productEntity) {
-            try {
-                $categories = $productEntity->getCategories();
-                $category = $categories ? $categories->first() : null;
-                $categoryId = $category ? $category->getId() : null;
-                if (!empty($crossSellingCategories) && in_array($categoryId, $crossSellingCategories, false)) {
-                    throw new ProductHasCrossSellingCategoryException($productEntity, $category);
-                }
-
-                $xmlProduct = new XmlProduct(
-                    $productEntity,
-                    $this->router,
-                    $this->container,
-                    $this->salesChannelContext->getContext(),
-                    $shopkey,
-                    $customerGroups
-                );
-                $items[] = $xmlProduct->getXmlItem();
-            } catch (ProductInvalidException $e) {
-                $this->handleProductInvalidException($e);
+            $item = $this->exportSingleItem($productEntity, $shopkey, $customerGroups);
+            if (!$item) {
+                continue;
             }
+
+            $items[] = $item;
         }
 
         return $items;
@@ -342,6 +326,10 @@ class ExportController extends AbstractController implements EventSubscriberInte
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
+        $this->crossSellingCategories = $this->getConfig(
+            'crossSellingCategories',
+            $this->salesChannelContext->getSalesChannel()->getId()
+        );
     }
 
     protected function buildErrorResponseWithHeaders(ProductErrorHandler $errorHandler): JsonResponse
@@ -371,5 +359,36 @@ class ExportController extends AbstractController implements EventSubscriberInte
     protected function buildXmlResponseWithHeaders(string $xml): Response
     {
         return new Response($xml, Response::HTTP_OK, $this->headerHandler->getHeaders());
+    }
+
+    private function exportSingleItem(
+        ProductEntity $productEntity,
+        string $shopkey,
+        array $customerGroups
+    ): ?Item {
+        try {
+            if (!empty($this->crossSellingCategories)) {
+                $categories = $productEntity->getCategories();
+                $category = $categories ? $categories->first() : null;
+                $categoryId = $category ? $category->getId() : null;
+
+                if (in_array($categoryId, $this->crossSellingCategories, false)) {
+                    throw new ProductHasCrossSellingCategoryException($productEntity, $category);
+                }
+            }
+
+            $xmlProduct = new XmlProduct(
+                $productEntity,
+                $this->router,
+                $this->container,
+                $this->salesChannelContext->getContext(),
+                $shopkey,
+                $customerGroups
+            );
+            return $xmlProduct->getXmlItem();
+        } catch (ProductInvalidException $e) {
+            $this->handleProductInvalidException($e);
+            return null;
+        }
     }
 }
