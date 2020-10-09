@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Logger;
 
-class PluginLogger
-{
+use Monolog\Logger;
 
+class PluginLogger extends Logger
+{
 }

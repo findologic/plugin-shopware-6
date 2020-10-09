@@ -23,7 +23,7 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
-            <argument type="service" id="logger" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
             <tag name="kernel.event_subscriber" />
             <tag name="monolog.logger" channel="file" />
             <call method="setContainer">
@@ -32,6 +32,11 @@
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">
+            <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
+            <argument type="string">findologic_finsearch</argument>
         </service>
 
         <service

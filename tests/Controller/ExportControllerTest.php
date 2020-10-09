@@ -186,7 +186,7 @@ class ExportControllerTest extends TestCase
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $containerMock->expects($this->once())->method('set');
+        $containerMock->expects($this->exactly(2))->method('set');
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();
@@ -430,7 +430,7 @@ class ExportControllerTest extends TestCase
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $containerMock->expects($this->once())->method('set');
+        $containerMock->expects($this->exactly(2))->method('set');
 
         /** @var EntityRepository|MockObject $productRepositoryMock */
         $productRepositoryMock
@@ -604,7 +604,7 @@ class ExportControllerTest extends TestCase
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $containerMock->expects($this->once())->method('set');
+        $containerMock->expects($this->exactly(2))->method('set');
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();
@@ -907,7 +907,7 @@ class ExportControllerTest extends TestCase
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $containerMock->expects($this->once())->method('set');
+        $containerMock->expects($this->exactly(2))->method('set');
         $containerMock->method('get')->willReturnMap($services);
 
         return $containerMock;

@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Controller;
 use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasCrossSellingCategoryException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
@@ -16,11 +17,13 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
+use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
@@ -29,6 +32,7 @@ use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigEntity;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -64,8 +68,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /** @var ProductService */
     private $productService;
 
-    /** @var string[] */
-    private $errors = [];
+    /** @var CustomerGroupEntity[] */
+    private $customerGroups = [];
 
     public function __construct(
         LoggerInterface $logger,
@@ -93,56 +97,64 @@ class ExportController extends AbstractController implements EventSubscriberInte
      */
     public function export(Request $request, SalesChannelContext $context): Response
     {
-        $this->config = $this->getConfiguration($request);
-        $this->salesChannelContext = $this->getSalesChannelContext($context);
-        $this->productService = $this->getProductService();
+        $this->initialize($request, $context);
 
-        $productEntities = $this->getProductsFromShop();
-        $customerGroups = $this->container->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext->getContext())
-            ->getElements();
+        return $this->doExport();
+    }
 
-        $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
-        $items = $this->buildXmlProducts($productEntities, $this->config->getShopkey(), $customerGroups);
-
-        if ($this->errors) {
-            return new JsonResponse(
-                ['errors' => $this->errors],
-                Response::HTTP_UNPROCESSABLE_ENTITY,
-                $this->headerHandler->getHeaders([
-                    HeaderHandler::CONTENT_TYPE_HEADER => 'application/json'
-                ])
-            );
+    protected function doExport(): Response
+    {
+        if ($this->config->getProductId()) {
+            return $this->doProductIdSearch();
         }
 
-        $xmlExporter = Exporter::create(Exporter::TYPE_XML);
-        $response = $xmlExporter->serializeItems(
-            $items,
-            $this->config->getStart(),
-            count($items),
-            $this->productService->getTotalProductCount()
-        );
+        return $this->doProductExport();
+    }
 
-        return new Response($response, Response::HTTP_OK, $this->headerHandler->getHeaders());
+    protected function doProductExport(): Response
+    {
+        $products = $this->productService->searchVisibleProducts($this->config->getCount(), $this->config->getStart());
+        $xml = $this->exportProducts($products);
+
+        return $this->buildXmlResponseWithHeaders($xml);
     }
 
     /**
-     * @throws InconsistentCriteriaIdsException
+     * @return Response|JsonResponse Returns an XML if all found products can be properly exported. Otherwise a
+     * JSON response with a detailed error description will be returned.
      */
-    public function getProductsFromShop(): EntitySearchResult
+    protected function doProductIdSearch(): Response
     {
-        $start = $this->config->getStart();
-        $count = $this->config->getCount();
+        $limit = $this->config->getCount();
+        $offset = $this->config->getStart();
+        $productId = $this->config->getProductId();
 
-        $products = $this->productService->searchVisibleProducts($count, $start, $this->config->getProductId());
+        $errorHandler = new ProductErrorHandler();
+        $this->logger->pushHandler($errorHandler);
 
-        if ($this->config->getProductId() && $products->count() === 0) {
-            $products = $this->productService->searchAllProducts($count, $start, $this->config->getProductId());
+        $products = $this->getProductsMatchingProductId($limit, $offset, $productId);
+        if ($products->count() === 0) {
+            return $this->buildErrorResponseWithHeaders($errorHandler);
+        }
+
+        $xml = $this->exportProducts($products);
+        if (!$errorHandler->getExportErrors()->hasErrors()) {
+            return $this->buildXmlResponseWithHeaders($xml);
+        }
+
+        return $this->buildErrorResponseWithHeaders($errorHandler);
+    }
+
+    protected function getProductsMatchingProductId(int $limit, int $offset, ?string $productId): EntitySearchResult
+    {
+        $products = $this->productService->searchVisibleProducts($limit, $offset, $productId);
+        if ($products->count() === 0) {
+            $products = $this->productService->searchAllProducts($limit, $offset, $productId);
 
             if ($products->count() > 0) {
-                $this->addErrorMessage('The product could not be exported, since it is not available for search.');
+                $this->logger->warning('Product(s) is/are not available for search.');
             } else {
-                $this->addErrorMessage('No product could be found for the given id.');
+                $this->logger->warning('No product could be found.');
             }
         }
 
@@ -175,8 +187,8 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $this->container->set('fin_search.product_service', $productService);
         }
 
-        if (!$this->productService->getSalesChannelContext()) {
-            $this->productService->setSalesChannelContext($this->salesChannelContext);
+        if (!$productService->getSalesChannelContext()) {
+            $productService->setSalesChannelContext($this->salesChannelContext);
         }
 
         return $productService;
@@ -189,6 +201,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     private function getSalesChannelContext(
         SalesChannelContext $currentContext
     ): SalesChannelContext {
+        /** @var EntityRepository $systemConfigRepository */
         $systemConfigRepository = $this->container->get('system_config.repository');
         $systemConfigEntities = $systemConfigRepository->search(
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
@@ -228,9 +241,21 @@ class ExportController extends AbstractController implements EventSubscriberInte
     ): array {
         $items = [];
 
+        $crossSellingCategories = $this->getConfig(
+            'crossSellingCategories',
+            $this->salesChannelContext->getSalesChannel()->getId()
+        );
+
         /** @var ProductEntity $productEntity */
         foreach ($productEntities as $productEntity) {
             try {
+                $categories = $productEntity->getCategories();
+                $category = $categories ? $categories->first() : null;
+                $categoryId = $category ? $category->getId() : null;
+                if (!empty($crossSellingCategories) && in_array($categoryId, $crossSellingCategories, false)) {
+                    throw new ProductHasCrossSellingCategoryException($productEntity, $category);
+                }
+
                 $xmlProduct = new XmlProduct(
                     $productEntity,
                     $this->router,
@@ -241,66 +266,110 @@ class ExportController extends AbstractController implements EventSubscriberInte
                 );
                 $items[] = $xmlProduct->getXmlItem();
             } catch (ProductInvalidException $e) {
-                $this->handleProductInvalidException($e, $productEntity);
+                $this->handleProductInvalidException($e);
             }
         }
 
         return $items;
     }
 
-    private function handleProductInvalidException(
-        ProductInvalidException $e,
-        ProductEntity $failedProduct
-    ): void {
+    private function handleProductInvalidException(ProductInvalidException $e): void {
         switch (get_class($e)) {
             case AccessEmptyPropertyException::class:
                 $message = sprintf(
                     'Product with id %s was not exported because the property does not exist',
-                    $failedProduct->getId()
+                    $e->getProduct()->getId()
                 );
                 break;
             case ProductHasNoAttributesException::class:
                 $message = sprintf(
                     'Product with id %s was not exported because it has no attributes',
-                    $failedProduct->getId()
+                    $e->getProduct()->getId()
                 );
                 break;
             case ProductHasNoNameException::class:
                 $message = sprintf(
                     'Product with id %s was not exported because it has no name set',
-                    $failedProduct->getId()
+                    $e->getProduct()->getId()
                 );
                 break;
             case ProductHasNoPricesException::class:
                 $message = sprintf(
                     'Product with id %s was not exported because it has no price associated to it',
-                    $failedProduct->getId()
+                    $e->getProduct()->getId()
                 );
                 break;
             case ProductHasNoCategoriesException::class:
                 $message = sprintf(
                     'Product with id %s was not exported because it has no categories assigned',
-                    $failedProduct->getId()
+                    $e->getProduct()->getId()
+                );
+                break;
+            case ProductHasCrossSellingCategoryException::class:
+                $message = sprintf(
+                    'Product with id %s (%s) was not exported because it ' .
+                    'is assigned to cross selling category %s (%s)',
+                    $e->getProduct()->getId(),
+                    $e->getProduct()->getName(),
+                    $e->getCategory()->getId(),
+                    implode(' > ', $e->getCategory()->getBreadcrumb())
                 );
                 break;
             default:
                 $message = sprintf(
                     'Product with id %s could not be exported.',
-                    $failedProduct->getId()
+                    $e->getProduct()->getId()
                 );
         }
 
-        $this->logger->warning($message);
-        $this->addErrorMessage($message);
+        $this->logger->warning($message, ['exception' => $e]);
     }
 
-    private function addErrorMessage(string $message, ?string $id = null): void
+    private function getConfig(string $config, ?string $salesChannelId)
     {
-        // Only add error messages in case a product id has been supplied.
-        if (!$this->config->getProductId()) {
-            return;
-        }
+        return $this->container->get(SystemConfigService::class)->get(
+            sprintf('FinSearch.config.%s', $config),
+            $salesChannelId
+        );
+    }
 
-        $this->errors[] = htmlentities($message);
+    protected function initialize(Request $request, SalesChannelContext $context): void
+    {
+        $this->config = $this->getConfiguration($request);
+        $this->salesChannelContext = $this->getSalesChannelContext($context);
+        $this->productService = $this->getProductService();
+        $this->customerGroups = $this->container->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+        $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
+    }
+
+    protected function buildErrorResponseWithHeaders(ProductErrorHandler $errorHandler): JsonResponse
+    {
+        return new JsonResponse(
+            $errorHandler->getExportErrors()->buildErrorResponse(),
+            Response::HTTP_UNPROCESSABLE_ENTITY,
+            $this->headerHandler->getHeaders([
+                HeaderHandler::CONTENT_TYPE_HEADER => 'application/json'
+            ])
+        );
+    }
+
+    protected function exportProducts(EntitySearchResult $products): string
+    {
+        $items = $this->buildXmlProducts($products, $this->config->getShopkey(), $this->customerGroups);
+        $xmlExporter = Exporter::create(Exporter::TYPE_XML);
+
+        return $xmlExporter->serializeItems(
+            $items,
+            $this->config->getStart(),
+            count($items),
+            $this->productService->getTotalProductCount()
+        );
+    }
+
+    protected function buildXmlResponseWithHeaders(string $xml): Response
+    {
+        return new Response($xml, Response::HTTP_OK, $this->headerHandler->getHeaders());
     }
 }
