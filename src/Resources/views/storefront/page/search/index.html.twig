@@ -1,6 +1,7 @@
 {% sw_extends '@Storefront/storefront/page/search/index.html.twig' %}
 
 {% block page_search %}
+    <a class="fl-shopping-guide" href="#guide:Huzaifa">Huzaifa</a>
     {% if context.context.extensions.flPromotion %}
         <a href="{{ context.context.extensions.flPromotion.link }}">
             <img src="{{ context.context.extensions.flPromotion.image }}" id="fl-promotion" alt="Promotion Image"/>
@@ -32,6 +33,11 @@
                         {{ 'finSearch.queryInfoMessage.filter'|trans({
                             '%filterName%': queryInfoMessage.filterName,
                             '%filterValue%': queryInfoMessage.filterValue,
+                            '%hits%': hits
+                        })|sw_sanitize }}
+                    {% elseif queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\ShoppingGuideInfoMessage") %}
+                        {{ 'finSearch.queryInfoMessage.shoppingGuide'|trans({
+                            '%wizard%': queryInfoMessage.query,
                             '%hits%': hits
                         })|sw_sanitize }}
                     {% else %}

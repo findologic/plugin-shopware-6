@@ -20,6 +20,7 @@ use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\QueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\ShoppingGuideInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use GuzzleHttp\Client;
@@ -125,6 +126,10 @@ class Xml21ResponseParser extends ResponseParser
             return $this->buildVendorQueryInfoMessage($params);
         }
 
+        if ($this->isFilterSet($params, 'wizard')) {
+            return $this->buildShoppingGuideInfoMessage($params);
+        }
+
         return QueryInfoMessage::buildInstance(QueryInfoMessage::TYPE_DEFAULT);
     }
 
@@ -134,6 +139,17 @@ class Xml21ResponseParser extends ResponseParser
         $queryInfoMessage = QueryInfoMessage::buildInstance(
             QueryInfoMessage::TYPE_QUERY,
             $query
+        );
+
+        return $queryInfoMessage;
+    }
+
+    private function buildShoppingGuideInfoMessage(array $params): ShoppingGuideInfoMessage
+    {
+        /** @var ShoppingGuideInfoMessage $queryInfoMessage */
+        $queryInfoMessage = QueryInfoMessage::buildInstance(
+            QueryInfoMessage::TYPE_SHOPPING_GUIDE,
+            $params['wizard']
         );
 
         return $queryInfoMessage;
