@@ -753,7 +753,7 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            if (!strpos($categoryEntity->getPath(), $navigationCategoryId)) {
+            if (!$categoryEntity->getPath() || !strpos($categoryEntity->getPath(), $navigationCategoryId)) {
                 continue;
             }
 
