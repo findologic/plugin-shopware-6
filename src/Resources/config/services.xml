@@ -106,6 +106,15 @@
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
         </service>
 
+        <service
+                id="FINDOLOGIC\FinSearch\Export\SalesChannelService"
+                class="FINDOLOGIC\FinSearch\Export\SalesChannelService"
+                public="true"
+        >
+            <argument type="service" id="system_config.repository" />
+            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
+        </service>
+
         <service id="fin_search.sales_channel_context" synthetic="true" public="true"/>
         <service id="fin_search.product_service" synthetic="true" public="true"/>
 

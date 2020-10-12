@@ -42,14 +42,17 @@ class ExportConfiguration
      */
     private $productId;
 
+    public function __construct(string $shopkey, int $start, int $count, ?string $productId = null)
+    {
+        $this->shopkey = $shopkey;
+        $this->start = $start;
+        $this->count = $count;
+        $this->productId = $productId;
+    }
+
     public function getShopkey(): ?string
     {
         return $this->shopkey;
-    }
-
-    public function setShopkey(?string $shopkey): void
-    {
-        $this->shopkey = $shopkey;
     }
 
     public function getStart(): int
@@ -57,28 +60,13 @@ class ExportConfiguration
         return $this->start;
     }
 
-    public function setStart(int $start): void
-    {
-        $this->start = $start;
-    }
-
     public function getCount(): int
     {
         return $this->count;
     }
 
-    public function setCount(int $count): void
-    {
-        $this->count = $count;
-    }
-
     public function getProductId(): ?string
     {
         return $this->productId;
-    }
-
-    public function setProductId(?string $productId): void
-    {
-        $this->productId = $productId;
     }
 }
