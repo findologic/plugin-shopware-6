@@ -201,4 +201,25 @@ class Utils
 
         return false;
     }
+
+    public static function isEmpty($value): bool
+    {
+        if (is_numeric($value) || is_object($value) || is_bool($value)) {
+            return false;
+        }
+
+        if (is_array($value) && empty(array_filter($value))) {
+            return true;
+        }
+
+        if (is_string($value) && empty(trim($value))) {
+            return true;
+        }
+
+        if (empty($value)) {
+            return true;
+        }
+
+        return false;
+    }
 }

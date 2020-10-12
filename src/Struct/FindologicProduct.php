@@ -21,20 +21,16 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
-use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
-use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\Tag\TagEntity;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -158,22 +154,22 @@ class FindologicProduct extends Struct
 
     public function hasName(): bool
     {
-        return $this->name && !empty($this->name);
+        return !Utils::isEmpty($this->name);
     }
 
     public function hasAttributes(): bool
     {
-        return $this->attributes && !empty($this->attributes);
+        return !Utils::isEmpty($this->attributes);
     }
 
     public function hasPrices(): bool
     {
-        return $this->prices && !empty($this->prices);
+        return !Utils::isEmpty($this->prices);
     }
 
     public function hasDescription(): bool
     {
-        return $this->description && !empty($this->description);
+        return !Utils::isEmpty($this->description);
     }
 
     /**
@@ -186,6 +182,19 @@ class FindologicProduct extends Struct
         }
 
         return $this->name;
+    }
+
+    /**
+     * @throws ProductHasNoNameException
+     */
+    protected function setName(): void
+    {
+        $name = $this->product->getTranslation('name');
+        if (Utils::isEmpty($name)) {
+            throw new ProductHasNoNameException();
+        }
+
+        $this->name = Utils::removeControlCharacters($name);
     }
 
     /**
@@ -202,6 +211,18 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @throws ProductHasNoCategoriesException
+     */
+    protected function setAttributes(): void
+    {
+        $this->setCategoriesAndCatUrls();
+        $this->setVendors();
+        $this->setAttributeProperties();
+        $this->setCustomFieldAttributes();
+        $this->setAdditionalAttributes();
+    }
+
+    /**
      * @return Price[]
      * @throws AccessEmptyPropertyException
      */
@@ -212,6 +233,15 @@ class FindologicProduct extends Struct
         }
 
         return $this->prices;
+    }
+
+    /**
+     * @throws ProductHasNoPricesException
+     */
+    protected function setPrices(): void
+    {
+        $this->setVariantPrices();
+        $this->setProductPrices();
     }
 
     /**
@@ -226,6 +256,14 @@ class FindologicProduct extends Struct
         return $this->description;
     }
 
+    protected function setDescription(): void
+    {
+        $description = $this->product->getTranslation('description');
+        if (!Utils::isEmpty($description)) {
+            $this->description = Utils::cleanString($description);
+        }
+    }
+
     /**
      * @throws AccessEmptyPropertyException
      */
@@ -236,6 +274,16 @@ class FindologicProduct extends Struct
         }
 
         return $this->dateAdded;
+    }
+
+    protected function setDateAdded(): void
+    {
+        $createdAt = $this->product->getCreatedAt();
+        if ($createdAt !== null) {
+            $dateAdded = new DateAdded();
+            $dateAdded->setDateValue($createdAt);
+            $this->dateAdded = $dateAdded;
+        }
     }
 
     public function hasDateAdded(): bool
@@ -253,549 +301,6 @@ class FindologicProduct extends Struct
         }
 
         return $this->url;
-    }
-
-    public function hasUrl(): bool
-    {
-        return $this->url && !empty($this->url);
-    }
-
-    /**
-     * @return Keyword[]
-     * @throws AccessEmptyPropertyException
-     */
-    public function getKeywords(): array
-    {
-        if (!$this->hasKeywords()) {
-            throw new AccessEmptyPropertyException();
-        }
-
-        return $this->keywords;
-    }
-
-    public function hasKeywords(): bool
-    {
-        return $this->keywords && !empty($this->keywords);
-    }
-
-    /**
-     * @return Image[]
-     * @throws AccessEmptyPropertyException
-     */
-    public function getImages(): array
-    {
-        if (!$this->hasImages()) {
-            throw new AccessEmptyPropertyException();
-        }
-
-        return $this->images;
-    }
-
-    public function hasImages(): bool
-    {
-        return $this->images && !empty($this->images);
-    }
-
-    public function getSalesFrequency(): int
-    {
-        return $this->salesFrequency;
-    }
-
-    /**
-     * @return Usergroup[]
-     * @throws AccessEmptyPropertyException
-     */
-    public function getUserGroups(): array
-    {
-        if (!$this->hasUserGroups()) {
-            throw new AccessEmptyPropertyException();
-        }
-
-        return $this->userGroups;
-    }
-
-    public function hasUserGroups(): bool
-    {
-        return $this->userGroups && !empty($this->userGroups);
-    }
-
-    /**
-     * @return Ordernumber[]
-     * @throws AccessEmptyPropertyException
-     */
-    public function getOrdernumbers(): array
-    {
-        if (!$this->hasOrdernumbers()) {
-            throw new AccessEmptyPropertyException();
-        }
-
-        return $this->ordernumbers;
-    }
-
-    public function hasOrdernumbers(): bool
-    {
-        return $this->ordernumbers && !empty($this->ordernumbers);
-    }
-
-    /**
-     * @return Property[]
-     * @throws AccessEmptyPropertyException
-     */
-    public function getProperties(): array
-    {
-        if (!$this->hasProperties()) {
-            throw new AccessEmptyPropertyException();
-        }
-
-        return $this->properties;
-    }
-
-    public function hasProperties(): bool
-    {
-        return $this->properties && !empty($this->properties);
-    }
-
-    /**
-     * @throws ProductHasNoNameException
-     */
-    protected function setName(): void
-    {
-        if (empty($this->product->getTranslation('name'))) {
-            throw new ProductHasNoNameException();
-        }
-
-        $this->name = Utils::removeControlCharacters($this->product->getTranslation('name'));
-    }
-
-    /**
-     * @throws ProductHasNoCategoriesException
-     */
-    protected function setAttributes(): void
-    {
-        $this->setCategoriesAndCatUrls();
-        $this->setVendors();
-        $this->setAttributeProperties();
-        $this->setCustomFieldAttributes();
-        $this->setAdditionalAttributes();
-    }
-
-    /**
-     * @throws ProductHasNoPricesException
-     */
-    protected function setPrices(): void
-    {
-        $this->setVariantPrices();
-        $this->setProductPrices();
-    }
-
-    protected function setDescription(): void
-    {
-        if ($this->product->getTranslation('description')) {
-            $this->description = Utils::cleanString($this->product->getTranslation('description'));
-        }
-    }
-
-    protected function setDateAdded(): void
-    {
-        $createdAt = $this->product->getCreatedAt();
-        if ($createdAt !== null) {
-            $dateAdded = new DateAdded();
-            $dateAdded->setDateValue($createdAt);
-            $this->dateAdded = $dateAdded;
-        }
-    }
-
-    protected function setVendors(): void
-    {
-        if ($this->product->getManufacturer() && $this->product->getManufacturer()->getTranslation('name')) {
-            $vendorAttribute = new Attribute(
-                'vendor',
-                [Utils::removeControlCharacters($this->product->getManufacturer()->getTranslation('name'))]
-            );
-
-            $this->attributes[] = $vendorAttribute;
-        }
-    }
-
-    /**
-     * @return Attribute[]
-     */
-    protected function getAttributeProperties(ProductEntity $productEntity): array
-    {
-        $attributes = [];
-
-        foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {
-            $group = $propertyGroupOptionEntity->getGroup();
-            // Method getFilterable exists since Shopware 6.2.x.
-            if (method_exists($group, 'getFilterable') && !$group->getFilterable()) {
-                // Non filterable properties should be available in the properties field.
-                $this->properties = array_merge(
-                    $this->properties,
-                    $this->getAttributePropertyAsProperty($propertyGroupOptionEntity)
-                );
-
-                continue;
-            }
-
-            $attributes = array_merge($attributes, $this->getAttributePropertyAsAttribute($propertyGroupOptionEntity));
-        }
-
-        return $attributes;
-    }
-
-    /**
-     * @return Property[]
-     */
-    protected function getAttributePropertyAsProperty(
-        PropertyGroupOptionEntity $propertyGroupOptionEntity
-    ): array {
-        $properties = [];
-
-        $group = $propertyGroupOptionEntity->getGroup();
-        if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $propertyGroupProperty = new Property(Utils::removeSpecialChars($group->getTranslation('name')));
-            $propertyGroupProperty->addValue(
-                Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))
-            );
-
-            $properties[] = $propertyGroupProperty;
-        }
-
-        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-            $group = $setting->getOption()->getGroup();
-            $settingOption = $setting->getOption();
-
-            if (!$group || !$settingOption) {
-                continue;
-            }
-
-            $groupName = $group->getTranslation('name');
-            $optionName = $settingOption->getTranslation('name');
-            if ($groupName && $optionName) {
-                $configProperty = new Property(Utils::removeSpecialChars($groupName));
-                $configProperty->addValue(Utils::removeControlCharacters($optionName));
-
-                $properties[] = $configProperty;
-            }
-        }
-
-        return $properties;
-    }
-
-    /**
-     * @return Attribute[]
-     */
-    protected function getAttributePropertyAsAttribute(
-        PropertyGroupOptionEntity $propertyGroupOptionEntity
-    ): array {
-        $attributes = [];
-
-        $group = $propertyGroupOptionEntity->getGroup();
-        if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $properyGroupAttrib = new Attribute(
-                Utils::removeSpecialChars($group->getTranslation('name')),
-                [Utils::removeControlCharacters($propertyGroupOptionEntity->getTranslation('name'))]
-            );
-
-            $attributes[] = $properyGroupAttrib;
-        }
-
-        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-            $group = $setting->getOption()->getGroup();
-            $settingOption = $setting->getOption();
-
-            if (!$group || !$settingOption) {
-                continue;
-            }
-
-            $groupName = $group->getTranslation('name');
-            $optionName = $settingOption->getTranslation('name');
-            if ($groupName && $optionName) {
-                $configAttrib = new Attribute(
-                    Utils::removeSpecialChars($groupName),
-                    [Utils::removeControlCharacters($optionName)]
-                );
-
-                $attributes[] = $configAttrib;
-            }
-        }
-
-        return $attributes;
-    }
-
-    protected function setAttributeProperties(): void
-    {
-        $this->attributes = array_merge($this->attributes, $this->getAttributeProperties($this->product));
-        foreach ($this->product->getChildren() as $productEntity) {
-            $this->attributes = array_merge($this->attributes, $this->getAttributeProperties($productEntity));
-        }
-    }
-
-    protected function setAdditionalAttributes(): void
-    {
-        $translationKey = $this->product->getShippingFree() ? 'finSearch.general.yes' : 'finSearch.general.no';
-        $shippingFree = $this->translator->trans($translationKey);
-        $this->attributes[] = new Attribute('shipping_free', [$shippingFree]);
-        $rating = $this->product->getRatingAverage() ?? 0.0;
-        $this->attributes[] = new Attribute('rating', [$rating]);
-
-        // Add custom fields in the attributes array for export
-        $this->attributes = array_merge($this->attributes, $this->customFields);
-    }
-
-    protected function setUserGroups(): void
-    {
-        foreach ($this->customerGroups as $customerGroupEntity) {
-            $this->userGroups[] = new Usergroup(
-                Utils::calculateUserGroupHash($this->shopkey, $customerGroupEntity->getId())
-            );
-        }
-    }
-
-    protected function setOrdernumbers(): void
-    {
-        $this->setOrdernumberByProduct($this->product);
-        foreach ($this->product->getChildren() as $productEntity) {
-            $this->setOrdernumberByProduct($productEntity);
-        }
-    }
-
-    protected function setOrdernumberByProduct(ProductEntity $product): void
-    {
-        if ($product->getProductNumber()) {
-            $this->ordernumbers[] = new Ordernumber($product->getProductNumber());
-        }
-        if ($product->getEan()) {
-            $this->ordernumbers[] = new Ordernumber($product->getEan());
-        }
-        if ($product->getManufacturerNumber()) {
-            $this->ordernumbers[] = new Ordernumber($product->getManufacturerNumber());
-        }
-    }
-
-    protected function setProperties(): void
-    {
-        if ($this->product->getTax()) {
-            $property = new Property('tax');
-            $property->addValue((string)$this->product->getTax()->getTaxRate());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getDeliveryDate()->getLatest()) {
-            $property = new Property('latestdeliverydate');
-            $property->addValue($this->product->getDeliveryDate()->getLatest()->format(DATE_ATOM));
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getDeliveryDate()->getEarliest()) {
-            $property = new Property('earliestdeliverydate');
-            $property->addValue($this->product->getDeliveryDate()->getEarliest()->format(DATE_ATOM));
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getPurchaseUnit()) {
-            $property = new Property('purchaseunit');
-            $property->addValue((string)$this->product->getPurchaseUnit());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getReferenceUnit()) {
-            $property = new Property('referenceunit');
-            $property->addValue((string)$this->product->getReferenceUnit());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getPackUnit()) {
-            $property = new Property('packunit');
-            $property->addValue((string)$this->product->getPackUnit());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getStock()) {
-            $property = new Property('stock');
-            $property->addValue((string)$this->product->getStock());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getAvailableStock()) {
-            $property = new Property('availableStock');
-            $property->addValue((string)$this->product->getAvailableStock());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getWeight()) {
-            $property = new Property('weight');
-            $property->addValue((string)$this->product->getWeight());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getWidth()) {
-            $property = new Property('width');
-            $property->addValue((string)$this->product->getWidth());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getHeight()) {
-            $property = new Property('height');
-            $property->addValue((string)$this->product->getHeight());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getLength()) {
-            $property = new Property('length');
-            $property->addValue((string)$this->product->getLength());
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getReleaseDate()) {
-            $property = new Property('releasedate');
-            $property->addValue((string)$this->product->getReleaseDate()->format(DATE_ATOM));
-            $this->properties[] = $property;
-        }
-
-        if ($this->product->getManufacturer() && $this->product->getManufacturer()->getMedia()) {
-            $property = new Property('vendorlogo');
-            $property->addValue($this->product->getManufacturer()->getMedia()->getUrl());
-            $this->properties[] = $property;
-        }
-    }
-
-    /**
-     * @throws ProductHasNoCategoriesException
-     */
-    protected function setCategoriesAndCatUrls(): void
-    {
-        if (!$this->product->getCategories() || empty($this->product->getCategories()->count())) {
-            throw new ProductHasNoCategoriesException();
-        }
-
-        /** @var Attribute $categoryAttribute */
-        $categoryAttribute = new Attribute('cat');
-
-        /** @var Attribute $catUrlAttribute */
-        $catUrlAttribute = new Attribute('cat_url');
-
-        $catUrls = [];
-        $categories = [];
-
-        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-
-        /** @var CategoryEntity $categoryEntity */
-        foreach ($this->product->getCategories() as $categoryEntity) {
-            if (!$categoryEntity->getActive()) {
-                continue;
-            }
-
-            if (!strpos($categoryEntity->getPath(), $navigationCategoryId)) {
-                continue;
-            }
-
-            $seoUrls = $this->fetchCategorySeoUrls($categoryEntity);
-            if ($seoUrls->count() > 0) {
-                foreach ($seoUrls->getElements() as $seoUrlEntity) {
-                    $catUrl = $seoUrlEntity->getSeoPathInfo();
-                    if (!empty(trim($catUrl))) {
-                        $catUrls[] = sprintf('/%s', ltrim($catUrl, '/'));
-                    }
-                }
-            }
-
-            $catUrl = sprintf(
-                '/%s',
-                ltrim(
-                    $this->router->generate(
-                        'frontend.navigation.page',
-                        ['navigationId' => $categoryEntity->getId()],
-                        RouterInterface::ABSOLUTE_PATH
-                    ),
-                    '/'
-                )
-            );
-
-            if (!empty($catUrl)) {
-                $catUrls[] = $catUrl;
-            }
-
-            $categoryPath = $this->buildCategoryPath($categoryEntity);
-
-            if (!empty($categoryPath)) {
-                $categories[] = $categoryPath;
-            }
-        }
-
-        if (!empty($catUrls)) {
-            $catUrlAttribute->setValues(array_unique($catUrls));
-            $this->attributes[] = $catUrlAttribute;
-        }
-
-        if (!empty($categories)) {
-            $categoryAttribute->setValues(array_unique($categories));
-            $this->attributes[] = $categoryAttribute;
-        }
-    }
-
-    protected function setVariantPrices(): void
-    {
-        if ($this->product->getChildCount() === 0) {
-            return;
-        }
-
-        /** @var ProductEntity $variant */
-        foreach ($this->product->getChildren() as $variant) {
-            if (!$variant->getActive() || $variant->getStock() <= 0) {
-                continue;
-            }
-
-            $this->prices = array_merge($this->prices, $this->getPricesFromProduct($variant));
-        }
-    }
-
-    /**
-     * @return Price[]
-     */
-    protected function getPricesFromProduct(ProductEntity $variant): array
-    {
-        $prices = [];
-
-        /** @var ProductPrice $item */
-        foreach ($variant->getPrice() as $item) {
-            /** @var CustomerGroupEntity $customerGroup */
-            foreach ($this->customerGroups as $customerGroup) {
-                $price = new Price();
-                if ($customerGroup->getDisplayGross()) {
-                    $price->setValue(
-                        $item->getGross(),
-                        Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId())
-                    );
-                } else {
-                    $price->setValue(
-                        $item->getNet(),
-                        Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId())
-                    );
-                }
-
-                $prices[] = $price;
-            }
-
-            $price = new Price();
-            $price->setValue($item->getGross());
-            $prices[] = $price;
-        }
-
-        return $prices;
-    }
-
-    /**
-     * @throws ProductHasNoPricesException
-     */
-    protected function setProductPrices(): void
-    {
-        $prices = $this->getPricesFromProduct($this->product);
-        if (empty($prices)) {
-            throw new ProductHasNoPricesException();
-        }
-
-        $this->prices = array_merge($this->prices, $prices);
     }
 
     protected function setUrl(): void
@@ -820,15 +325,52 @@ class FindologicProduct extends Struct
         $this->url = $productUrl;
     }
 
+    public function hasUrl(): bool
+    {
+        return $this->url && !Utils::isEmpty($this->url);
+    }
+
+    /**
+     * @return Keyword[]
+     * @throws AccessEmptyPropertyException
+     */
+    public function getKeywords(): array
+    {
+        if (!$this->hasKeywords()) {
+            throw new AccessEmptyPropertyException();
+        }
+
+        return $this->keywords;
+    }
+
     protected function setKeywords(): void
     {
         $tags = $this->product->getTags();
         if ($tags !== null && $tags->count() > 0) {
-            /** @var TagEntity $tag */
             foreach ($tags as $tag) {
-                $this->keywords[] = new Keyword($tag->getName());
+                if (!Utils::isEmpty($tag->getName())) {
+                    $this->keywords[] = new Keyword($tag->getName());
+                }
             }
         }
+    }
+
+    public function hasKeywords(): bool
+    {
+        return $this->keywords && !empty($this->keywords);
+    }
+
+    /**
+     * @return Image[]
+     * @throws AccessEmptyPropertyException
+     */
+    public function getImages(): array
+    {
+        if (!$this->hasImages()) {
+            throw new AccessEmptyPropertyException();
+        }
+
+        return $this->images;
     }
 
     protected function setImages(): void
@@ -836,30 +378,486 @@ class FindologicProduct extends Struct
         if (!$this->product->getMedia() || !$this->product->getMedia()->count()) {
             $fallbackImage = $this->buildFallbackImage($this->router->getContext());
 
-            $this->images[] = new Image($fallbackImage);
-            $this->images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
+            if (!Utils::isEmpty($fallbackImage)) {
+                $this->images[] = new Image($fallbackImage);
+                $this->images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
+            }
 
             return;
         }
 
-        /** @var ProductMediaEntity $mediaEntity */
         foreach ($this->getSortedImages() as $mediaEntity) {
             if (!$mediaEntity->getMedia() || !$mediaEntity->getMedia()->getUrl()) {
                 continue;
             }
 
-            $this->images[] = new Image($this->getEncodedUrl($mediaEntity->getMedia()->getUrl()));
+            $encodedUrl = $this->getEncodedUrl($mediaEntity->getMedia()->getUrl());
+            if (!Utils::isEmpty($encodedUrl)) {
+                $this->images[] = new Image($encodedUrl);
+            }
 
             $thumbnails = $mediaEntity->getMedia()->getThumbnails();
             if (!$thumbnails) {
                 continue;
             }
 
-            /** @var MediaThumbnailEntity $thumbnailEntity */
             foreach ($thumbnails as $thumbnailEntity) {
-                $this->images[] = new Image($this->getEncodedUrl($thumbnailEntity->getUrl()), Image::TYPE_THUMBNAIL);
+                $encodedThumbnailUrl = $this->getEncodedUrl($thumbnailEntity->getUrl());
+                if (!Utils::isEmpty($encodedThumbnailUrl)) {
+                    $this->images[] = new Image($encodedThumbnailUrl, Image::TYPE_THUMBNAIL);
+                }
             }
         }
+    }
+
+    public function hasImages(): bool
+    {
+        return $this->images && !empty($this->images);
+    }
+
+    public function getSalesFrequency(): int
+    {
+        return $this->salesFrequency;
+    }
+
+    protected function setSalesFrequency(): void
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('payload.productNumber', $this->product->getProductNumber()));
+
+        /** @var EntityRepository $orderLineItemRepository */
+        $orderLineItemRepository = $this->container->get('order_line_item.repository');
+        $orders = $orderLineItemRepository->search($criteria, $this->salesChannelContext->getContext());
+
+        $this->salesFrequency = $orders->count();
+    }
+
+    /**
+     * @return Usergroup[]
+     * @throws AccessEmptyPropertyException
+     */
+    public function getUserGroups(): array
+    {
+        if (!$this->hasUserGroups()) {
+            throw new AccessEmptyPropertyException();
+        }
+
+        return $this->userGroups;
+    }
+
+    protected function setUserGroups(): void
+    {
+        foreach ($this->customerGroups as $customerGroupEntity) {
+            $this->userGroups[] = new Usergroup(
+                Utils::calculateUserGroupHash($this->shopkey, $customerGroupEntity->getId())
+            );
+        }
+    }
+
+    public function hasUserGroups(): bool
+    {
+        return $this->userGroups && !empty($this->userGroups);
+    }
+
+    /**
+     * @return Ordernumber[]
+     * @throws AccessEmptyPropertyException
+     */
+    public function getOrdernumbers(): array
+    {
+        if (!$this->hasOrdernumbers()) {
+            throw new AccessEmptyPropertyException();
+        }
+
+        return $this->ordernumbers;
+    }
+
+    protected function setOrdernumbers(): void
+    {
+        $this->setOrdernumberByProduct($this->product);
+        foreach ($this->product->getChildren() as $productEntity) {
+            $this->setOrdernumberByProduct($productEntity);
+        }
+    }
+
+    public function hasOrdernumbers(): bool
+    {
+        return $this->ordernumbers && !empty($this->ordernumbers);
+    }
+
+    /**
+     * @return Property[]
+     * @throws AccessEmptyPropertyException
+     */
+    public function getProperties(): array
+    {
+        if (!$this->hasProperties()) {
+            throw new AccessEmptyPropertyException();
+        }
+
+        return $this->properties;
+    }
+
+    protected function setProperties(): void
+    {
+        if ($this->product->getTax()) {
+            $value = (string)$this->product->getTax()->getTaxRate();
+            $this->addProperty('tax', $value);
+        }
+
+        if ($this->product->getDeliveryDate()->getLatest()) {
+            $value = $this->product->getDeliveryDate()->getLatest()->format(DATE_ATOM);
+            $this->addProperty('latestdeliverydate', $value);
+        }
+
+        if ($this->product->getDeliveryDate()->getEarliest()) {
+            $value = $this->product->getDeliveryDate()->getEarliest()->format(DATE_ATOM);
+            $this->addProperty('earliestdeliverydate', $value);
+        }
+
+        if ($this->product->getPurchaseUnit()) {
+            $value = (string)$this->product->getPurchaseUnit();
+            $this->addProperty('purchaseunit', $value);
+        }
+
+        if ($this->product->getReferenceUnit()) {
+            $value = (string)$this->product->getReferenceUnit();
+            $this->addProperty('referenceunit', $value);
+        }
+
+        if ($this->product->getPackUnit()) {
+            $value = (string)$this->product->getPackUnit();
+            $this->addProperty('packunit', $value);
+        }
+
+        if ($this->product->getStock()) {
+            $value = (string)$this->product->getStock();
+            $this->addProperty('stock', $value);
+        }
+
+        if ($this->product->getAvailableStock()) {
+            $value = (string)$this->product->getAvailableStock();
+            $this->addProperty('availableStock', $value);
+        }
+
+        if ($this->product->getWeight()) {
+            $value = (string)$this->product->getWeight();
+            $this->addProperty('weight', $value);
+        }
+
+        if ($this->product->getWidth()) {
+            $value = (string)$this->product->getWidth();
+            $this->addProperty('width', $value);
+        }
+
+        if ($this->product->getHeight()) {
+            $value = (string)$this->product->getHeight();
+            $this->addProperty('height', $value);
+        }
+
+        if ($this->product->getLength()) {
+            $value = (string)$this->product->getLength();
+            $this->addProperty('length', $value);
+        }
+
+        if ($this->product->getReleaseDate()) {
+            $value = (string)$this->product->getReleaseDate()->format(DATE_ATOM);
+            $this->addProperty('releasedate', $value);
+        }
+
+        if ($this->product->getManufacturer() && $this->product->getManufacturer()->getMedia()) {
+            $value = $this->product->getManufacturer()->getMedia()->getUrl();
+            $this->addProperty('vendorlogo', $value);
+        }
+    }
+
+    public function hasProperties(): bool
+    {
+        return $this->properties && !empty($this->properties);
+    }
+
+    protected function setVendors(): void
+    {
+        $manufacturer = $this->product->getManufacturer();
+        if ($manufacturer) {
+            $name = $manufacturer->getTranslation('name');
+            if (!Utils::isEmpty($name)) {
+                $vendorAttribute = new Attribute('vendor', [Utils::removeControlCharacters($name)]);
+                $this->attributes[] = $vendorAttribute;
+            }
+        }
+    }
+
+    /**
+     * @return Attribute[]
+     */
+    protected function getAttributeProperties(ProductEntity $productEntity): array
+    {
+        $attributes = [];
+
+        foreach ($productEntity->getProperties() as $propertyGroupOptionEntity) {
+            $group = $propertyGroupOptionEntity->getGroup();
+            // Method getFilterable exists since Shopware 6.2.x.
+            if ($group && method_exists($group, 'getFilterable') && !$group->getFilterable()) {
+                // Non filterable properties should be available in the properties field.
+                $this->properties = array_merge(
+                    $this->properties,
+                    $this->getAttributePropertyAsProperty($propertyGroupOptionEntity)
+                );
+
+                continue;
+            }
+
+            $attributes = array_merge($attributes, $this->getAttributePropertyAsAttribute($propertyGroupOptionEntity));
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @return Property[]
+     */
+    protected function getAttributePropertyAsProperty(PropertyGroupOptionEntity $propertyGroupOptionEntity): array
+    {
+        $properties = [];
+
+        $group = $propertyGroupOptionEntity->getGroup();
+        if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
+            $groupName = Utils::removeSpecialChars($group->getTranslation('name'));
+            $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
+            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
+                $propertyGroupProperty = new Property($groupName);
+                $propertyGroupProperty->addValue(Utils::removeControlCharacters($propertyGroupOptionName));
+
+                $properties[] = $propertyGroupProperty;
+            }
+        }
+
+        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
+            $settingOption = $setting->getOption();
+            if ($settingOption) {
+                $group = $settingOption->getGroup();
+            }
+
+            if (!$group) {
+                continue;
+            }
+
+            $groupName = $group->getTranslation('name');
+            $optionName = $settingOption->getTranslation('name');
+            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
+                $configProperty = new Property(Utils::removeSpecialChars($groupName));
+                $configProperty->addValue(Utils::removeControlCharacters($optionName));
+
+                $properties[] = $configProperty;
+            }
+        }
+
+        return $properties;
+    }
+
+    /**
+     * @return Attribute[]
+     */
+    protected function getAttributePropertyAsAttribute(PropertyGroupOptionEntity $propertyGroupOptionEntity): array
+    {
+        $attributes = [];
+
+        $group = $propertyGroupOptionEntity->getGroup();
+        if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
+            $groupName = Utils::removeSpecialChars($group->getTranslation('name'));
+            $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
+            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
+                $properyGroupAttrib = new Attribute(Utils::removeSpecialChars($groupName));
+                $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionName));
+
+                $attributes[] = $properyGroupAttrib;
+            }
+        }
+
+        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
+            $settingOption = $setting->getOption();
+            if ($settingOption) {
+                $group = $settingOption->getGroup();
+            }
+
+            if (!$group) {
+                continue;
+            }
+
+            $groupName = $group->getTranslation('name');
+            $optionName = $settingOption->getTranslation('name');
+            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
+                $configAttrib = new Attribute(Utils::removeSpecialChars($groupName));
+                $configAttrib->addValue(Utils::removeControlCharacters($optionName));
+
+                $attributes[] = $configAttrib;
+            }
+        }
+
+        return $attributes;
+    }
+
+    protected function setAttributeProperties(): void
+    {
+        $this->attributes = array_merge($this->attributes, $this->getAttributeProperties($this->product));
+        foreach ($this->product->getChildren() as $productEntity) {
+            $this->attributes = array_merge($this->attributes, $this->getAttributeProperties($productEntity));
+        }
+    }
+
+    protected function setAdditionalAttributes(): void
+    {
+        $shippingFree = $this->translateBooleanValue($this->product->getShippingFree());
+        $this->attributes[] = new Attribute('shipping_free', [$shippingFree]);
+        $rating = $this->product->getRatingAverage() ?? 0.0;
+        $this->attributes[] = new Attribute('rating', [$rating]);
+
+        // Add custom fields in the attributes array for export
+        $this->attributes = array_merge($this->attributes, $this->customFields);
+    }
+
+    protected function setOrdernumberByProduct(ProductEntity $product): void
+    {
+        if (!Utils::isEmpty($product->getProductNumber())) {
+            $this->ordernumbers[] = new Ordernumber($product->getProductNumber());
+        }
+        if (!Utils::isEmpty($product->getEan())) {
+            $this->ordernumbers[] = new Ordernumber($product->getEan());
+        }
+        if (!Utils::isEmpty($product->getManufacturerNumber())) {
+            $this->ordernumbers[] = new Ordernumber($product->getManufacturerNumber());
+        }
+    }
+
+    /**
+     * @throws ProductHasNoCategoriesException
+     */
+    protected function setCategoriesAndCatUrls(): void
+    {
+        if (!$this->product->getCategories() || empty($this->product->getCategories()->count())) {
+            throw new ProductHasNoCategoriesException();
+        }
+
+        $categoryAttribute = new Attribute('cat');
+        $catUrlAttribute = new Attribute('cat_url');
+
+        $catUrls = [];
+        $categories = [];
+
+        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
+        /** @var CategoryEntity $categoryEntity */
+        foreach ($this->product->getCategories() as $categoryEntity) {
+            if (!$categoryEntity->getActive() || Utils::isEmpty($categoryEntity->getName())) {
+                continue;
+            }
+
+            if (!strpos($categoryEntity->getPath(), $navigationCategoryId)) {
+                continue;
+            }
+
+            $seoUrls = $this->fetchCategorySeoUrls($categoryEntity);
+            if ($seoUrls->count() > 0) {
+                foreach ($seoUrls->getElements() as $seoUrlEntity) {
+                    $catUrl = $seoUrlEntity->getSeoPathInfo();
+                    if (!Utils::isEmpty($catUrl)) {
+                        $catUrls[] = sprintf('/%s', ltrim($catUrl, '/'));
+                    }
+                }
+            }
+
+            $catUrl = sprintf(
+                '/%s',
+                ltrim(
+                    $this->router->generate(
+                        'frontend.navigation.page',
+                        ['navigationId' => $categoryEntity->getId()],
+                        RouterInterface::ABSOLUTE_PATH
+                    ),
+                    '/'
+                )
+            );
+
+            if (!Utils::isEmpty($catUrl)) {
+                $catUrls[] = $catUrl;
+            }
+
+            $categoryPath = $this->buildCategoryPath($categoryEntity);
+            if (!Utils::isEmpty($categoryPath)) {
+                $categories[] = $categoryPath;
+            }
+        }
+
+        if (!Utils::isEmpty($catUrls)) {
+            $catUrlAttribute->setValues(array_unique($catUrls));
+            $this->attributes[] = $catUrlAttribute;
+        }
+
+        if (!Utils::isEmpty($categories)) {
+            $categoryAttribute->setValues(array_unique($categories));
+            $this->attributes[] = $categoryAttribute;
+        }
+    }
+
+    protected function setVariantPrices(): void
+    {
+        if ($this->product->getChildCount() === 0) {
+            return;
+        }
+
+        foreach ($this->product->getChildren() as $variant) {
+            if (!$variant->getActive() || $variant->getStock() <= 0) {
+                continue;
+            }
+
+            $this->prices = array_merge($this->prices, $this->getPricesFromProduct($variant));
+        }
+    }
+
+    /**
+     * @return Price[]
+     */
+    protected function getPricesFromProduct(ProductEntity $variant): array
+    {
+        $prices = [];
+
+        foreach ($variant->getPrice() as $item) {
+            foreach ($this->customerGroups as $customerGroup) {
+                $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
+                if (!Utils::isEmpty($userGroupHash)) {
+                    continue;
+                }
+
+                $price = new Price();
+                if ($customerGroup->getDisplayGross()) {
+                    $price->setValue($item->getGross(), $userGroupHash);
+                } else {
+                    $price->setValue($item->getNet(), $userGroupHash);
+                }
+
+                $prices[] = $price;
+            }
+
+            $price = new Price();
+            $price->setValue($item->getGross());
+            $prices[] = $price;
+        }
+
+        return $prices;
+    }
+
+    /**
+     * @throws ProductHasNoPricesException
+     */
+    protected function setProductPrices(): void
+    {
+        $prices = $this->getPricesFromProduct($this->product);
+        if (Utils::isEmpty($prices)) {
+            throw new ProductHasNoPricesException();
+        }
+
+        $this->prices = array_merge($this->prices, $prices);
     }
 
     /**
@@ -869,11 +867,9 @@ class FindologicProduct extends Struct
     protected function getEncodedUrl(string $url): string
     {
         $parsedUrl = parse_url($url);
-
-        $parsedUrl['path'] = implode('/', array_map(
-            '\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode',
-            explode('/', $parsedUrl['path'])
-        ));
+        $urlPath = explode('/', $parsedUrl['path']);
+        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
+        $parsedUrl['path'] = implode('/', $encodedPath);
 
         return Utils::buildUrl($parsedUrl);
     }
@@ -892,18 +888,6 @@ class FindologicProduct extends Struct
             $schemaAuthority,
             'bundles/storefront/assets/icon/default/placeholder.svg'
         );
-    }
-
-    protected function setSalesFrequency(): void
-    {
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('payload.productNumber', $this->product->getProductNumber()));
-
-        /** @var EntityRepository $orderLineItemRepository */
-        $orderLineItemRepository = $this->container->get('order_line_item.repository');
-        $orders = $orderLineItemRepository->search($criteria, $this->salesChannelContext->getContext());
-
-        $this->salesFrequency = $orders->count();
     }
 
     protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
@@ -960,16 +944,23 @@ class FindologicProduct extends Struct
         $attributes = [];
 
         $productFields = $product->getCustomFields();
-        if (!$productFields) {
+        if (empty($productFields)) {
             return [];
         }
 
         foreach ($productFields as $key => $value) {
-            if (is_string($value)) {
-                $value = Utils::cleanString($value);
+            if (!Utils::isEmpty($key) && !Utils::isEmpty($value)) {
+                if (is_string($value)) {
+                    $value = Utils::cleanString($value);
+                }
+
+                if (is_bool($value)) {
+                    $value = $this->translateBooleanValue($value);
+                }
+
+                $customFieldAttribute = new Attribute(Utils::removeSpecialChars($key), [$value]);
+                $attributes[] = $customFieldAttribute;
             }
-            $customFieldAttribute = new Attribute(Utils::removeSpecialChars($key), [$value]);
-            $attributes[] = $customFieldAttribute;
         }
 
         return $attributes;
@@ -981,5 +972,21 @@ class FindologicProduct extends Struct
     public function getCustomFields(): array
     {
         return $this->customFields;
+    }
+
+    private function translateBooleanValue(bool $value)
+    {
+        $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
+
+        return $this->translator->trans($translationKey);
+    }
+
+    protected function addProperty(string $name, $value)
+    {
+        if (!Utils::isEmpty($value)) {
+            $property = new Property($name);
+            $property->addValue($value);
+            $this->properties[] = $property;
+        }
     }
 }
