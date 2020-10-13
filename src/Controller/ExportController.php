@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\Export\Data\Item;
+use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasCrossSellingCategoryException;
@@ -44,6 +45,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\Validation;
+use Throwable;
 
 class ExportController extends AbstractController implements EventSubscriberInterface
 {
@@ -298,9 +300,22 @@ class ExportController extends AbstractController implements EventSubscriberInte
             return $xmlProduct->getXmlItem();
         } catch (ProductInvalidException $e) {
             $this->logger->logProductInvalidException($e);
-
-            return null;
+        } catch (EmptyValueNotAllowedException $e) {
+            $this->logger->warning(sprintf(
+                'Product with id "%s" could not be exported. It appears to have empty values assigned to it. ' .
+                'If you see this message in your logs, please report this as a bug.',
+                $productEntity->getId()
+            ));
+        } catch (Throwable $e) {
+            $this->logger->warning(sprintf(
+                'Error while exporting the product with id "%s". If you see this message in your logs, ' .
+                'please report this as a bug. Error message: %s',
+                $productEntity->getId(),
+                $e->getMessage()
+            ));
         }
+
+        return null;
     }
 
     private function checkIsProductInCrossSellingCategory(ProductEntity $productEntity): void

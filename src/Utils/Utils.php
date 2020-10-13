@@ -143,7 +143,9 @@ class Utils
     ): bool {
         /** @var FindologicService $findologicService */
         if ($findologicService = $context->getExtension('findologicService')) {
-            return $findologicService->getEnabled();
+            if ($findologicService->getEnabled()) {
+                return $findologicService->getEnabled();
+            }
         }
 
         if (!$config->isInitialized()) {
@@ -154,6 +156,9 @@ class Utils
         $context->addExtension('findologicService', $findologicService);
 
         if (!$config->isActive() || ($isCategoryPage && !$config->isActiveOnCategoryPages())) {
+            return $findologicService->setDisabled();
+        }
+        if ($isCategoryPage && !static::isCategoryPage($request)) {
             return $findologicService->setDisabled();
         }
 
@@ -170,6 +175,12 @@ class Utils
         }
 
         return $findologicService->setEnabled();
+    }
+
+    private static function isCategoryPage(Request $request): bool
+    {
+        // TODO: AJAX search results do not work yet. Find an appropiate fix.
+        return (strpos($request->getPathInfo(), 'navigation') !== false);
     }
 
     public static function isFindologicEnabled(SalesChannelContext $context): bool
@@ -196,6 +207,27 @@ class Utils
         }
 
         if ($request->getSession()->get('stagingFlag') === true) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function isEmpty($value): bool
+    {
+        if (is_numeric($value) || is_object($value) || is_bool($value)) {
+            return false;
+        }
+
+        if (is_array($value) && empty(array_filter($value))) {
+            return true;
+        }
+
+        if (is_string($value) && empty(trim($value))) {
+            return true;
+        }
+
+        if (empty($value)) {
             return true;
         }
 

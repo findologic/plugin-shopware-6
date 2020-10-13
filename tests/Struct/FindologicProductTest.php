@@ -11,6 +11,7 @@ use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
+use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
@@ -483,18 +484,20 @@ class FindologicProductTest extends TestCase
      */
     public function testAttributesAreProperlyEscaped(string $attributeName, string $expectedName): void
     {
-        $productEntity = $this->createTestProduct([
-            'properties' => [
-                [
-                    'id' => Uuid::randomHex(),
-                    'name' => 'some value',
-                    'group' => [
+        $productEntity = $this->createTestProduct(
+            [
+                'properties' => [
+                    [
                         'id' => Uuid::randomHex(),
-                        'name' => $attributeName
-                    ],
+                        'name' => 'some value',
+                        'group' => [
+                            'id' => Uuid::randomHex(),
+                            'name' => $attributeName
+                        ],
+                    ]
                 ]
             ]
-        ]);
+        );
 
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
@@ -522,7 +525,7 @@ class FindologicProductTest extends TestCase
 
         $foundAttributes = array_filter(
             $findologicProduct->getAttributes(),
-            function (Attribute $attribute) use ($expectedName) {
+            static function (Attribute $attribute) use ($expectedName) {
                 return $attribute->getKey() === $expectedName;
             }
         );
@@ -545,19 +548,21 @@ class FindologicProductTest extends TestCase
         $expectedPropertyName = 'blub';
         $expectedPropertyValue = 'some value';
 
-        $productEntity = $this->createTestProduct([
-            'properties' => [
-                [
-                    'id' => Uuid::randomHex(),
-                    'name' => $expectedPropertyValue,
-                    'group' => [
+        $productEntity = $this->createTestProduct(
+            [
+                'properties' => [
+                    [
                         'id' => Uuid::randomHex(),
-                        'name' => $expectedPropertyName,
-                        'filterable' => false
-                    ],
+                        'name' => $expectedPropertyValue,
+                        'group' => [
+                            'id' => Uuid::randomHex(),
+                            'name' => $expectedPropertyName,
+                            'filterable' => false
+                        ],
+                    ]
                 ]
             ]
-        ]);
+        );
 
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
@@ -585,7 +590,7 @@ class FindologicProductTest extends TestCase
 
         $foundAttributes = array_filter(
             $findologicProduct->getAttributes(),
-            function (Attribute $attribute) use ($expectedPropertyName) {
+            static function (Attribute $attribute) use ($expectedPropertyName) {
                 return $attribute->getKey() === $expectedPropertyName;
             }
         );
@@ -594,7 +599,7 @@ class FindologicProductTest extends TestCase
 
         $foundProperties = array_filter(
             $findologicProduct->getProperties(),
-            function (Property $property) use ($expectedPropertyName) {
+            static function (Property $property) use ($expectedPropertyName) {
                 return $property->getKey() === $expectedPropertyName;
             }
         );
@@ -763,10 +768,13 @@ class FindologicProductTest extends TestCase
 
         $attributes[] = new Attribute(
             $productEntity->getProperties()
-                ->first()->getGroup()->getName(),
+                ->first()
+                ->getGroup()
+                ->getName(),
             [
                 $productEntity->getProperties()
-                    ->first()->getName()
+                    ->first()
+                    ->getName()
             ]
         );
         $attributes[] = new Attribute(
@@ -787,8 +795,7 @@ class FindologicProductTest extends TestCase
             ]
         );
 
-        $translationKey = $productEntity->getShippingFree() ? 'finSearch.general.yes' : 'finSearch.general.no';
-        $shippingFree = $this->getContainer()->get('translator')->trans($translationKey);
+        $shippingFree = $this->translateBooleanValue($productEntity->getShippingFree());
         $attributes[] = new Attribute('shipping_free', [$shippingFree]);
 
         $rating = $productEntity->getRatingAverage() ?? 0.0;
@@ -798,6 +805,9 @@ class FindologicProductTest extends TestCase
         $productFields = $productEntity->getCustomFields();
         if ($productFields) {
             foreach ($productFields as $key => $value) {
+                if (is_bool($value)) {
+                    $value = $this->translateBooleanValue($value);
+                }
                 $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
             }
         }
@@ -806,6 +816,9 @@ class FindologicProductTest extends TestCase
             $productFields = $variant->getCustomFields();
             if ($productFields) {
                 foreach ($productFields as $key => $value) {
+                    if (is_bool($value)) {
+                        $value = $this->translateBooleanValue($value);
+                    }
                     $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
                 }
             }
@@ -838,5 +851,53 @@ class FindologicProductTest extends TestCase
         $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
 
         return $images;
+    }
+
+    public function emptyValuesProvider(): array
+    {
+        return [
+            'null values provided' => [null],
+            'empty string values provided' => [''],
+            'values containing empty spaces provided' => ['    ']
+        ];
+    }
+
+    /**
+     * @dataProvider emptyValuesProvider
+     */
+    public function testEmptyValuesAreSkipped(?string $value): void
+    {
+        $data = [
+            'description' => $value,
+            'referenceunit' => $value,
+            'customFields' => [$value => 100, 'findologic_color' => $value]
+        ];
+
+        $productEntity = $this->createTestProduct($data);
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $this->assertFalse($findologicProduct->hasDescription());
+        $this->assertEmpty($findologicProduct->getCustomFields());
+    }
+
+    private function translateBooleanValue(bool $value): string
+    {
+        $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
+
+        return $this->getContainer()->get('translator')->trans($translationKey);
     }
 }
