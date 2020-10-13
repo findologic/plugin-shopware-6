@@ -114,6 +114,11 @@ class Xml21ResponseParser extends ResponseParser
             return $this->buildSearchTermQueryInfoMessage($smartDidYouMean->getAlternativeQuery());
         }
 
+        // Check for shopping guide parameter first, otherwise it will always be overridden with search or vendor query
+        if ($this->isFilterSet($params, 'wizard')) {
+            return $this->buildShoppingGuideInfoMessage($params);
+        }
+
         if ($this->hasQuery($queryString)) {
             return $this->buildSearchTermQueryInfoMessage($queryString);
         }
@@ -124,10 +129,6 @@ class Xml21ResponseParser extends ResponseParser
 
         if ($this->isFilterSet($params, 'vendor')) {
             return $this->buildVendorQueryInfoMessage($params);
-        }
-
-        if ($this->isFilterSet($params, 'wizard')) {
-            return $this->buildShoppingGuideInfoMessage($params);
         }
 
         return QueryInfoMessage::buildInstance(QueryInfoMessage::TYPE_DEFAULT);
