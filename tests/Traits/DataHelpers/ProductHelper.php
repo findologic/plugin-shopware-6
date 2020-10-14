@@ -69,8 +69,8 @@ trait ProductHelper
         $seoUrls = $seoUrlRepo->search(new Criteria(), Context::createDefaultContext());
         $seoUrlsStoreFrontContext = $seoUrlRepo->search(new Criteria(), $contextFactory->create(
             Uuid::randomHex(),
-            $salesChannel->getId())->getContext()
-        );
+            $salesChannel->getId()
+        )->getContext());
 
         $productSeoUrls = [];
         if ($seoUrls->count() === 0 && $seoUrlsStoreFrontContext->count() === 0) {
