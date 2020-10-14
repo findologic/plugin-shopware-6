@@ -25,11 +25,15 @@ use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
+use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
@@ -324,29 +328,45 @@ class FindologicProduct extends Struct
     protected function getTranslatedSeoPath(): ?string
     {
         $salesChannel = $this->salesChannelContext->getSalesChannel();
-
         $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
-        foreach ($seoUrlCollection as $seoUrlEntity) {
-            if ($seoUrlEntity->getLanguageId() === $this->salesChannelContext->getSalesChannel()->getLanguageId()) {
-                return $seoUrlEntity->getSeoPathInfo();
-            }
-        }
 
-        return null;
+        /** @var SeoUrlEntity|null $seoUrlEntity */
+        $seoUrlEntity = $this->getTranslatedEntity($seoUrlCollection);
+
+        return $seoUrlEntity ? $seoUrlEntity->getSeoPathInfo() : $seoUrlEntity;
     }
 
     protected function getTranslatedDomainBaseUrl(): ?string
     {
         $salesChannel = $this->salesChannelContext->getSalesChannel();
+        $domainCollection = $salesChannel->getDomains();
 
-        $domains = $salesChannel->getDomains();
-        foreach ($domains as $domain) {
-            if ($domain->getLanguageId() === $this->salesChannelContext->getSalesChannel()->getLanguageId()) {
-                return $domain->getUrl();
-            }
+        /** @var SalesChannelDomainEntity|null $domainEntity */
+        $domainEntity = $this->getTranslatedEntity($domainCollection);
+
+        return $domainEntity ? $domainEntity->getUrl() : $domainEntity;
+    }
+
+    /**
+     * Finds the first entity of a collection for the export language and returns it. If none is found,
+     * null is returned.
+     */
+    protected function getTranslatedEntity(?EntityCollection $collection): ?Entity
+    {
+        if (!$collection) {
+            return null;
         }
 
-        return null;
+        $translatedEntities = $collection->filterByProperty(
+            'languageId',
+            $this->salesChannelContext->getSalesChannel()->getLanguageId()
+        );
+
+        if ($translatedEntities->count() === 0) {
+            return null;
+        }
+
+        return $translatedEntities->first();
     }
 
     public function hasUrl(): bool

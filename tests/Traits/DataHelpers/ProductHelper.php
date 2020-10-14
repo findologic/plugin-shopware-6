@@ -101,6 +101,7 @@ trait ProductHelper
             ],
             'seoUrls' => [
                 [
+                    'id' => Uuid::randomHex(),
                     'pathInfo' => '/detail/' . $id,
                     'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
                     'isCanonical' => true,
