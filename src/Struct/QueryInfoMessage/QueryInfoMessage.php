@@ -64,10 +64,10 @@ abstract class QueryInfoMessage extends Struct
         }
     }
 
-    private static function assertWizardIsNotEmpty(?string $query): void
+    private static function assertWizardIsNotEmpty(?string $shoppingGuideName): void
     {
-        if (!$query) {
-            throw new InvalidArgumentException('Wizard parameter must be set for a ShoppingGuideInfoMessage!');
+        if (!$shoppingGuideName) {
+            throw new InvalidArgumentException('Shopping guide name must be set for a ShoppingGuideInfoMessage!');
         }
     }
 }

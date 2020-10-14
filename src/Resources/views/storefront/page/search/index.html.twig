@@ -22,9 +22,9 @@
 
                 {% if context.context.extensions.flQueryInfoMessage %}
                     {% set queryInfoMessage = context.context.extensions.flQueryInfoMessage %}
-                    {% if queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\SearchTermQueryInfoMessage") %}
-                        {{ 'finSearch.queryInfoMessage.query'|trans({
-                            '%query%': queryInfoMessage.query,
+                    {% if queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\ShoppingGuideInfoMessage") %}
+                        {{ 'finSearch.queryInfoMessage.shoppingGuide'|trans({
+                            '%shoppingGuide%': queryInfoMessage.shoppingGuide,
                             '%hits%': hits
                         })|sw_sanitize }}
                     {% elseif queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\CategoryInfoMessage") or
@@ -34,9 +34,9 @@
                             '%filterValue%': queryInfoMessage.filterValue,
                             '%hits%': hits
                         })|sw_sanitize }}
-                    {% elseif queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\ShoppingGuideInfoMessage") %}
-                        {{ 'finSearch.queryInfoMessage.shoppingGuide'|trans({
-                            '%wizard%': queryInfoMessage.query,
+                    {% elseif queryInfoMessage is instanceof("\\FINDOLOGIC\\FinSearch\\Struct\\QueryInfoMessage\\SearchTermQueryInfoMessage") %}
+                        {{ 'finSearch.queryInfoMessage.query'|trans({
+                            '%query%': queryInfoMessage.query,
                             '%hits%': hits
                         })|sw_sanitize }}
                     {% else %}

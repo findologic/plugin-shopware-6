@@ -9,7 +9,7 @@
     "queryInfoMessage": {
       "filter": "Search results for %filterName% <strong>%filterValue%</strong> (<strong>%hits%</strong> hits)",
       "query": "Search results for <strong>%query%</strong> (<strong>%hits%</strong> hits)",
-      "shoppingGuide": "Search results for <strong>%wizard%</strong> (<strong>%hits%</strong> hits)",
+      "shoppingGuide": "Search results for <strong>%shoppingGuide%</strong> (<strong>%hits%</strong> hits)",
       "default": "Search results (<strong>%hits%</strong> hits)"
     },
     "general": {

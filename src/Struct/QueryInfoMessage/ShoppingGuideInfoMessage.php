@@ -7,15 +7,15 @@ namespace FINDOLOGIC\FinSearch\Struct\QueryInfoMessage;
 class ShoppingGuideInfoMessage extends QueryInfoMessage
 {
     /** @var string */
-    protected $query;
+    protected $shoppingGuide;
 
-    public function __construct(string $query)
+    public function __construct(string $shoppingGuide)
     {
-        $this->query = $query;
+        $this->shoppingGuide = $shoppingGuide;
     }
 
-    public function getQuery(): string
+    public function getShoppingGuide(): string
     {
-        return $this->query;
+        return $this->shoppingGuide;
     }
 }
