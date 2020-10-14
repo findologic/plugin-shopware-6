@@ -894,6 +894,52 @@ class FindologicProductTest extends TestCase
         $this->assertEmpty($findologicProduct->getCustomFields());
     }
 
+    public function testCanonicalSeoUrlsAreUsedForTheConfiguredLanguage(): void
+    {
+        $productEntity = $this->createTestProduct();
+
+        $productTag = new Keyword('FINDOLOGIC Tag');
+        $images = $this->getImages();
+        $attributes = $this->getAttributes($productEntity);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $userGroup = $this->getUserGroups($customerGroupEntities);
+        $ordernumbers = $this->getOrdernumber($productEntity);
+        $properties = $this->getProperties($productEntity);
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $salesChannel = $this->salesChannelContext->getSalesChannel();
+        $domain = $salesChannel->getDomains()->first()->getUrl();
+
+        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        $seoPath = $seoUrls->first()->getSeoPathInfo();
+        $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
+
+        $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
+        $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
+        $this->assertEquals([$productTag], $findologicProduct->getKeywords());
+        $this->assertEquals($images, $findologicProduct->getImages());
+        $this->assertEquals(0, $findologicProduct->getSalesFrequency());
+        $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
+        $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
+        $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
+        $this->assertEquals($properties, $findologicProduct->getProperties());
+    }
+
     private function translateBooleanValue(bool $value): string
     {
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';

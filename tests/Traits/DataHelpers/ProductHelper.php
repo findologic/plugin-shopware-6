@@ -85,10 +85,30 @@ trait ProductHelper
             ],
             'seoUrls' => [
                 [
+                    'id' => Uuid::randomHex(),
                     'pathInfo' => '/detail/' . $id,
                     'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
                     'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page'
+                    'routeName' => 'frontend.detail.page',
+                    'language' => [
+                        'id' => Uuid::randomHex(),
+                        'locale' => [
+                            'id' => Uuid::randomHex(),
+                            'name' => 'Deutsch',
+                            'territory' => 'Europe',
+                            'code' => 'something-UNIQUE',
+                        ],
+                        'name' => 'de-DE',
+                        'translationCodeId' => Uuid::randomHex(),
+                    ]
+                ],
+                [
+                    'id' => Uuid::randomHex(),
+                    'pathInfo' => '/detail/' . $id,
+                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page',
+                    'language' => ['id' => $salesChannelContext->getSalesChannel()->getLanguageId()]
                 ]
             ],
             'translations' => [

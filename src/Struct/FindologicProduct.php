@@ -305,14 +305,10 @@ class FindologicProduct extends Struct
 
     protected function setUrl(): void
     {
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
+        $baseUrl = $this->getTranslatedDomainBaseUrl();
+        $seoPath = $this->getTranslatedSeoPath();
 
-        $domains = $salesChannel->getDomains();
-        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
-        if ($domains && $domains->count() > 0 && $seoUrlCollection && $seoUrlCollection->count() > 0) {
-            $baseUrl = $domains->first()->getUrl();
-            $seoPath = $seoUrlCollection->first()->getSeoPathInfo();
-
+        if ($baseUrl && $seoPath) {
             $productUrl = sprintf('%s/%s', $baseUrl, $seoPath);
         } else {
             $productUrl = $this->router->generate(
@@ -323,6 +319,34 @@ class FindologicProduct extends Struct
         }
 
         $this->url = $productUrl;
+    }
+
+    protected function getTranslatedSeoPath(): ?string
+    {
+        $salesChannel = $this->salesChannelContext->getSalesChannel();
+
+        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        foreach ($seoUrlCollection as $seoUrlEntity) {
+            if ($seoUrlEntity->getLanguageId() === $this->salesChannelContext->getSalesChannel()->getLanguageId()) {
+                return $seoUrlEntity->getSeoPathInfo();
+            }
+        }
+
+        return null;
+    }
+
+    protected function getTranslatedDomainBaseUrl(): ?string
+    {
+        $salesChannel = $this->salesChannelContext->getSalesChannel();
+
+        $domains = $salesChannel->getDomains();
+        foreach ($domains as $domain) {
+            if ($domain->getLanguageId() === $this->salesChannelContext->getSalesChannel()->getLanguageId()) {
+                return $domain->getUrl();
+            }
+        }
+
+        return null;
     }
 
     public function hasUrl(): bool
