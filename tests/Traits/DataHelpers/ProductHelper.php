@@ -83,7 +83,7 @@ trait ProductHelper
                     'isCanonical' => true,
                     'routeName' => 'frontend.detail.page',
                     'languageId' => $language->getId(),
-                    'salesChannelId' => Defaults::SALES_CHANNEL
+                    'salesChannelId' => null
                 ],
                 [
                     'id' => Uuid::randomHex(),
