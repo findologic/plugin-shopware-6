@@ -79,6 +79,16 @@ trait ProductHelper
                     'id' => Uuid::randomHex(),
                     'foreignKey' => Uuid::randomHex(),
                     'pathInfo' => '/detail/' . $id,
+                    'seoPathInfo' => 'Default',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page',
+                    'languageId' => $language->getId(),
+                    'salesChannelId' => Defaults::SALES_CHANNEL
+                ],
+                [
+                    'id' => Uuid::randomHex(),
+                    'foreignKey' => Uuid::randomHex(),
+                    'pathInfo' => '/detail/' . $id,
                     'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
                     'isCanonical' => true,
                     'routeName' => 'frontend.detail.page',
