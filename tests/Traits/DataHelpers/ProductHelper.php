@@ -65,6 +65,35 @@ trait ProductHelper
         /** @var SalesChannelEntity $salesChannel */
         $salesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
 
+        $seoUrlRepo = $container->get('seo_url.repository');
+        $seoUrls = $seoUrlRepo->search(new Criteria(), Context::createDefaultContext());
+
+        $productSeoUrls = [];
+        if ($seoUrls->count() === 0) {
+            $productSeoUrls = [
+                [
+                    'id' => Uuid::randomHex(),
+                    'foreignKey' => Uuid::randomHex(),
+                    'pathInfo' => '/detail/' . $id,
+                    'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page',
+                    'languageId' => $language->getId(),
+                    'salesChannelId' => $salesChannel->getId()
+                ],
+                [
+                    'id' => Uuid::randomHex(),
+                    'foreignKey' => Uuid::randomHex(),
+                    'pathInfo' => '/detail/' . $id,
+                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page',
+                    'languageId' => $defaultLanguageId,
+                    'salesChannelId' => $salesChannel->getId()
+                ],
+            ];
+        }
+
         $productData = [
             'id' => $id,
             'productNumber' => 'FINDOLOGIC001',
@@ -99,28 +128,7 @@ trait ProductHelper
                     'name' => 'FINDOLOGIC Sub of Sub'
                 ]
             ],
-            'seoUrls' => [
-                [
-                    'id' => Uuid::randomHex(),
-                    'foreignKey' => Uuid::randomHex(),
-                    'pathInfo' => '/detail/' . $id,
-                    'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
-                    'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page',
-                    'languageId' => $language->getId(),
-                    'salesChannelId' => $salesChannel->getId()
-                ],
-                [
-                    'id' => Uuid::randomHex(),
-                    'foreignKey' => Uuid::randomHex(),
-                    'pathInfo' => '/detail/' . $id,
-                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
-                    'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page',
-                    'languageId' => $defaultLanguageId,
-                    'salesChannelId' => $salesChannel->getId()
-                ],
-            ],
+            'seoUrls' => $productSeoUrls,
             'translations' => [
                 'en-GB' => [
                     'customTranslated' => [
