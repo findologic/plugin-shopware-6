@@ -10,11 +10,15 @@ use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\Language\LanguageEntity;
+use Shopware\Core\System\Locale\LocaleEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 
 trait ProductHelper
 {
@@ -48,6 +52,18 @@ trait ProductHelper
             ]
         ];
         $container->get('category.repository')->upsert($categoryData, $context);
+
+        /** @var EntityRepository $localeRepo */
+        $localeRepo = $container->get('language.repository');
+        /** @var LanguageEntity $language */
+        $language = $localeRepo->search(new Criteria(), Context::createDefaultContext())->first();
+
+        $defaultLanguageId = $salesChannelContext->getSalesChannel()->getLanguageId();
+
+        /** @var EntityRepository $salesChannelRepo */
+        $salesChannelRepo = $container->get('sales_channel.repository');
+        /** @var SalesChannelEntity $salesChannel */
+        $salesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
 
         $productData = [
             'id' => $id,
@@ -85,22 +101,12 @@ trait ProductHelper
             ],
             'seoUrls' => [
                 [
-                    'id' => Uuid::randomHex(),
                     'pathInfo' => '/detail/' . $id,
-                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
+                    'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
                     'isCanonical' => true,
                     'routeName' => 'frontend.detail.page',
-                    'language' => [
-                        'id' => Uuid::randomHex(),
-                        'locale' => [
-                            'id' => Uuid::randomHex(),
-                            'name' => 'Deutsch',
-                            'territory' => 'Europe',
-                            'code' => 'something-UNIQUE',
-                        ],
-                        'name' => 'de-DE',
-                        'translationCodeId' => Uuid::randomHex(),
-                    ]
+                    'languageId' => $language->getId(),
+                    'salesChannelId' => $salesChannel->getId()
                 ],
                 [
                     'id' => Uuid::randomHex(),
@@ -108,8 +114,9 @@ trait ProductHelper
                     'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
                     'isCanonical' => true,
                     'routeName' => 'frontend.detail.page',
-                    'language' => ['id' => $salesChannelContext->getSalesChannel()->getLanguageId()]
-                ]
+                    'languageId' => $defaultLanguageId,
+                    'salesChannelId' => $salesChannel->getId()
+                ],
             ],
             'translations' => [
                 'en-GB' => [

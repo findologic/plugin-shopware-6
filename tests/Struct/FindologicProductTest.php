@@ -26,6 +26,7 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -34,6 +35,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -346,14 +348,6 @@ class FindologicProductTest extends TestCase
             new XMLItem('123')
         );
 
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domain = $salesChannel->getDomains()->first()->getUrl();
-
-        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
-        $seoPath = $seoUrls->first()->getSeoPathInfo();
-        $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
-
-        $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
         $this->assertEquals([$productTag], $findologicProduct->getKeywords());
         $this->assertEquals($images, $findologicProduct->getImages());
@@ -897,47 +891,44 @@ class FindologicProductTest extends TestCase
     public function testCanonicalSeoUrlsAreUsedForTheConfiguredLanguage(): void
     {
         $productEntity = $this->createTestProduct();
+        $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
+        $storeFrontSalesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
+        $salesChannelContext = $this->buildSalesChannelContext($storeFrontSalesChannel->getId(), 'https://blub.io');
+        $this->getContainer()->set('fin_search.sales_channel_context', $salesChannelContext);
+        $salesChannel = $salesChannelContext->getSalesChannel();
 
-        $productTag = new Keyword('FINDOLOGIC Tag');
-        $images = $this->getImages();
-        $attributes = $this->getAttributes($productEntity);
+        // Manually sort the correct SEO URL below all other SEO URLs, to ensure the SEO URL is not correct, because
+        // it is the first one in the database, but that the proper translation matches instead.
+        $productEntity->getSeoUrls()->sort(function (SeoUrlEntity $seoUrlEntity) {
+            return $seoUrlEntity->getSeoPathInfo() === 'I-Should-Be-Used/Because/Used/Language' ? -1 : 1;
+        });
 
-        $customerGroupEntities = $this->getContainer()
-            ->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext->getContext())
-            ->getElements();
+        /** @var SalesChannelDomainEntity $domainEntity */
+        $domainEntity = $salesChannel->getDomains()->filter(
+            function (SalesChannelDomainEntity $domain) use ($salesChannel) {
+                return $domain->getLanguageId() === $salesChannel->getLanguageId();
+            }
+        )->first();
+        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        /** @var SeoUrlEntity $seoUrlEntity */
+        $seoUrlEntity = $seoUrls->filter(function (SeoUrlEntity $seoUrl) use ($salesChannel) {
+            return $seoUrl->getLanguageId() === $salesChannel->getLanguageId();
+        })->first();
 
-        $userGroup = $this->getUserGroups($customerGroupEntities);
-        $ordernumbers = $this->getOrdernumber($productEntity);
-        $properties = $this->getProperties($productEntity);
+        $expectedUrl = sprintf('%s/%s', $domainEntity->getUrl(), $seoUrlEntity->getSeoPathInfo());
 
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
+            $salesChannelContext->getContext(),
             $this->shopkey,
-            $customerGroupEntities,
+            [],
             new XMLItem('123')
         );
 
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domain = $salesChannel->getDomains()->first()->getUrl();
-
-        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
-        $seoPath = $seoUrls->first()->getSeoPathInfo();
-        $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
-
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
-        $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals([$productTag], $findologicProduct->getKeywords());
-        $this->assertEquals($images, $findologicProduct->getImages());
-        $this->assertEquals(0, $findologicProduct->getSalesFrequency());
-        $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
-        $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
-        $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
-        $this->assertEquals($properties, $findologicProduct->getProperties());
     }
 
     private function translateBooleanValue(bool $value): string
