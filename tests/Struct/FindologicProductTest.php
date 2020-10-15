@@ -892,6 +892,8 @@ class FindologicProductTest extends TestCase
 
     public function testCanonicalSeoUrlsAreUsedForTheConfiguredLanguage(): void
     {
+        $defaultContext = Context::createDefaultContext();
+
         /** @var EntityRepository $salesChannelRepo */
         $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
         /** @var SalesChannelEntity $salesChannel */
@@ -904,28 +906,37 @@ class FindologicProductTest extends TestCase
 
         $defaultLanguageId = $this->salesChannelContext->getSalesChannel()->getLanguageId();
 
+        $seoUrlRepo = $this->getContainer()->get('seo_url.repository');
+        $firstSeoUrlId = Uuid::randomHex();
+        $lastSeoUrlId = Uuid::randomHex();
+
+        $seoUrlRepo->upsert([
+            [
+                'id' => $firstSeoUrlId,
+                'pathInfo' => '/detail/' . Uuid::randomHex(),
+                'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
+                'isCanonical' => true,
+                'routeName' => 'frontend.detail.page',
+                'languageId' => $language->getId(),
+                'salesChannelId' => $salesChannel->getId()
+            ],
+            [
+                'id' => $lastSeoUrlId,
+                'pathInfo' => '/detail/' . Uuid::randomHex(),
+                'seoPathInfo' => 'I-Should-Not-Be-Used/Because/Wrong/Language',
+                'isCanonical' => true,
+                'routeName' => 'frontend.detail.page',
+                'languageId' => $defaultLanguageId,
+                'salesChannelId' => $salesChannel->getId()
+            ]
+        ], $defaultContext);
+
+        // Manually assign SEO URLs to product, to prevent collision in case of a race condition.
+        // See https://issues.shopware.com/issues/NEXT-11429.
         $productEntity = $this->createTestProduct([
             'seoUrls' => [
-                [
-                    'id' => Uuid::randomHex(),
-                    'foreignKey' => Uuid::randomHex(),
-                    'pathInfo' => '/detail/' . Uuid::randomHex(),
-                    'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
-                    'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page',
-                    'languageId' => $language->getId(),
-                    'salesChannelId' => $salesChannel->getId()
-                ],
-                [
-                    'id' => Uuid::randomHex(),
-                    'foreignKey' => Uuid::randomHex(),
-                    'pathInfo' => '/detail/' . Uuid::randomHex(),
-                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
-                    'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page',
-                    'languageId' => $defaultLanguageId,
-                    'salesChannelId' => $salesChannel->getId()
-                ],
+                ['id' => $firstSeoUrlId],
+                ['id' => $lastSeoUrlId]
             ]
         ]);
         $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
