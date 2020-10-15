@@ -76,14 +76,10 @@ trait ProductHelper
         if ($seoUrls->count() === 0 && $seoUrlsStoreFrontContext->count() === 0) {
             $productSeoUrls = [
                 [
-                    'id' => Uuid::randomHex(),
-                    'foreignKey' => Uuid::randomHex(),
                     'pathInfo' => '/detail/' . $id,
-                    'seoPathInfo' => 'Default',
+                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
                     'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page',
-                    'languageId' => $language->getId(),
-                    'salesChannelId' => null
+                    'routeName' => 'frontend.detail.page'
                 ],
                 [
                     'id' => Uuid::randomHex(),
