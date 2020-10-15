@@ -934,8 +934,10 @@ class FindologicProductTest extends TestCase
         $productEntity = $this->createTestProduct();
 
         // Manually delete all seo URLs from the product, and manually assign SEO URLs to product,
-        // to prevent collision in case of a race condition.
+        // to prevent collision in case of a race condition. We need to sleep here, since the product created event
+        // is asynchronous and runs in another thread.
         // See https://issues.shopware.com/issues/NEXT-11429.
+        sleep(5);
         $seoUrls = array_values(array_map(function ($id) {
             return ['id' => $id];
         }, $productEntity->getSeoUrls()->getIds()));
