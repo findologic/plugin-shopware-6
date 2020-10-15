@@ -931,14 +931,27 @@ class FindologicProductTest extends TestCase
             ]
         ], $defaultContext);
 
-        // Manually assign SEO URLs to product, to prevent collision in case of a race condition.
+        $productEntity = $this->createTestProduct();
+
+        // Manually delete all seo URLs from the product, and manually assign SEO URLs to product,
+        // to prevent collision in case of a race condition.
         // See https://issues.shopware.com/issues/NEXT-11429.
-        $productEntity = $this->createTestProduct([
-            'seoUrls' => [
-                ['id' => $firstSeoUrlId],
-                ['id' => $lastSeoUrlId]
+        $seoUrls = array_values(array_map(function ($id) {
+            return ['id' => $id];
+        }, $productEntity->getSeoUrls()->getIds()));
+        $seoUrlRepo->delete($seoUrls, $defaultContext);
+
+        $productRepo = $this->getContainer()->get('product.repository');
+        $productRepo->update([
+            [
+                'id' => $productEntity->getId(),
+                'seoUrls' => [
+                    ['id' => $firstSeoUrlId],
+                    ['id' => $lastSeoUrlId]
+                ]
             ]
-        ]);
+        ], $defaultContext);
+
         $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
         $storeFrontSalesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
         $salesChannelContext = $this->buildSalesChannelContext($storeFrontSalesChannel->getId(), 'https://blub.io');
