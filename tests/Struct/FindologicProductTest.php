@@ -29,12 +29,14 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
@@ -890,7 +892,42 @@ class FindologicProductTest extends TestCase
 
     public function testCanonicalSeoUrlsAreUsedForTheConfiguredLanguage(): void
     {
-        $productEntity = $this->createTestProduct();
+        /** @var EntityRepository $salesChannelRepo */
+        $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
+        /** @var SalesChannelEntity $salesChannel */
+        $salesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
+
+        /** @var EntityRepository $localeRepo */
+        $localeRepo = $this->getContainer()->get('language.repository');
+        /** @var LanguageEntity $language */
+        $language = $localeRepo->search(new Criteria(), Context::createDefaultContext())->first();
+
+        $defaultLanguageId = $this->salesChannelContext->getSalesChannel()->getLanguageId();
+
+        $productEntity = $this->createTestProduct([
+            'seoUrls' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'foreignKey' => Uuid::randomHex(),
+                    'pathInfo' => '/detail/' . Uuid::randomHex(),
+                    'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page',
+                    'languageId' => $language->getId(),
+                    'salesChannelId' => $salesChannel->getId()
+                ],
+                [
+                    'id' => Uuid::randomHex(),
+                    'foreignKey' => Uuid::randomHex(),
+                    'pathInfo' => '/detail/' . Uuid::randomHex(),
+                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page',
+                    'languageId' => $defaultLanguageId,
+                    'salesChannelId' => $salesChannel->getId()
+                ],
+            ]
+        ]);
         $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
         $storeFrontSalesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
         $salesChannelContext = $this->buildSalesChannelContext($storeFrontSalesChannel->getId(), 'https://blub.io');

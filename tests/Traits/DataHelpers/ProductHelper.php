@@ -53,13 +53,6 @@ trait ProductHelper
         ];
         $container->get('category.repository')->upsert($categoryData, $context);
 
-        /** @var EntityRepository $localeRepo */
-        $localeRepo = $container->get('language.repository');
-        /** @var LanguageEntity $language */
-        $language = $localeRepo->search(new Criteria(), Context::createDefaultContext())->first();
-
-        $defaultLanguageId = $salesChannelContext->getSalesChannel()->getLanguageId();
-
         /** @var EntityRepository $salesChannelRepo */
         $salesChannelRepo = $container->get('sales_channel.repository');
         /** @var SalesChannelEntity $salesChannel */
@@ -80,26 +73,6 @@ trait ProductHelper
                     'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
                     'isCanonical' => true,
                     'routeName' => 'frontend.detail.page'
-                ],
-                [
-                    'id' => Uuid::randomHex(),
-                    'foreignKey' => Uuid::randomHex(),
-                    'pathInfo' => '/detail/' . $id,
-                    'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
-                    'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page',
-                    'languageId' => $language->getId(),
-                    'salesChannelId' => $salesChannel->getId()
-                ],
-                [
-                    'id' => Uuid::randomHex(),
-                    'foreignKey' => Uuid::randomHex(),
-                    'pathInfo' => '/detail/' . $id,
-                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
-                    'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page',
-                    'languageId' => $defaultLanguageId,
-                    'salesChannelId' => $salesChannel->getId()
                 ],
             ];
         }
