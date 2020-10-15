@@ -492,7 +492,7 @@ class Xml21ResponseParserTest extends TestCase
                 'request' => new Request(['wizard' => 'FindologicGuide']),
                 'expectedInstance' => ShoppingGuideInfoMessage::class,
                 'expectedVars' => [
-                    'query' => 'FindologicGuide',
+                    'shoppingGuide' => 'FindologicGuide',
                     'extensions' => []
                 ]
             ],
