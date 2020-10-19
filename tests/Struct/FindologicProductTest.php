@@ -350,6 +350,14 @@ class FindologicProductTest extends TestCase
             new XMLItem('123')
         );
 
+        $salesChannel = $this->salesChannelContext->getSalesChannel();
+        $domain = $salesChannel->getDomains()->first()->getUrl();
+
+        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        $seoPath = $seoUrls->first()->getSeoPathInfo();
+        $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
+
+        $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
         $this->assertEquals([$productTag], $findologicProduct->getKeywords());
         $this->assertEquals($images, $findologicProduct->getImages());
@@ -892,6 +900,7 @@ class FindologicProductTest extends TestCase
 
     public function testCanonicalSeoUrlsAreUsedForTheConfiguredLanguage(): void
     {
+        $this->markTestSkipped('Skipped until Shopware has fixed https://issues.shopware.com/issues/NEXT-11429');
         $defaultContext = Context::createDefaultContext();
 
         /** @var EntityRepository $salesChannelRepo */
