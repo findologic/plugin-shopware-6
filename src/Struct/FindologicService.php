@@ -11,7 +11,7 @@ use Shopware\Core\Framework\Struct\Struct;
  */
 class FindologicService extends Struct
 {
-    private $enabled = true;
+    private $enabled = false;
 
     public function setEnabled(): bool
     {

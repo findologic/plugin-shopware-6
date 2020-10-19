@@ -18,6 +18,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -98,6 +99,7 @@ abstract class ProductRouteBase extends TestCase
         $this->configMock = $this->getMockBuilder(Config::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $this->configMock->expects($this->any())->method('isInitialized')->willReturn(true);
     }
 
     /**
@@ -113,12 +115,23 @@ abstract class ProductRouteBase extends TestCase
     /**
      * @return SalesChannelContext|MockObject
      */
-    protected function getMockedSalesChannelContext(bool $findologicActive): SalesChannelContext
-    {
+    protected function getMockedSalesChannelContext(
+        bool $findologicActive,
+        string $categoryId = ''
+    ): SalesChannelContext {
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        /** @var SalesChannelEntity|MockObject $salesChannelMock */
+        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $salesChannelMock->expects($this->any())->method('getNavigationCategoryId')->willReturn($categoryId);
+
+        $salesChannelContextMock->expects($this->any())->method('getSalesChannel')
+            ->willReturn($salesChannelMock);
 
         /** @var Context|MockObject $context */
         $context = $this->getMockBuilder(Context::class)
@@ -172,10 +185,14 @@ abstract class ProductRouteBase extends TestCase
         $this->call($productRoute, $request, $salesChannelContextMock);
     }
 
-    private function call($productRoute, Request $request, SalesChannelContext $salesChannelContext): void
-    {
+    protected function call(
+        $productRoute,
+        Request $request,
+        SalesChannelContext $salesChannelContext,
+        string $categoryId = '69'
+    ): void {
         if ($productRoute instanceof AbstractProductListingRoute) {
-            $productRoute->load('69', $request, $salesChannelContext);
+            $productRoute->load($categoryId, $request, $salesChannelContext);
         } elseif ($productRoute instanceof AbstractProductSearchRoute) {
             /** @var $productRoute AbstractProductSearchRoute */
             $productRoute->load($request, $salesChannelContext);

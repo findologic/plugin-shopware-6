@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute;
 use PHPUnit\Framework\MockObject\MockObject;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
+use Symfony\Component\HttpFoundation\Request;
 
 class ProductListingRouteTest extends ProductRouteBase
 {
@@ -39,5 +40,17 @@ class ProductListingRouteTest extends ProductRouteBase
     protected function getOriginal()
     {
         return $this->original;
+    }
+
+    public function testWillUseOriginalInCaseTheCategoryIdIsTheMainCategory(): void
+    {
+        $salesChannelContextMock = $this->getMockedSalesChannelContext(true, '69');
+        $request = Request::create('http://your-shop.de/some-category');
+        $request->setSession($this->getSessionMock());
+
+        $productRoute = $this->getRoute();
+
+        $this->getOriginal()->expects($this->once())->method('load');
+        $this->call($productRoute, $request, $salesChannelContextMock);
     }
 }
