@@ -10,6 +10,8 @@ use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\InvalidArgumentException;
+use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
+use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -37,8 +39,21 @@ class FrontendSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            HeaderPageletLoadedEvent::class => 'onHeaderLoaded'
+            HeaderPageletLoadedEvent::class => 'onHeaderLoaded',
+            // The below 2 events are only for testing
+            ProductSearchCriteriaEvent::class => ['onCriteria', 99],
+            ProductListingCriteriaEvent::class => ['onListCriteria', 999],
         ];
+    }
+
+    public function onCriteria(ProductSearchCriteriaEvent $event)
+    {
+        $event->getCriteria()->setLimit(4);
+    }
+
+    public function onListCriteria(ProductListingCriteriaEvent $event)
+    {
+        $event->getCriteria()->setLimit(3);
     }
 
     /**

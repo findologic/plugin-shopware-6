@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request;
 use FINDOLOGIC\Api\Definitions\OutputAdapter;
 use FINDOLOGIC\Api\Exceptions\InvalidParamException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
+use FINDOLOGIC\FinSearch\Struct\Pagination;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Context;
@@ -74,7 +75,7 @@ abstract class FindologicRequestFactory
         $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
         // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
         //  Shopware themselves have it hardcoded at 24.
-        $searchNavigationRequest->setCount(24);
+        $searchNavigationRequest->setCount(Pagination::DEFAULT_LIMIT);
 
         if ($request->headers->get('referer')) {
             $searchNavigationRequest->setReferer($request->headers->get('referer'));

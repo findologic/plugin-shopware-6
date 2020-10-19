@@ -31,9 +31,10 @@ trait SearchResultHelper
         /** @var Pagination $pagination */
         $pagination = $criteria->getExtension('flPagination');
         if ($pagination) {
-            // Pagination is handled by FINDOLOGIC.
-            $criteria->setLimit(24);
-            $criteria->setOffset(0);
+            // Pagination is handled by FINDOLOGIC. If there is an existing limit set, we respect that,
+            // otherwise use 24 as default
+            $criteria->setLimit($criteria->getLimit() ?? Pagination::DEFAULT_LIMIT);
+            $criteria->setOffset($criteria->getOffset() ?? 0);
         }
     }
 
