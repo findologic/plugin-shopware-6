@@ -333,7 +333,7 @@ class FindologicProduct extends Struct
         /** @var SeoUrlEntity|null $seoUrlEntity */
         $seoUrlEntity = $this->getTranslatedEntity($seoUrlCollection);
 
-        return $seoUrlEntity ? $seoUrlEntity->getSeoPathInfo() : $seoUrlEntity;
+        return $seoUrlEntity ? $seoUrlEntity->getSeoPathInfo() : null;
     }
 
     protected function getTranslatedDomainBaseUrl(): ?string
@@ -344,7 +344,7 @@ class FindologicProduct extends Struct
         /** @var SalesChannelDomainEntity|null $domainEntity */
         $domainEntity = $this->getTranslatedEntity($domainCollection);
 
-        return $domainEntity ? $domainEntity->getUrl() : $domainEntity;
+        return $domainEntity ? $domainEntity->getUrl() : null;
     }
 
     /**
