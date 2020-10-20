@@ -26,14 +26,18 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\Language\LanguageEntity;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -892,6 +896,111 @@ class FindologicProductTest extends TestCase
 
         $this->assertFalse($findologicProduct->hasDescription());
         $this->assertEmpty($findologicProduct->getCustomFields());
+    }
+
+    public function testCanonicalSeoUrlsAreUsedForTheConfiguredLanguage(): void
+    {
+        $this->markTestSkipped('Skipped until Shopware has fixed https://issues.shopware.com/issues/NEXT-11429');
+        $defaultContext = Context::createDefaultContext();
+
+        /** @var EntityRepository $salesChannelRepo */
+        $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
+        /** @var SalesChannelEntity $salesChannel */
+        $salesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
+
+        /** @var EntityRepository $localeRepo */
+        $localeRepo = $this->getContainer()->get('language.repository');
+        /** @var LanguageEntity $language */
+        $language = $localeRepo->search(new Criteria(), Context::createDefaultContext())->first();
+
+        $defaultLanguageId = $this->salesChannelContext->getSalesChannel()->getLanguageId();
+
+        $seoUrlRepo = $this->getContainer()->get('seo_url.repository');
+        $firstSeoUrlId = Uuid::randomHex();
+        $lastSeoUrlId = Uuid::randomHex();
+
+        $seoUrlRepo->upsert([
+            [
+                'id' => $firstSeoUrlId,
+                'pathInfo' => '/detail/' . Uuid::randomHex(),
+                'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
+                'isCanonical' => true,
+                'routeName' => 'frontend.detail.page',
+                'languageId' => $language->getId(),
+                'salesChannelId' => $salesChannel->getId()
+            ],
+            [
+                'id' => $lastSeoUrlId,
+                'pathInfo' => '/detail/' . Uuid::randomHex(),
+                'seoPathInfo' => 'I-Should-Not-Be-Used/Because/Wrong/Language',
+                'isCanonical' => true,
+                'routeName' => 'frontend.detail.page',
+                'languageId' => $defaultLanguageId,
+                'salesChannelId' => $salesChannel->getId()
+            ]
+        ], $defaultContext);
+
+        $productEntity = $this->createTestProduct();
+
+        // Manually delete all seo URLs from the product, and manually assign SEO URLs to product,
+        // to prevent collision in case of a race condition. We need to sleep here, since the product created event
+        // is asynchronous and runs in another thread.
+        // See https://issues.shopware.com/issues/NEXT-11429.
+        sleep(5);
+        $seoUrls = array_values(array_map(function ($id) {
+            return ['id' => $id];
+        }, $productEntity->getSeoUrls()->getIds()));
+        $seoUrlRepo->delete($seoUrls, $defaultContext);
+
+        $productRepo = $this->getContainer()->get('product.repository');
+        $productRepo->update([
+            [
+                'id' => $productEntity->getId(),
+                'seoUrls' => [
+                    ['id' => $firstSeoUrlId],
+                    ['id' => $lastSeoUrlId]
+                ]
+            ]
+        ], $defaultContext);
+
+        $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
+        $storeFrontSalesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
+        $salesChannelContext = $this->buildSalesChannelContext($storeFrontSalesChannel->getId(), 'https://blub.io');
+        $this->getContainer()->set('fin_search.sales_channel_context', $salesChannelContext);
+        $salesChannel = $salesChannelContext->getSalesChannel();
+
+        // Manually sort the correct SEO URL below all other SEO URLs, to ensure the SEO URL is not correct, because
+        // it is the first one in the database, but that the proper translation matches instead.
+        $productEntity->getSeoUrls()->sort(function (SeoUrlEntity $seoUrlEntity) {
+            return $seoUrlEntity->getSeoPathInfo() === 'I-Should-Be-Used/Because/Used/Language' ? -1 : 1;
+        });
+
+        /** @var SalesChannelDomainEntity $domainEntity */
+        $domainEntity = $salesChannel->getDomains()->filter(
+            function (SalesChannelDomainEntity $domain) use ($salesChannel) {
+                return $domain->getLanguageId() === $salesChannel->getLanguageId();
+            }
+        )->first();
+        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        /** @var SeoUrlEntity $seoUrlEntity */
+        $seoUrlEntity = $seoUrls->filter(function (SeoUrlEntity $seoUrl) use ($salesChannel) {
+            return $seoUrl->getLanguageId() === $salesChannel->getLanguageId();
+        })->first();
+
+        $expectedUrl = sprintf('%s/%s', $domainEntity->getUrl(), $seoUrlEntity->getSeoPathInfo());
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $salesChannelContext->getContext(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
     }
 
     private function translateBooleanValue(bool $value): string

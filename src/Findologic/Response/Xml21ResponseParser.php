@@ -20,6 +20,7 @@ use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\QueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\ShoppingGuideInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use GuzzleHttp\Client;
@@ -113,6 +114,11 @@ class Xml21ResponseParser extends ResponseParser
             return $this->buildSearchTermQueryInfoMessage($smartDidYouMean->getAlternativeQuery());
         }
 
+        // Check for shopping guide parameter first, otherwise it will always be overridden with search or vendor query
+        if ($this->isFilterSet($params, 'wizard')) {
+            return $this->buildShoppingGuideInfoMessage($params);
+        }
+
         if ($this->hasQuery($queryString)) {
             return $this->buildSearchTermQueryInfoMessage($queryString);
         }
@@ -134,6 +140,17 @@ class Xml21ResponseParser extends ResponseParser
         $queryInfoMessage = QueryInfoMessage::buildInstance(
             QueryInfoMessage::TYPE_QUERY,
             $query
+        );
+
+        return $queryInfoMessage;
+    }
+
+    private function buildShoppingGuideInfoMessage(array $params): ShoppingGuideInfoMessage
+    {
+        /** @var ShoppingGuideInfoMessage $queryInfoMessage */
+        $queryInfoMessage = QueryInfoMessage::buildInstance(
+            QueryInfoMessage::TYPE_SHOPPING_GUIDE,
+            $params['wizard']
         );
 
         return $queryInfoMessage;

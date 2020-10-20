@@ -103,7 +103,8 @@ class ProductListingRoute extends AbstractProductListingRoute
             true
         );
 
-        if (!$shouldHandleRequest) {
+        $isDefaultCategory = $categoryId === $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+        if (!$shouldHandleRequest || $isDefaultCategory) {
             return $this->decorated->load($categoryId, $request, $salesChannelContext);
         }
 

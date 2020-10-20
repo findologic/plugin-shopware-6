@@ -15,6 +15,8 @@ abstract class QueryInfoMessage extends Struct
     public const TYPE_CATEGORY = 'cat';
     // Search results for <vendor-filter-name> <vendor-name> (<count> hits)
     public const TYPE_VENDOR = 'vendor';
+    // Search results for <shopping-guide> (<count> hits)
+    public const TYPE_SHOPPING_GUIDE = 'wizard';
     // Search results (<count> hits)
     public const TYPE_DEFAULT = 'default';
 
@@ -26,7 +28,7 @@ abstract class QueryInfoMessage extends Struct
     ): self {
         switch ($type) {
             case self::TYPE_QUERY:
-                static::assertQueryIsEmpty($query);
+                static::assertQueryIsNotEmpty($query);
 
                 return new SearchTermQueryInfoMessage($query);
             case self::TYPE_CATEGORY:
@@ -37,6 +39,10 @@ abstract class QueryInfoMessage extends Struct
                 static::assertFilterNameAndValueAreNotEmpty($filterName, $filterValue);
 
                 return new VendorInfoMessage($filterName, $filterValue);
+            case self::TYPE_SHOPPING_GUIDE:
+                static::assertWizardIsNotEmpty($query);
+
+                return new ShoppingGuideInfoMessage($query);
             case self::TYPE_DEFAULT:
                 return new DefaultInfoMessage();
             default:
@@ -51,10 +57,17 @@ abstract class QueryInfoMessage extends Struct
         }
     }
 
-    private static function assertQueryIsEmpty(?string $query): void
+    private static function assertQueryIsNotEmpty(?string $query): void
     {
         if (!$query) {
             throw new InvalidArgumentException('Query must be set for a SearchTermQueryInfoMessage!');
+        }
+    }
+
+    private static function assertWizardIsNotEmpty(?string $shoppingGuideName): void
+    {
+        if (!$shoppingGuideName) {
+            throw new InvalidArgumentException('Shopping guide name must be set for a ShoppingGuideInfoMessage!');
         }
     }
 }

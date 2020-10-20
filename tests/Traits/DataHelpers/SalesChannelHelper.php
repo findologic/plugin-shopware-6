@@ -13,13 +13,15 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 trait SalesChannelHelper
 {
-    public function buildSalesChannelContext(): SalesChannelContext
-    {
+    public function buildSalesChannelContext(
+        string $salesChannelId = Defaults::SALES_CHANNEL,
+        string $url = 'http://test.de'
+    ): SalesChannelContext {
         $salesChannel = [
-            'id' => Defaults::SALES_CHANNEL,
+            'id' => $salesChannelId,
             'domains' => [
                 [
-                    'url' => 'http://test.de',
+                    'url' => $url,
                     'currencyId' => Defaults::CURRENCY,
                     'languageId' => Defaults::LANGUAGE_SYSTEM,
                     'snippetSetId' => $this->fetchIdFromDatabase('snippet_set'),
@@ -35,7 +37,7 @@ trait SalesChannelHelper
         /** @var SalesChannelContextFactory $salesChannelContextFactory */
         $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
 
-        return $salesChannelContextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
+        return $salesChannelContextFactory->create(Uuid::randomHex(), $salesChannelId);
     }
 
     /**

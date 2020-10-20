@@ -23,6 +23,7 @@ use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\DefaultInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\ShoppingGuideInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
@@ -481,6 +482,17 @@ class Xml21ResponseParserTest extends TestCase
                 'request' => new Request(),
                 'expectedInstance' => DefaultInfoMessage::class,
                 'expectedVars' => [
+                    'extensions' => []
+                ]
+            ],
+            'shopping guide query is used' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                ),
+                'request' => new Request(['wizard' => 'FindologicGuide']),
+                'expectedInstance' => ShoppingGuideInfoMessage::class,
+                'expectedVars' => [
+                    'shoppingGuide' => 'FindologicGuide',
                     'extensions' => []
                 ]
             ],
