@@ -10,11 +10,15 @@ use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\Language\LanguageEntity;
+use Shopware\Core\System\Locale\LocaleEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 
 trait ProductHelper
 {
@@ -48,6 +52,30 @@ trait ProductHelper
             ]
         ];
         $container->get('category.repository')->upsert($categoryData, $context);
+
+        /** @var EntityRepository $salesChannelRepo */
+        $salesChannelRepo = $container->get('sales_channel.repository');
+        /** @var SalesChannelEntity $salesChannel */
+        $salesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
+
+        $seoUrlRepo = $container->get('seo_url.repository');
+        $seoUrls = $seoUrlRepo->search(new Criteria(), Context::createDefaultContext());
+        $seoUrlsStoreFrontContext = $seoUrlRepo->search(new Criteria(), $contextFactory->create(
+            Uuid::randomHex(),
+            $salesChannel->getId()
+        )->getContext());
+
+        $productSeoUrls = [];
+        if ($seoUrls->count() === 0 && $seoUrlsStoreFrontContext->count() === 0) {
+            $productSeoUrls = [
+                [
+                    'pathInfo' => '/detail/' . $id,
+                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page'
+                ],
+            ];
+        }
 
         $productData = [
             'id' => $id,
@@ -83,14 +111,7 @@ trait ProductHelper
                     'name' => 'FINDOLOGIC Sub of Sub'
                 ]
             ],
-            'seoUrls' => [
-                [
-                    'pathInfo' => '/detail/' . $id,
-                    'seoPathInfo' => 'Awesome-Seo-Url/&ecause/SÄÖ/is/$mportant+',
-                    'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page'
-                ]
-            ],
+            'seoUrls' => $productSeoUrls,
             'translations' => [
                 'en-GB' => [
                     'customTranslated' => [
