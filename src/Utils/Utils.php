@@ -142,7 +142,8 @@ class Utils
         bool $isCategoryPage = false
     ): bool {
         /** @var FindologicService $findologicService */
-        if ($findologicService = $context->getExtension('findologicService')) {
+        $findologicService = $context->getExtension('findologicService');
+        if ($findologicService && $findologicService->getEnabled()) {
             return $findologicService->getEnabled();
         }
 
