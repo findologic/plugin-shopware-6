@@ -4,7 +4,7 @@
     {% if not context.context.extensions.findologicService.enabled %}
         {{ parent() }}
     {% else %}
-
+        {{ dump(searchResult.criteria.extensions.flPagination) }}
         {% if not (searchResult.criteria.extensions.flPagination) %}
             {% set currentPage = ((criteria.offset + 1) / criteria.limit )|round(0, 'ceil') %}
             {% set totalPages = (entities.total / criteria.limit)|round(0, 'ceil') %}

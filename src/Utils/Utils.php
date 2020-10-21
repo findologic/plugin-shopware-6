@@ -7,9 +7,9 @@ namespace FINDOLOGIC\FinSearch\Utils;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use FINDOLOGIC\FinSearch\Struct\Pagination;
 use InvalidArgumentException;
 use PackageVersions\Versions;
-use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -222,5 +222,27 @@ class Utils
         }
 
         return false;
+    }
+
+    private static function getPage(Request $request): int
+    {
+        $page = $request->query->getInt('p', 1);
+
+        if ($request->isMethod(Request::METHOD_POST)) {
+            $page = $request->request->getInt('p', $page);
+        }
+
+        return $page <= 0 ? 1 : $page;
+    }
+
+    public static function getOffset(Request $request, ?int $limit = null)
+    {
+        if (!$limit) {
+            $limit = Pagination::DEFAULT_LIMIT;
+        }
+
+        $page = self::getPage($request);
+
+        return ($page - 1) * $limit;
     }
 }

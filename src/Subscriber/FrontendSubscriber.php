@@ -40,18 +40,17 @@ class FrontendSubscriber implements EventSubscriberInterface
     {
         return [
             HeaderPageletLoadedEvent::class => 'onHeaderLoaded',
-            // The below 2 events are only for testing
-            ProductSearchCriteriaEvent::class => ['onCriteria', 99],
-            ProductListingCriteriaEvent::class => ['onListCriteria', 999],
+            ProductListingCriteriaEvent::class => ['onListCriteria', 101],
+            ProductSearchCriteriaEvent::class => ['onSearchCriteria', 101]
         ];
     }
 
-    public function onCriteria(ProductSearchCriteriaEvent $event)
+    public function onListCriteria(ProductListingCriteriaEvent $event)
     {
-        $event->getCriteria()->setLimit(4);
+        $event->getCriteria()->setLimit(3);
     }
 
-    public function onListCriteria(ProductListingCriteriaEvent $event)
+    public function onSearchCriteria(ProductSearchCriteriaEvent $event)
     {
         $event->getCriteria()->setLimit(3);
     }

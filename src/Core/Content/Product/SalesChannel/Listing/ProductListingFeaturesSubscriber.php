@@ -137,7 +137,13 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
     {
+        // Manually get the limit
+        $limit = $event->getCriteria()->getLimit();
         parent::handleListingRequest($event);
+        // Set the limit here after the parent call as the parent call will override and the default Shopware limit will
+        // be used otherwise
+        $event->getCriteria()->setLimit($limit);
+        $event->getCriteria()->setOffset(Utils::getOffset($event->getRequest(), $limit));
 
         if ($this->allowRequest($event)) {
             $this->apiConfig->setServiceId($this->config->getShopkey());
@@ -149,7 +155,13 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
     public function handleSearchRequest(ProductSearchCriteriaEvent $event): void
     {
+        // Manually get the limit
+        $limit = $event->getCriteria()->getLimit();
         parent::handleSearchRequest($event);
+        // Set the limit here after the parent call as the parent call will override and the default Shopware limit will
+        // be used otherwise
+        $event->getCriteria()->setLimit($limit);
+        $event->getCriteria()->setOffset(Utils::getOffset($event->getRequest(), $limit));
 
         if ($this->allowRequest($event)) {
             $this->apiConfig->setServiceId($this->config->getShopkey());
