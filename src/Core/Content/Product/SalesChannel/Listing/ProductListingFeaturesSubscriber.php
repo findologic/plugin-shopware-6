@@ -140,12 +140,13 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         // Manually get the limit
         $limit = $event->getCriteria()->getLimit();
         parent::handleListingRequest($event);
-        // Set the limit here after the parent call as the parent call will override and the default Shopware limit will
-        // be used otherwise
-        $event->getCriteria()->setLimit($limit);
-        $event->getCriteria()->setOffset(Utils::getOffset($event->getRequest(), $limit));
 
         if ($this->allowRequest($event)) {
+            // Set the limit here after the parent call as the parent call will override and the default Shopware limit
+            // will be used otherwise
+            $event->getCriteria()->setLimit($limit);
+            $event->getCriteria()->setOffset(Utils::getOffset($event->getRequest(), $limit));
+
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->handleFilters($event);
             $this->navigationRequestHandler->handleRequest($event);
@@ -158,12 +159,13 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         // Manually get the limit
         $limit = $event->getCriteria()->getLimit();
         parent::handleSearchRequest($event);
-        // Set the limit here after the parent call as the parent call will override and the default Shopware limit will
-        // be used otherwise
-        $event->getCriteria()->setLimit($limit);
-        $event->getCriteria()->setOffset(Utils::getOffset($event->getRequest(), $limit));
 
         if ($this->allowRequest($event)) {
+            // Set the limit here after the parent call as the parent call will override and the default Shopware limit
+            // will be used otherwise
+            $event->getCriteria()->setLimit($limit);
+            $event->getCriteria()->setOffset(Utils::getOffset($event->getRequest(), $limit));
+
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->handleFilters($event);
             $this->searchRequestHandler->handleRequest($event);
