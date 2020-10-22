@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware632\Core\Content\Product\SalesChannel\Listing;
 
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\Api\Client as ApiClient;
@@ -120,8 +120,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $optionRepository,
             $productSortingRepository,
             $systemConfigService,
-            $sortingRegistry,
-            $this->container->get('event_dispatcher')
+            $sortingRegistry
         );
     }
 

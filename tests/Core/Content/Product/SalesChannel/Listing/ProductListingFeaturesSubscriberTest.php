@@ -36,15 +36,18 @@ use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Page\Page;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
 use SimpleXMLElement;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -91,6 +94,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     /** @var ApiClient|MockObject */
     private $apiClientMock;
+
+    /** @var EventDispatcherInterface|MockObject */
+    private $eventDispatcherMock;
 
     public function setUp(): void
     {
@@ -616,12 +622,24 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         // Sorting is handled via database since Shopware 6.3.2.
         if (!Utils::versionLowerThan('6.3.2')) {
             $sorting = new ProductSortingEntity();
+            $sorting->setId('score');
             $sorting->setKey('score');
             $sorting->setFields(['score' => ['field' => '_score', 'order' => 'asc']]);
             $sorting->setUniqueIdentifier('score');
+            $productSorting = new ProductSortingCollection([$sorting]);
             $this->productListingSortingRegistry->expects($this->any())
                 ->method('getProductSortingEntities')
-                ->willReturn(new ProductSortingCollection([$sorting]));
+                ->willReturn($productSorting);
+
+            $this->entityRepositoryMock->expects($this->any())->method('search')->willReturn(
+                new EntitySearchResult(
+                    $productSorting->count(),
+                    $productSorting,
+                    new AggregationResultCollection(),
+                    new Criteria(),
+                    Context::createDefaultContext()
+                )
+            );
         }
         $this->navigationRequestFactoryMock = $this->getMockBuilder(NavigationRequestFactory::class)
             ->disableOriginalConstructor()
@@ -644,6 +662,18 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
         $this->apiConfigMock = $this->getMockBuilder(ApiConfig::class)->disableOriginalConstructor()->getMock();
         $this->apiClientMock = $this->getMockBuilder(ApiClient::class)->disableOriginalConstructor()->getMock();
+        $this->eventDispatcherMock = $this->getMockBuilder(EventDispatcherInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->containerMock->expects($this->any())->method('get')->willReturnCallback(function ($name) {
+            switch ($name) {
+                case 'event_dispatcher':
+                    return $this->eventDispatcherMock;
+                default:
+                    return null;
+            }
+        });
     }
 
     /**
@@ -718,7 +748,16 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $queryMock->expects($this->any())->method('get')->willReturn('');
         $queryMock->expects($this->any())->method('all')->willReturn([]);
 
-        $requestMock->expects($this->any())->method('get')->willReturn('score');
+        $requestMock->expects($this->any())->method('get')->willReturnCallback(function ($name) {
+            switch ($name) {
+                case 'availableSortings':
+                    return ['score' => ['field' => '_score', 'order' => 'asc']];
+                case 'navigationId':
+                    return null;
+                default:
+                    return 'score';
+            }
+        });
 
         $requestMock->query = $queryMock;
         $requestMock->request = $queryMock;
