@@ -58,6 +58,8 @@ class FinSearch extends Plugin
             return self::COMPATIBILITY_PATH .  '/shopware61';
         } elseif (Utils::versionLowerThan('6.3.2')) {
             return self::COMPATIBILITY_PATH . '/shopware631';
+        } elseif (Utils::versionLowerThan('6.3.3')) {
+            return self::COMPATIBILITY_PATH . '/shopware632';
         } else {
             return self::COMPATIBILITY_PATH . '/latest';
         }
