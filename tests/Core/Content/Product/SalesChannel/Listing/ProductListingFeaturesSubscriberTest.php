@@ -955,7 +955,8 @@ XML;
         $expectedAssign['title'] = null;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $criteriaMock->expects($this->any())->method('assign')->with($expectedAssign);
+        $invokeCount = $isNavigationRequest ? $this->never() : $this->once();
+        $criteriaMock->expects($invokeCount)->method('assign')->with($expectedAssign);
         $criteriaMock->expects($this->any())->method('getOffset')->willReturn(0);
         $criteriaMock->expects($this->any())->method('getLimit')->willReturn($expectedLimit);
 

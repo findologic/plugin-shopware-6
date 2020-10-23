@@ -10,6 +10,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\Aggreg
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\HttpFoundation\Request;
 
 trait SearchResultHelper
 {
@@ -32,7 +33,7 @@ trait SearchResultHelper
         $pagination = $criteria->getExtension('flPagination');
         if ($pagination) {
             // Pagination is handled by FINDOLOGIC. If there is an existing limit set, we respect that,
-            // otherwise use 24 as default
+            // otherwise use the default limit.
             $criteria->setLimit($criteria->getLimit() ?? Pagination::DEFAULT_LIMIT);
             $criteria->setOffset($criteria->getOffset() ?? 0);
         }
@@ -77,5 +78,27 @@ trait SearchResultHelper
         }
 
         return $sorted;
+    }
+
+    private function getPage(Request $request): int
+    {
+        $page = $request->query->getInt('p', 1);
+
+        if ($request->isMethod(Request::METHOD_POST)) {
+            $page = $request->request->getInt('p', $page);
+        }
+
+        return $page <= 0 ? 1 : $page;
+    }
+
+    public function getOffset(Request $request, ?int $limit = null)
+    {
+        if (!$limit) {
+            $limit = Pagination::DEFAULT_LIMIT;
+        }
+
+        $page = $this->getPage($request);
+
+        return ($page - 1) * $limit;
     }
 }
