@@ -61,7 +61,7 @@
         </service>
 
         <service
-                id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController"
+                id="FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware632\Storefront\Controller\SearchController"
                 decorates="Shopware\Storefront\Controller\SearchController"
                 public="true"
         >
