@@ -60,7 +60,7 @@ jobs:
       before_install: skip
       before_script: skip
       script: composer lint
-    - stage: "Shopware 6.1.0"
+    - stage: "Shopware 6.1 (PHP 7.3)"
       php: "7.3"
       env:
         - SHOPWARE_VERSION="6.1"
