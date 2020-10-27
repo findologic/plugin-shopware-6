@@ -16,6 +16,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\Parser\NavigationCategoryParser;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\Pagination;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -71,13 +72,16 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
                 $this->config
             );
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
+            // Set default pagination here, otherwise it will throw a division by zero exception as we have already
+            // overwritten the limit before reaching this point
+            $originalCriteria->setLimit($originalCriteria->getLimit() ?: Pagination::DEFAULT_LIMIT);
             $this->assignCriteriaToEvent($event, $originalCriteria);
 
             return;
         }
 
-        /** @var Criteria $criteria */
-        $criteria = $event->getCriteria();
+        $criteria = new Criteria($responseParser->getProductIds());
+        $criteria->addExtensions($event->getCriteria()->getExtensions());
 
         $this->setPromotionExtension($event, $responseParser);
 
@@ -88,7 +92,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             $originalCriteria->getOffset()
         );
 
-        $criteria->setIds($responseParser->getProductIds());
+        $this->assignCriteriaToEvent($event, $criteria);
     }
 
     /**

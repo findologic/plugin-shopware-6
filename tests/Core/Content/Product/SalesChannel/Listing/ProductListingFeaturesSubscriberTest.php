@@ -826,13 +826,15 @@ XML;
         $categoryCollectionMock->expects($this->any())->method('get')->willReturn($categoryMock);
 
         $this->containerMock->expects($this->any())->method('get')
-            ->willReturnCallback(function (string $name) use ($entityRepoMock) {
-                if ($name === 'category.repository') {
-                    return $entityRepoMock;
-                }
+            ->willReturnCallback(
+                function (string $name) use ($entityRepoMock) {
+                    if ($name === 'category.repository') {
+                        return $entityRepoMock;
+                    }
 
-                return null;
-            });
+                    return null;
+                }
+            );
 
         return $entityRepoMock;
     }
@@ -892,5 +894,90 @@ XML;
         $sessionMock->expects($this->any())->method('get')->with('stagingFlag')->willReturn(false);
 
         return $sessionMock;
+    }
+
+    public function criteriaLimitProvider(): array
+    {
+        return [
+            'search request with custom limit' => [
+                'endpoint' => 'handleSearchRequest',
+                'expectedLimit' => 3,
+                'isNavigationRequest' => false
+            ],
+            'navigation request with custom limit' => [
+                'endpoint' => 'handleListingRequest',
+                'expectedLimit' => 3,
+                'isNavigationRequest' => true
+            ],
+            'search request with default limit' => [
+                'endpoint' => 'handleSearchRequest',
+                'expectedLimit' => 24,
+                'isNavigationRequest' => false
+            ],
+            'navigation request with default limit' => [
+                'endpoint' => 'handleListingRequest',
+                'expectedLimit' => 24,
+                'isNavigationRequest' => true
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider criteriaLimitProvider
+     */
+    public function testCriteriaLimitIsSetForPagination(
+        string $endpoint,
+        int $expectedLimit,
+        bool $isNavigationRequest
+    ): void {
+        if (!$isNavigationRequest) {
+            $eventMock = $this->setUpSearchRequestMocks($this->getDefaultResponse());
+        } else {
+            $eventMock = $this->setUpNavigationRequestMocks();
+        }
+
+        $expectedAssign = [
+            'sorting' => [],
+            'filters' => [],
+            'postFilters' => [],
+            'aggregations' => [],
+            'queries' => [],
+            'groupFields' => [],
+            'offset' => null,
+            'limit' => null,
+            'totalCountMode' => 0,
+            'associations' => [],
+            'ids' => [
+                '019111105-37900' => '019111105-37900',
+                '029214085-37860' => '029214085-37860'
+            ],
+            'states' => [],
+            'inherited' => false,
+            'term' => null,
+            'extensions' => [
+                'flPagination' => new Pagination($expectedLimit, 0, 1808)
+            ],
+            'includes' => null
+        ];
+        if (Utils::versionLowerThan('6.3')) {
+            $expectedAssign['source'] = null;
+        }
+        $expectedAssign['title'] = null;
+
+        $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
+        $invokeCountAssign = $isNavigationRequest ? $this->never() : $this->once();
+        $invokeCountOffset = $isNavigationRequest ? $this->never() : $this->exactly(3);
+        $invokeCountLimit = $isNavigationRequest ? $this->once() : $this->exactly(3);
+        $criteriaMock->expects($invokeCountAssign)->method('assign')->with($expectedAssign);
+        $criteriaMock->expects($invokeCountOffset)->method('getOffset')->willReturn(0);
+        // Add this check to ensure that if no custom limit is provided, it uses the default limit
+        if ($expectedLimit !== Pagination::DEFAULT_LIMIT) {
+            $criteriaMock->expects($invokeCountLimit)->method('getLimit')->willReturn($expectedLimit);
+        }
+
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
+
+        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber->{$endpoint}($eventMock);
     }
 }
