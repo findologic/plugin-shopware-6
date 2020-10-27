@@ -110,7 +110,7 @@ class FindologicProduct extends Struct
     /**
      * @var TranslatorInterface
      */
-    private $translator;
+    protected $translator;
 
     /**
      * @param CustomerGroupEntity[] $customerGroups
@@ -993,16 +993,11 @@ class FindologicProduct extends Struct
         }
 
         foreach ($productFields as $key => $value) {
-            if (!Utils::isEmpty($key) && !Utils::isEmpty($value)) {
-                if (is_string($value)) {
-                    $value = Utils::cleanString($value);
-                }
+            $cleanedKey = Utils::removeSpecialChars($key);
+            $cleanedValue = $this->getCleanedAttributeValue($value);
 
-                if (is_bool($value)) {
-                    $value = $this->translateBooleanValue($value);
-                }
-
-                $customFieldAttribute = new Attribute(Utils::removeSpecialChars($key), [$value]);
+            if (!Utils::isEmpty($cleanedKey) && !Utils::isEmpty($cleanedValue)) {
+                $customFieldAttribute = new Attribute(Utils::removeSpecialChars($cleanedKey), [$cleanedValue]);
                 $attributes[] = $customFieldAttribute;
             }
         }
@@ -1018,7 +1013,24 @@ class FindologicProduct extends Struct
         return $this->customFields;
     }
 
-    private function translateBooleanValue(bool $value)
+    /**
+     * @param string|int|bool $value
+     * @return string|int
+     */
+    protected function getCleanedAttributeValue($value)
+    {
+        if (is_string($value)) {
+            return Utils::cleanString($value);
+        }
+
+        if (is_bool($value)) {
+            return $this->translateBooleanValue($value);
+        }
+
+        return $value;
+    }
+
+    protected function translateBooleanValue(bool $value)
     {
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
 
