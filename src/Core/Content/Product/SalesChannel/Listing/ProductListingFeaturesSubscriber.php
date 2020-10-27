@@ -17,7 +17,9 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\SystemAware;
+use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\GuzzleHttp\Client;
 use Psr\Cache\InvalidArgumentException;
@@ -38,6 +40,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSubscriber
 {
+    use SearchResultHelper;
+
     /** @var string FINDOLOGIC default sort for categories */
     public const DEFAULT_SORT = 'score';
     public const DEFAULT_SEARCH_SORT = 'score';
@@ -138,9 +142,16 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
     {
+        // Manually get the limit
+        $limit = $event->getCriteria()->getLimit();
         parent::handleListingRequest($event);
 
         if ($this->allowRequest($event)) {
+            // Set the limit here after the parent call as the parent call will override and the default Shopware limit
+            // will be used otherwise
+            $event->getCriteria()->setLimit($limit);
+            $event->getCriteria()->setOffset($this->getOffset($event->getRequest(), $limit));
+
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->handleFilters($event);
             $this->navigationRequestHandler->handleRequest($event);
@@ -150,9 +161,16 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
     public function handleSearchRequest(ProductSearchCriteriaEvent $event): void
     {
+        // Manually get the limit
+        $limit = $event->getCriteria()->getLimit();
         parent::handleSearchRequest($event);
 
         if ($this->allowRequest($event)) {
+            // Set the limit here after the parent call as the parent call will override and the default Shopware limit
+            // will be used otherwise.
+            $event->getCriteria()->setLimit($limit);
+            $event->getCriteria()->setOffset($this->getOffset($event->getRequest(), $limit));
+
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->handleFilters($event);
             $this->searchRequestHandler->handleRequest($event);
