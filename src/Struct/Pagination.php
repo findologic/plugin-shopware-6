@@ -8,6 +8,8 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class Pagination extends Struct
 {
+    public const DEFAULT_LIMIT = 24;
+
     /** @var int|null */
     private $offset;
 
@@ -19,7 +21,7 @@ class Pagination extends Struct
 
     public function __construct(?int $limit, ?int $offset, ?int $total)
     {
-        $this->limit = $limit ?? 24;
+        $this->limit = $limit ?? self::DEFAULT_LIMIT;
         $this->offset = $offset ?? 0;
         $this->total = $total;
     }
