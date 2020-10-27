@@ -17,7 +17,6 @@ branches:
 
 env:
   matrix:
-    - SHOPWARE_VERSION="6.1"
     - SHOPWARE_VERSION="6.2"
     - SHOPWARE_VERSION="master" # TODO change to 6.3 when available
   global:
@@ -61,6 +60,7 @@ jobs:
       before_install: skip
       before_script: skip
       script: composer lint
-  exclude: # Build is explicitly excluded as Composer 2 and Shopware 6.1 with PHP 7.2 are not compatible.
-    - php: 7.2
-      env: SHOPWARE_VERSION="6.1"
+    - stage: "Shopware 6.1.0"
+      php: "7.3"
+      env:
+        - SHOPWARE_VERSION="6.1"
