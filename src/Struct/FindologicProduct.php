@@ -997,7 +997,7 @@ class FindologicProduct extends Struct
             $cleanedValue = $this->getCleanedAttributeValue($value);
 
             if (!Utils::isEmpty($cleanedKey) && !Utils::isEmpty($cleanedValue)) {
-                $customFieldAttribute = new Attribute(Utils::removeSpecialChars($cleanedKey), [$cleanedValue]);
+                $customFieldAttribute = new Attribute($cleanedKey, [$cleanedValue]);
                 $attributes[] = $customFieldAttribute;
             }
         }
