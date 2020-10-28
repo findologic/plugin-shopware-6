@@ -136,6 +136,8 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $limit = $event->getCriteria()->getLimit();
         parent::handleListingRequest($event);
 
+        $limit = $limit ?? $event->getCriteria()->getLimit();
+
         if ($this->allowRequest($event)) {
             // Set the limit here after the parent call as the parent call will override and the default Shopware limit
             // will be used otherwise.
@@ -154,6 +156,8 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         // Manually get the limit
         $limit = $event->getCriteria()->getLimit();
         parent::handleSearchRequest($event);
+
+        $limit = $limit ?? $event->getCriteria()->getLimit();
 
         if ($this->allowRequest($event)) {
             // Set the limit here after the parent call as the parent call will override and the default Shopware limit
