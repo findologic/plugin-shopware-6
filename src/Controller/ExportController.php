@@ -44,6 +44,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
 use Throwable;
 
@@ -104,7 +105,13 @@ class ExportController extends AbstractController implements EventSubscriberInte
      */
     public function export(Request $request, SalesChannelContext $context): Response
     {
-        $this->initialize($request, $context);
+        try {
+            $this->initialize($request, $context);
+        } catch (InvalidArgumentException $e) {
+            $errorHandler = $this->addAndGetProductErrorHandler();
+            $this->logger->warning($e->getMessage());
+            return $this->buildErrorResponseWithHeaders($errorHandler);
+        }
 
         return $this->doExport();
     }
@@ -193,11 +200,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
             $request->query->get('productId')
         );
 
-        $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
-        $violations = $validator->validate($config);
-        if ($violations->count() > 0) {
-            throw new InvalidArgumentException($violations->__toString());
-        }
+        $this->validateConfiguration($config);
 
         return $config;
     }
@@ -337,5 +340,19 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $this->logger->pushHandler($errorHandler);
 
         return $errorHandler;
+    }
+
+    private function validateConfiguration(ExportConfiguration $config): void
+    {
+        $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
+        $violations = $validator->validate($config);
+
+        if ($violations->count() > 0) {
+            $messages = array_map(function (ConstraintViolation $violation) {
+                return sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage());
+            }, current((array_values((array)$violations))));
+
+            throw new InvalidArgumentException(implode(', ', $messages));
+        }
     }
 }
