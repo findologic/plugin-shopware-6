@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware631\Core\Content\Product\SalesChannel\Listing;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware632\Core\Content\Product\SalesChannel\Listing;
 
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\Api\Client as ApiClient;
@@ -77,6 +77,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     public function __construct(
         Connection $connection,
         EntityRepositoryInterface $optionRepository,
+        EntityRepositoryInterface $productSortingRepository,
         ProductListingSortingRegistry $sortingRegistry,
         NavigationRequestFactory $navigationRequestFactory,
         SearchRequestFactory $searchRequestFactory,
@@ -116,7 +117,14 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $this->sortingRegistry = $sortingRegistry;
         $this->navigationRequestFactory = $navigationRequestFactory;
         $this->searchRequestFactory = $searchRequestFactory;
-        parent::__construct($connection, $optionRepository, $sortingRegistry);
+
+        parent::__construct(
+            $connection,
+            $optionRepository,
+            $productSortingRepository,
+            $systemConfigService,
+            $sortingRegistry
+        );
     }
 
     public function handleResult(ProductListingResultEvent $event): void
@@ -138,12 +146,12 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
         $limit = $limit ?? $event->getCriteria()->getLimit();
 
-        if ($this->allowRequest($event)) {
-            // Set the limit here after the parent call as the parent call will override and the default Shopware limit
-            // will be used otherwise.
-            $event->getCriteria()->setLimit($limit);
-            $event->getCriteria()->setOffset($this->getOffset($event->getRequest(), $limit));
+        // Set the limit here after the parent call as the parent call will override and the default Shopware limit
+        // will be used otherwise.
+        $event->getCriteria()->setLimit($limit);
+        $event->getCriteria()->setOffset($this->getOffset($event->getRequest(), $limit));
 
+        if ($this->allowRequest($event)) {
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->handleFilters($event);
             $this->navigationRequestHandler->handleRequest($event);
@@ -155,16 +163,17 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     {
         // Manually get the limit
         $limit = $event->getCriteria()->getLimit();
+
         parent::handleSearchRequest($event);
 
         $limit = $limit ?? $event->getCriteria()->getLimit();
 
-        if ($this->allowRequest($event)) {
-            // Set the limit here after the parent call as the parent call will override and the default Shopware limit
-            // will be used otherwise.
-            $event->getCriteria()->setLimit($limit);
-            $event->getCriteria()->setOffset($this->getOffset($event->getRequest(), $limit));
+        // Set the limit here after the parent call as the parent call will override and the default Shopware limit
+        // will be used otherwise.
+        $event->getCriteria()->setLimit($limit);
+        $event->getCriteria()->setOffset($this->getOffset($event->getRequest(), $limit));
 
+        if ($this->allowRequest($event)) {
             $this->apiConfig->setServiceId($this->config->getShopkey());
             $this->handleFilters($event);
             $this->searchRequestHandler->handleRequest($event);
@@ -264,7 +273,9 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
         $isCategoryPage = !($event instanceof ProductSearchCriteriaEvent);
         if (!$this->config->isActive() || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
-            return $findologicService->setDisabled();
+            $findologicService->setDisabled();
+
+            return false;
         }
 
         $shopkey = $this->config->getShopkey();

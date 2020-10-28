@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Storefront\Controller;
+namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware632\Storefront\Controller;
 
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
-use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -38,10 +37,9 @@ class SearchController extends ShopwareSearchController
     public function __construct(
         SearchPageLoader $searchPageLoader,
         SuggestPageLoader $suggestPageLoader,
-        AbstractProductSearchRoute $abstractProductSearchRoute,
         ?FilterHandler $filterHandler = null
     ) {
-        parent::__construct($searchPageLoader, $suggestPageLoader, $abstractProductSearchRoute);
+        parent::__construct($searchPageLoader, $suggestPageLoader);
 
         $this->searchPageLoader = $searchPageLoader;
         $this->suggestPageLoader = $suggestPageLoader;

@@ -860,9 +860,9 @@ class FindologicProductTest extends TestCase
     public function emptyValuesProvider(): array
     {
         return [
-            'null values provided' => [null],
-            'empty string values provided' => [''],
-            'values containing empty spaces provided' => ['    ']
+            'null values provided' => ['value' => null],
+            'empty string values provided' => ['value' => ''],
+            'values containing empty spaces provided' => ['value' => '    '],
         ];
     }
 
@@ -895,6 +895,47 @@ class FindologicProductTest extends TestCase
         );
 
         $this->assertFalse($findologicProduct->hasDescription());
+        $this->assertEmpty($findologicProduct->getCustomFields());
+    }
+
+    public function emptyAttributeNameProvider(): array
+    {
+        return [
+            'Attribute name is null' => ['value' => null],
+            'Attribute name is an empty string' => ['value' => ''],
+            'Attribute name only contains empty spaces' => ['value' => '    '],
+            'Attribute name only containing special characters' => ['value' => '$$$$%'],
+        ];
+    }
+
+    /**
+     * @dataProvider emptyAttributeNameProvider
+     */
+    public function testEmptyAttributeNamesAreSkipped(?string $value): void
+    {
+        $data = [
+            'description' => 'Really interesting',
+            'referenceunit' => 'cm',
+            'customFields' => [$value => 'something']
+        ];
+
+        $productEntity = $this->createTestProduct($data);
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
         $this->assertEmpty($findologicProduct->getCustomFields());
     }
 
