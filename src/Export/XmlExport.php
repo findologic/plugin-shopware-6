@@ -13,7 +13,7 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
-class XmlExport
+class XmlExport extends Export
 {
     /** @var RouterInterface */
     private $router;
@@ -47,7 +47,7 @@ class XmlExport
     /**
      * @param Item[] $items
      */
-    public function buildXmlResponse(array $items, int $start, int $total, array $headers = []): Response
+    public function buildResponse(array $items, int $start, int $total, array $headers = []): Response
     {
         $rawXml = $this->exporter->serializeItems(
             $items,
@@ -72,7 +72,7 @@ class XmlExport
      *
      * @return XMLItem[]
      */
-    public function buildXmlItems(
+    public function buildItems(
         array $productEntities,
         string $shopkey,
         array $customerGroups
@@ -88,6 +88,16 @@ class XmlExport
         }
 
         return $items;
+    }
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
+    }
+
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
     }
 
     private function exportSingleItem(

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\FinSearch\Exceptions\Export\UnknownShopkeyException;
-use FINDOLOGIC\FinSearch\Struct\Config;
-use Psr\Container\ContainerInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -31,14 +29,13 @@ class SalesChannelService
     }
 
     /**
-     * Returns the sales channel assigned to the given shopkey.
-     *
-     * @throws UnknownShopkeyException in case the given shopkey is not assigned to any sales channel.
+     * Returns the sales channel assigned to the given shopkey. Returns null in case the given shopkey is not
+     * assigned to any sales channel.
      */
     public function getSalesChannelContext(
         SalesChannelContext $currentContext,
         string $shopkey
-    ): SalesChannelContext {
+    ): ?SalesChannelContext {
         $systemConfigEntities = $this->systemConfigRepository->search(
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
             $currentContext->getContext()
@@ -59,9 +56,6 @@ class SalesChannelService
             }
         }
 
-        throw new UnknownShopkeyException(sprintf(
-            'Given shopkey "%s" is not assigned to any shop',
-            $shopkey
-        ));
+        return null;
     }
 }

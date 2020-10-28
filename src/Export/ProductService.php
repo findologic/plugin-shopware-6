@@ -28,7 +28,7 @@ class ProductService
 
     public static function getInstance(
         ContainerInterface $container,
-        SalesChannelContext $salesChannelContext
+        ?SalesChannelContext $salesChannelContext
     ): ProductService {
         if ($container->has(self::CONTAINER_ID)) {
             $productService = $container->get(self::CONTAINER_ID);
@@ -37,7 +37,7 @@ class ProductService
             $container->set(self::CONTAINER_ID, $productService);
         }
 
-        if (!$productService->getSalesChannelContext()) {
+        if ($salesChannelContext && !$productService->getSalesChannelContext()) {
             $productService->setSalesChannelContext($salesChannelContext);
         }
 
@@ -105,6 +105,13 @@ class ProductService
             $criteria,
             $this->salesChannelContext->getContext()
         );
+    }
+
+    public function getAllCustomerGroups(): array
+    {
+        return $this->container->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
     }
 
     private function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\FinSearch\Exceptions\Export\UnknownShopkeyException;
+use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
+use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
@@ -14,17 +16,12 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -55,14 +52,11 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /** @var ProductService */
     private $productService;
 
-    /** @var CustomerGroupEntity[] */
-    private $customerGroups = [];
-
     /** @var Config */
     private $pluginConfig;
 
-    /** @var XmlExport */
-    private $xmlExport;
+    /** @var Export|XmlExport|ProductIdExport */
+    private $export;
 
     public function __construct(
         LoggerInterface $logger,
@@ -87,12 +81,14 @@ class ExportController extends AbstractController implements EventSubscriberInte
      */
     public function export(Request $request, SalesChannelContext $context): Response
     {
+        $this->initialize($request, $context);
+
         try {
-            $this->initialize($request, $context);
+            $this->validateState();
         } catch (InvalidArgumentException | UnknownShopkeyException $e) {
-            $errorHandler = $this->addAndGetProductErrorHandler();
-            $this->logger->warning($e->getMessage());
-            return $this->buildErrorResponseWithHeaders($errorHandler);
+            $errorHandler = new ProductErrorHandler();
+            $errorHandler->getExportErrors()->addGeneralError($e->getMessage());
+            return $this->export->buildErrorResponseWithHeaders($errorHandler, $this->headerHandler->getHeaders());
         }
 
         return $this->doExport();
@@ -101,44 +97,41 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @param Request $request
      * @param SalesChannelContext $context
-     * @throws UnknownShopkeyException
      */
     protected function initialize(Request $request, SalesChannelContext $context): void
     {
-        $this->config = $this->getExportConfiguration($request);
-        /** @var SalesChannelService $salesChannelService */
-        $salesChannelService = $this->container->get(SalesChannelService::class);
-        $this->salesChannelContext = $salesChannelService->getSalesChannelContext($context, $this->config->getShopkey());
+        $this->config = ExportConfiguration::getInstance($request);
+        $this->salesChannelContext = $this->container->get(SalesChannelService::class)
+            ->getSalesChannelContext($context, $this->config->getShopkey());
+
         $this->productService = ProductService::getInstance($this->container, $this->salesChannelContext);
-        $this->customerGroups = $this->container->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext->getContext())
-            ->getElements();
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
 
-        $this->xmlExport = new XmlExport($this->router, $this->container, $this->logger, $this->pluginConfig->getCrossSellingCategories());
+        $this->export = Export::getInstance(
+            $this->config->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
+            $this->router,
+            $this->container,
+            $this->logger,
+            $this->pluginConfig->getCrossSellingCategories()
+        );
     }
 
     protected function doExport(): Response
     {
-        if ($this->config->getProductId()) {
-            return $this->doProductIdSearch();
-        }
-
-        return $this->doProductExport();
-    }
-
-    protected function doProductExport(): Response
-    {
-        $products = $this->productService->searchVisibleProducts($this->config->getCount(), $this->config->getStart());
-
-        $items = $this->xmlExport->buildXmlItems(
-            $products->getElements(),
-            $this->config->getShopkey(),
-            $this->customerGroups
+        $products = $this->productService->searchVisibleProducts(
+            $this->config->getCount(),
+            $this->config->getStart(),
+            $this->config->getProductId()
         );
 
-        return $this->xmlExport->buildXmlResponse(
+        $items = $this->export->buildItems(
+            $products->getElements(),
+            $this->config->getShopkey(),
+            $this->productService->getAllCustomerGroups()
+        );
+
+        return $this->export->buildResponse(
             $items,
             $this->config->getStart(),
             $this->productService->getTotalProductCount(),
@@ -146,99 +139,19 @@ class ExportController extends AbstractController implements EventSubscriberInte
         );
     }
 
-    /**
-     * Searches all products for the given "productId" query parameter. Searches all fields in the "ordernumber" field.
-     *
-     * @return Response|JsonResponse Returns an XML if all found products can be properly exported. Otherwise a
-     * JSON response with a detailed error description will be returned.
-     */
-    protected function doProductIdSearch(): Response
+    protected function validateState(): void
     {
-        $limit = $this->config->getCount();
-        $offset = $this->config->getStart();
-        $productId = $this->config->getProductId();
+        $this->validateExportConfiguration($this->config);
 
-        $errorHandler = $this->addAndGetProductErrorHandler();
-        $products = $this->getProductsMatchingProductId($limit, $offset, $productId);
-        if ($products->count() === 0) {
-            return $this->buildErrorResponseWithHeaders($errorHandler);
+        if ($this->salesChannelContext === null) {
+            throw new UnknownShopkeyException(sprintf(
+                'Shopkey %s is not assigned to any sales channel.',
+                $this->config->getShopkey()
+            ));
         }
-
-        $items = $this->xmlExport->buildXmlItems(
-            $products->getElements(),
-            $this->config->getShopkey(),
-            $this->customerGroups
-        );
-        if (!$errorHandler->getExportErrors()->hasErrors()) {
-            return $this->xmlExport->buildXmlResponse(
-                $items,
-                $this->config->getStart(),
-                $this->productService->getTotalProductCount(),
-                $this->headerHandler->getHeaders()
-            );
-        }
-
-        return $this->buildErrorResponseWithHeaders($errorHandler);
     }
 
-    private function getProductsMatchingProductId(int $limit, int $offset, ?string $productId): EntitySearchResult
-    {
-        $products = $this->productService->searchVisibleProducts($limit, $offset, $productId);
-        if ($products->count() === 0) {
-            $products = $this->productService->searchAllProducts($limit, $offset, $productId);
-
-            if ($products->count() > 0) {
-                $this->logger->warning('Product(s) is/are not available for search.');
-            } else {
-                $this->logger->warning('No product could be found.');
-            }
-        }
-
-        return $products;
-    }
-
-    private function getExportConfiguration(Request $request): ExportConfiguration
-    {
-        $config = ExportConfiguration::getInstance($request);
-        $this->validateConfiguration($config);
-
-        return $config;
-    }
-
-    private function getPluginConfig(): Config
-    {
-        /** @var Config $config */
-        $config = $this->container->get(Config::class);
-        $config->initializeBySalesChannel($this->salesChannelContext->getSalesChannel()->getId());
-
-        return $config;
-    }
-
-    protected function buildErrorResponseWithHeaders(ProductErrorHandler $errorHandler): JsonResponse
-    {
-        return new JsonResponse(
-            $errorHandler->getExportErrors()->buildErrorResponse(),
-            Response::HTTP_UNPROCESSABLE_ENTITY,
-            $this->headerHandler->getHeaders([
-                HeaderHandler::CONTENT_TYPE_HEADER => HeaderHandler::CONTENT_TYPE_JSON
-            ])
-        );
-    }
-
-    protected function buildXmlResponseWithHeaders(string $xml): Response
-    {
-        return new Response($xml, Response::HTTP_OK, $this->headerHandler->getHeaders());
-    }
-
-    protected function addAndGetProductErrorHandler(): ProductErrorHandler
-    {
-        $errorHandler = new ProductErrorHandler();
-        $this->logger->pushHandler($errorHandler);
-
-        return $errorHandler;
-    }
-
-    private function validateConfiguration(ExportConfiguration $config): void
+    private function validateExportConfiguration(ExportConfiguration $config): void
     {
         $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
         $violations = $validator->validate($config);
@@ -248,7 +161,18 @@ class ExportController extends AbstractController implements EventSubscriberInte
                 return sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage());
             }, current((array_values((array)$violations))));
 
-            throw new InvalidArgumentException(implode(', ', $messages));
+            throw new InvalidArgumentException(implode(' | ', $messages));
         }
+    }
+
+    private function getPluginConfig(): Config
+    {
+        /** @var Config $config */
+        $config = $this->container->get(Config::class);
+        if ($this->salesChannelContext) {
+            $config->initializeBySalesChannel($this->salesChannelContext->getSalesChannel()->getId());
+        }
+
+        return $config;
     }
 }
