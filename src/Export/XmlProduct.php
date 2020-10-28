@@ -10,7 +10,6 @@ use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasCrossSellingCategoryException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
@@ -329,16 +328,6 @@ class XmlProduct
                 $message = sprintf(
                     'Product with id %s was not exported because it has no categories assigned',
                     $e->getProduct()->getId()
-                );
-                break;
-            case ProductHasCrossSellingCategoryException::class:
-                $message = sprintf(
-                    'Product with id %s (%s) was not exported because it ' .
-                    'is assigned to cross selling category %s (%s)',
-                    $e->getProduct()->getId(),
-                    $e->getProduct()->getName(),
-                    $e->getCategory()->getId(),
-                    implode(' > ', $e->getCategory()->getBreadcrumb())
                 );
                 break;
             default:
