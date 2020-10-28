@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <container
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://symfony.com/schema/dic/services"
-    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://symfony.com/schema/dic/services"
+        xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
 >
     <services>
 
         <service
-                id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
+                id="FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware632\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
                 decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
                 public="true"
         >
@@ -26,8 +26,8 @@
         </service>
 
         <service
-            id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
-            decorates="Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
+                id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
+                decorates="Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
         >
             <argument type="service"
                       id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute.inner" />
@@ -41,8 +41,8 @@
         </service>
 
         <service
-            id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute"
-            decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRoute"
+                id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute"
+                decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRoute"
         >
             <argument type="service"
                       id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute.inner" />
@@ -62,13 +62,12 @@
         </service>
 
         <service
-            id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController"
-            decorates="Shopware\Storefront\Controller\SearchController"
-            public="true"
+                id="FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware632\Storefront\Controller\SearchController"
+                decorates="Shopware\Storefront\Controller\SearchController"
+                public="true"
         >
             <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader" />
             <argument type="service" id="Shopware\Storefront\Page\Suggest\SuggestPageLoader" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute" />
             <call method="setContainer">
                 <argument type="service" id="service_container" />
             </call>
