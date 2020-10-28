@@ -35,7 +35,7 @@ class ExportErrors
 
         return [
             'general' => $this->general,
-            'products' => $productErrors,
+            'products' => array_values($productErrors),
         ];
     }
 

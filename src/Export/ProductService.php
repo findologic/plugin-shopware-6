@@ -18,11 +18,31 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class ProductService
 {
+    public const CONTAINER_ID = 'fin_search.product_service';
+
     /** @var ContainerInterface */
     private $container;
 
     /** @var SalesChannelContext|null */
     private $salesChannelContext;
+
+    public static function getInstance(
+        ContainerInterface $container,
+        SalesChannelContext $salesChannelContext
+    ): ProductService {
+        if ($container->has(self::CONTAINER_ID)) {
+            $productService = $container->get(self::CONTAINER_ID);
+        } else {
+            $productService = new ProductService($container, $salesChannelContext);
+            $container->set(self::CONTAINER_ID, $productService);
+        }
+
+        if (!$productService->getSalesChannelContext()) {
+            $productService->setSalesChannelContext($salesChannelContext);
+        }
+
+        return $productService;
+    }
 
     public function __construct(ContainerInterface $container, ?SalesChannelContext $salesChannelContext = null)
     {

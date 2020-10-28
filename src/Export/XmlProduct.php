@@ -7,18 +7,23 @@ namespace FINDOLOGIC\FinSearch\Export;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Data\Price;
+use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasCrossSellingCategoryException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductInvalidException;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Symfony\Component\Routing\RouterInterface;
+use Throwable;
 
 class XmlProduct
 {
@@ -75,47 +80,29 @@ class XmlProduct
 
         $this->exporter = Exporter::create(Exporter::TYPE_XML);
         $this->xmlItem = $this->exporter->createItem($product->getId());
-
-        /** @var FindologicProductFactory $findologicProductFactory */
-        $findologicProductFactory = $this->container->get(FindologicProductFactory::class);
-        $this->findologicProduct = $findologicProductFactory->buildInstance(
-            $product,
-            $router,
-            $container,
-            $context,
-            $shopkey,
-            $customerGroups,
-            $this->xmlItem
-        );
-
-        $this->buildXmlItem();
     }
 
-    public function getXmlItem(): Item
+    public function getXmlItem(): ?Item
     {
         return $this->xmlItem;
     }
 
     /**
+     * Builds the XML Item. In case a logger is given, the exceptions are logged instead of thrown.
+     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoAttributesException
      * @throws ProductHasNoNameException
      * @throws ProductHasNoPricesException
      */
-    private function buildXmlItem(): void
+    public function buildXmlItem(?LoggerInterface $logger = null): void
     {
-        $this->setName();
-        $this->setAttributes();
-        $this->setPrices();
-        $this->setDescription();
-        $this->setDateAdded();
-        $this->setUrl();
-        $this->setKeywords();
-        $this->setImages();
-        $this->setSalesFrequency();
-        $this->setUserGroups();
-        $this->setOrdernumbers();
-        $this->setProperties();
+        if (!$logger) {
+            $this->build();
+            return;
+        }
+
+        $this->buildWithErrorLogging($logger);
     }
 
     /**
@@ -250,5 +237,117 @@ class XmlProduct
                 $this->xmlItem->addProperty($property);
             }
         }
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoAttributesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
+     */
+    private function build(): void
+    {
+        /** @var FindologicProductFactory $findologicProductFactory */
+        $findologicProductFactory = $this->container->get(FindologicProductFactory::class);
+        $this->findologicProduct = $findologicProductFactory->buildInstance(
+            $this->product,
+            $this->router,
+            $this->container,
+            $this->context,
+            $this->shopkey,
+            $this->customerGroups,
+            $this->xmlItem
+        );
+
+        $this->setName();
+        $this->setAttributes();
+        $this->setPrices();
+        $this->setDescription();
+        $this->setDateAdded();
+        $this->setUrl();
+        $this->setKeywords();
+        $this->setImages();
+        $this->setSalesFrequency();
+        $this->setUserGroups();
+        $this->setOrdernumbers();
+        $this->setProperties();
+    }
+
+    private function buildWithErrorLogging(LoggerInterface $logger): void
+    {
+        try {
+            $this->build();
+        } catch (ProductInvalidException $e) {
+            $this->logProductInvalidException($logger, $e);
+            $this->xmlItem = null;
+        } catch (EmptyValueNotAllowedException $e) {
+            $logger->warning(sprintf(
+                'Product with id "%s" could not be exported. It appears to have empty values assigned to it. ' .
+                'If you see this message in your logs, please report this as a bug.',
+                $this->product->getId()
+            ));
+            $this->xmlItem = null;
+        } catch (Throwable $e) {
+            $logger->warning(sprintf(
+                'Error while exporting the product with id "%s". If you see this message in your logs, ' .
+                'please report this as a bug. Error message: %s',
+                $this->product->getId(),
+                $e->getMessage()
+            ));
+            $this->xmlItem = null;
+        }
+    }
+
+    private function logProductInvalidException(LoggerInterface $logger, ProductInvalidException $e): void
+    {
+        switch (get_class($e)) {
+            case AccessEmptyPropertyException::class:
+                $message = sprintf(
+                    'Product with id %s was not exported because the property does not exist',
+                    $e->getProduct()->getId()
+                );
+                break;
+            case ProductHasNoAttributesException::class:
+                $message = sprintf(
+                    'Product with id %s was not exported because it has no attributes',
+                    $e->getProduct()->getId()
+                );
+                break;
+            case ProductHasNoNameException::class:
+                $message = sprintf(
+                    'Product with id %s was not exported because it has no name set',
+                    $e->getProduct()->getId()
+                );
+                break;
+            case ProductHasNoPricesException::class:
+                $message = sprintf(
+                    'Product with id %s was not exported because it has no price associated to it',
+                    $e->getProduct()->getId()
+                );
+                break;
+            case ProductHasNoCategoriesException::class:
+                $message = sprintf(
+                    'Product with id %s was not exported because it has no categories assigned',
+                    $e->getProduct()->getId()
+                );
+                break;
+            case ProductHasCrossSellingCategoryException::class:
+                $message = sprintf(
+                    'Product with id %s (%s) was not exported because it ' .
+                    'is assigned to cross selling category %s (%s)',
+                    $e->getProduct()->getId(),
+                    $e->getProduct()->getName(),
+                    $e->getCategory()->getId(),
+                    implode(' > ', $e->getCategory()->getBreadcrumb())
+                );
+                break;
+            default:
+                $message = sprintf(
+                    'Product with id %s could not be exported.',
+                    $e->getProduct()->getId()
+                );
+        }
+
+        $logger->warning($message, ['exception' => $e]);
     }
 }

@@ -18,10 +18,12 @@ class HeaderHandler
     public const EXTENSION_HEADER = 'x-findologic-extension-plugin';
     public const CONTENT_TYPE_HEADER = 'content-type';
 
+    public const CONTENT_TYPE_XML = 'text/xml';
+    public const CONTENT_TYPE_JSON = 'application/json';
+
     private const SHOPWARE_VERSION = 'Shopware/%s';
     private const PLUGIN_VERSION = 'Plugin-Shopware-6/%s';
     private const EXTENSION_PLUGIN_VERSION = 'Plugin-Shopware-6-Extension/%s';
-    private const CONTENT_TYPE = 'text/xml';
 
     /**
      * @var ContainerInterface
@@ -67,7 +69,7 @@ class HeaderHandler
         $this->shopwareVersion = $this->fetchShopwareVersion();
         $this->pluginVersion = $this->fetchPluginVersion();
         $this->extensionPluginVersion = $this->fetchExtensionPluginVersion();
-        $this->contentType = self::CONTENT_TYPE;
+        $this->contentType = self::CONTENT_TYPE_XML;
     }
 
     /**
