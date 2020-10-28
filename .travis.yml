@@ -17,7 +17,6 @@ branches:
 
 env:
   matrix:
-    - SHOPWARE_VERSION="6.1"
     - SHOPWARE_VERSION="6.2"
     - SHOPWARE_VERSION="master" # TODO change to 6.3 when available
   global:
@@ -61,3 +60,7 @@ jobs:
       before_install: skip
       before_script: skip
       script: composer lint
+    - stage: "Shopware 6.1 (PHP 7.3)"
+      php: "7.3"
+      env:
+        - SHOPWARE_VERSION="6.1"
