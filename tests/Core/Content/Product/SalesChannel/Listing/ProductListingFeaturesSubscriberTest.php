@@ -506,7 +506,12 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $context = Context::createDefaultContext();
 
         $request->setSession($this->getDefaultSessionMock());
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($xmlResponse->asXML()), $request, false, $context);
+        $eventMock = $this->setUpSearchRequestMocks(
+            new Xml21Response($xmlResponse->asXML()),
+            $request,
+            false,
+            $context
+        );
         $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
         $criteria = new Criteria();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteria);
