@@ -14,10 +14,12 @@ use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownShopkeyException;
+use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
@@ -53,6 +55,11 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /** @var LoggerInterface */
     protected $logger;
 
+    /**
+     * @var CacheItemPoolInterface
+     */
+    protected $cache;
+
     /** @var Router */
     private $router;
 
@@ -72,12 +79,14 @@ class ExportController extends AbstractController implements EventSubscriberInte
         LoggerInterface $logger,
         RouterInterface $router,
         HeaderHandler $headerHandler,
-        SalesChannelContextFactory $salesChannelContextFactory
+        SalesChannelContextFactory $salesChannelContextFactory,
+        CacheItemPoolInterface $cache
     ) {
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
+        $this->cache = $cache;
     }
 
     public static function getSubscribedEvents(): array
@@ -88,7 +97,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
     /**
      * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
-     *
      * @throws InconsistentCriteriaIdsException
      * @throws UnknownShopkeyException
      */
@@ -101,16 +109,28 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $start = (int)$request->get('start', self::DEFAULT_START_PARAM);
         $count = (int)$request->get('count', self::DEFAULT_COUNT_PARAM);
 
+        $dynamicProductGroupService = DynamicProductGroupService::getInstance(
+            $this->container,
+            $this->cache,
+            $context->getContext(),
+            $shopkey,
+            $start
+        );
         $this->salesChannelContext = $this->getSalesChannelContextByShopkey($shopkey, $context);
-
         $totalProductCount = $this->getTotalProductCount();
         $productEntities = $this->getProductsFromShop($start, $count);
         $customerGroups = $this->container->get('customer_group.repository')
             ->search(new Criteria(), $this->salesChannelContext->getContext())->getElements();
 
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
-        $items = $this->buildXmlProducts($productEntities, $shopkey, $customerGroups);
 
+        $dynamicProductGroupService->setSalesChannel($context->getSalesChannel());
+        if (!$dynamicProductGroupService->isWarmedUp()) {
+            $dynamicProductGroupService->warmUp();
+        }
+        $this->container->set('fin_search.dynamic_product_group', $dynamicProductGroupService);
+
+        $items = $this->buildXmlProducts($productEntities, $shopkey, $customerGroups);
         $xmlExporter = Exporter::create(Exporter::TYPE_XML);
 
         $response = $xmlExporter->serializeItems(

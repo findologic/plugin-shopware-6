@@ -17,6 +17,7 @@ use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
@@ -113,6 +114,11 @@ class FindologicProduct extends Struct
     protected $translator;
 
     /**
+     * @var DynamicProductGroupService
+     */
+    protected $dynamicProductGroupService;
+
+    /**
      * @param CustomerGroupEntity[] $customerGroups
      *
      * @throws ProductHasNoCategoriesException
@@ -141,6 +147,7 @@ class FindologicProduct extends Struct
         $this->translator = $container->get('translator');
 
         $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
+        $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
 
         $this->setName();
         $this->setAttributes();
@@ -224,6 +231,7 @@ class FindologicProduct extends Struct
         $this->setAttributeProperties();
         $this->setCustomFieldAttributes();
         $this->setAdditionalAttributes();
+        $this->setDynamicProductGroupCategories();
     }
 
     /**
@@ -1015,6 +1023,7 @@ class FindologicProduct extends Struct
 
     /**
      * @param string|int|bool $value
+     *
      * @return string|int
      */
     protected function getCleanedAttributeValue($value)
@@ -1043,6 +1052,16 @@ class FindologicProduct extends Struct
             $property = new Property($name);
             $property->addValue($value);
             $this->properties[] = $property;
+        }
+    }
+
+    private function setDynamicProductGroupCategories()
+    {
+        $categories = $this->dynamicProductGroupService->getCategories($this->product->getId());
+        if (!Utils::isEmpty($categories)) {
+            $categoryAttribute = new Attribute('cat');
+            $categoryAttribute->setValues(array_unique($categories));
+            $this->attributes[] = $categoryAttribute;
         }
     }
 }
