@@ -301,7 +301,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     public function testResponseHasNoPromotion(): void
     {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse();
         unset($response->promotion);
 
@@ -329,7 +329,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     public function testContainsDidYouMeanQuery(): void
     {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithDidYouMeanQuery.xml');
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
@@ -359,7 +359,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     public function testContainsCorrectedQuery(): void
     {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithCorrectedQuery.xml');
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
@@ -389,7 +389,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     public function testContainsImprovedQuery(): void
     {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithImprovedQuery.xml');
 
         $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
@@ -482,7 +482,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         array $params,
         string $alternativeQuery
     ): void {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
         $xmlResponse = clone $this->getRawResponse();
         unset($xmlResponse->query);
 
@@ -570,7 +570,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         ?string $stagingParam,
         bool $isFindologicEnabled
     ): void {
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
         $this->serviceConfigResourceMock->expects($this->any())->method('isStaging')->willReturn($isStaging);
         $this->serviceConfigResourceMock->expects($this->any())->method('isDirectIntegration')->willReturn(false);
 
@@ -659,6 +659,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->containerMock->method('getParameter')->with('kernel.shopware_version')->willReturn('6.3');
 
         $this->configMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
+        $this->configMock->expects($this->any())->method('isInitialized')->willReturn(true);
         $this->apiConfigMock = $this->getMockBuilder(ApiConfig::class)->disableOriginalConstructor()->getMock();
         $this->apiClientMock = $this->getMockBuilder(ApiClient::class)->disableOriginalConstructor()->getMock();
         $this->eventDispatcherMock = $this->getMockBuilder(EventDispatcherInterface::class)
@@ -802,7 +803,7 @@ XML;
     ): ProductSearchCriteriaEvent {
         $this->setUpCategoryRepositoryMock();
 
-        $this->configMock->expects($this->once())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
         if ($response === null) {
             $response = $this->getDefaultResponse();
         }
