@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
-use FINDOLOGIC\FinSearch\Exceptions\Export\UnknownShopkeyException;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
@@ -14,7 +13,6 @@ use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
-use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
@@ -83,15 +81,7 @@ class ExportController extends AbstractController implements EventSubscriberInte
     {
         $this->initialize($request, $context);
 
-        try {
-            $this->validateState();
-        } catch (InvalidArgumentException | UnknownShopkeyException $e) {
-            $errorHandler = new ProductErrorHandler();
-            $errorHandler->getExportErrors()->addGeneralError($e->getMessage());
-            return $this->export->buildErrorResponseWithHeaders($errorHandler, $this->headerHandler->getHeaders());
-        }
-
-        return $this->doExport();
+        return $this->validateAndDoExport();
     }
 
     /**
@@ -117,6 +107,18 @@ class ExportController extends AbstractController implements EventSubscriberInte
         );
     }
 
+    protected function validateAndDoExport(): Response
+    {
+        $message = $this->validateStateAndGetErrorMessage();
+        if ($message !== null) {
+            $errorHandler = new ProductErrorHandler();
+            $errorHandler->getExportErrors()->addGeneralError($message);
+            return $this->export->buildErrorResponseWithHeaders($errorHandler, $this->headerHandler->getHeaders());
+        }
+
+        return $this->doExport();
+    }
+
     protected function doExport(): Response
     {
         $products = $this->productService->searchVisibleProducts(
@@ -139,19 +141,27 @@ class ExportController extends AbstractController implements EventSubscriberInte
         );
     }
 
-    protected function validateState(): void
+    /**
+     * Validates the initialized state of the exporter. In case it is not valid, an appropriate message may be
+     * returned. In case everything is valid, null may be returned.
+     */
+    protected function validateStateAndGetErrorMessage(): ?string
     {
-        $this->validateExportConfiguration($this->config);
+        if (($message = $this->validateExportConfiguration($this->config)) !== null) {
+            return $message;
+        }
 
         if ($this->salesChannelContext === null) {
-            throw new UnknownShopkeyException(sprintf(
+            return sprintf(
                 'Shopkey %s is not assigned to any sales channel.',
                 $this->config->getShopkey()
-            ));
+            );
         }
+
+        return null;
     }
 
-    private function validateExportConfiguration(ExportConfiguration $config): void
+    private function validateExportConfiguration(ExportConfiguration $config): ?string
     {
         $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
         $violations = $validator->validate($config);
@@ -161,8 +171,10 @@ class ExportController extends AbstractController implements EventSubscriberInte
                 return sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage());
             }, current((array_values((array)$violations))));
 
-            throw new InvalidArgumentException(implode(' | ', $messages));
+            return implode(' | ', $messages);
         }
+
+        return null;
     }
 
     private function getPluginConfig(): Config

@@ -60,7 +60,7 @@ class Utils
      */
     public static function addProductAssociations(Criteria $criteria): Criteria
     {
-        $associations = [
+        $criteria->addAssociations([
             'seoUrls',
             'categories',
             'categories.seoUrls',
@@ -82,11 +82,7 @@ class Utils
             'children.properties.productConfiguratorSettings.option',
             'children.properties.productConfiguratorSettings.option.group',
             'children.properties.productConfiguratorSettings.option.group.translations',
-        ];
-
-        foreach ($associations as $association) {
-            $criteria->addAssociation($association);
-        }
+        ]);
 
         return $criteria;
     }

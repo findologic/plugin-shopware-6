@@ -114,6 +114,11 @@ class ProductService
             ->getElements();
     }
 
+    protected function addProductAssociations(Criteria $criteria): void
+    {
+        Utils::addProductAssociations($criteria);
+    }
+
     private function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria
     {
         $criteria = $this->buildProductCriteria($limit, $offset);
@@ -131,7 +136,7 @@ class ProductService
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('parent.id', null));
 
-        $criteria = Utils::addProductAssociations($criteria);
+        $this->addProductAssociations($criteria);
 
         if ($offset !== null) {
             $criteria->setOffset($offset);
