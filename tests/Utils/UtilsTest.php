@@ -250,6 +250,16 @@ class UtilsTest extends TestCase
                 'expectedFindologicActive' => false,
                 'expectedSmartSuggestActive' => true,
             ],
+            'Plugin is inactive and user is on category page' => [
+                'isActive' => false,
+                'isActiveOnCategory' => true,
+                'isDirectIntegration' => false,
+                'isStagingShop' => false,
+                'isStagingSession' => false,
+                'isCategoryPage' => true,
+                'expectedFindologicActive' => false,
+                'expectedSmartSuggestActive' => false,
+            ],
         ];
     }
 
