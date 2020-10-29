@@ -58,7 +58,11 @@ class FrontendSubscriber implements EventSubscriberInterface
         $findologicService = new FindologicService();
         $event->getContext()->addExtension('findologicService', $findologicService);
         if ($this->config->isStaging() && !Utils::isStagingSession($event->getRequest())) {
-            $findologicService->setDisabled();
+            $findologicService->disable();
+            $findologicService->disableSmartSuggest();
+        } else {
+            // Findologic won't be explicitly enabled here, as this is done at a later point.
+            $findologicService->enableSmartSuggest();
         }
 
         $shopkey = $this->config->getShopkey();

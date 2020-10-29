@@ -240,7 +240,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         } catch (ServiceNotAliveException $e) {
             /** @var FindologicService $findologicService */
             $findologicService = $event->getContext()->getExtension('findologicService');
-            $findologicService->setDisabled();
+            $findologicService->disable();
         } catch (UnknownCategoryException $ignored) {
             // We ignore this exception and do not disable the plugin here, otherwise the autocomplete of Shopware
             // would be visible behind Findologic's search suggest
@@ -260,11 +260,11 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
         $findologicService = new FindologicService();
         $event->getContext()->addExtension('findologicService', $findologicService);
-        $findologicService->setEnabled();
+        $findologicService->enable();
 
         $isCategoryPage = !($event instanceof ProductSearchCriteriaEvent);
         if (!$this->config->isActive() || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
-            return $findologicService->setDisabled();
+            return $findologicService->disable();
         }
 
         $shopkey = $this->config->getShopkey();
@@ -277,10 +277,10 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
         if (!$isDirectIntegration && $allowRequestForStaging) {
             $shouldHandleRequest = true;
-            $findologicService->setEnabled();
+            $findologicService->enable();
         } else {
             $shouldHandleRequest = false;
-            $findologicService->setDisabled();
+            $findologicService->disable();
         }
 
         return $shouldHandleRequest;
