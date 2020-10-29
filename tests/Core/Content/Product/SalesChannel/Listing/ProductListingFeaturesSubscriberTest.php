@@ -21,6 +21,10 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\DefaultInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -424,49 +428,49 @@ class ProductListingFeaturesSubscriberTest extends TestCase
                 'queryString' => '',
                 'queryStringType' => null,
                 'params' => ['cat' => '', 'vendor' => ''],
-                'alternativeQuery' => ''
+                'expectedInstance' => DefaultInfoMessage::class
             ],
             'Submitting an empty search with a selected category' => [
                 'queryString' => '',
                 'queryStringType' => null,
                 'params' => ['cat' => 'Genusswelten', 'vendor' => ''],
-                'alternativeQuery' => ''
+                'expectedInstance' => CategoryInfoMessage::class
             ],
             'Submitting an empty search with a selected sub-category' => [
                 'queryString' => '',
                 'queryStringType' => null,
                 'params' => ['cat' => 'Genusswelten_Tees', 'vendor' => ''],
-                'alternativeQuery' => ''
+                'expectedInstance' => CategoryInfoMessage::class
             ],
             'Submitting an empty search with a selected vendor' => [
                 'queryString' => '',
                 'queryStringType' => null,
                 'params' => ['cat' => '', 'vendor' => 'Shopware Food'],
-                'alternativeQuery' => ''
+                'expectedInstance' => VendorInfoMessage::class
             ],
             'Submitting a search with some query' => [
                 'queryString' => 'some query',
                 'queryStringType' => null,
                 'params' => ['cat' => '', 'vendor' => ''],
-                'alternativeQuery' => 'some query'
+                'expectedInstance' => SearchTermQueryInfoMessage::class
             ],
             'Submitting a search with some query and a selected category and vendor filter' => [
                 'queryString' => 'some query',
                 'queryStringType' => null,
                 'params' => ['cat' => 'Genusswelten', 'vendor' => 'Shopware Food'],
-                'alternativeQuery' => 'some query'
+                'expectedInstance' => SearchTermQueryInfoMessage::class
             ],
             'Submitting a search where the response will have an improved query' => [
                 'queryString' => 'special',
                 'queryStringType' => 'improved',
                 'params' => ['cat' => '', 'vendor' => ''],
-                'alternativeQuery' => 'very special'
+                'expectedInstance' => SearchTermQueryInfoMessage::class
             ],
             'Submitting a search where the response will have a corrected query' => [
                 'queryString' => 'standord',
                 'queryStringType' => 'improved',
                 'params' => ['cat' => '', 'vendor' => ''],
-                'alternativeQuery' => 'standard'
+                'expectedInstance' => SearchTermQueryInfoMessage::class
             ],
         ];
     }
@@ -474,13 +478,13 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /**
      * @dataProvider queryInfoMessageProvider
      *
-     * @param string[] $params
+     * @param array<string, string|array<string, string>> $params
      */
     public function testQueryInfoMessage(
         string $queryString,
         ?string $queryStringType,
         array $params,
-        string $alternativeQuery
+        string $expectedInstance
     ): void {
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
         $xmlResponse = clone $this->getRawResponse();
@@ -499,18 +503,20 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         foreach ($params as $key => $param) {
             $request->query->set($key, $param);
         }
+        $context = Context::createDefaultContext();
 
         $request->setSession($this->getDefaultSessionMock());
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($xmlResponse->asXML()), $request, false);
+        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($xmlResponse->asXML()), $request, false, $context);
         $eventMock->expects($this->any())->method('getRequest')->willReturn($request);
-        $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
+        $criteria = new Criteria();
+        $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteria);
 
-        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($context);
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
+
+        $this->assertInstanceOf($expectedInstance, $context->getExtension('flQueryInfoMessage'));
     }
 
     public function stagingQueryParameterProvider()
@@ -799,7 +805,8 @@ XML;
     private function setUpSearchRequestMocks(
         ?Xml21Response $response = null,
         ?Request $request = null,
-        bool $withSmartDidYouMean = true
+        bool $withSmartDidYouMean = true,
+        Context $context = null
     ): ProductSearchCriteriaEvent {
         $this->setUpCategoryRepositoryMock();
 
@@ -829,20 +836,23 @@ XML;
             ['flSmartDidYouMean', $smartDidYouMean],
         ];
 
-        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
+        if (!$context) {
+            $context = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
+            $context->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
 
-        if ($withSmartDidYouMean) {
-            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-                ['findologicService', $findologicService],
-                ['flSmartDidYouMean', $smartDidYouMean]
-            );
-        } else {
-            $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-                ['findologicService', $findologicService]
-            );
+            if ($withSmartDidYouMean) {
+                $context->expects($this->any())->method('addExtension')->withConsecutive(
+                    ['findologicService', $findologicService],
+                    ['flSmartDidYouMean', $smartDidYouMean]
+                );
+            } else {
+                $context->expects($this->any())->method('addExtension')->withConsecutive(
+                    ['findologicService', $findologicService]
+                );
+            }
         }
-        $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
-        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
+
+        $eventMock->expects($this->any())->method('getContext')->willReturn($context);
 
         return $eventMock;
     }
