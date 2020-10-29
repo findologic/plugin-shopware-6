@@ -268,33 +268,12 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
         }
 
-        $findologicService = new FindologicService();
-        $event->getContext()->addExtension('findologicService', $findologicService);
-        $findologicService->enable();
-
-        $isCategoryPage = !($event instanceof ProductSearchCriteriaEvent);
-        if (!$this->config->isActive() || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
-            $findologicService->disable();
-
-            return false;
-        }
-
-        $shopkey = $this->config->getShopkey();
-        $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
-        $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
-        $isStagingSession = Utils::isStagingSession($event->getRequest());
-
-        // Allow request if shop is not staging or is staging with findologic=on flag set
-        $allowRequestForStaging = (!$isStagingShop || ($isStagingShop && $isStagingSession));
-
-        if (!$isDirectIntegration && $allowRequestForStaging) {
-            $shouldHandleRequest = true;
-            $findologicService->enable();
-        } else {
-            $shouldHandleRequest = false;
-            $findologicService->disable();
-        }
-
-        return $shouldHandleRequest;
+        return Utils::shouldHandleRequest(
+            $event->getRequest(),
+            $event->getContext(),
+            $this->serviceConfigResource,
+            $this->config,
+            !($event instanceof ProductSearchCriteriaEvent)
+        );
     }
 }
