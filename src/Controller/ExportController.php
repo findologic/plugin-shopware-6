@@ -19,7 +19,6 @@ use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,7 +26,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
 
-class ExportController extends AbstractController implements EventSubscriberInterface
+class ExportController extends AbstractController
 {
     /** @var LoggerInterface */
     protected $logger;
@@ -66,11 +65,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $this->router = $router;
         $this->headerHandler = $headerHandler;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [];
     }
 
     /**

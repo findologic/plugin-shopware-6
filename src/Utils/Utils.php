@@ -60,7 +60,7 @@ class Utils
      */
     public static function addProductAssociations(Criteria $criteria): Criteria
     {
-        $criteria->addAssociations([
+        return $criteria->addAssociations([
             'seoUrls',
             'categories',
             'categories.seoUrls',
@@ -83,8 +83,6 @@ class Utils
             'children.properties.productConfiguratorSettings.option.group',
             'children.properties.productConfiguratorSettings.option.group.translations',
         ]);
-
-        return $criteria;
     }
 
     public static function multiByteRawUrlEncode(string $string): string
@@ -143,9 +141,7 @@ class Utils
         /** @var FindologicService $findologicService */
         $findologicService = $context->getExtension('findologicService');
         if ($findologicService && $findologicService->getEnabled()) {
-            if ($findologicService->getEnabled()) {
-                return $findologicService->getEnabled();
-            }
+            return $findologicService->getEnabled();
         }
 
         if (!$config->isInitialized()) {
@@ -156,9 +152,6 @@ class Utils
         $context->addExtension('findologicService', $findologicService);
 
         if (!$config->isActive() || ($isCategoryPage && !$config->isActiveOnCategoryPages())) {
-            return $findologicService->setDisabled();
-        }
-        if ($isCategoryPage && !static::isCategoryPage($request)) {
             return $findologicService->setDisabled();
         }
 
@@ -175,12 +168,6 @@ class Utils
         }
 
         return $findologicService->setEnabled();
-    }
-
-    private static function isCategoryPage(Request $request): bool
-    {
-        // TODO: AJAX search results do not work yet. Find an appropiate fix.
-        return (strpos($request->getPathInfo(), 'navigation') !== false);
     }
 
     public static function isFindologicEnabled(SalesChannelContext $context): bool

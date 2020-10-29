@@ -24,7 +24,6 @@
 
         <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
             <argument type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
-            <tag name="kernel.event_subscriber" />
             <tag name="monolog.logger" channel="file" />
             <call method="setContainer">
                 <argument type="service" id="service_container" />
