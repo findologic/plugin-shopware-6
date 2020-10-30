@@ -13,18 +13,34 @@ class FindologicService extends Struct
 {
     private $enabled = false;
 
-    public function setEnabled(): bool
+    private $smartSuggestEnabled = false;
+
+    public function enable(): bool
     {
         $this->enabled = true;
 
         return $this->enabled;
     }
 
-    public function setDisabled(): bool
+    public function disable(): bool
     {
         $this->enabled = false;
 
         return $this->enabled;
+    }
+
+    public function enableSmartSuggest(): bool
+    {
+        $this->smartSuggestEnabled = true;
+
+        return $this->smartSuggestEnabled;
+    }
+
+    public function disableSmartSuggest(): bool
+    {
+        $this->smartSuggestEnabled = false;
+
+        return $this->smartSuggestEnabled;
     }
 
     /**
@@ -34,5 +50,10 @@ class FindologicService extends Struct
     public function getEnabled(): bool
     {
         return $this->enabled;
+    }
+
+    public function getSmartSuggestEnabled(): bool
+    {
+        return $this->smartSuggestEnabled;
     }
 }

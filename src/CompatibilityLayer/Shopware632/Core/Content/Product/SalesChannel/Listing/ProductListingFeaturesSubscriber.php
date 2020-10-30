@@ -249,7 +249,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         } catch (ServiceNotAliveException $e) {
             /** @var FindologicService $findologicService */
             $findologicService = $event->getContext()->getExtension('findologicService');
-            $findologicService->setDisabled();
+            $findologicService->disable();
         } catch (UnknownCategoryException $ignored) {
             // We ignore this exception and do not disable the plugin here, otherwise the autocomplete of Shopware
             // would be visible behind Findologic's search suggest
@@ -267,33 +267,12 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
         }
 
-        $findologicService = new FindologicService();
-        $event->getContext()->addExtension('findologicService', $findologicService);
-        $findologicService->setEnabled();
-
-        $isCategoryPage = !($event instanceof ProductSearchCriteriaEvent);
-        if (!$this->config->isActive() || ($isCategoryPage && !$this->config->isActiveOnCategoryPages())) {
-            $findologicService->setDisabled();
-
-            return false;
-        }
-
-        $shopkey = $this->config->getShopkey();
-        $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($shopkey);
-        $isStagingShop = $this->serviceConfigResource->isStaging($shopkey);
-        $isStagingSession = Utils::isStagingSession($event->getRequest());
-
-        // Allow request if shop is not staging or is staging with findologic=on flag set
-        $allowRequestForStaging = (!$isStagingShop || ($isStagingShop && $isStagingSession));
-
-        if (!$isDirectIntegration && $allowRequestForStaging) {
-            $shouldHandleRequest = true;
-            $findologicService->setEnabled();
-        } else {
-            $shouldHandleRequest = false;
-            $findologicService->setDisabled();
-        }
-
-        return $shouldHandleRequest;
+        return Utils::shouldHandleRequest(
+            $event->getRequest(),
+            $event->getContext(),
+            $this->serviceConfigResource,
+            $this->config,
+            !($event instanceof ProductSearchCriteriaEvent)
+        );
     }
 }
