@@ -182,6 +182,19 @@ trait ProductHelper
         }
     }
 
+    public function createVisibleTestProduct(array $overrides = []): ?ProductEntity
+    {
+        return $this->createTestProduct(array_merge([
+            'visibilities' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'visibility' => 20
+                ]
+            ]
+        ], $overrides));
+    }
+
     public function createProductReview(string $id, float $points, string $productId, bool $active): void
     {
         $customerId = Uuid::randomHex();

@@ -46,6 +46,13 @@ class ExportErrors
         return $this;
     }
 
+    public function addGeneralErrors(array $messages): self
+    {
+        $this->general = array_merge($this->general, $messages);
+
+        return $this;
+    }
+
     public function addProductError(ProductError $productError): self
     {
         if (isset($this->products[$productError->getId()])) {
@@ -57,5 +64,14 @@ class ExportErrors
         $this->products[$productError->getId()] = $productError;
 
         return $this;
+    }
+
+    public function getProductError(string $productId): ?ProductError
+    {
+        if (!isset($this->products[$productId])) {
+            return null;
+        }
+
+        return $this->products[$productId];
     }
 }

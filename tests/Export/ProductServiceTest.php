@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\FinSearch\Export\ProductService;
@@ -45,15 +47,7 @@ class ProductServiceTest extends TestCase
 
     public function testFindsProductsAvailableForSearch(): void
     {
-        $expectedProduct = $this->createTestProduct([
-            'visibilities' => [
-                [
-                    'id' => Uuid::randomHex(),
-                    'salesChannelId' => Defaults::SALES_CHANNEL,
-                    'visibility' => 20
-                ]
-            ]
-        ]);
+        $expectedProduct = $this->createVisibleTestProduct();
 
         $service = $this->getDefaultProductService();
         $products = $service->searchVisibleProducts(20, 0);

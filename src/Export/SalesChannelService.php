@@ -32,7 +32,7 @@ class SalesChannelService
      * assigned to any sales channel.
      */
     public function getSalesChannelContext(
-        SalesChannelContext $currentContext,
+        ?SalesChannelContext $currentContext,
         string $shopkey
     ): ?SalesChannelContext {
         $systemConfigEntities = $this->systemConfigRepository->search(

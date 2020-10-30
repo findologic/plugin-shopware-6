@@ -26,6 +26,9 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
 
+/**
+ * @RouteScope(scopes={"storefront"})
+ */
 class ExportController extends AbstractController
 {
     /** @var LoggerInterface */
@@ -68,10 +71,9 @@ class ExportController extends AbstractController
     }
 
     /**
-     * @RouteScope(scopes={"storefront"})
      * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
      */
-    public function export(Request $request, SalesChannelContext $context): Response
+    public function export(Request $request, ?SalesChannelContext $context): Response
     {
         $this->initialize($request, $context);
 
@@ -80,13 +82,13 @@ class ExportController extends AbstractController
 
     /**
      * @param Request $request
-     * @param SalesChannelContext $context
+     * @param SalesChannelContext|null $context
      */
-    protected function initialize(Request $request, SalesChannelContext $context): void
+    protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
         $this->config = ExportConfiguration::getInstance($request);
-        $this->salesChannelContext = $this->container->get(SalesChannelService::class)
-            ->getSalesChannelContext($context, $this->config->getShopkey());
+        $this->salesChannelContext = $context ? $this->container->get(SalesChannelService::class)
+            ->getSalesChannelContext($context, $this->config->getShopkey()) : null;
 
         $this->productService = ProductService::getInstance($this->container, $this->salesChannelContext);
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
@@ -103,10 +105,10 @@ class ExportController extends AbstractController
 
     protected function validateAndDoExport(): Response
     {
-        $message = $this->validateStateAndGetErrorMessage();
-        if ($message !== null) {
+        $messages = $this->validateStateAndGetErrorMessages();
+        if (count($messages) > 0) {
             $errorHandler = new ProductErrorHandler();
-            $errorHandler->getExportErrors()->addGeneralError($message);
+            $errorHandler->getExportErrors()->addGeneralErrors($messages);
             return $this->export->buildErrorResponseWithHeaders($errorHandler, $this->headerHandler->getHeaders());
         }
 
@@ -139,36 +141,36 @@ class ExportController extends AbstractController
      * Validates the initialized state of the exporter. In case it is not valid, an appropriate message may be
      * returned. In case everything is valid, null may be returned.
      */
-    protected function validateStateAndGetErrorMessage(): ?string
+    protected function validateStateAndGetErrorMessages(): array
     {
-        if (($message = $this->validateExportConfiguration($this->config)) !== null) {
-            return $message;
+        $messages = $this->validateExportConfiguration($this->config);
+        if (count($messages) > 0) {
+            return $messages;
         }
 
         if ($this->salesChannelContext === null) {
-            return sprintf(
+            $messages[] = sprintf(
                 'Shopkey %s is not assigned to any sales channel.',
                 $this->config->getShopkey()
             );
         }
 
-        return null;
+        return $messages;
     }
 
-    private function validateExportConfiguration(ExportConfiguration $config): ?string
+    private function validateExportConfiguration(ExportConfiguration $config): array
     {
         $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
         $violations = $validator->validate($config);
 
+        $messages = [];
         if ($violations->count() > 0) {
             $messages = array_map(function (ConstraintViolation $violation) {
                 return sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage());
             }, current((array_values((array)$violations))));
-
-            return implode(' | ', $messages);
         }
 
-        return null;
+        return $messages;
     }
 
     private function getPluginConfig(): Config

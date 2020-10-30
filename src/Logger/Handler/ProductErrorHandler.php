@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Export\Errors\ExportErrors;
 use FINDOLOGIC\FinSearch\Export\Errors\ProductError;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Handler\HandlerInterface;
+use Shopware\Core\Content\Product\ProductEntity;
 
 class ProductErrorHandler implements HandlerInterface
 {
@@ -91,6 +92,14 @@ class ProductErrorHandler implements HandlerInterface
             }
 
             $product = $exception->getProduct();
+            $productError = new ProductError($product->getId(), [$record['message']]);
+
+            $this->exportErrors->addProductError($productError);
+        }
+
+        if (isset($record['context']['product'])) {
+            /** @var ProductEntity $product */
+            $product = $record['context']['product'];
             $productError = new ProductError($product->getId(), [$record['message']]);
 
             $this->exportErrors->addProductError($productError);

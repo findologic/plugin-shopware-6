@@ -104,7 +104,7 @@ class XmlProductTest extends TestCase
             ->with(FindologicProductFactory::class)
             ->willReturn($findologicFactoryMock);
 
-        $xmlItem = new XmlProduct(
+        $xmlProduct = new XmlProduct(
             $productEntity,
             $this->getContainer()->get('router'),
             $containerMock,
@@ -112,8 +112,10 @@ class XmlProductTest extends TestCase
             $this->shopkey,
             []
         );
+        $xmlProduct->buildXmlItem();
+        $xmlItem = $xmlProduct->getXmlItem();
 
-        $this->assertInstanceOf(Item::class, $xmlItem->getXmlItem());
+        $this->assertInstanceOf(Item::class, $xmlItem);
     }
 
     /**
@@ -157,7 +159,7 @@ class XmlProductTest extends TestCase
             ->with(FindologicProductFactory::class)
             ->willReturn($findologicFactoryMock);
 
-        new XmlProduct(
+        $xmlProduct = new XmlProduct(
             $productEntity,
             $this->getContainer()->get('router'),
             $containerMock,
@@ -165,5 +167,7 @@ class XmlProductTest extends TestCase
             $this->shopkey,
             []
         );
+
+        $xmlProduct->buildXmlItem();
     }
 }

@@ -114,7 +114,9 @@ class XmlExport extends Export
                 $productEntity->getName(),
                 $category->getId(),
                 implode(' > ', $category->getBreadcrumb())
-            ));
+            ), ['product' => $productEntity]);
+
+            return null;
         }
 
         $xmlProduct = new XmlProduct(
