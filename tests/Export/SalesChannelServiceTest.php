@@ -41,8 +41,8 @@ class SalesChannelServiceTest extends TestCase
     }
 
     protected function enableFindologicInPluginConfiguration(
-            ?string $shopkey = null,
-            ?SalesChannelContext $salesChannelContext = null
+        ?string $shopkey = null,
+        ?SalesChannelContext $salesChannelContext = null
     ): void {
         $configService = $this->getContainer()->get(SystemConfigService::class);
         $configService->set(
