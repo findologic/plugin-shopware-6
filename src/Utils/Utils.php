@@ -151,10 +151,6 @@ class Utils
         $findologicService = new FindologicService();
         $context->addExtension('findologicService', $findologicService);
 
-        if (!$config->isActive() || ($isCategoryPage && !$config->isActiveOnCategoryPages())) {
-            return $findologicService->setDisabled();
-        }
-
         $shopkey = $config->getShopkey();
         $isDirectIntegration = $serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $serviceConfigResource->isStaging($shopkey);
@@ -163,11 +159,19 @@ class Utils
         // Allow request if shop is not staging or is staging with findologic=on flag set
         $allowRequestForStaging = (!$isStagingShop || ($isStagingShop && $isStagingSession));
 
-        if ($isDirectIntegration || !$allowRequestForStaging) {
-            return $findologicService->setDisabled();
+        if ($config->isActive() && ($isDirectIntegration || $allowRequestForStaging)) {
+            $findologicService->enableSmartSuggest();
         }
 
-        return $findologicService->setEnabled();
+        if (!$config->isActive() || ($isCategoryPage && !$config->isActiveOnCategoryPages())) {
+            return $findologicService->disable();
+        }
+
+        if ($isDirectIntegration || !$allowRequestForStaging) {
+            return $findologicService->disable();
+        }
+
+        return $findologicService->enable();
     }
 
     public static function isFindologicEnabled(SalesChannelContext $context): bool

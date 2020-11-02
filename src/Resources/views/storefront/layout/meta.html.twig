@@ -9,7 +9,7 @@
             (document,'{{ page.header.extensions.flSnippet.shopkey }}','{{ page.header.extensions.flSnippet.userGroupHash }}','.{{ page.header.extensions.flSnippet.navigationResultContainer }}','fl-reveal',3000,'.3s','//cdn.findologic.com',window,'.{{ page.header.extensions.flSnippet.searchResultContainer }}');
         </script>
 
-        {% if context.context.extensions.findologicService.enabled %}
+        {% if context.context.extensions.findologicService.smartSuggestEnabled %}
             <style>
                 .search-suggest.js-search-result {
                     display: none;
