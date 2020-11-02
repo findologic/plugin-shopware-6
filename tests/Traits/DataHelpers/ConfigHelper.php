@@ -27,16 +27,6 @@ trait ConfigHelper
         return $config;
     }
 
-    public function getDemoXMLResponse(): string
-    {
-        return file_get_contents(__DIR__ . '/../../MockData/XMLResponse/demo.xml');
-    }
-
-    public function getDemoXML(): SimpleXMLElement
-    {
-        return new SimpleXMLElement($this->getDemoXMLResponse());
-    }
-
     /**
      * Creates a system config service mock with default findologic config values initialized
      * Passing the data array will override any default values if needed

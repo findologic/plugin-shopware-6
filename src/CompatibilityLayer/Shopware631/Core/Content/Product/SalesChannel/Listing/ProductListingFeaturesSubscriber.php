@@ -8,7 +8,7 @@ use Doctrine\DBAL\Connection;
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
-use FINDOLOGIC\FinSearch\Exceptions\UnknownCategoryException;
+use FINDOLOGIC\FinSearch\Exceptions\Search\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;

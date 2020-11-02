@@ -131,23 +131,4 @@ class FrontendSubscriberTest extends TestCase
 
         $frontendSubscriber->onHeaderLoaded($headerPageletLoadedEventMock);
     }
-
-    public function responseProvider(): array
-    {
-        $response = new Xml21Response($this->getDemoXMLResponse());
-
-        $productIds = array_map(
-            static function (Product $product) {
-                return $product->getId();
-            },
-            $response->getProducts()
-        );
-
-        return [
-            'Response matches the product Ids' => [
-                'response' => $response,
-                'productIds' => $productIds
-            ],
-        ];
-    }
 }
