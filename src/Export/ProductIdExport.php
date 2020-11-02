@@ -29,6 +29,11 @@ class ProductIdExport extends XmlExport
         $this->errorHandler = $this->pushErrorHandler();
     }
 
+    public function getErrorHandler(): ProductErrorHandler
+    {
+        return $this->errorHandler;
+    }
+
     public function buildItems(array $productEntities, string $shopkey, array $customerGroups): array
     {
         if (count($productEntities) === 0) {

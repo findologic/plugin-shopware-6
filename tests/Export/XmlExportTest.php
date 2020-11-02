@@ -20,16 +20,16 @@ class XmlExportTest extends TestCase
     use SalesChannelHelper;
     use IntegrationTestBehaviour;
 
-    private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
+    protected const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
     /** @var Logger */
-    private $logger;
+    protected $logger;
 
     /** @var string[] */
-    private $crossSellCategories;
+    protected $crossSellCategories;
 
     /** @var SalesChannelContext */
-    private $salesChannelContext;
+    protected $salesChannelContext;
 
     protected function setUp(): void
     {
@@ -45,7 +45,7 @@ class XmlExportTest extends TestCase
     {
         $product = $this->createVisibleTestProduct();
 
-        $items = $this->getDefaultXmlExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());
     }
@@ -60,7 +60,7 @@ class XmlExportTest extends TestCase
         $category = $product->getCategories()->first();
         $this->crossSellCategories = [$category->getId()];
 
-        $items = $this->getDefaultXmlExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
         $this->assertEmpty($items);
 
         $errors = $productErrorHandler->getExportErrors()->getProductError($product->getId())->getErrors();
@@ -77,7 +77,7 @@ class XmlExportTest extends TestCase
         );
     }
 
-    private function getDefaultXmlExport(): XmlExport
+    protected function getExport(): XmlExport
     {
         /** @var Router $router */
         $router = $this->getContainer()->get(Router::class);

@@ -92,14 +92,9 @@ class XmlExport extends Export
         return $items;
     }
 
-    public function getLogger(): LoggerInterface
+    protected function getLogger(): LoggerInterface
     {
         return $this->logger;
-    }
-
-    public function getContainer(): ContainerInterface
-    {
-        return $this->container;
     }
 
     private function exportSingleItem(

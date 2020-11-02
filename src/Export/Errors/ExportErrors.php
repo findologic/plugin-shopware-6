@@ -74,4 +74,12 @@ class ExportErrors
 
         return $this->products[$productId];
     }
+
+    /**
+     * @return string[]
+     */
+    public function getGeneralErrors(): array
+    {
+        return $this->general;
+    }
 }

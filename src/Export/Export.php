@@ -43,7 +43,7 @@ abstract class Export
                     $crossSellingCategories
                 );
             default:
-                throw new InvalidArgumentException(sprintf('Unknown Export type "%d"', $type));
+                throw new InvalidArgumentException(sprintf('Unknown export type %d.', $type));
         }
     }
 
