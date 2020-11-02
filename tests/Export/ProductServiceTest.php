@@ -59,6 +59,33 @@ class ProductServiceTest extends TestCase
         $this->assertSame($expectedProduct->getId(), $product->getId());
     }
 
+    public function testFindsProductId(): void
+    {
+        $expectedProduct = $this->createVisibleTestProduct();
+
+        $service = $this->getDefaultProductService();
+        $products = $service->searchVisibleProducts(20, 0, $expectedProduct->getId());
+
+        $this->assertCount(1, $products);
+        /** @var ProductEntity $product */
+        $product = $products->first();
+
+        $this->assertSame($expectedProduct->getId(), $product->getId());
+    }
+
+    public function testGetInstancePopulatesSalesChannelContext(): void
+    {
+        $productService = new ProductService($this->getContainer());
+        $this->getContainer()->set(ProductService::CONTAINER_ID, $productService);
+
+        $this->assertNull($productService->getSalesChannelContext());
+
+        $actualProductService = ProductService::getInstance($this->getContainer(), $this->salesChannelContextMock);
+        $this->assertSame($productService, $actualProductService);
+        $this->assertInstanceOf(SalesChannelContext::class, $productService->getSalesChannelContext());
+        $this->assertSame($this->salesChannelContextMock, $productService->getSalesChannelContext());
+    }
+
     private function getDefaultProductService(): ProductService
     {
         return ProductService::getInstance($this->getContainer(), $this->salesChannelContextMock);

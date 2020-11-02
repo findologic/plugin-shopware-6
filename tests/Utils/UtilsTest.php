@@ -8,10 +8,12 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 
@@ -315,5 +317,26 @@ class UtilsTest extends TestCase
         $this->assertSame($expectedFindologicActive, $shouldHandleRequest);
         $this->assertSame($expectedFindologicActive, $findologicService->getEnabled());
         $this->assertSame($expectedSmartSuggestActive, $findologicService->getSmartSuggestEnabled());
+    }
+
+    public function testShouldHandleRequestThrowsExceptionInCaseConfigIsNotInitialized(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Config needs to be initialized first!');
+
+        /** @var SystemConfigService $systemConfigService */
+        $systemConfigService = $this->getContainer()->get(SystemConfigService::class);
+
+        $nonInitializedConfig = new Config(
+            $systemConfigService,
+            $this->getContainer()->get(ServiceConfigResource::class)
+        );
+
+        Utils::shouldHandleRequest(
+            new Request(),
+            Context::createDefaultContext(),
+            $this->getContainer()->get(ServiceConfigResource::class),
+            $nonInitializedConfig
+        );
     }
 }

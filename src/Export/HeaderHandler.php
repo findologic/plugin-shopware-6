@@ -87,16 +87,6 @@ class HeaderHandler
         return array_merge($headers, $overrides);
     }
 
-    public function getHeader(string $key): ?string
-    {
-        $headers = $this->getHeaders();
-        if (array_key_exists($key, $headers)) {
-            return $headers[$key];
-        }
-
-        return null;
-    }
-
     private function fetchShopwareVersion(): string
     {
         $shopwareVersion = $this->container->getParameter('kernel.shopware_version');

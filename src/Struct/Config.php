@@ -17,6 +17,19 @@ class Config extends Struct
     public const DEFAULT_SEARCH_RESULT_CONTAINER = 'fl-result';
     public const DEFAULT_NAVIGATION_RESULT_CONTAINER = 'fl-navigation-result';
 
+    public const ALLOW_FOR_SERIALIZATION = [
+        'shopkey',
+        'active',
+        'staging',
+        'activeOnCategoryPages',
+        'crossSellingCategories',
+        'searchResultContainer',
+        'navigationResultContainer',
+        'integrationType',
+        'initialized',
+        'filterPosition'
+    ];
+
     /** @var SystemConfigService */
     private $systemConfigService;
 
@@ -63,18 +76,7 @@ class Config extends Struct
     {
         // Only return instances that are actually serializable. For example the SystemConfigService is not
         // serializable, as it has an PDO instance associated to it.
-        return [
-            'shopkey',
-            'active',
-            'staging',
-            'activeOnCategoryPages',
-            'crossSellingCategories',
-            'searchResultContainer',
-            'navigationResultContainer',
-            'integrationType',
-            'initialized',
-            'filterPosition'
-        ];
+        return self::ALLOW_FOR_SERIALIZATION;
     }
 
     public function getShopkey(): ?string

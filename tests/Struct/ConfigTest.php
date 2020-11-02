@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
+use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
@@ -14,11 +15,13 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Defaults;
+use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigTest extends TestCase
 {
     use ConfigHelper;
+    use IntegrationTestBehaviour;
 
     public function configValuesProvider(): array
     {
@@ -31,7 +34,8 @@ class ConfigTest extends TestCase
                     'crossSellingCategories' => [],
                     'searchResultContainer' => 'fl-result',
                     'navigationResultContainer' => 'fl-navigation-result',
-                    'integrationType' => 'API'
+                    'integrationType' => 'API',
+                    'filterPosition' => FilterPosition::TOP
                 ],
                 'exception' => null
             ],
@@ -43,7 +47,8 @@ class ConfigTest extends TestCase
                     'crossSellingCategories' => [],
                     'searchResultContainer' => 'fl-result',
                     'navigationResultContainer' => 'fl-navigation-result',
-                    'integrationType' => null
+                    'integrationType' => null,
+                    'filterPosition' => FilterPosition::TOP
                 ],
                 'exception' => new ClientException('some message', new Request('GET', 'some url'), new Response())
             ]
@@ -85,5 +90,21 @@ class ConfigTest extends TestCase
         $this->assertSame($data['searchResultContainer'], $config->getSearchResultContainer());
         $this->assertSame($data['navigationResultContainer'], $config->getNavigationResultContainer());
         $this->assertSame($data['integrationType'], $config->getIntegrationType());
+        $this->assertSame($data['filterPosition'], $config->getFilterPosition());
+        $this->assertTrue($config->isInitialized());
+    }
+
+    public function testConfigCanBeSerialized(): void
+    {
+        /** @var SystemConfigService $systemConfigService */
+        $systemConfigService = $this->getContainer()->get(SystemConfigService::class);
+
+        /** @var ServiceConfigResource $serviceConfigResource */
+        $serviceConfigResource = $this->getContainer()->get(ServiceConfigResource::class);
+
+        // Ensure that the config can be serialized and unserialized for use in views.
+        $config = unserialize(serialize(new Config($systemConfigService, $serviceConfigResource)));
+
+        $this->assertInstanceOf(Config::class, $config);
     }
 }
