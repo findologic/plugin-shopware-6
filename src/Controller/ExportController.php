@@ -137,10 +137,6 @@ class ExportController extends AbstractController
         );
     }
 
-    /**
-     * Validates the initialized state of the exporter. In case it is not valid, an appropriate message may be
-     * returned. In case everything is valid, null may be returned.
-     */
     protected function validateStateAndGetErrorMessages(): array
     {
         $messages = $this->validateExportConfiguration($this->config);
