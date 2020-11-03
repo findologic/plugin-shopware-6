@@ -48,6 +48,7 @@ jobs:
       - name: Install Shopware
         run: |
           cp .github/.psh.yaml.override development
+          ls -al
           cd development
           ./psh.phar init
           cd ..
