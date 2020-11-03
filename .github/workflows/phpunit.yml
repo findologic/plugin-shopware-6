@@ -1,0 +1,77 @@
+name: PHPUnit
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: ['7.2', '7.3']
+        shopware-versions: ['6.1', '6.2', 'master']
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: shopware
+          MYSQL_DATABASE: shopware
+
+    name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, dom
+          coverage: xdebug
+          tools: composer
+
+      - name: Validate dependencies
+        run: composer validate
+
+      - name: Clone Shopware repository
+        run: |
+          cd ..
+          git clone https://github.com/shopware/development.git --branch ${{ matrix.shopware-versions }}
+
+      - name: Install Shopware
+        run: |
+          cp plugin-shopware-6/.github/.psh.yaml.override development
+          cd development
+          ./psh.phar init
+          cd ..
+
+      - name: Install Plugin
+        run: |
+          mkdir development/custom/plugins
+          mv plugin-shopware-6 development/custom/plugins
+          cd development
+          php bin/console plugin:refresh
+          php bin/console plugin:install --activate --clearCache FinSearch
+
+      - name: Create test database
+        run: |
+          ./psh.phar init-test-databases
+          ./psh.phar cache
+
+      - name: Cache dependencies
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Run test suite
+        run: |
+          cd custom/plugins/plugin-shopware-6
+          composer test
