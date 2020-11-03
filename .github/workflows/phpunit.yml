@@ -25,6 +25,8 @@ jobs:
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
     steps:
       - uses: actions/checkout@v2
+        with:
+          path: plugin-shopware-6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -48,6 +50,7 @@ jobs:
         with:
           repository: shopware/development
           ref: ${{ matrix.shopware-versions }}
+          path: development
 
       - name: Install Shopware
         run: |
