@@ -46,7 +46,7 @@ jobs:
       - name: Clone Shopware repository
         uses: actions/checkout@v2
         with:
-          repository: https://github.com/shopware/development.git
+          repository: shopware/development
           ref: ${{ matrix.shopware-versions }}
 
       - name: Install Shopware
