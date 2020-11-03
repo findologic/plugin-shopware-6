@@ -36,14 +36,11 @@ jobs:
           coverage: xdebug
           tools: composer
 
-      - name: Get current directory
-        run: pwd
-
       - name: Validate dependencies
-        run: composer validate
-
-      - name: One up
-        run: cd ..
+        run: |
+          cd plugin-shopware-6
+          composer validate
+          cd ..
 
       - name: Clone Shopware repository
         uses: actions/checkout@v2
@@ -54,10 +51,6 @@ jobs:
 
       - name: Install Shopware
         run: |
-          pwd
-          ls -al
-          ls -al plugin-shopware-6
-          ls -al development
           cp plugin-shopware-6/.github/.psh.yaml.override development
           cd development
           ./psh.phar init
