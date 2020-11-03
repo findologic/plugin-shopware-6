@@ -3,6 +3,7 @@ name: PHPUnit
 on:
   push:
     branches:
+      - master
   pull_request:
 
 jobs:
@@ -32,6 +33,9 @@ jobs:
           extensions: mbstring, dom
           coverage: xdebug
           tools: composer
+
+      - name: Get current directory
+        run: pwd
 
       - name: Validate dependencies
         run: composer validate
