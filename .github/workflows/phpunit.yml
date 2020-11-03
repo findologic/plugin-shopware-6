@@ -51,6 +51,7 @@ jobs:
 
       - name: Install Shopware
         run: |
+          pwd
           ls -al
           ls -al plugin-shopware-6
           ls -al development
