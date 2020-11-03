@@ -40,14 +40,18 @@ jobs:
       - name: Validate dependencies
         run: composer validate
 
+      - name: One up
+        run: cd ..
+
       - name: Clone Shopware repository
-        run: |
-          cd ..
-          git clone https://github.com/shopware/development.git --branch ${{ matrix.shopware-versions }}
+        uses: actions/checkout@v2
+        with:
+          repository: https://github.com/shopware/development.git
+          ref: ${{ matrix.shopware-versions }}
 
       - name: Install Shopware
         run: |
-          cp .github/.psh.yaml.override development
+          cp plugin-shopware-6/.github/.psh.yaml.override development
           ls -al
           cd development
           ./psh.phar init
