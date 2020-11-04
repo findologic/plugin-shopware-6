@@ -24,6 +24,11 @@ jobs:
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
     steps:
+      - uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql database: shopware
+          mysql root password: shopware
+
       - uses: actions/checkout@v2
         with:
           path: plugin-shopware-6
