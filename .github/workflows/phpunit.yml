@@ -77,4 +77,4 @@ jobs:
       - name: Run test suite
         run: |
           cd development/custom/plugins/plugin-shopware-6
-          composer test
+          SYMFONY_DEPRECATIONS_HELPER=disabled composer test
