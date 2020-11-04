@@ -26,7 +26,7 @@ jobs:
       # Shopware 6.1 is not compatible with Composer 2, so we need to manually downgrade it for Shopware 6.1
       - name: Install Composer 1
         if: matrix.shopware-versions == '6.1'
-        run: composer self-update 1.10.17
+        run: sudo composer self-update 1.10.17
 
       - uses: actions/checkout@v2
         with:
