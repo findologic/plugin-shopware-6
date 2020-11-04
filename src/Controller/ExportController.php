@@ -109,13 +109,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
         $start = (int)$request->get('start', self::DEFAULT_START_PARAM);
         $count = (int)$request->get('count', self::DEFAULT_COUNT_PARAM);
 
-        $dynamicProductGroupService = DynamicProductGroupService::getInstance(
-            $this->container,
-            $this->cache,
-            $context->getContext(),
-            $shopkey,
-            $start
-        );
         $this->salesChannelContext = $this->getSalesChannelContextByShopkey($shopkey, $context);
         $totalProductCount = $this->getTotalProductCount();
         $productEntities = $this->getProductsFromShop($start, $count);
@@ -124,12 +117,20 @@ class ExportController extends AbstractController implements EventSubscriberInte
 
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
 
-        $dynamicProductGroupService->setSalesChannel($context->getSalesChannel());
-        if (!$dynamicProductGroupService->isWarmedUp()) {
-            $dynamicProductGroupService->warmUp();
+        if (!Utils::versionLowerThan('6.3.1.0')) {
+            $dynamicProductGroupService = DynamicProductGroupService::getInstance(
+                $this->container,
+                $this->cache,
+                $context->getContext(),
+                $shopkey,
+                $start
+            );
+            $dynamicProductGroupService->setSalesChannel($context->getSalesChannel());
+            if (!$dynamicProductGroupService->isWarmedUp()) {
+                $dynamicProductGroupService->warmUp();
+            }
+            $this->container->set('fin_search.dynamic_product_group', $dynamicProductGroupService);
         }
-        $this->container->set('fin_search.dynamic_product_group', $dynamicProductGroupService);
-
         $items = $this->buildXmlProducts($productEntities, $shopkey, $customerGroups);
         $xmlExporter = Exporter::create(Exporter::TYPE_XML);
 

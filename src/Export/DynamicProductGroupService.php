@@ -14,6 +14,8 @@ use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 
 class DynamicProductGroupService
@@ -114,14 +116,25 @@ class DynamicProductGroupService
         $this->salesChannel = $salesChannelEntity;
     }
 
-    public function warmUp()
+    public function warmUp(): void
     {
         $id = $this->getCacheId();
         $cacheItem = $this->cache->getItem($id);
         $mainCategoryId = $this->salesChannel->getNavigationCategoryId();
-        /** @var CategoryEntity $category */
-        $category = $this->categoryRepository->search(new Criteria([$mainCategoryId]), $this->context)->first();
-        $categories = $category->getChildren();
+
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('parentId', $mainCategoryId));
+        $criteria->addAssociation('seoUrls');
+        $criteria->addAssociation('productStream');
+        $criteria->addFilter(
+            new NotFilter(
+                NotFilter::CONNECTION_AND,
+                [new EqualsFilter('productStreamId', null)]
+            )
+        );
+
+        /** @var CategoryCollection $categories */
+        $categories = $this->categoryRepository->search($criteria, $this->context)->getEntities();
         $this->parseProductGroups($categories);
         if (!Utils::isEmpty($this->products)) {
             $cacheItem->set($this->products);
@@ -130,40 +143,51 @@ class DynamicProductGroupService
         }
     }
 
-    public function isWarmedUp()
+    public function isWarmedUp(): bool
     {
         $id = $this->getCacheId();
         $cacheItem = $this->cache->getItem($id);
 
-        return $cacheItem->isHit() && $this->start > 0;
+        if ($cacheItem) {
+            // Always renew the time once the export is called, even if the data is the same.
+            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+            $this->cache->save($cacheItem);
+
+            return $cacheItem->isHit() && $this->start > 0;
+        }
+
+        return false;
     }
 
     private function parseProductGroups(?CategoryCollection $categories): void
     {
-        if ($categories) {
-            $products = [];
-            foreach ($categories->getElements() as $categoryEntity) {
-                $productStream = $categoryEntity->getCategory()->getProductStream();
-                if ($productStream) {
-                    $filters = $this->productStreamBuilder->buildFilters(
-                        $productStream->getId(),
-                        $this->context
-                    );
+        if ($categories === null) {
+            return;
+        }
 
-                    $criteria = new Criteria();
-                    $criteria->addFilter(...$filters);
-                    $productIds = $this->productRepository->searchIds($criteria, $this->context)->getIds();
-                    foreach ($productIds as $productId) {
-                        $products[$productId['id']][] = $categoryEntity->getCategory();
-                    }
+        $products = [];
+        foreach ($categories->getElements() as $categoryEntity) {
+            $productStream = $categoryEntity->getProductStream();
+
+            if ($productStream) {
+                $filters = $this->productStreamBuilder->buildFilters(
+                    $productStream->getId(),
+                    $this->context
+                );
+
+                $criteria = new Criteria();
+                $criteria->addFilter(...$filters);
+                $productIds = $this->productRepository->searchIds($criteria, $this->context)->getIds();
+                foreach ($productIds as $productId) {
+                    $products[$productId][] = $categoryEntity;
                 }
             }
-
-            $this->products = $products;
         }
+
+        $this->products = $products;
     }
 
-    private function getCacheId()
+    private function getCacheId(): string
     {
         return sprintf('%s_%s', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
     }

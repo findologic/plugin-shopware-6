@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -73,6 +74,8 @@ trait ExportHelper
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
+            ['category.repository', $this->getContainer()->get('category.repository')],
+            [ProductStreamBuilder::class, $this->getContainer()->get(ProductStreamBuilder::class)],
             [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
 

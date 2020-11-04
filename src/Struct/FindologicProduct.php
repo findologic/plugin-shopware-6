@@ -21,6 +21,7 @@ use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
+use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -147,7 +148,9 @@ class FindologicProduct extends Struct
         $this->translator = $container->get('translator');
 
         $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
-        $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
+        if ($this->container->has('fin_search.dynamic_product_group')) {
+            $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
+        }
 
         $this->setName();
         $this->setAttributes();
@@ -231,7 +234,6 @@ class FindologicProduct extends Struct
         $this->setAttributeProperties();
         $this->setCustomFieldAttributes();
         $this->setAdditionalAttributes();
-        $this->setDynamicProductGroupCategories();
     }
 
     /**
@@ -787,7 +789,8 @@ class FindologicProduct extends Struct
      */
     protected function setCategoriesAndCatUrls(): void
     {
-        if (!$this->product->getCategories() || empty($this->product->getCategories()->count())) {
+        $productCategories = $this->product->getCategories();
+        if ($productCategories === null || empty($productCategories->count())) {
             throw new ProductHasNoCategoriesException();
         }
 
@@ -797,48 +800,10 @@ class FindologicProduct extends Struct
         $catUrls = [];
         $categories = [];
 
-        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-
-        /** @var CategoryEntity $categoryEntity */
-        foreach ($this->product->getCategories() as $categoryEntity) {
-            if (!$categoryEntity->getActive()) {
-                continue;
-            }
-
-            if (!$categoryEntity->getPath() || !strpos($categoryEntity->getPath(), $navigationCategoryId)) {
-                continue;
-            }
-
-            $seoUrls = $this->fetchCategorySeoUrls($categoryEntity);
-            if ($seoUrls->count() > 0) {
-                foreach ($seoUrls->getElements() as $seoUrlEntity) {
-                    $catUrl = $seoUrlEntity->getSeoPathInfo();
-                    if (!Utils::isEmpty($catUrl)) {
-                        $catUrls[] = sprintf('/%s', ltrim($catUrl, '/'));
-                    }
-                }
-            }
-
-            $catUrl = sprintf(
-                '/%s',
-                ltrim(
-                    $this->router->generate(
-                        'frontend.navigation.page',
-                        ['navigationId' => $categoryEntity->getId()],
-                        RouterInterface::ABSOLUTE_PATH
-                    ),
-                    '/'
-                )
-            );
-
-            if (!Utils::isEmpty($catUrl)) {
-                $catUrls[] = $catUrl;
-            }
-
-            $categoryPath = $this->buildCategoryPath($categoryEntity);
-            if (!Utils::isEmpty($categoryPath)) {
-                $categories[] = $categoryPath;
-            }
+        $this->parseCategoryAttributes($productCategories->getElements(), $catUrls, $categories);
+        if ($this->dynamicProductGroupService) {
+            $dynamicGroupCategories = $this->dynamicProductGroupService->getCategories($this->product->getId());
+            $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
         }
 
         if (!Utils::isEmpty($catUrls)) {
@@ -1046,7 +1011,7 @@ class FindologicProduct extends Struct
         return $this->translator->trans($translationKey);
     }
 
-    protected function addProperty(string $name, $value)
+    protected function addProperty(string $name, $value): void
     {
         if (!Utils::isEmpty($value)) {
             $property = new Property($name);
@@ -1055,13 +1020,57 @@ class FindologicProduct extends Struct
         }
     }
 
-    private function setDynamicProductGroupCategories()
-    {
-        $categories = $this->dynamicProductGroupService->getCategories($this->product->getId());
-        if (!Utils::isEmpty($categories)) {
-            $categoryAttribute = new Attribute('cat');
-            $categoryAttribute->setValues(array_unique($categories));
-            $this->attributes[] = $categoryAttribute;
+    private function parseCategoryAttributes(
+        array $categoryCollection,
+        array &$catUrls,
+        array &$categories
+    ): void {
+        if (!$categoryCollection) {
+            return;
+        }
+
+        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
+        /** @var CategoryEntity $categoryEntity */
+        foreach ($categoryCollection as $categoryEntity) {
+            if (!$categoryEntity->getActive() || Utils::isEmpty($categoryEntity->getName())) {
+                continue;
+            }
+
+            if (!$categoryEntity->getPath() || !strpos($categoryEntity->getPath(), $navigationCategoryId)) {
+                continue;
+            }
+
+            $seoUrls = $this->fetchCategorySeoUrls($categoryEntity);
+            if ($seoUrls->count() > 0) {
+                foreach ($seoUrls->getElements() as $seoUrlEntity) {
+                    $catUrl = $seoUrlEntity->getSeoPathInfo();
+                    if (!Utils::isEmpty($catUrl)) {
+                        $catUrls[] = sprintf('/%s', ltrim($catUrl, '/'));
+                    }
+                }
+            }
+
+            $catUrl = sprintf(
+                '/%s',
+                ltrim(
+                    $this->router->generate(
+                        'frontend.navigation.page',
+                        ['navigationId' => $categoryEntity->getId()],
+                        RouterInterface::ABSOLUTE_PATH
+                    ),
+                    '/'
+                )
+            );
+
+            if (!Utils::isEmpty($catUrl)) {
+                $catUrls[] = $catUrl;
+            }
+
+            $categoryPath = $this->buildCategoryPath($categoryEntity);
+            if (!Utils::isEmpty($categoryPath)) {
+                $categories[] = $categoryPath;
+            }
         }
     }
 }
