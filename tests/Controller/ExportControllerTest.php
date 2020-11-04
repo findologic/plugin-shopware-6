@@ -462,7 +462,12 @@ class ExportControllerTest extends TestCase
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $containerMock->expects($this->exactly(3))->method('set');
+        if(Utils::versionLowerThan('6.3.1.0')) {
+            $invokeCount = $this->once();
+        } else {
+            $invokeCount = $this->exactly(3);
+        }
+        $containerMock->expects($invokeCount)->method('set');
 
         /** @var EntityRepository|MockObject $productRepositoryMock */
         $productRepositoryMock
@@ -638,7 +643,12 @@ class ExportControllerTest extends TestCase
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $containerMock->expects($this->exactly(3))->method('set');
+        if(Utils::versionLowerThan('6.3.1.0')) {
+            $invokeCount = $this->once();
+        } else {
+            $invokeCount = $this->exactly(3);
+        }
+        $containerMock->expects($invokeCount)->method('set');
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();

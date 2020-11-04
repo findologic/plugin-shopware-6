@@ -32,7 +32,7 @@
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
-            <argument type="service" id="Shopware\Storefront\Framework\Cache\CacheDecorator" />
+            <argument id="serializer.mapping.cache.symfony" type="service" />
         </service>
 
         <service
