@@ -14,6 +14,9 @@ jobs:
       matrix:
         php-versions: ['7.2', '7.3']
         shopware-versions: ['6.1', '6.2', 'master']
+      exclude:
+        - shopware-versions: '6.1'
+          php-versions: '7.2'
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
     steps:
