@@ -76,5 +76,5 @@ jobs:
 
       - name: Run test suite
         run: |
-          cd custom/plugins/plugin-shopware-6
+          cd development/custom/plugins/plugin-shopware-6
           composer test
