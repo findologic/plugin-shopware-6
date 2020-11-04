@@ -16,17 +16,13 @@ jobs:
         shopware-versions: ['6.1', '6.2', 'master']
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
+    if: php-versions != '7.2' && matrix.shopware-versions != '6.1'
     steps:
       - uses: mirromutth/mysql-action@v1.1
         with:
           mysql version: '5.7'
           mysql database: shopware
           mysql root password: shopware
-
-      # Shopware 6.1 is not compatible with Composer 2, so we need to manually downgrade it for Shopware 6.1
-      - name: Install Composer 1
-        if: matrix.shopware-versions == '6.1'
-        run: sudo composer self-update 1.10.17
 
       - uses: actions/checkout@v2
         with:
