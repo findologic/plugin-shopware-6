@@ -15,17 +15,11 @@ jobs:
         php-versions: ['7.2', '7.3']
         shopware-versions: ['6.2', 'master']
 
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: shopware
-          MYSQL_DATABASE: shopware
-
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
     steps:
       - uses: mirromutth/mysql-action@v1.1
         with:
+          mysql version: '5.7'
           mysql database: shopware
           mysql root password: shopware
 
