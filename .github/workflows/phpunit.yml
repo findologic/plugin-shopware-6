@@ -16,7 +16,6 @@ jobs:
         shopware-versions: ['6.1', '6.2', 'master']
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
-    if: php-versions != '7.2' && matrix.shopware-versions != '6.1'
     steps:
       - uses: mirromutth/mysql-action@v1.1
         with:
