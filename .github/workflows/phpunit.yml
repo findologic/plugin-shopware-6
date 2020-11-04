@@ -57,7 +57,6 @@ jobs:
 
       - name: Install Plugin
         run: |
-          mkdir development/custom/plugins
           mv plugin-shopware-6 development/custom/plugins
           cd development
           php bin/console plugin:refresh
