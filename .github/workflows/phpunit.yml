@@ -55,6 +55,12 @@ jobs:
           ./psh.phar init
           cd ..
 
+      - name: Install Plugin dependencies
+        run: |
+          cd plugin-shopware-6
+          composer install --no-interaction
+          cd ..
+
       - name: Install Plugin
         run: |
           mv plugin-shopware-6 development/custom/plugins
@@ -66,15 +72,6 @@ jobs:
         run: |
           ./psh.phar init-test-databases
           ./psh.phar cache
-
-      - name: Cache dependencies
-        id: composer-cache
-        uses: actions/cache@v2
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
 
       - name: Run test suite
         run: |
