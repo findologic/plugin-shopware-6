@@ -30,12 +30,12 @@ class ExportControllerTest extends TestCase
         $this->salesChannelContext = $this->buildSalesChannelContext();
     }
 
-    public function testExportsSingleProduct(): void
+    public function testExportOfSingleProduct(): void
     {
         $product = $this->createVisibleTestProduct();
         $this->enableFindologicInPluginConfiguration();
 
-        $response = $this->sendRequest();
+        $response = $this->sendExportRequest();
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
@@ -44,7 +44,7 @@ class ExportControllerTest extends TestCase
         $this->assertSame($product->getId(), $parsedResponse->items->item->attributes()->id->__toString());
     }
 
-    public function testExportOnlySingleProductWhenProductIdIsGiven(): void
+    public function testSingleProductIsExportedWhenProductIdIsGiven(): void
     {
         // Create two products.
         $product = $this->createVisibleTestProduct();
@@ -52,7 +52,7 @@ class ExportControllerTest extends TestCase
 
         $this->enableFindologicInPluginConfiguration();
 
-        $response = $this->sendRequest(['productId' => $product->getId()]);
+        $response = $this->sendExportRequest(['productId' => $product->getId()]);
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
@@ -66,7 +66,7 @@ class ExportControllerTest extends TestCase
     public function testExportWithUnknownShopkey(): void
     {
         $unknownShopkey = '12341234123412341234123412341234';
-        $response = $this->sendRequest(['shopkey' => $unknownShopkey]);
+        $response = $this->sendExportRequest(['shopkey' => $unknownShopkey]);
 
         $this->assertSame(422, $response->getStatusCode());
         $this->assertSame('application/json', $response->headers->get('content-type'));
@@ -103,7 +103,7 @@ class ExportControllerTest extends TestCase
                     'shopkey' => 'I do not follow the shopkey schema'
                 ],
                 'errorMessages' => [
-                    'shopkey: This value is not valid.',
+                    'shopkey: Invalid key provided.',
                     'start: This value should be greater than or equal to 0.',
                     'count: This value should be greater than 0.',
                 ],
@@ -128,7 +128,7 @@ class ExportControllerTest extends TestCase
             $this->enableFindologicInPluginConfiguration();
         }
 
-        $response = $this->sendRequest($params);
+        $response = $this->sendExportRequest($params);
 
         $this->assertSame(422, $response->getStatusCode());
         $parsedResponse = json_decode($response->getContent(), true);
@@ -144,7 +144,7 @@ class ExportControllerTest extends TestCase
         $this->createVisibleTestProduct();
         $this->enableFindologicInPluginConfiguration();
 
-        $response = $this->sendRequest();
+        $response = $this->sendExportRequest();
 
         $expectedShopwareVersion = sprintf('Shopware/%s', Kernel::SHOPWARE_FALLBACK_VERSION);
         $expectedPluginVersion = sprintf('Plugin-Shopware-6/%s', $this->parsePluginVersion());
@@ -171,7 +171,7 @@ class ExportControllerTest extends TestCase
         );
     }
 
-    protected function sendRequest(array $overrides = []): Response
+    protected function sendExportRequest(array $overrides = []): Response
     {
         $defaults = [
             'shopkey' => self::VALID_SHOPKEY

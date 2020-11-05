@@ -49,7 +49,7 @@ class ProductIdExport extends XmlExport
             return parent::buildResponse($items, $start, $total, $headers);
         }
 
-        return $this->buildErrorResponseWithHeaders($this->errorHandler, $headers);
+        return $this->buildErrorResponse($this->errorHandler, $headers);
     }
 
     private function pushErrorHandler(): ProductErrorHandler

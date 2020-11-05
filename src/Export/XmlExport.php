@@ -136,7 +136,7 @@ class XmlExport extends Export
             $category = $categories ? $categories->first() : null;
             $categoryId = $category ? $category->getId() : null;
 
-            return (in_array($categoryId, $this->crossSellingCategories, false));
+            return (in_array($categoryId, $this->crossSellingCategories));
         }
 
         return false;

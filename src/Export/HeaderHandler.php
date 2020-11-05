@@ -13,10 +13,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class HeaderHandler
 {
-    public const SHOPWARE_HEADER = 'x-findologic-platform';
-    public const PLUGIN_HEADER = 'x-findologic-plugin';
-    public const EXTENSION_HEADER = 'x-findologic-extension-plugin';
-    public const CONTENT_TYPE_HEADER = 'content-type';
+    public const HEADER_SHOPWARE = 'x-findologic-platform';
+    public const HEADER_PLUGIN = 'x-findologic-plugin';
+    public const HEADER_EXTENSION = 'x-findologic-extension-plugin';
+    public const HEADER_CONTENT_TYPE = 'content-type';
 
     public const CONTENT_TYPE_XML = 'text/xml';
     public const CONTENT_TYPE_JSON = 'application/json';
@@ -74,15 +74,15 @@ class HeaderHandler
 
     /**
      * @param array<string, string> $overrides
-     * @return string[]
+     * @return array<string, string>
      */
     public function getHeaders(array $overrides = []): array
     {
         $headers = [];
-        $headers[self::CONTENT_TYPE_HEADER] = $this->contentType;
-        $headers[self::SHOPWARE_HEADER] = $this->shopwareVersion;
-        $headers[self::PLUGIN_HEADER] = $this->pluginVersion;
-        $headers[self::EXTENSION_HEADER] = $this->extensionPluginVersion;
+        $headers[self::HEADER_CONTENT_TYPE] = $this->contentType;
+        $headers[self::HEADER_SHOPWARE] = $this->shopwareVersion;
+        $headers[self::HEADER_PLUGIN] = $this->pluginVersion;
+        $headers[self::HEADER_EXTENSION] = $this->extensionPluginVersion;
 
         return array_merge($headers, $overrides);
     }

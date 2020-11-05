@@ -37,7 +37,7 @@ class SnippetTest extends TestCase
             '56785678567856785678567856785678',
             'search-result-container',
             'navigation-result-container',
-            'yikes'
+            'usergrouphash'
         )));
 
         $this->assertInstanceOf(Snippet::class, $snippet);

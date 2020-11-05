@@ -47,7 +47,7 @@ class ExportController extends AbstractController
     private $salesChannelContext;
 
     /** @var ExportConfiguration */
-    private $config;
+    private $exportConfig;
 
     /** @var ProductService */
     private $productService;
@@ -76,8 +76,11 @@ class ExportController extends AbstractController
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
         $this->initialize($request, $context);
+        if ($errorResponse = $this->validate()) {
+            return $errorResponse;
+        }
 
-        return $this->validateAndDoExport();
+        return $this->doExport();
     }
 
     /**
@@ -86,16 +89,16 @@ class ExportController extends AbstractController
      */
     protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
-        $this->config = ExportConfiguration::getInstance($request);
+        $this->exportConfig = ExportConfiguration::getInstance($request);
         $this->salesChannelContext = $context ? $this->container->get(SalesChannelService::class)
-            ->getSalesChannelContext($context, $this->config->getShopkey()) : null;
+            ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
 
         $this->productService = ProductService::getInstance($this->container, $this->salesChannelContext);
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
 
         $this->export = Export::getInstance(
-            $this->config->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
+            $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
             $this->router,
             $this->container,
             $this->logger,
@@ -103,35 +106,35 @@ class ExportController extends AbstractController
         );
     }
 
-    protected function validateAndDoExport(): Response
+    protected function validate(): ?Response
     {
         $messages = $this->validateStateAndGetErrorMessages();
         if (count($messages) > 0) {
             $errorHandler = new ProductErrorHandler();
             $errorHandler->getExportErrors()->addGeneralErrors($messages);
-            return $this->export->buildErrorResponseWithHeaders($errorHandler, $this->headerHandler->getHeaders());
+            return $this->export->buildErrorResponse($errorHandler, $this->headerHandler->getHeaders());
         }
 
-        return $this->doExport();
+        return null;
     }
 
     protected function doExport(): Response
     {
         $products = $this->productService->searchVisibleProducts(
-            $this->config->getCount(),
-            $this->config->getStart(),
-            $this->config->getProductId()
+            $this->exportConfig->getCount(),
+            $this->exportConfig->getStart(),
+            $this->exportConfig->getProductId()
         );
 
         $items = $this->export->buildItems(
             $products->getElements(),
-            $this->config->getShopkey(),
+            $this->exportConfig->getShopkey(),
             $this->productService->getAllCustomerGroups()
         );
 
         return $this->export->buildResponse(
             $items,
-            $this->config->getStart(),
+            $this->exportConfig->getStart(),
             $this->productService->getTotalProductCount(),
             $this->headerHandler->getHeaders()
         );
@@ -139,7 +142,7 @@ class ExportController extends AbstractController
 
     protected function validateStateAndGetErrorMessages(): array
     {
-        $messages = $this->validateExportConfiguration($this->config);
+        $messages = $this->validateExportConfiguration($this->exportConfig);
         if (count($messages) > 0) {
             return $messages;
         }
@@ -147,7 +150,7 @@ class ExportController extends AbstractController
         if ($this->salesChannelContext === null) {
             $messages[] = sprintf(
                 'Shopkey %s is not assigned to any sales channel.',
-                $this->config->getShopkey()
+                $this->exportConfig->getShopkey()
             );
         }
 

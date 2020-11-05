@@ -14,7 +14,10 @@ class ExportConfiguration
 
     /**
      * @Assert\NotBlank
-     * @Assert\Regex("/^[A-F0-9]{32}$/")
+     * @Assert\Regex(
+     *     pattern="/^[A-F0-9]{32}$/",
+     *     message="Invalid key provided."
+     * )
      */
     private $shopkey;
 
