@@ -24,19 +24,25 @@ class ProductServiceTest extends TestCase
     /** @var SalesChannelContext|MockObject */
     private $salesChannelContextMock;
 
+    /** @var ProductService */
+    private $defaultProductService;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->salesChannelContextMock = $this->buildSalesChannelContext();
+        $this->defaultProductService = ProductService::getInstance(
+            $this->getContainer(),
+            $this->salesChannelContextMock
+        );
     }
 
     public function testFindsAllProducts(): void
     {
         $expectedProduct = $this->createTestProduct();
 
-        $service = $this->getDefaultProductService();
-        $products = $service->searchAllProducts(20, 0);
+        $products = $this->defaultProductService->searchAllProducts(20, 0);
 
         $this->assertCount(1, $products);
         /** @var ProductEntity $product */
@@ -49,8 +55,7 @@ class ProductServiceTest extends TestCase
     {
         $expectedProduct = $this->createVisibleTestProduct();
 
-        $service = $this->getDefaultProductService();
-        $products = $service->searchVisibleProducts(20, 0);
+        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
 
         $this->assertCount(1, $products);
         /** @var ProductEntity $product */
@@ -63,8 +68,7 @@ class ProductServiceTest extends TestCase
     {
         $expectedProduct = $this->createVisibleTestProduct();
 
-        $service = $this->getDefaultProductService();
-        $products = $service->searchVisibleProducts(20, 0, $expectedProduct->getId());
+        $products = $this->defaultProductService->searchVisibleProducts(20, 0, $expectedProduct->getId());
 
         $this->assertCount(1, $products);
         /** @var ProductEntity $product */
@@ -84,10 +88,5 @@ class ProductServiceTest extends TestCase
         $this->assertSame($productService, $actualProductService);
         $this->assertInstanceOf(SalesChannelContext::class, $productService->getSalesChannelContext());
         $this->assertSame($this->salesChannelContextMock, $productService->getSalesChannelContext());
-    }
-
-    private function getDefaultProductService(): ProductService
-    {
-        return ProductService::getInstance($this->getContainer(), $this->salesChannelContextMock);
     }
 }

@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Exporter;
-use FINDOLOGIC\Export\XML\XMLExporter;
+use FINDOLOGIC\Export\XML\XMLExporter as XmlFileConverter;
 use FINDOLOGIC\Export\XML\XMLItem;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -29,21 +29,21 @@ class XmlExport extends Export
     /** @var string[] */
     private $crossSellingCategories;
 
-    /** @var XMLExporter */
-    private $exporter;
+    /** @var XmlFileConverter */
+    private $xmlFileConverter;
 
     public function __construct(
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
         array $crossSellingCategories = [],
-        ?XMLExporter $exporter = null
+        ?XmlFileConverter $xmlFileConverter = null
     ) {
         $this->router = $router;
         $this->container = $container;
         $this->logger = $logger;
         $this->crossSellingCategories = $crossSellingCategories;
-        $this->exporter = $exporter ?? Exporter::create(Exporter::TYPE_XML);
+        $this->xmlFileConverter = $xmlFileConverter ?? Exporter::create(Exporter::TYPE_XML);
     }
 
     /**
@@ -51,7 +51,7 @@ class XmlExport extends Export
      */
     public function buildResponse(array $items, int $start, int $total, array $headers = []): Response
     {
-        $rawXml = $this->exporter->serializeItems(
+        $rawXml = $this->xmlFileConverter->serializeItems(
             $items,
             $start,
             count($items),

@@ -143,8 +143,8 @@ class XmlProductTest extends TestCase
             new XMLItem('123')
         ])->getMock();
         $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
-        $findologicProductMock->expects($this->once())->method('getName')->willReturn($productEntity->getName());
         $findologicProductMock->expects($this->once())->method('hasAttributes')->willReturn(false);
+        $findologicProductMock->expects($this->never())->method('getName');
         $findologicProductMock->expects($this->never())->method('getAttributes');
         $findologicProductMock->expects($this->never())->method('hasPrices');
         $findologicProductMock->expects($this->never())->method('getPrices');

@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\Export\Data\Attribute;
+use FINDOLOGIC\Export\Data\DateAdded;
+use FINDOLOGIC\Export\Data\Image;
 use FINDOLOGIC\Export\Data\Item;
+use FINDOLOGIC\Export\Data\Keyword;
 use FINDOLOGIC\Export\Data\Price;
+use FINDOLOGIC\Export\Data\Property;
+use FINDOLOGIC\Export\Data\Usergroup;
 use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
@@ -103,47 +108,27 @@ class XmlProduct
         }
     }
 
-    /**
-     * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoNameException
-     */
-    private function setName(): void
+    private function setName(?string $name): void
     {
-        if (!$this->findologicProduct->hasName()) {
-            throw new ProductHasNoNameException($this->product);
-        }
-
-        $this->xmlItem->addName($this->findologicProduct->getName());
+        $this->xmlItem->addName($name);
     }
 
     /**
-     * @throws ProductHasNoAttributesException
-     * @throws AccessEmptyPropertyException
+     * @param Attribute[] $attributes
      */
-    private function setAttributes(): void
+    private function setAttributes(array $attributes): void
     {
-        if (!$this->findologicProduct->hasAttributes()) {
-            throw new ProductHasNoAttributesException($this->product);
-        }
-
-        /** @var Attribute $attribute */
-        foreach ($this->findologicProduct->getAttributes() as $attribute) {
+        foreach ($attributes as $attribute) {
             $this->xmlItem->addMergedAttribute($attribute);
         }
     }
 
     /**
-     * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoPricesException
+     * @param Price[] $prices
      */
-    private function setPrices(): void
+    private function setPrices(array $prices): void
     {
-        if (!$this->findologicProduct->hasPrices()) {
-            throw new ProductHasNoPricesException($this->product);
-        }
-
-        /** @var Price $priceData */
-        foreach ($this->findologicProduct->getPrices() as $priceData) {
+        foreach ($prices as $priceData) {
             foreach ($priceData->getValues() as $userGroup => $price) {
                 $this->xmlItem->addPrice($price, $userGroup);
             }
@@ -153,85 +138,74 @@ class XmlProduct
     /**
      * @throws AccessEmptyPropertyException
      */
-    private function setDescription(): void
+    private function setDescription(?string $description): void
     {
         if ($this->findologicProduct->hasDescription()) {
-            $this->xmlItem->addDescription($this->findologicProduct->getDescription());
+            $this->xmlItem->addDescription($description);
         }
     }
 
-    /**
-     * @throws AccessEmptyPropertyException
-     */
-    private function setDateAdded(): void
+    private function setDateAdded(?DateAdded $dateAdded): void
     {
         if ($this->findologicProduct->hasDateAdded()) {
-            $this->xmlItem->setDateAdded($this->findologicProduct->getDateAdded());
+            $this->xmlItem->setDateAdded($dateAdded);
         }
     }
 
-    /**
-     * @throws AccessEmptyPropertyException
-     */
-    private function setUrl(): void
+    private function setUrl(?string $url): void
     {
         if ($this->findologicProduct->hasUrl()) {
-            $this->xmlItem->addUrl($this->findologicProduct->getUrl());
+            $this->xmlItem->addUrl($url);
         }
     }
 
     /**
-     * @throws AccessEmptyPropertyException
+     * @param Keyword[] $keywords
      */
-    private function setKeywords(): void
+    private function setKeywords(array $keywords): void
     {
         if ($this->findologicProduct->hasKeywords()) {
-            $this->xmlItem->setAllKeywords($this->findologicProduct->getKeywords());
+            $this->xmlItem->setAllKeywords($keywords);
         }
     }
 
     /**
-     * @throws AccessEmptyPropertyException
+     * @param Image[] $images
      */
-    private function setImages(): void
+    private function setImages(array $images): void
     {
         if ($this->findologicProduct->hasImages()) {
-            $this->xmlItem->setAllImages($this->findologicProduct->getImages());
+            $this->xmlItem->setAllImages($images);
         }
     }
 
-    private function setSalesFrequency(): void
+    private function setSalesFrequency(int $salesFrequency): void
     {
-        $this->xmlItem->addSalesFrequency($this->findologicProduct->getSalesFrequency());
+        $this->xmlItem->addSalesFrequency($salesFrequency);
     }
 
     /**
-     * @throws AccessEmptyPropertyException
+     * @param Usergroup[] $userGroups
      */
-    private function setUserGroups(): void
+    private function setUserGroups(array $userGroups): void
     {
-        if ($this->findologicProduct->hasUserGroups()) {
-            $this->xmlItem->setAllUsergroups($this->findologicProduct->getUserGroups());
-        }
+        $this->xmlItem->setAllUsergroups($userGroups);
     }
 
-    /**
-     * @throws AccessEmptyPropertyException
-     */
-    private function setOrdernumbers(): void
+    private function setOrdernumbers(array $ordernumbers): void
     {
         if ($this->findologicProduct->hasOrdernumbers()) {
-            $this->xmlItem->setAllOrdernumbers($this->findologicProduct->getOrdernumbers());
+            $this->xmlItem->setAllOrdernumbers($ordernumbers);
         }
     }
 
     /**
-     * @throws AccessEmptyPropertyException
+     * @param Property[] $properties
      */
-    private function setProperties(): void
+    private function setProperties(array $properties): void
     {
         if ($this->findologicProduct->hasProperties()) {
-            foreach ($this->findologicProduct->getProperties() as $property) {
+            foreach ($properties as $property) {
                 $this->xmlItem->addProperty($property);
             }
         }
@@ -242,6 +216,7 @@ class XmlProduct
      * @throws ProductHasNoAttributesException
      * @throws ProductHasNoNameException
      * @throws ProductHasNoPricesException
+     * @throws ProductHasNoCategoriesException
      */
     private function build(): void
     {
@@ -257,18 +232,35 @@ class XmlProduct
             $this->xmlItem
         );
 
-        $this->setName();
-        $this->setAttributes();
-        $this->setPrices();
-        $this->setDescription();
-        $this->setDateAdded();
-        $this->setUrl();
-        $this->setKeywords();
-        $this->setImages();
-        $this->setSalesFrequency();
-        $this->setUserGroups();
-        $this->setOrdernumbers();
-        $this->setProperties();
+        $this->assertRequiredFieldsAreSet();
+
+        $this->setName($this->findologicProduct->getName());
+        $this->setAttributes($this->findologicProduct->getAttributes());
+        $this->setPrices($this->findologicProduct->getPrices());
+        $this->setDescription($this->findologicProduct->getDescription());
+        $this->setDateAdded($this->findologicProduct->getDateAdded());
+        $this->setUrl($this->findologicProduct->getUrl());
+        $this->setKeywords($this->findologicProduct->getKeywords());
+        $this->setImages($this->findologicProduct->getImages());
+        $this->setSalesFrequency($this->findologicProduct->getSalesFrequency());
+        $this->setUserGroups($this->findologicProduct->hasUserGroups() ? $this->findologicProduct->getUserGroups() : []);
+        $this->setOrdernumbers($this->findologicProduct->getOrdernumbers());
+        $this->setProperties($this->findologicProduct->getProperties());
+    }
+
+    private function assertRequiredFieldsAreSet(): void
+    {
+        if (!$this->findologicProduct->hasName()) {
+            throw new ProductHasNoNameException($this->product);
+        }
+
+        if (!$this->findologicProduct->hasAttributes()) {
+            throw new ProductHasNoAttributesException($this->product);
+        }
+
+        if (!$this->findologicProduct->hasPrices()) {
+            throw new ProductHasNoPricesException($this->product);
+        }
     }
 
     private function buildWithErrorLogging(LoggerInterface $logger): void

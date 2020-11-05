@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\WithTestClient;
@@ -19,6 +20,7 @@ class ExportControllerTest extends TestCase
     use WithTestClient;
     use SalesChannelHelper;
     use ProductHelper;
+    use PluginConfigHelper;
 
     private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
@@ -33,7 +35,7 @@ class ExportControllerTest extends TestCase
     public function testExportOfSingleProduct(): void
     {
         $product = $this->createVisibleTestProduct();
-        $this->enableFindologicInPluginConfiguration();
+        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY);
 
         $response = $this->sendExportRequest();
 
@@ -50,7 +52,7 @@ class ExportControllerTest extends TestCase
         $product = $this->createVisibleTestProduct();
         $this->createVisibleTestProduct(['productNumber' => 'FINDO002']);
 
-        $this->enableFindologicInPluginConfiguration();
+        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY);
 
         $response = $this->sendExportRequest(['productId' => $product->getId()]);
 
@@ -125,7 +127,7 @@ class ExportControllerTest extends TestCase
     public function testExportWithWrongArguments(array $params, array $errorMessages): void
     {
         if (!isset($params['shopkey'])) {
-            $this->enableFindologicInPluginConfiguration();
+            $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY);
         }
 
         $response = $this->sendExportRequest($params);
@@ -142,7 +144,7 @@ class ExportControllerTest extends TestCase
     public function testExportHeadersAreSet(): void
     {
         $this->createVisibleTestProduct();
-        $this->enableFindologicInPluginConfiguration();
+        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY);
 
         $response = $this->sendExportRequest();
 
@@ -154,21 +156,6 @@ class ExportControllerTest extends TestCase
         $this->assertSame($response->headers->get('x-findologic-platform'), $expectedShopwareVersion);
         $this->assertSame($response->headers->get('x-findologic-plugin'), $expectedPluginVersion);
         $this->assertSame($response->headers->get('x-findologic-extension-plugin'), $expectedExtensionPluginVersion);
-    }
-
-    protected function enableFindologicInPluginConfiguration(): void
-    {
-        $configService = $this->getContainer()->get(SystemConfigService::class);
-        $configService->set(
-            'FinSearch.config.active',
-            true,
-            $this->salesChannelContext->getSalesChannel()->getId()
-        );
-        $configService->set(
-            'FinSearch.config.shopkey',
-            self::VALID_SHOPKEY,
-            $this->salesChannelContext->getSalesChannel()->getId()
-        );
     }
 
     protected function sendExportRequest(array $overrides = []): Response

@@ -22,9 +22,9 @@ class ProductIdExport extends XmlExport
         ContainerInterface $container,
         LoggerInterface $logger,
         array $crossSellingCategories = [],
-        ?XMLExporter $exporter = null
+        ?XMLExporter $xmlFileConverter = null
     ) {
-        parent::__construct($router, $container, $logger, $crossSellingCategories, $exporter);
+        parent::__construct($router, $container, $logger, $crossSellingCategories, $xmlFileConverter);
 
         $this->errorHandler = $this->pushErrorHandler();
     }
