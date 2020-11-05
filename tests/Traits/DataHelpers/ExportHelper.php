@@ -41,7 +41,7 @@ trait ExportHelper
 
         $salesChannelContextMock->expects($this->any())
             ->method('getContext')
-            ->willReturn($this->defaultContext);
+            ->willReturn(Context::createDefaultContext());
 
         $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
 
@@ -90,6 +90,7 @@ trait ExportHelper
 
     /**
      * @param SystemConfigEntity|MockObject|null $systemConfigEntity
+     *
      * @return EntityRepository
      */
     public function getSystemConfigRepositoryMock(?SystemConfigEntity $systemConfigEntity = null): EntityRepository
@@ -102,10 +103,10 @@ trait ExportHelper
         if (!$systemConfigEntity) {
             /** @var SystemConfigEntity|MockObject $systemConfigEntity */
             $systemConfigEntity = $this->getMockBuilder(SystemConfigEntity::class)->getMock();
-            $systemConfigEntity->expects($this->once())
+            $systemConfigEntity->expects($this->any())
                 ->method('getConfigurationValue')
                 ->willReturn($this->validShopkey);
-            $systemConfigEntity->expects($this->once())->method('getSalesChannelId')->willReturn(null);
+            $systemConfigEntity->expects($this->any())->method('getSalesChannelId')->willReturn(null);
         }
 
         /** @var SystemConfigCollection $systemConfigCollection */
@@ -120,7 +121,7 @@ trait ExportHelper
             Context::createDefaultContext()
         );
 
-        $systemConfigRepositoryMock->expects($this->once())
+        $systemConfigRepositoryMock->expects($this->any())
             ->method('search')
             ->willReturn($systemConfigEntitySearchResult);
 
@@ -132,6 +133,7 @@ trait ExportHelper
         $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
         /** @var SalesChannelContext $salesChannelContext */
         $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
+
         return $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
     }
 }

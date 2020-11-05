@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Category\CategoryEntity;
@@ -146,14 +147,18 @@ class DynamicProductGroupService
     public function isWarmedUp(): bool
     {
         $id = $this->getCacheId();
-        $cacheItem = $this->cache->getItem($id);
 
-        if ($cacheItem) {
-            // Always renew the time once the export is called, even if the data is the same.
-            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-            $this->cache->save($cacheItem);
+        try {
+            $cacheItem = $this->cache->getItem($id);
+            if ($cacheItem && $this->start > 0 && $cacheItem->isHit()) {
+                $this->products = $cacheItem->get();
+                // Always renew the time once the export is called, even if the data is the same.
+                $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+                $this->cache->save($cacheItem);
 
-            return $cacheItem->isHit() && $this->start > 0;
+                return true;
+            }
+        } catch (InvalidArgumentException $e) {
         }
 
         return false;
