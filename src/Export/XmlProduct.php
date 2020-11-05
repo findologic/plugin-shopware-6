@@ -243,7 +243,9 @@ class XmlProduct
         $this->setKeywords($this->findologicProduct->getKeywords());
         $this->setImages($this->findologicProduct->getImages());
         $this->setSalesFrequency($this->findologicProduct->getSalesFrequency());
-        $this->setUserGroups($this->findologicProduct->hasUserGroups() ? $this->findologicProduct->getUserGroups() : []);
+        $this->setUserGroups(
+            $this->findologicProduct->hasUserGroups() ? $this->findologicProduct->getUserGroups() : []
+        );
         $this->setOrdernumbers($this->findologicProduct->getOrdernumbers());
         $this->setProperties($this->findologicProduct->getProperties());
     }
