@@ -42,9 +42,9 @@ class NavigationCategoryParser
     ): ?CategoryEntity {
         // Deep clone the SalesChannelContext to ensure that the state of it is not manipulated. A simple
         // clone is not an option, as we need the entire state of the object.
-        $newSalesChannelContext = unserialize(serialize($salesChannelContext));
+        $salesChannelContextClone = unserialize(serialize($salesChannelContext));
 
-        $page = $this->genericPageLoader->load($request, $newSalesChannelContext);
+        $page = $this->genericPageLoader->load($request, $salesChannelContextClone);
         $navPage = NavigationPage::createFrom($page);
 
         if ($page->getHeader()) {
@@ -52,7 +52,7 @@ class NavigationCategoryParser
         }
 
         if ($request->get('navigationId')) {
-            return $this->parseFromRequest($request, $newSalesChannelContext);
+            return $this->parseFromRequest($request, $salesChannelContextClone);
         }
 
         // Parsing the category from somewhere else is not possible.
