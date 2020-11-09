@@ -24,7 +24,6 @@ env:
     - PLUGIN_NAME=FinSearch
     - SHOPWARE_DIR=${HOME}/shopware
     - PLUGIN_DIR=${HOME}/shopware/custom/plugins
-sudo: true
 
 cache:
   directories:
