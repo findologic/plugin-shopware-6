@@ -29,13 +29,8 @@ trait ProductHelper
         $redId = Uuid::randomHex();
         $colorId = Uuid::randomHex();
 
-        /** @var ContainerInterface $container */
         $container = $this->getContainer();
-
-        $contextFactory = $container->get(SalesChannelContextFactory::class);
-        /** @var SalesChannelContext $salesChannelContext */
-        $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
-        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
         $categoryData = [
             [
@@ -50,18 +45,9 @@ trait ProductHelper
             ]
         ];
         $container->get('category.repository')->upsert($categoryData, $context);
-
-        /** @var EntityRepository $salesChannelRepo */
-        $salesChannelRepo = $container->get('sales_channel.repository');
-        /** @var SalesChannelEntity $salesChannel */
-        $salesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
-
         $seoUrlRepo = $container->get('seo_url.repository');
         $seoUrls = $seoUrlRepo->search(new Criteria(), Context::createDefaultContext());
-        $seoUrlsStoreFrontContext = $seoUrlRepo->search(new Criteria(), $contextFactory->create(
-            Uuid::randomHex(),
-            $salesChannel->getId()
-        )->getContext());
+        $seoUrlsStoreFrontContext = $seoUrlRepo->search(new Criteria(), $this->salesChannelContext->getContext());
 
         $productSeoUrls = [];
         if ($seoUrls->count() === 0 && $seoUrlsStoreFrontContext->count() === 0) {
@@ -111,13 +97,11 @@ trait ProductHelper
             ],
             'seoUrls' => $productSeoUrls,
             'translations' => [
-                'en-GB' => [
-                    'customTranslated' => [
-                        'root' => 'FINDOLOGIC Translated',
-                    ],
-                ],
                 'de-DE' => [
-                    'customTranslated' => null,
+                    'name' => 'FINDOLOGIC Product DE',
+                ],
+                'en-GB' => [
+                    'name' => 'FINDOLOGIC Product EN',
                 ],
             ],
             'properties' => [

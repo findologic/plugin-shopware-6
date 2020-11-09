@@ -20,6 +20,7 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" />
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
             <argument type="service" id="Symfony\Component\DependencyInjection\ContainerInterface" />
@@ -37,7 +38,7 @@
             <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition" />
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
         </service>
 
         <service
@@ -51,7 +52,7 @@
             <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition" />
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader" public="true">

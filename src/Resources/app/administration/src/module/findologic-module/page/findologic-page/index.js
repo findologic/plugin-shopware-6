@@ -2,9 +2,12 @@ import template from './findologic-page.html.twig';
 import './findologic-page.scss';
 
 const { Component, Mixin, Application } = Shopware;
+const { Criteria } = Shopware.Data;
 
 Component.register('findologic-page', {
   template,
+
+  inject: ['repositoryFactory', 'FinsearchConfigApiService', 'systemConfigApiService'],
 
   mixins: [
     Mixin.getByName('notification')
@@ -18,8 +21,13 @@ Component.register('findologic-page', {
       isValidShopkey: false,
       isRegisteredShopkey: null,
       isActive: false,
-      shopkeyAvailable: false,
       config: null,
+      shopkeyAvailable: false,
+      allConfigs: {},
+      selectedSalesChannelId: null,
+      selectedLanguageId: null,
+      salesChannel: [],
+      language: [],
       shopkeyErrorState: null,
       httpClient: Application.getContainer('init').httpClient
     };
@@ -29,20 +37,31 @@ Component.register('findologic-page', {
       title: this.$createTitle()
     };
   },
-  watch: {
-    config: {
-      handler () {
-        const defaultConfig = this.$refs.configComponent.allConfigs.null;
-        const salesChannelId = this.$refs.configComponent.selectedSalesChannelId;
 
-        if (salesChannelId === null) {
-          this.shopkeyAvailable = !!this.config['FinSearch.config.shopkey'];
-          this.isActive = !!this.config['FinSearch.config.active'];
-        } else {
-          this.shopkeyAvailable = !!this.config['FinSearch.config.shopkey']
-            || !!defaultConfig['FinSearch.config.shopkey'];
-          this.isActive = !!this.config['FinSearch.config.active'] || !!defaultConfig['FinSearch.config.active'];
+  created () {
+    this.createdComponent();
+  },
+
+  watch: {
+    selectedLanguageId: {
+      handler(languageId) {
+        if(!languageId) {
+          return;
         }
+
+        this.createdComponent();
+      }
+    },
+
+    actualConfigData: {
+      handler(configData) {
+        if (!configData) {
+          return;
+        }
+
+        this.$emit('input', configData);
+        this.shopkeyAvailable = !!configData['FinSearch.config.shopkey'];
+        this.isActive = !!configData['FinSearch.config.active'];
 
         // Check if shopkey is entered and according to schema
         if (this.shopkeyAvailable) {
@@ -53,12 +72,70 @@ Component.register('findologic-page', {
           }
         }
         this._setErrorStates();
+
       },
       deep: true
+    },
+  },
+
+  computed: {
+    configKey() {
+      return this.selectedSalesChannelId + '-' + this.selectedLanguageId;
+    },
+
+    actualConfigData: {
+      get() {
+        return this.allConfigs[this.configKey];
+      },
+      set(config) {
+        this.allConfigs = {
+          ...this.allConfigs,
+          [this.configKey]: config
+        };
+      }
+    },
+
+    salesChannelRepository () {
+      return this.repositoryFactory.create('sales_channel');
+    },
+
+    languageRepository () {
+      return this.repositoryFactory.create('language');
+    },
+
+    findologicConfigRepository () {
+      return this.repositoryFactory.create('finsearch_config');
     }
   },
 
   methods: {
+    createdComponent () {
+      if (this.allConfigs[this.configKey]) {
+        return;
+      }
+
+      if (!this.actualConfigData && (this.selectedSalesChannelId && this.selectedLanguageId)) {
+        this.readAll().then((values) => {
+          values['FinSearch.config.filterPosition'] = 'top';
+          this.actualConfigData = values;
+        });
+      }
+
+      if (!this.salesChannel.length) {
+        let criteria = new Criteria();
+        criteria.addAssociation('languages');
+        criteria.addFilter(Criteria.equals('active', true));
+
+        this.salesChannelRepository.search(criteria, Shopware.Context.api).then(res => {
+          this.salesChannel = res;
+        });
+      }
+    },
+
+    readAll() {
+      return this.FinsearchConfigApiService.getValues(this.selectedSalesChannelId, this.selectedLanguageId);
+    },
+
     /**
      * @param {String} shopkey
      * @returns {boolean}
@@ -77,15 +154,7 @@ Component.register('findologic-page', {
      * @private
      */
     _getShopkey () {
-      const defaultConfig = this.$refs.configComponent.allConfigs.null;
-      let shopkey = this.config['FinSearch.config.shopkey'];
-      const hasShopkey = !!shopkey;
-      // If shopkey is not entered, we check for default config in case of "inherited" shopkey
-      if (!hasShopkey) {
-        shopkey = defaultConfig['FinSearch.config.shopkey'];
-      }
-
-      return shopkey;
+      return this.actualConfigData['FinSearch.config.shopkey'];
     },
 
     /**
@@ -134,7 +203,7 @@ Component.register('findologic-page', {
      * @private
      */
     _save () {
-      this.$refs.configComponent.save().then((res) => {
+      this.FinsearchConfigApiService.batchSave(this.allConfigs).then((res) => {
         this.shopkeyErrorState = null;
         this.isLoading = false;
         this.isSaveSuccessful = true;
@@ -144,11 +213,15 @@ Component.register('findologic-page', {
         });
 
         if (res) {
-          this.config = res;
+          this.actualConfigData = res;
         }
-      }).catch(() => {
+      }).catch((e) => {
         this.isSaveSuccessful = false;
         this.isLoading = false;
+        this.createNotificationError({
+          title: this.$tc('findologic.settingForm.titleError'),
+          message: e.message
+        });
       });
     },
 
@@ -218,6 +291,27 @@ Component.register('findologic-page', {
         .catch(() => {
           return false;
         });
+    },
+
+    onSelectedLanguage (languageId) {
+      this.selectedLanguageId = languageId;
+      Shopware.State.commit('context/setApiLanguageId', languageId);
+      this.createdComponent();
+    },
+
+    onSelectedSalesChannel (salesChannelId) {
+      if(this.salesChannel === undefined || salesChannelId === null) {
+        this.selectedLanguageId = null;
+        this.language = [];
+        return;
+      }
+      let selectedChannel = this.salesChannel.find(item => item.id = salesChannelId);
+      if (selectedChannel) {
+        this.selectedSalesChannelId = salesChannelId;
+        this.selectedLanguageId = selectedChannel.languageId;
+        this.language = selectedChannel.languages;
+      }
     }
+
   }
 });

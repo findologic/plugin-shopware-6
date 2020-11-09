@@ -7,7 +7,9 @@
     "fieldRequired": "Shopkey ist erforderlich.",
     "invalidShopkey": "Ungültiger Shopkey.",
     "notRegisteredShopkey": "Der eingegebene Shopkey ist keinem bekannten Service zugeordnet.",
+    "selectSalesChannel": "Bitte wählen Sie einen Verkaufskanal...",
     "settingForm": {
+      "salesChannelTitle": "Verkaufskanal & Sprache",
       "directIntegration": {
         "title": "Direct Integration"
       },

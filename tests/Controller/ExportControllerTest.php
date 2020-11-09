@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
+use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\WithTestClient;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Defaults;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Development\Kernel;
 use SimpleXMLElement;
@@ -36,7 +38,7 @@ class ExportControllerTest extends TestCase
     public function testExportOfSingleProduct(): void
     {
         $product = $this->createVisibleTestProduct();
-        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY);
+        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
 
         $response = $this->sendExportRequest();
 
@@ -53,7 +55,7 @@ class ExportControllerTest extends TestCase
         $product = $this->createVisibleTestProduct();
         $this->createVisibleTestProduct(['productNumber' => 'FINDO002']);
 
-        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY);
+        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
 
         $response = $this->sendExportRequest(['productId' => $product->getId()]);
 
@@ -128,7 +130,7 @@ class ExportControllerTest extends TestCase
     public function testExportWithWrongArguments(array $params, array $errorMessages): void
     {
         if (!isset($params['shopkey'])) {
-            $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY);
+            $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
         }
 
         $response = $this->sendExportRequest($params);
@@ -145,7 +147,7 @@ class ExportControllerTest extends TestCase
     public function testExportHeadersAreSet(): void
     {
         $this->createVisibleTestProduct();
-        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY);
+        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
 
         $response = $this->sendExportRequest();
 
@@ -167,7 +169,6 @@ class ExportControllerTest extends TestCase
 
         $params = array_merge($defaults, $overrides);
         $client = $this->getTestClient($this->salesChannelContext);
-
         $client->request('GET', '/findologic?' . http_build_query($params));
 
         return $client->getResponse();
@@ -179,5 +180,52 @@ class ExportControllerTest extends TestCase
         $parsed = json_decode($composerJsonContents, true);
 
         return ltrim($parsed['version'], 'v');
+    }
+
+    public function testCorrectTranslatedProductIsExported(): void
+    {
+        $salesChannelService = $this->getContainer()->get(SalesChannelService::class);
+        $product = $this->createVisibleTestProduct();
+
+        $anotherShopkey = '1BCDABCDABCDABCDABCDABCDABCDABC1';
+        $this->enableFindologicPlugin($this->getContainer(), $anotherShopkey, $this->salesChannelContext);
+        $this->salesChannelContext = $salesChannelService->getSalesChannelContext(
+            $this->salesChannelContext,
+            $anotherShopkey
+        );
+        $response = $this->sendExportRequest(['productId' => $product->getId(), 'shopkey' => $anotherShopkey]);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
+
+        $parsedResponse = new SimpleXMLElement($response->getContent());
+
+        $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
+        $this->assertSame('FINDOLOGIC Product', $parsedResponse->items->item->names->name->__toString());
+
+        // Reset it here otherwise it will fetch the same service instance from the container
+        // @see \FINDOLOGIC\FinSearch\Export\ProductService::getInstance
+        $this->getContainer()->set('fin_search.product_service', null);
+
+        $salesChannelContext = $this->buildSalesChannelContext(
+            Defaults::SALES_CHANNEL,
+            'http://test.abc',
+            null,
+            $this->getDeDeLanguageId()
+        );
+        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $salesChannelContext);
+        $this->salesChannelContext = $salesChannelService->getSalesChannelContext(
+            $salesChannelContext,
+            self::VALID_SHOPKEY
+        );
+        $response = $this->sendExportRequest(['productId' => $product->getId()]);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
+
+        $parsedResponse = new SimpleXMLElement($response->getContent());
+
+        $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
+        $this->assertSame('FINDOLOGIC Product DE', $parsedResponse->items->item->names->name->__toString());
     }
 }

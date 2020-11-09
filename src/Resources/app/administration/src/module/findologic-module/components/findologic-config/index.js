@@ -182,11 +182,11 @@ Component.register('findologic-config', {
     },
 
     showAPIConfig () {
-      return this.actualConfigData['FinSearch.config.integrationType'] === undefined || this.actualConfigData['FinSearch.config.integrationType'] === 'API';
+      return this.integrationType === undefined || this.integrationType === 'API';
     },
 
     showDIConfig () {
-      return this.actualConfigData['FinSearch.config.integrationType'] === undefined || this.actualConfigData['FinSearch.config.integrationType'] === 'Direct Integration';
+      return this.integrationType === undefined || this.integrationType === 'Direct Integration';
     },
 
     filterPositionOptions () {
@@ -199,6 +199,10 @@ Component.register('findologic-config', {
           label: this.$tc('findologic.settingForm.config.filterPosition.left.label'),
           value: 'left'
         }];
+    },
+
+    integrationType() {
+      return this.actualConfigData['FinSearch.config.integrationType'];
     },
 
     salesChannelRepository () {

@@ -9,6 +9,7 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\FinSearch\Exceptions\Search\UnknownCategoryException;
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
@@ -82,6 +83,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         NavigationRequestFactory $navigationRequestFactory,
         SearchRequestFactory $searchRequestFactory,
         SystemConfigService $systemConfigService,
+        FindologicConfigService $findologicConfigService,
         ServiceConfigResource $serviceConfigResource,
         GenericPageLoader $genericPageLoader,
         ContainerInterface $container,
@@ -91,7 +93,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     ) {
         // TODO: Check how we can improve the high amount of constructor arguments.
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
+        $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
         $this->apiConfig = $apiConfig ?? new ApiConfig();
         $this->apiConfig->setHttpClient(new Client());
         $apiClient = $apiClient ?? new ApiClient($this->apiConfig);
@@ -264,7 +266,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     private function allowRequest(ProductListingCriteriaEvent $event): bool
     {
         if (!$this->config->isInitialized()) {
-            $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
+            $this->config->initializeBySalesChannel($event->getSalesChannelContext());
         }
 
         return Utils::shouldHandleRequest(

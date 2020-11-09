@@ -8,8 +8,10 @@ use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 
 class SalesChannelServiceTest extends TestCase
@@ -25,10 +27,10 @@ class SalesChannelServiceTest extends TestCase
         $salesChannelService = $this->getSalesChannelService();
         $currentSalesChannel = $this->buildSalesChannelContext();
 
-        $this->enableFindologicPlugin($this->getContainer(), $configShopkey);
+        $this->enableFindologicPlugin($this->getContainer(), $configShopkey, $currentSalesChannel);
         $salesChannel = $salesChannelService->getSalesChannelContext($currentSalesChannel, $configShopkey);
 
-        $this->assertSame($currentSalesChannel, $salesChannel);
+        $this->assertEquals($currentSalesChannel, $salesChannel);
     }
 
     public function testNothingConfiguredForGivenShopkeyReturnsNull(): void
@@ -43,11 +45,32 @@ class SalesChannelServiceTest extends TestCase
     private function getSalesChannelService(): SalesChannelService
     {
         /** @var EntityRepository $configRepository */
-        $configRepository = $this->getContainer()->get('system_config.repository');
+        $configRepository = $this->getContainer()->get('finsearch_config.repository');
 
         return new SalesChannelService(
             $configRepository,
             $this->getContainer()->get(SalesChannelContextFactory::class)
         );
+    }
+
+    public function testCorrectLanguageIdIsConfiguredInSalesChannelContext(): void
+    {
+        $languageId = Uuid::randomHex();
+        $this->createLanguage($languageId);
+
+        $configShopkey = '12341234123412341234123412341234';
+
+        $salesChannelService = $this->getSalesChannelService();
+        $currentSalesChannel = $this->buildSalesChannelContext(
+            Defaults::SALES_CHANNEL,
+            'http://test.de',
+            null,
+            $languageId
+        );
+
+        $this->enableFindologicPlugin($this->getContainer(), $configShopkey, $currentSalesChannel);
+        $salesChannel = $salesChannelService->getSalesChannelContext($currentSalesChannel, $configShopkey);
+
+        $this->assertSame($languageId, $salesChannel->getSalesChannel()->getLanguageId());
     }
 }

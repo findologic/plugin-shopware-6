@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 trait PluginConfigHelper
@@ -17,23 +17,25 @@ trait PluginConfigHelper
         ?string $shopkey = null,
         ?SalesChannelContext $salesChannelContext = null
     ): void {
-        /** @var SystemConfigService $configService */
-        $configService = $container->get(SystemConfigService::class);
+        /** @var FindologicConfigService $configService */
+        $configService = $container->get(FindologicConfigService::class);
 
         $this->setConfig($configService, $salesChannelContext, 'active', true);
         $this->setConfig($configService, $salesChannelContext, 'shopkey', $shopkey);
     }
 
     public function setConfig(
-        SystemConfigService $configService,
-        ?SalesChannelContext $salesChannelContext,
+        FindologicConfigService $configService,
+        SalesChannelContext $salesChannelContext,
         string $key,
         $value
     ): void {
+        $salesChannel = $salesChannelContext->getSalesChannel();
         $configService->set(
             self::$PLUGIN_CONFIG_PREFIX . $key,
             $value,
-            $salesChannelContext ? $salesChannelContext->getSalesChannel()->getId() : null
+            $salesChannel->getId(),
+            $salesChannel->getLanguageId()
         );
     }
 }

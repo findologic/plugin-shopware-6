@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Utils;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
@@ -324,8 +325,8 @@ class UtilsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Config needs to be initialized first!');
 
-        /** @var SystemConfigService $systemConfigService */
-        $systemConfigService = $this->getContainer()->get(SystemConfigService::class);
+        /** @var FindologicConfigService $systemConfigService */
+        $systemConfigService = $this->getContainer()->get(FindologicConfigService::class);
 
         $nonInitializedConfig = new Config(
             $systemConfigService,
