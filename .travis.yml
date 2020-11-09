@@ -6,6 +6,7 @@ php:
 
 stages:
   - lint
+  - "Shopware 6.1 (PHP 7.3)"
 
 services:
   - mysql
@@ -57,12 +58,12 @@ addons:
 
 jobs:
   include:
+    - stage: "Shopware 6.1 (PHP 7.3)"
+      php: "7.3"
+      before_install: composer self-update 1.10.17
+      env:
+        - SHOPWARE_VERSION="6.1"
     - stage: lint
       before_install: skip
       before_script: skip
       script: composer lint
-    - stage: "Shopware 6.1 (PHP 7.3)"
-      php: "7.3"
-      before_install: sudo composer self-update 1.10.17
-      env:
-        - SHOPWARE_VERSION="6.1"
