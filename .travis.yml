@@ -23,6 +23,7 @@ env:
     - PLUGIN_NAME=FinSearch
     - SHOPWARE_DIR=${HOME}/shopware
     - PLUGIN_DIR=${HOME}/shopware/custom/plugins
+sudo: true
 
 cache:
   directories:
@@ -62,5 +63,6 @@ jobs:
       script: composer lint
     - stage: "Shopware 6.1 (PHP 7.3)"
       php: "7.3"
+      before_install: sudo composer self-update 1.10.17
       env:
         - SHOPWARE_VERSION="6.1"
