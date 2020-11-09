@@ -122,6 +122,9 @@ class DynamicProductGroupService
     {
         $cacheItem = $this->getCacheItem();
         $products = $this->parseProductGroups();
+        if (Utils::isEmpty($products)) {
+            return;
+        }
         $cacheItem->set(serialize($products));
         $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
         $this->cache->save($cacheItem);
@@ -144,7 +147,7 @@ class DynamicProductGroupService
         return false;
     }
 
-    private function parseProductGroups(): ?array
+    private function parseProductGroups(): array
     {
         $criteria = $this->buildCriteria();
 
@@ -152,7 +155,7 @@ class DynamicProductGroupService
         $categories = $this->categoryRepository->search($criteria, $this->context)->getEntities();
 
         if ($categories === null || empty($categories->getElements())) {
-            return null;
+            return [];
         }
 
         $products = [];
@@ -184,16 +187,16 @@ class DynamicProductGroupService
      */
     public function getCategories(string $productId): array
     {
-        $products = [];
+        $categories = [];
         $cacheItem = $this->getCacheItem();
-        if ($cacheItem->get()) {
-            $products = unserialize($cacheItem->get());
+        if ($cacheItem->isHit()) {
+            $categories = unserialize($cacheItem->get());
         }
-        if (!Utils::isEmpty($products) && isset($products[$productId])) {
-            return $products[$productId];
+        if (!Utils::isEmpty($categories) && isset($categories[$productId])) {
+            return $categories[$productId];
         }
 
-        return $products;
+        return [];
     }
 
     private function buildCriteria(): Criteria
