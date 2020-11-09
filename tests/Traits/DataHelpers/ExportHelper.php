@@ -6,6 +6,8 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Defaults;
@@ -135,5 +137,21 @@ trait ExportHelper
         $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
 
         return $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+    }
+
+    public function getDefaultDynamicGroupCacheMock(): CacheItemPoolInterface
+    {
+        /** @var MockObject|CacheItemPoolInterface $cache */
+        $cache = $this->getMockBuilder(CacheItemPoolInterface::class)->disableOriginalConstructor()->getMock();
+        /** @var CacheItemInterface|MockObject $cacheItemMock */
+        $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
+        $cacheItemMock->method('set');
+        $cacheItemMock->method('get')->willReturn(null);
+        $cacheItemMock->method('expiresAfter')->with(60 * 11);
+
+        $cache->method('save')->with($cacheItemMock);
+        $cache->method('getItem')->willReturn($cacheItemMock);
+
+        return $cache;
     }
 }

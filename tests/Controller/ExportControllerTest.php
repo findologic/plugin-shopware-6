@@ -18,6 +18,7 @@ use InvalidArgumentException;
 use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
@@ -87,7 +88,7 @@ class ExportControllerTest extends TestCase
 
         $this->router = $this->getContainer()->get('router');
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
-        $this->cache = $this->getMockBuilder(CacheItemPoolInterface::class)->disableOriginalConstructor()->getMock();
+        $this->cache = $this->getDefaultDynamicGroupCacheMock();
         $this->exportController = new ExportController(
             $this->loggerMock,
             $this->router,
