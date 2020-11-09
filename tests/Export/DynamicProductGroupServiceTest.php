@@ -13,11 +13,14 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+
+use function serialize;
 
 class DynamicProductGroupServiceTest extends TestCase
 {
@@ -55,11 +58,6 @@ class DynamicProductGroupServiceTest extends TestCase
      * @var int
      */
     private $start;
-
-    /**
-     * @var string
-     */
-    private $productId;
 
     protected function setUp(): void
     {
@@ -123,31 +121,68 @@ class DynamicProductGroupServiceTest extends TestCase
 
     public function testCategoriesAreCached()
     {
-        $this->createTestProductStreams();
         $salesChannelContext = $this->getDefaultSalesChannelContextMock();
         $salesChannel = $salesChannelContext->getSalesChannel();
-
+        $productId = Uuid::randomHex();
+        $products = [];
+        $products[$productId] = [new CategoryEntity(), new CategoryEntity()];
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cacheItemMock->expects($this->once())->method('set');
+        $cacheItemMock->expects($this->never())->method('set');
+        $cacheItemMock->expects($this->exactly(2))
+            ->method('get')
+            ->willReturn(serialize($products));
+        $cacheItemMock->expects($this->once())
+            ->method('expiresAfter')
+            ->with(60 * 11);
+        $cacheItemMock->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
         $this->cache->expects($this->once())->method('save')->with($cacheItemMock);
-        $this->cache->expects($this->once())
+        $this->cache->expects($this->exactly(2))
             ->method('getItem')
             ->with($this->cacheKey)
             ->willReturn($cacheItemMock);
 
         $dynamicService = $this->getDynamicProductGroupService();
         $dynamicService->setSalesChannel($salesChannel);
-
-        // Ensure that the categories are empty at this point.
-        $this->assertEmpty($dynamicService->getCategories($this->productId));
-
-        $dynamicService->warmUp();
-
-        // After warmup, the categories should not be empty.
-        $categories = $dynamicService->getCategories($this->productId);
+        if (!$dynamicService->isWarmedUp()) {
+            $dynamicService->warmUp();
+        }
+        $categories = $dynamicService->getCategories($productId);
         $this->assertNotEmpty($categories);
         $this->assertCount(2, $categories);
+    }
+
+    public function testCategoriesAreNotCached()
+    {
+        $salesChannelContext = $this->getDefaultSalesChannelContextMock();
+        $salesChannel = $salesChannelContext->getSalesChannel();
+        $productId = Uuid::randomHex();
+
+        /** @var CacheItemInterface|MockObject $cacheItemMock */
+        $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
+        $cacheItemMock->expects($this->once())->method('set');
+        $cacheItemMock->expects($this->once())
+            ->method('get')
+            ->willReturn(null);
+        $cacheItemMock->expects($this->once())
+            ->method('expiresAfter')
+            ->with(60 * 11);
+
+        $this->cache->expects($this->once())->method('save')->with($cacheItemMock);
+        $this->cache->expects($this->exactly(3))
+            ->method('getItem')
+            ->with($this->cacheKey)
+            ->willReturn($cacheItemMock);
+
+        $dynamicService = $this->getDynamicProductGroupService();
+        $dynamicService->setSalesChannel($salesChannel);
+        if (!$dynamicService->isWarmedUp()) {
+            $dynamicService->warmUp();
+        }
+        $categories = $dynamicService->getCategories($productId);
+        $this->assertEmpty($categories);
     }
 
     private function createTestProductStreams(): void

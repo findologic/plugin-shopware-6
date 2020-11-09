@@ -465,7 +465,7 @@ class ExportControllerTest extends TestCase
         if (Utils::versionLowerThan('6.3.1.0')) {
             $invokeCount = $this->once();
         } else {
-            $invokeCount = $this->exactly(3);
+            $invokeCount = $this->exactly(2);
         }
         $containerMock->expects($invokeCount)->method('set');
 
@@ -646,7 +646,7 @@ class ExportControllerTest extends TestCase
         if (Utils::versionLowerThan('6.3.1.0')) {
             $invokeCount = $this->once();
         } else {
-            $invokeCount = $this->exactly(3);
+            $invokeCount = $this->exactly(2);
         }
         $containerMock->expects($invokeCount)->method('set');
 

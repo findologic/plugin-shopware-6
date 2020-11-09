@@ -129,7 +129,6 @@ class ExportController extends AbstractController implements EventSubscriberInte
             if (!$dynamicProductGroupService->isWarmedUp()) {
                 $dynamicProductGroupService->warmUp();
             }
-            $this->container->set('fin_search.dynamic_product_group', $dynamicProductGroupService);
         }
         $items = $this->buildXmlProducts($productEntities, $shopkey, $customerGroups);
         $xmlExporter = Exporter::create(Exporter::TYPE_XML);

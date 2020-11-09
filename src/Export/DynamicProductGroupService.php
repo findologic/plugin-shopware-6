@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Cache\InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Category\CategoryEntity;
@@ -18,6 +18,9 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
+
+use function serialize;
+use function unserialize;
 
 class DynamicProductGroupService
 {
@@ -64,8 +67,6 @@ class DynamicProductGroupService
      * @var SalesChannelEntity
      */
     private $salesChannel;
-
-    private $products;
 
     /**
      * @var EntityRepositoryInterface
@@ -119,8 +120,84 @@ class DynamicProductGroupService
 
     public function warmUp(): void
     {
-        $id = $this->getCacheId();
-        $cacheItem = $this->cache->getItem($id);
+        $cacheItem = $this->getCacheItem();
+        $products = $this->parseProductGroups();
+        $cacheItem->set(serialize($products));
+        $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+        $this->cache->save($cacheItem);
+    }
+
+    public function isWarmedUp(): bool
+    {
+        if ($this->start === 0) {
+            return false;
+        }
+
+        $cacheItem = $this->getCacheItem();
+        if ($cacheItem && $cacheItem->isHit()) {
+            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+            $this->cache->save($cacheItem);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function parseProductGroups(): ?array
+    {
+        $criteria = $this->buildCriteria();
+
+        /** @var CategoryCollection $categories */
+        $categories = $this->categoryRepository->search($criteria, $this->context)->getEntities();
+
+        if ($categories === null || empty($categories->getElements())) {
+            return null;
+        }
+
+        $products = [];
+        foreach ($categories->getElements() as $categoryEntity) {
+            $productStream = $categoryEntity->getProductStream();
+
+            if (!$productStream) {
+                continue;
+            }
+
+            $filters = $this->productStreamBuilder->buildFilters(
+                $productStream->getId(),
+                $this->context
+            );
+
+            $criteria = new Criteria();
+            $criteria->addFilter(...$filters);
+            $productIds = $this->productRepository->searchIds($criteria, $this->context)->getIds();
+            foreach ($productIds as $productId) {
+                $products[$productId][] = $categoryEntity;
+            }
+        }
+
+        return $products;
+    }
+
+    /**
+     * @return CategoryEntity[]
+     */
+    public function getCategories(string $productId): array
+    {
+        $products = [];
+        $cacheItem = $this->getCacheItem();
+        if ($cacheItem->get()) {
+            $products = unserialize($cacheItem->get());
+        }
+        if (!Utils::isEmpty($products) && isset($products[$productId])) {
+            return $products[$productId];
+        }
+
+        return $products;
+    }
+
+    private function buildCriteria(): Criteria
+    {
         $mainCategoryId = $this->salesChannel->getNavigationCategoryId();
 
         $criteria = new Criteria();
@@ -134,78 +211,13 @@ class DynamicProductGroupService
             )
         );
 
-        /** @var CategoryCollection $categories */
-        $categories = $this->categoryRepository->search($criteria, $this->context)->getEntities();
-        $this->parseProductGroups($categories);
-        if (!Utils::isEmpty($this->products)) {
-            $cacheItem->set($this->products);
-            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-            $this->cache->save($cacheItem);
-        }
+        return $criteria;
     }
 
-    public function isWarmedUp(): bool
+    private function getCacheItem(): CacheItemInterface
     {
-        $id = $this->getCacheId();
+        $id = sprintf('%s_%s', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
 
-        try {
-            $cacheItem = $this->cache->getItem($id);
-            if ($cacheItem && $this->start > 0 && $cacheItem->isHit()) {
-                $this->products = $cacheItem->get();
-                // Always renew the time once the export is called, even if the data is the same.
-                $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-                $this->cache->save($cacheItem);
-
-                return true;
-            }
-        } catch (InvalidArgumentException $e) {
-        }
-
-        return false;
-    }
-
-    private function parseProductGroups(?CategoryCollection $categories): void
-    {
-        if ($categories === null) {
-            return;
-        }
-
-        $products = [];
-        foreach ($categories->getElements() as $categoryEntity) {
-            $productStream = $categoryEntity->getProductStream();
-
-            if ($productStream) {
-                $filters = $this->productStreamBuilder->buildFilters(
-                    $productStream->getId(),
-                    $this->context
-                );
-
-                $criteria = new Criteria();
-                $criteria->addFilter(...$filters);
-                $productIds = $this->productRepository->searchIds($criteria, $this->context)->getIds();
-                foreach ($productIds as $productId) {
-                    $products[$productId][] = $categoryEntity;
-                }
-            }
-        }
-
-        $this->products = $products;
-    }
-
-    private function getCacheId(): string
-    {
-        return sprintf('%s_%s', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
-    }
-
-    /**
-     * @return CategoryEntity[]
-     */
-    public function getCategories(string $productId): array
-    {
-        if (!Utils::isEmpty($this->products) && isset($this->products[$productId])) {
-            return $this->products[$productId];
-        }
-
-        return [];
+        return $this->cache->getItem($id);
     }
 }
