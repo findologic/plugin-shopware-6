@@ -1044,6 +1044,46 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
     }
 
+    public function testEmptyCategoryNameShouldStillExportCategory()
+    {
+        $mainCatId = $this->getContainer()->get('category.repository')
+            ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
+
+        $categoryId = Uuid::randomHex();
+        $productEntity = $this->createTestProduct([
+            'categories' => [
+                [
+                    'parentId' => $mainCatId,
+                    'id' => $categoryId,
+                    'name' => ' ',
+                    'seoUrls' => [
+                        [
+                            'pathInfo' => 'navigation/' . $categoryId,
+                            'seoPathInfo' => 'Findologic-Category',
+                            'isCanonical' => true,
+                            'routeName' => 'frontend.navigation.page',
+                        ]
+                    ],
+                ],
+            ],
+        ]);
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertCount(6, $findologicProduct->getAttributes());
+        $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
+        $this->assertCount(2, $findologicProduct->getAttributes()[0]->getValues());
+    }
+
     private function translateBooleanValue(bool $value): string
     {
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';

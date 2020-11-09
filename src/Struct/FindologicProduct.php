@@ -793,7 +793,7 @@ class FindologicProduct extends Struct
 
         /** @var CategoryEntity $categoryEntity */
         foreach ($this->product->getCategories() as $categoryEntity) {
-            if (!$categoryEntity->getActive() || Utils::isEmpty($categoryEntity->getName())) {
+            if (!$categoryEntity->getActive()) {
                 continue;
             }
 
