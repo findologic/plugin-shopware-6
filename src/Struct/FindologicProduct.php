@@ -464,6 +464,12 @@ class FindologicProduct extends Struct
         return $this->salesFrequency;
     }
 
+    public function hasSalesFrequency(): bool
+    {
+        // In case a product has no sales, it's sales frequency would still be 0.
+        return true;
+    }
+
     protected function setSalesFrequency(): void
     {
         $criteria = new Criteria();

@@ -20,6 +20,7 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesExcepti
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductInvalidException;
+use FINDOLOGIC\FinSearch\Export\Definitions\XmlFields;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -140,23 +141,17 @@ class XmlProduct
      */
     private function setDescription(?string $description): void
     {
-        if ($this->findologicProduct->hasDescription()) {
-            $this->xmlItem->addDescription($description);
-        }
+        $this->xmlItem->addDescription($description);
     }
 
     private function setDateAdded(?DateAdded $dateAdded): void
     {
-        if ($this->findologicProduct->hasDateAdded()) {
-            $this->xmlItem->setDateAdded($dateAdded);
-        }
+        $this->xmlItem->setDateAdded($dateAdded);
     }
 
     private function setUrl(?string $url): void
     {
-        if ($this->findologicProduct->hasUrl()) {
-            $this->xmlItem->addUrl($url);
-        }
+        $this->xmlItem->addUrl($url);
     }
 
     /**
@@ -164,9 +159,7 @@ class XmlProduct
      */
     private function setKeywords(array $keywords): void
     {
-        if ($this->findologicProduct->hasKeywords()) {
-            $this->xmlItem->setAllKeywords($keywords);
-        }
+        $this->xmlItem->setAllKeywords($keywords);
     }
 
     /**
@@ -174,9 +167,7 @@ class XmlProduct
      */
     private function setImages(array $images): void
     {
-        if ($this->findologicProduct->hasImages()) {
-            $this->xmlItem->setAllImages($images);
-        }
+        $this->xmlItem->setAllImages($images);
     }
 
     private function setSalesFrequency(int $salesFrequency): void
@@ -194,9 +185,7 @@ class XmlProduct
 
     private function setOrdernumbers(array $ordernumbers): void
     {
-        if ($this->findologicProduct->hasOrdernumbers()) {
-            $this->xmlItem->setAllOrdernumbers($ordernumbers);
-        }
+        $this->xmlItem->setAllOrdernumbers($ordernumbers);
     }
 
     /**
@@ -204,10 +193,8 @@ class XmlProduct
      */
     private function setProperties(array $properties): void
     {
-        if ($this->findologicProduct->hasProperties()) {
-            foreach ($properties as $property) {
-                $this->xmlItem->addProperty($property);
-            }
+        foreach ($properties as $property) {
+            $this->xmlItem->addProperty($property);
         }
     }
 
@@ -234,20 +221,7 @@ class XmlProduct
 
         $this->assertRequiredFieldsAreSet();
 
-        $this->setName($this->findologicProduct->getName());
-        $this->setAttributes($this->findologicProduct->getAttributes());
-        $this->setPrices($this->findologicProduct->getPrices());
-        $this->setDescription($this->findologicProduct->getDescription());
-        $this->setDateAdded($this->findologicProduct->getDateAdded());
-        $this->setUrl($this->findologicProduct->getUrl());
-        $this->setKeywords($this->findologicProduct->getKeywords());
-        $this->setImages($this->findologicProduct->getImages());
-        $this->setSalesFrequency($this->findologicProduct->getSalesFrequency());
-        $this->setUserGroups(
-            $this->findologicProduct->hasUserGroups() ? $this->findologicProduct->getUserGroups() : []
-        );
-        $this->setOrdernumbers($this->findologicProduct->getOrdernumbers());
-        $this->setProperties($this->findologicProduct->getProperties());
+        $this->setXmlItemFields();
     }
 
     private function assertRequiredFieldsAreSet(): void
@@ -338,5 +312,19 @@ class XmlProduct
         }
 
         $logger->warning($message, ['exception' => $e]);
+    }
+
+    private function setXmlItemFields(): void
+    {
+        foreach (XmlFields::FIELDS as $requiredField) {
+            $field = ucfirst($requiredField);
+            $getter = 'get' . $field;
+            $setter = 'set' . $field;
+            $hasField = 'has' . $field;
+
+            if ($this->findologicProduct->{$hasField}()) {
+                $this->{$setter}($this->findologicProduct->{$getter}());
+            }
+        }
     }
 }

@@ -77,6 +77,15 @@ class XmlExportTest extends TestCase
         );
     }
 
+    public function testKeywordsAreNotRequired(): void
+    {
+        $product = $this->createVisibleTestProduct(['tags' => []]);
+        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+
+        $this->assertCount(1, $items);
+        $this->assertSame($product->getId(), $items[0]->getId());
+    }
+
     protected function getExport(): XmlExport
     {
         /** @var Router $router */

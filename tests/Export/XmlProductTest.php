@@ -68,11 +68,11 @@ class XmlProductTest extends TestCase
             [],
             new XMLItem('123')
         ])->getMock();
-        $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
+        $findologicProductMock->expects($this->exactly(2))->method('hasName')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getName')->willReturn('some name');
-        $findologicProductMock->expects($this->once())->method('hasAttributes')->willReturn(true);
+        $findologicProductMock->expects($this->exactly(2))->method('hasAttributes')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getAttributes')->willReturn([]);
-        $findologicProductMock->expects($this->once())->method('hasPrices')->willReturn(true);
+        $findologicProductMock->expects($this->exactly(2))->method('hasPrices')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getPrices')->willReturn([]);
         $findologicProductMock->expects($this->once())->method('hasDescription')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getDescription')->willReturn('some description');
@@ -86,6 +86,7 @@ class XmlProductTest extends TestCase
         $findologicProductMock->expects($this->once())->method('getKeywords')->willReturn([]);
         $findologicProductMock->expects($this->once())->method('hasImages')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getImages')->willReturn([]);
+        $findologicProductMock->expects($this->once())->method('hasSalesFrequency')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getSalesFrequency')->willReturn(1);
         $findologicProductMock->expects($this->once())->method('hasUserGroups')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getUserGroups')->willReturn([]);
@@ -159,15 +160,34 @@ class XmlProductTest extends TestCase
             ->with(FindologicProductFactory::class)
             ->willReturn($findologicFactoryMock);
 
-        $xmlProduct = new XmlProduct(
+        $xmlProduct = $this->getDefaultXmlProduct($productEntity, $containerMock);
+        $xmlProduct->buildXmlItem();
+    }
+
+    public function testKeywordsAreNotRequired(): void
+    {
+        $product = $this->createVisibleTestProduct(['tags' => []]);
+
+        $xmlProduct = $this->getDefaultXmlProduct($product);
+        $xmlProduct->buildXmlItem();
+
+        $xmlItem = $xmlProduct->getXmlItem();
+
+        $this->assertNotNull($xmlItem);
+        $this->assertSame($product->getId(), $xmlItem->getId());
+    }
+
+    private function getDefaultXmlProduct(
+        ProductEntity $productEntity,
+        ?ContainerInterface $container = null
+    ): XmlProduct {
+        return new XmlProduct(
             $productEntity,
             $this->getContainer()->get('router'),
-            $containerMock,
+            $container ?? $this->getContainer(),
             $this->salesChannelContext->getContext(),
             $this->shopkey,
             []
         );
-
-        $xmlProduct->buildXmlItem();
     }
 }
