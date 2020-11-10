@@ -1050,6 +1050,12 @@ class FindologicProductTest extends TestCase
             ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
 
         $categoryId = Uuid::randomHex();
+        $pathInfo = 'navigation/' . $categoryId;
+        $seoPathInfo = 'Findologic-Category';
+
+        $expectedFirstCatUrl = '/' . $seoPathInfo;
+        $expectedSecondCatUrl = '/' . $pathInfo;
+
         $productEntity = $this->createTestProduct([
             'categories' => [
                 [
@@ -1058,8 +1064,8 @@ class FindologicProductTest extends TestCase
                     'name' => ' ',
                     'seoUrls' => [
                         [
-                            'pathInfo' => 'navigation/' . $categoryId,
-                            'seoPathInfo' => 'Findologic-Category',
+                            'pathInfo' => $pathInfo,
+                            'seoPathInfo' => $seoPathInfo,
                             'isCanonical' => true,
                             'routeName' => 'frontend.navigation.page',
                         ]
@@ -1081,7 +1087,12 @@ class FindologicProductTest extends TestCase
 
         $this->assertCount(6, $findologicProduct->getAttributes());
         $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
-        $this->assertCount(2, $findologicProduct->getAttributes()[0]->getValues());
+
+        $catUrls = $findologicProduct->getAttributes()[0]->getValues();
+        $this->assertCount(2, $catUrls);
+
+        $this->assertSame($expectedFirstCatUrl, $catUrls[0]);
+        $this->assertSame($expectedSecondCatUrl, $catUrls[1]);
     }
 
     private function translateBooleanValue(bool $value): string
