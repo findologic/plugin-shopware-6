@@ -1044,6 +1044,57 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
     }
 
+    public function testEmptyCategoryNameShouldStillExportCategory()
+    {
+        $mainCatId = $this->getContainer()->get('category.repository')
+            ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
+
+        $categoryId = Uuid::randomHex();
+        $pathInfo = 'navigation/' . $categoryId;
+        $seoPathInfo = 'Findologic-Category';
+
+        $expectedFirstCatUrl = '/' . $seoPathInfo;
+        $expectedSecondCatUrl = '/' . $pathInfo;
+
+        $productEntity = $this->createTestProduct([
+            'categories' => [
+                [
+                    'parentId' => $mainCatId,
+                    'id' => $categoryId,
+                    'name' => ' ',
+                    'seoUrls' => [
+                        [
+                            'pathInfo' => $pathInfo,
+                            'seoPathInfo' => $seoPathInfo,
+                            'isCanonical' => true,
+                            'routeName' => 'frontend.navigation.page',
+                        ]
+                    ],
+                ],
+            ],
+        ]);
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertCount(6, $findologicProduct->getAttributes());
+        $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
+
+        $catUrls = $findologicProduct->getAttributes()[0]->getValues();
+        $this->assertCount(2, $catUrls);
+
+        $this->assertSame($expectedFirstCatUrl, $catUrls[0]);
+        $this->assertSame($expectedSecondCatUrl, $catUrls[1]);
+    }
+
     private function translateBooleanValue(bool $value): string
     {
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
