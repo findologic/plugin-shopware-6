@@ -24,6 +24,7 @@ use FINDOLOGIC\FinSearch\Export\Definitions\XmlFields;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
@@ -316,15 +317,44 @@ class XmlProduct
 
     private function setXmlItemFields(): void
     {
-        foreach (XmlFields::FIELDS as $requiredField) {
+        foreach (XmlFields::KEYS as $requiredField) {
             $field = ucfirst($requiredField);
             $getter = 'get' . $field;
             $setter = 'set' . $field;
             $hasField = 'has' . $field;
 
+            $this->assertItemFieldMethodsExist($getter, $setter, $hasField);
+
             if ($this->findologicProduct->{$hasField}()) {
                 $this->{$setter}($this->findologicProduct->{$getter}());
             }
+        }
+    }
+
+    private function assertItemFieldMethodsExist(string $getter, string $setter, string $hasField): void
+    {
+        if (!method_exists($this->findologicProduct, $hasField)) {
+            throw new RuntimeException(sprintf(
+                'Method %s::%s does not exist.',
+                get_class($this->findologicProduct),
+                $hasField
+            ));
+        }
+
+        if (!method_exists($this, $setter)) {
+            throw new RuntimeException(sprintf(
+                'Method %s::%s does not exist.',
+                get_class($this),
+                $setter
+            ));
+        }
+
+        if (!method_exists($this->findologicProduct, $getter)) {
+            throw new RuntimeException(sprintf(
+                'Method %s::%s does not exist.',
+                get_class($this->findologicProduct),
+                $getter
+            ));
         }
     }
 }

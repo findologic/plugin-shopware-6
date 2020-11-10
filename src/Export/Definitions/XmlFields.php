@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Export\Definitions;
 
 class XmlFields
 {
-    public const FIELDS = [
+    public const KEYS = [
         'name',
         'attributes',
         'prices',
