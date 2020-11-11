@@ -15,6 +15,7 @@ use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
@@ -204,7 +205,7 @@ class DynamicProductGroupService
         $mainCategoryId = $this->salesChannel->getNavigationCategoryId();
 
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('parentId', $mainCategoryId));
+        $criteria->addFilter(new ContainsFilter('path', $mainCategoryId));
         $criteria->addAssociation('seoUrls');
         $criteria->addAssociation('productStream');
         $criteria->addFilter(

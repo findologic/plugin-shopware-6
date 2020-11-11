@@ -21,7 +21,6 @@ use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -1033,7 +1032,7 @@ class FindologicProduct extends Struct
 
         /** @var CategoryEntity $categoryEntity */
         foreach ($categoryCollection as $categoryEntity) {
-            if (!$categoryEntity->getActive() || Utils::isEmpty($categoryEntity->getName())) {
+            if (!$categoryEntity->getActive()) {
                 continue;
             }
 
