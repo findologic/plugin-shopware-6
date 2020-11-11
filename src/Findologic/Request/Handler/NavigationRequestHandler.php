@@ -125,6 +125,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         /** @var NavigationRequest $navigationRequest */
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $categoryPath);
+        $this->setUserGroup($salesChannelContext, $navigationRequest);
         $this->setPaginationParams($event, $navigationRequest, $limit);
         $this->addSorting($navigationRequest, $event->getCriteria());
 
