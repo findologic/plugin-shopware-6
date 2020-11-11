@@ -175,13 +175,14 @@ abstract class SearchNavigationRequestHandler
         SalesChannelContext $salesChannelContext,
         SearchNavigationRequest $request
     ): void {
-        if (!$salesChannelContext->getCustomer() || !$salesChannelContext->getCustomer()->getGroupId()) {
+        $group = $salesChannelContext->getCurrentCustomerGroup() ?? $salesChannelContext->getFallbackCustomerGroup();
+        if (!$group || !$group->getId()) {
             return;
         }
 
         $usergroup = Utils::calculateUserGroupHash(
             $this->apiConfig->getServiceId(),
-            $salesChannelContext->getCustomer()->getGroupId()
+            $group->getId()
         );
         $request->addUserGroup($usergroup);
     }
