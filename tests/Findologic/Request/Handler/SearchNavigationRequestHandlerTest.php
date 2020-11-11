@@ -96,7 +96,10 @@ class SearchNavigationRequestHandlerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $usergroup = Utils::calculateUserGroupHash(self::VALID_SHOPKEY, $salesChannelContext->getCustomer()->getGroupId());
+        $usergroup = Utils::calculateUserGroupHash(
+            self::VALID_SHOPKEY,
+            $salesChannelContext->getCustomer()->getGroupId()
+        );
         $searchRequestMock->expects($this->once())
             ->method('addUserGroup')
             ->with($usergroup);
@@ -139,7 +142,10 @@ class SearchNavigationRequestHandlerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $usergroup = Utils::calculateUserGroupHash(self::VALID_SHOPKEY, $salesChannelContext->getCustomer()->getGroupId());
+        $usergroup = Utils::calculateUserGroupHash(
+            self::VALID_SHOPKEY,
+            $salesChannelContext->getCustomer()->getGroupId()
+        );
         $navigationRequestMock->expects($this->once())
             ->method('addUserGroup')
             ->with($usergroup);
