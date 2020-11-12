@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Utils;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -315,5 +316,41 @@ class UtilsTest extends TestCase
         $this->assertSame($expectedFindologicActive, $shouldHandleRequest);
         $this->assertSame($expectedFindologicActive, $findologicService->getEnabled());
         $this->assertSame($expectedSmartSuggestActive, $findologicService->getSmartSuggestEnabled());
+    }
+
+    public function categoryProvider(): array
+    {
+        return [
+            'main category' => [
+                'breadCrumbs' => ['Main'],
+                'expectedCategoryPath' => '',
+            ],
+            'one subcategory' => [
+                'breadCrumbs' => ['Main', 'Sub'],
+                'expectedCategoryPath' => 'Sub',
+            ],
+            'two subcategories' => [
+                'breadCrumbs' => ['Main', 'Sub', 'SubOfSub'],
+                'expectedCategoryPath' => 'Sub_SubOfSub',
+            ],
+            'three subcategories' => [
+                'breadCrumbs' => ['Main', 'Sub', 'SubOfSub', 'very deep'],
+                'expectedCategoryPath' => 'Sub_SubOfSub_very deep',
+            ],
+            'three subcategories with redundant spaces' => [
+                'breadCrumbs' => [' Main', ' Sub ', 'SubOfSub  ', '   very deep'],
+                'expectedCategoryPath' => 'Sub_SubOfSub_very deep',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider categoryProvider
+     */
+    public function testCategoryPathIsProperlyBuilt(array $breadCrumbs, string $expectedCategoryPath): void
+    {
+        $categoryPath = Utils::buildCategoryPath($breadCrumbs);
+
+        $this->assertSame($expectedCategoryPath, $categoryPath);
     }
 }

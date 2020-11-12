@@ -17,6 +17,7 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -150,14 +151,6 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             return null;
         }
 
-        return $this->buildCategoryPath($category->getBreadcrumb());
-    }
-
-    private function buildCategoryPath(array $breadCrumbs): string
-    {
-        // Remove the first element as it is the main category.
-        unset($breadCrumbs[0]);
-
-        return implode('_', $breadCrumbs);
+        return Utils::buildCategoryPath($category->getBreadcrumb());
     }
 }

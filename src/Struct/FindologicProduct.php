@@ -827,7 +827,7 @@ class FindologicProduct extends Struct
                 $catUrls[] = $catUrl;
             }
 
-            $categoryPath = $this->buildCategoryPath($categoryEntity);
+            $categoryPath = Utils::buildCategoryPath($categoryEntity->getBreadcrumb());
             if (!Utils::isEmpty($categoryPath)) {
                 $categories[] = $categoryPath;
             }
@@ -948,6 +948,10 @@ class FindologicProduct extends Struct
         return $seoUrls;
     }
 
+    /**
+     * @deprecated will be removed in 2.0. Use Utils::buildCategoryPath() instead.
+     * @see Utils::buildCategoryPath()
+     */
     protected function buildCategoryPath(CategoryEntity $categoryEntity): string
     {
         $breadCrumbs = $categoryEntity->getBreadcrumb();
