@@ -869,7 +869,7 @@ class FindologicProduct extends Struct
         foreach ($variant->getPrice() as $item) {
             foreach ($this->customerGroups as $customerGroup) {
                 $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
-                if (!Utils::isEmpty($userGroupHash)) {
+                if (Utils::isEmpty($userGroupHash)) {
                     continue;
                 }
 
