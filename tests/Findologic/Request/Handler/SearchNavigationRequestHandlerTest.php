@@ -91,22 +91,15 @@ class SearchNavigationRequestHandlerTest extends TestCase
         );
         $event = $this->buildSearchEvent($salesChannelContext);
 
-        /** @var SearchRequest|MockObject $searchRequestMock */
-        $searchRequestMock = $this->getMockBuilder(SearchRequest::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $usergroup = Utils::calculateUserGroupHash(
+        $expectedUserGroup = Utils::calculateUserGroupHash(
             self::VALID_SHOPKEY,
             $salesChannelContext->getCustomer()->getGroupId()
         );
-        $searchRequestMock->expects($this->once())
-            ->method('addUserGroup')
-            ->with($usergroup);
 
+        $searchRequest = new SearchRequest();
         $this->findologicRequestFactoryMock->expects($this->exactly(2))
             ->method('getInstance')
-            ->willReturn($searchRequestMock);
+            ->willReturn($searchRequest);
 
         $this->apiClientMock->expects($this->once())
             ->method('send')
@@ -114,6 +107,8 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
         $requestHandler = $this->buildSearchRequestHandler();
         $requestHandler->handleRequest($event);
+
+        $this->assertSame($expectedUserGroup, $searchRequest->getParams()['usergrouphash'][0]);
     }
 
     public function testAddsUserGroupHashForNavigation(): void
@@ -137,22 +132,15 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
         $event = $this->buildNavigationEvent($salesChannelContext, new Request(['navigationId' => $category->getId()]));
 
-        /** @var NavigationRequest|MockObject $navigationRequestMock */
-        $navigationRequestMock = $this->getMockBuilder(NavigationRequest::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $usergroup = Utils::calculateUserGroupHash(
+        $expectedUserGroup = Utils::calculateUserGroupHash(
             self::VALID_SHOPKEY,
             $salesChannelContext->getCustomer()->getGroupId()
         );
-        $navigationRequestMock->expects($this->once())
-            ->method('addUserGroup')
-            ->with($usergroup);
 
+        $navigationRequest = new NavigationRequest();
         $this->findologicRequestFactoryMock->expects($this->any())
             ->method('getInstance')
-            ->willReturn($navigationRequestMock);
+            ->willReturn($navigationRequest);
 
         $this->apiClientMock->expects($this->once())
             ->method('send')
@@ -166,6 +154,8 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
         $requestHandler = $this->buildNavigationRequestHandler();
         $requestHandler->handleRequest($event);
+
+        $this->assertSame($expectedUserGroup, $navigationRequest->getParams()['usergrouphash'][0]);
     }
 
     private function buildSearchRequestHandler(): SearchRequestHandler

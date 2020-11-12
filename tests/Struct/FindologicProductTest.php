@@ -1139,23 +1139,22 @@ class FindologicProductTest extends TestCase
         );
 
         $customerGroupElements = array_values($customerGroups->getElements());
-        $expectedFirstPriceUserGroup = Utils::calculateUserGroupHash($this->shopkey, $customerGroups->first()->getId());
-        $expectedSecondPriceUserGroup = Utils::calculateUserGroupHash(
+        $standardCustomerGroup = Utils::calculateUserGroupHash($this->shopkey, $customerGroupElements[0]->getId());
+        $netCustomerGroup = Utils::calculateUserGroupHash(
             $this->shopkey,
             $customerGroupElements[1]->getId()
         );
-        $expectedThirdPriceUserGroup = Utils::calculateUserGroupHash(
+        $grossCustomerGroup = Utils::calculateUserGroupHash(
             $this->shopkey,
             $customerGroupElements[2]->getId()
         );
 
         $actualPrices = $findologicProduct->getPrices();
-        // There must be four prices. One for the "Standard Customer Group", one for the "Net Customer Group",
-        // one for the "Gross Customer Group" and lastly, one without Customer Group.
+
         $this->assertCount(4, $actualPrices);
-        $this->assertEquals($this->buildXmlPrice(10, $expectedFirstPriceUserGroup), $actualPrices[0]);
-        $this->assertEquals($this->buildXmlPrice(15, $expectedSecondPriceUserGroup), $actualPrices[1]);
-        $this->assertEquals($this->buildXmlPrice(15, $expectedThirdPriceUserGroup), $actualPrices[2]);
+        $this->assertEquals($this->buildXmlPrice(10, $standardCustomerGroup), $actualPrices[0]);
+        $this->assertEquals($this->buildXmlPrice(15, $netCustomerGroup), $actualPrices[1]);
+        $this->assertEquals($this->buildXmlPrice(15, $grossCustomerGroup), $actualPrices[2]);
         $this->assertEquals($this->buildXmlPrice(15), $actualPrices[3]);
     }
 
