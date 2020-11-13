@@ -84,6 +84,7 @@ jobs:
           ./psh.phar init-test-databases
           ./psh.phar cache
 
+      # TODO: Re-enable the deprecation helper in SW-497.
       - name: Run test suite
         run: |
           cd development/custom/plugins/plugin-shopware-6

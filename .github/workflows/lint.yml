@@ -1,0 +1,46 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: ['7.3']
+        shopware-versions: ['master']
+
+    name: Shopware ${{ matrix.shopware-versions }} lint (PHP ${{ matrix.php-versions }})
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          path: plugin-shopware-6
+
+      - name: Setup PHP with Composer 2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, dom
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Validate dependencies
+        run: |
+          cd plugin-shopware-6
+          composer validate
+
+      - name: Install dependencies
+        run: |
+          cd plugin-shopware-6
+          composer install
+
+      - name: Run code linting
+        run: |
+          cd plugin-shopware-6
+          composer lint
