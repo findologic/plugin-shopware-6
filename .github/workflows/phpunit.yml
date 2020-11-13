@@ -49,7 +49,6 @@ jobs:
         run: |
           cd plugin-shopware-6
           composer validate
-          cd ..
 
       - name: Clone Shopware repository
         uses: actions/checkout@v2
@@ -63,13 +62,11 @@ jobs:
           cp plugin-shopware-6/.github/.psh.yaml.override development
           cd development
           ./psh.phar init
-          cd ..
 
       - name: Install Plugin dependencies
         run: |
           cd plugin-shopware-6
           composer install --no-interaction
-          cd ..
 
       - name: Install Plugin
         run: |

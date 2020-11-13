@@ -13,9 +13,8 @@ jobs:
     strategy:
       matrix:
         php-versions: ['7.3']
-        shopware-versions: ['master']
 
-    name: Shopware ${{ matrix.shopware-versions }} lint (PHP ${{ matrix.php-versions }})
+    name: Code linting (PHP ${{ matrix.php-versions }})
     steps:
 
       - uses: actions/checkout@v2
