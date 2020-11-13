@@ -14,9 +14,6 @@ jobs:
       matrix:
         php-versions: ['7.2', '7.3']
         shopware-versions: ['6.1', '6.2', 'master']
-        exclude:
-          - { php-versions: '7.2', shopware-versions: '6.1'}
-          - { php-versions: '7.3', shopware-versions: '6.1'}
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
     steps:
@@ -30,13 +27,23 @@ jobs:
         with:
           path: plugin-shopware-6
 
-      - name: Setup PHP
+      - name: Setup PHP with Composer 2
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: mbstring, dom
           coverage: xdebug
-          tools: composer
+          tools: composer:v2
+        if: matrix.shopware-versions != 6.1
+
+      - name: Setup PHP with Composer 1
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, dom
+          coverage: xdebug
+          tools: composer:v1
+        if: matrix.shopware-versions == 6.1
 
       - name: Validate dependencies
         run: |
