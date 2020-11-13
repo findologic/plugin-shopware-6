@@ -18,8 +18,6 @@ jobs:
     steps:
 
       - uses: actions/checkout@v2
-        with:
-          path: plugin-shopware-6
 
       - name: Setup PHP with Composer 2
         uses: shivammathur/setup-php@v2
@@ -30,16 +28,10 @@ jobs:
           tools: composer:v2
 
       - name: Validate dependencies
-        run: |
-          cd plugin-shopware-6
-          composer validate
+        run: composer validate
 
       - name: Install dependencies
-        run: |
-          cd plugin-shopware-6
-          composer install
+        run: composer install
 
       - name: Run code linting
-        run: |
-          cd plugin-shopware-6
-          composer lint
+        run: composer lint
