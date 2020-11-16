@@ -18,11 +18,14 @@ use InvalidArgumentException;
 use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
+use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -74,17 +77,24 @@ class ExportControllerTest extends TestCase
      */
     private $eventDispatcherMock;
 
+    /**
+     * @var MockObject|CacheItemPoolInterface
+     */
+    private $cache;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->router = $this->getContainer()->get('router');
         $this->loggerMock = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
+        $this->cache = $this->getDefaultDynamicGroupCacheMock();
         $this->exportController = new ExportController(
             $this->loggerMock,
             $this->router,
             $this->getContainer()->get(HeaderHandler::class),
-            $this->getContainer()->get(SalesChannelContextFactory::class)
+            $this->getContainer()->get(SalesChannelContextFactory::class),
+            $this->cache
         );
         $this->defaultContext = Context::createDefaultContext();
     }
@@ -204,8 +214,6 @@ class ExportControllerTest extends TestCase
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $containerMock->expects($this->once())->method('set');
-
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();
 
@@ -272,8 +280,10 @@ class ExportControllerTest extends TestCase
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['translator', $this->getContainer()->get('translator')],
             ['product.repository', $productRepositoryMock],
+            ['category.repository', $this->getContainer()->get('category.repository')],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
             [SystemConfigService::class, $configServiceMock],
+            [ProductStreamBuilder::class, $this->getContainer()->get(ProductStreamBuilder::class)],
             [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
@@ -453,7 +463,12 @@ class ExportControllerTest extends TestCase
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $containerMock->expects($this->once())->method('set');
+        if (Utils::versionLowerThan('6.3.1.0')) {
+            $invokeCount = $this->once();
+        } else {
+            $invokeCount = $this->exactly(2);
+        }
+        $containerMock->expects($invokeCount)->method('set');
 
         /** @var EntityRepository|MockObject $productRepositoryMock */
         $productRepositoryMock
@@ -496,10 +511,10 @@ class ExportControllerTest extends TestCase
             $this->defaultContext
         );
 
-        $productRepositoryMock->expects($this->once())
+        $productRepositoryMock->expects($this->any())
             ->method('searchIds')
             ->willReturn($productIdSearchResult);
-        $productRepositoryMock->expects($this->once())
+        $productRepositoryMock->expects($this->any())
             ->method('search')
             ->willReturn($productEntitySearchResult);
 
@@ -513,6 +528,7 @@ class ExportControllerTest extends TestCase
             ['sales_channel.repository', $this->getContainer()->get('sales_channel.repository')],
             ['currency.repository', $this->getContainer()->get('currency.repository')],
             ['customer.repository', $this->getContainer()->get('customer.repository')],
+            ['category.repository', $this->getContainer()->get('category.repository')],
             ['country.repository', $this->getContainer()->get('country.repository')],
             ['tax.repository', $this->getContainer()->get('tax.repository')],
             ['translator', $this->getContainer()->get('translator')],
@@ -523,6 +539,7 @@ class ExportControllerTest extends TestCase
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             [SystemConfigService::class, $configServiceMock],
             [FindologicProductFactory::class, $this->getContainer()->get(FindologicProductFactory::class)],
+            [ProductStreamBuilder::class, $this->getContainer()->get(ProductStreamBuilder::class)],
             [SalesChannelContextFactory::class, $this->getContainer()->get(SalesChannelContextFactory::class)],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
         ];
@@ -627,7 +644,12 @@ class ExportControllerTest extends TestCase
             ->onlyMethods(['get', 'has'])
             ->getMock();
 
-        $containerMock->expects($this->once())->method('set');
+        if (Utils::versionLowerThan('6.3.1.0')) {
+            $invokeCount = $this->once();
+        } else {
+            $invokeCount = $this->exactly(2);
+        }
+        $containerMock->expects($invokeCount)->method('set');
 
         /** @var EntityRepository|MockObject $systemConfigRepositoryMock */
         $systemConfigRepositoryMock = $this->getSystemConfigRepositoryMock();
@@ -734,11 +756,13 @@ class ExportControllerTest extends TestCase
         $containerRepositoriesMap = [
             ['system_config.repository', $systemConfigRepositoryMock],
             ['customer_group.repository', $this->getContainer()->get('customer_group.repository')],
+            ['category.repository', $this->getContainer()->get('category.repository')],
             ['order_line_item.repository', $this->getContainer()->get('order_line_item.repository')],
             ['product.repository', $productRepositoryMock],
             ['translator', $this->getContainer()->get('translator')],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
             [SystemConfigService::class, $configServiceMock],
+            [ProductStreamBuilder::class, $this->getContainer()->get(ProductStreamBuilder::class)],
             [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
@@ -763,7 +787,8 @@ class ExportControllerTest extends TestCase
             $this->loggerMock,
             $this->router,
             $headerHandler,
-            $this->getContainer()->get(SalesChannelContextFactory::class)
+            $this->getContainer()->get(SalesChannelContextFactory::class),
+            $this->cache
         );
         $this->exportController->setContainer($containerMock);
         $result = $this->exportController->export($request, $salesChannelContextMock);
@@ -864,10 +889,10 @@ class ExportControllerTest extends TestCase
             $this->defaultContext
         );
 
-        $productRepositoryMock->expects($this->once())
+        $productRepositoryMock->expects($this->any())
             ->method('searchIds')
             ->willReturn($productIdSearchResult);
-        $productRepositoryMock->expects($this->once())
+        $productRepositoryMock->expects($this->any())
             ->method('search')
             ->willReturn($productEntitySearchResult);
 
@@ -887,6 +912,7 @@ class ExportControllerTest extends TestCase
             ['customer.repository', $this->getContainer()->get('customer.repository')],
             ['country.repository', $this->getContainer()->get('country.repository')],
             ['tax.repository', $this->getContainer()->get('tax.repository')],
+            ['category.repository', $this->getContainer()->get('category.repository')],
             ['translator', $this->getContainer()->get('translator')],
             ['customer_address.repository', $this->getContainer()->get('customer_address.repository')],
             ['payment_method.repository', $this->getContainer()->get('payment_method.repository')],
@@ -896,6 +922,7 @@ class ExportControllerTest extends TestCase
             [FindologicProductFactory::class, $findologicProductFactoryMock],
             [SalesChannelContextFactory::class, $this->getContainer()->get(SalesChannelContextFactory::class)],
             [SystemConfigService::class, $configServiceMock],
+            [ProductStreamBuilder::class, $this->getContainer()->get(ProductStreamBuilder::class)],
             ['fin_search.sales_channel_context', $salesChannelContextMock],
         ];
         $containerMock->method('get')->willReturnMap($containerRepositoriesMap);
@@ -909,7 +936,8 @@ class ExportControllerTest extends TestCase
             $this->loggerMock,
             $this->router,
             $this->getContainer()->get(HeaderHandler::class),
-            $this->getContainer()->get(SalesChannelContextFactory::class)
+            $this->getContainer()->get(SalesChannelContextFactory::class),
+            $this->cache
         );
 
         $this->exportController->setContainer($containerMock);
