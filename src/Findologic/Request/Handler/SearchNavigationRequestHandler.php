@@ -19,10 +19,12 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\QueryInfoMessage;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 abstract class SearchNavigationRequestHandler
 {
@@ -167,5 +169,21 @@ abstract class SearchNavigationRequestHandler
         if ($promotion = $responseParser->getPromotionExtension()) {
             $event->getContext()->addExtension('flPromotion', $promotion);
         }
+    }
+
+    protected function setUserGroup(
+        SalesChannelContext $salesChannelContext,
+        SearchNavigationRequest $request
+    ): void {
+        $group = $salesChannelContext->getCurrentCustomerGroup() ?? $salesChannelContext->getFallbackCustomerGroup();
+        if (!$group || !$group->getId()) {
+            return;
+        }
+
+        $usergroup = Utils::calculateUserGroupHash(
+            $this->apiConfig->getServiceId(),
+            $group->getId()
+        );
+        $request->addUserGroup($usergroup);
     }
 }

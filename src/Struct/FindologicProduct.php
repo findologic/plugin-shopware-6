@@ -342,7 +342,7 @@ class FindologicProduct extends Struct
         /** @var SeoUrlEntity|null $seoUrlEntity */
         $seoUrlEntity = $this->getTranslatedEntity($seoUrlCollection);
 
-        return $seoUrlEntity ? $seoUrlEntity->getSeoPathInfo() : null;
+        return $seoUrlEntity ? ltrim($seoUrlEntity->getSeoPathInfo(), '/') : null;
     }
 
     protected function getTranslatedDomainBaseUrl(): ?string
@@ -353,7 +353,7 @@ class FindologicProduct extends Struct
         /** @var SalesChannelDomainEntity|null $domainEntity */
         $domainEntity = $this->getTranslatedEntity($domainCollection);
 
-        return $domainEntity ? $domainEntity->getUrl() : null;
+        return $domainEntity ? rtrim($domainEntity->getUrl(), '/') : null;
     }
 
     /**
@@ -841,7 +841,7 @@ class FindologicProduct extends Struct
         foreach ($variant->getPrice() as $item) {
             foreach ($this->customerGroups as $customerGroup) {
                 $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
-                if (!Utils::isEmpty($userGroupHash)) {
+                if (Utils::isEmpty($userGroupHash)) {
                     continue;
                 }
 
@@ -920,6 +920,10 @@ class FindologicProduct extends Struct
         return $seoUrls;
     }
 
+    /**
+     * @deprecated will be removed in 2.0. Use Utils::buildCategoryPath() instead.
+     * @see Utils::buildCategoryPath()
+     */
     protected function buildCategoryPath(CategoryEntity $categoryEntity): string
     {
         $breadCrumbs = $categoryEntity->getBreadcrumb();
@@ -987,7 +991,6 @@ class FindologicProduct extends Struct
 
     /**
      * @param string|int|bool $value
-     *
      * @return string|int
      */
     protected function getCleanedAttributeValue($value)
@@ -1066,7 +1069,7 @@ class FindologicProduct extends Struct
                 $catUrls[] = $catUrl;
             }
 
-            $categoryPath = $this->buildCategoryPath($categoryEntity);
+            $categoryPath = Utils::buildCategoryPath($categoryEntity->getBreadcrumb());
             if (!Utils::isEmpty($categoryPath)) {
                 $categories[] = $categoryPath;
             }

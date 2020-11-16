@@ -316,4 +316,40 @@ class UtilsTest extends TestCase
         $this->assertSame($expectedFindologicActive, $findologicService->getEnabled());
         $this->assertSame($expectedSmartSuggestActive, $findologicService->getSmartSuggestEnabled());
     }
+
+    public function categoryProvider(): array
+    {
+        return [
+            'main category' => [
+                'breadCrumbs' => ['Main'],
+                'expectedCategoryPath' => '',
+            ],
+            'one subcategory' => [
+                'breadCrumbs' => ['Main', 'Sub'],
+                'expectedCategoryPath' => 'Sub',
+            ],
+            'two subcategories' => [
+                'breadCrumbs' => ['Main', 'Sub', 'SubOfSub'],
+                'expectedCategoryPath' => 'Sub_SubOfSub',
+            ],
+            'three subcategories' => [
+                'breadCrumbs' => ['Main', 'Sub', 'SubOfSub', 'very deep'],
+                'expectedCategoryPath' => 'Sub_SubOfSub_very deep',
+            ],
+            'three subcategories with redundant spaces' => [
+                'breadCrumbs' => [' Main', ' Sub ', 'SubOfSub  ', '   very deep'],
+                'expectedCategoryPath' => 'Sub_SubOfSub_very deep',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider categoryProvider
+     */
+    public function testCategoryPathIsProperlyBuilt(array $breadCrumbs, string $expectedCategoryPath): void
+    {
+        $categoryPath = Utils::buildCategoryPath($breadCrumbs);
+
+        $this->assertSame($expectedCategoryPath, $categoryPath);
+    }
 }

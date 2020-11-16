@@ -204,7 +204,7 @@ trait ProductHelper
         $this->getContainer()->get('product_review.repository')->upsert([$data], Context::createDefaultContext());
     }
 
-    public function createCustomer(string $customerID): void
+    public function createCustomer(string $customerId): void
     {
         $password = 'foo';
         $email = 'foo@bar.de';
@@ -213,7 +213,7 @@ trait ProductHelper
         $this->getContainer()->get('customer.repository')->upsert(
             [
                 [
-                    'id' => $customerID,
+                    'id' => $customerId,
                     'salesChannelId' => Defaults::SALES_CHANNEL,
                     'defaultShippingAddress' => [
                         'id' => $addressId,

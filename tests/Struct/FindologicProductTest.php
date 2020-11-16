@@ -1095,6 +1095,77 @@ class FindologicProductTest extends TestCase
         $this->assertSame($expectedSecondCatUrl, $catUrls[1]);
     }
 
+    public function testCustomerGroupsAreExportedAsUserGroups(): void
+    {
+        $context = Context::createDefaultContext();
+
+        $customerGroupRepo = $this->getContainer()->get('customer_group.repository');
+        $customerGroupRepo->upsert([
+            [
+                'name' => 'Net customer group',
+                'displayGross' => false
+            ],
+            [
+                'name' => 'Gross customer group',
+                'displayGross' => true
+            ]
+        ], $context);
+
+        $customerGroups = $customerGroupRepo->search(new Criteria(), $context);
+        // Manually sort customer group entities for asserting, since otherwise they would be sorted randomly.
+        $customerGroups->sort(function (CustomerGroupEntity $a, CustomerGroupEntity $b) {
+            if ($a->getDisplayGross() && !$b->getDisplayGross()) {
+                return 1;
+            }
+
+            if ($b->getDisplayGross() && !$a->getDisplayGross()) {
+                return -1;
+            }
+
+            return 0;
+        });
+
+        $productEntity = $this->createTestProduct();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
+            $this->shopkey,
+            $customerGroups->getElements(),
+            new XMLItem('123')
+        );
+
+        $customerGroupElements = array_values($customerGroups->getElements());
+        $standardCustomerGroup = Utils::calculateUserGroupHash($this->shopkey, $customerGroupElements[0]->getId());
+        $netCustomerGroup = Utils::calculateUserGroupHash(
+            $this->shopkey,
+            $customerGroupElements[1]->getId()
+        );
+        $grossCustomerGroup = Utils::calculateUserGroupHash(
+            $this->shopkey,
+            $customerGroupElements[2]->getId()
+        );
+
+        $actualPrices = $findologicProduct->getPrices();
+
+        $this->assertCount(4, $actualPrices);
+        $this->assertEquals($this->buildXmlPrice(10, $standardCustomerGroup), $actualPrices[0]);
+        $this->assertEquals($this->buildXmlPrice(15, $netCustomerGroup), $actualPrices[1]);
+        $this->assertEquals($this->buildXmlPrice(15, $grossCustomerGroup), $actualPrices[2]);
+        $this->assertEquals($this->buildXmlPrice(15), $actualPrices[3]);
+    }
+
+    private function buildXmlPrice(float $value, string $userGroup = ''): Price
+    {
+        $price = new Price();
+        $price->setValue($value, $userGroup);
+
+        return $price;
+    }
+
     private function translateBooleanValue(bool $value): string
     {
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
