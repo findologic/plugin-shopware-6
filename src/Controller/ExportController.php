@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
+use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
@@ -12,7 +13,9 @@ use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
@@ -58,16 +61,26 @@ class ExportController extends AbstractController
     /** @var Export|XmlExport|ProductIdExport */
     private $export;
 
+    /** @var CacheItemPoolInterface */
+    private $cache;
+
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
         HeaderHandler $headerHandler,
-        SalesChannelContextFactory $salesChannelContextFactory
+        SalesChannelContextFactory $salesChannelContextFactory,
+        CacheItemPoolInterface $cache = null
     ) {
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
+
+        // @deprecated tag:v2.0.0 - Cache will be required
+        if (!$cache) {
+            $cache = $this->container->get('serializer.mapping.cache.symfony');
+        }
+        $this->cache = $cache;
     }
 
     /**
@@ -120,6 +133,8 @@ class ExportController extends AbstractController
 
     protected function doExport(): Response
     {
+        $this->warmUpDynamicProductGroups();
+
         $products = $this->productService->searchVisibleProducts(
             $this->exportConfig->getCount(),
             $this->exportConfig->getStart(),
@@ -155,6 +170,26 @@ class ExportController extends AbstractController
         }
 
         return $messages;
+    }
+
+    protected function warmUpDynamicProductGroups(): void
+    {
+        if (Utils::versionLowerThan('6.3.1.0')) {
+            return;
+        }
+
+        $dynamicProductGroupService = DynamicProductGroupService::getInstance(
+            $this->container,
+            $this->cache,
+            $this->salesChannelContext->getContext(),
+            $this->exportConfig->getShopkey(),
+            $this->exportConfig->getStart()
+        );
+
+        $dynamicProductGroupService->setSalesChannel($this->salesChannelContext->getSalesChannel());
+        if (!$dynamicProductGroupService->isWarmedUp()) {
+            $dynamicProductGroupService->warmUp();
+        }
     }
 
     private function validateExportConfiguration(ExportConfiguration $config): array

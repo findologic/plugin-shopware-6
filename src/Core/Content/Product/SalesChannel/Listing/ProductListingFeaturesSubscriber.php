@@ -17,7 +17,6 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
-use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;

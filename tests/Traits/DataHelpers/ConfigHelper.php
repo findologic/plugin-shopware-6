@@ -8,7 +8,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Defaults;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use SimpleXMLElement;
 
 trait ConfigHelper
 {

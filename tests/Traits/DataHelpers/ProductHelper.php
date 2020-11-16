@@ -14,8 +14,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Shopware\Core\System\Language\LanguageEntity;
-use Shopware\Core\System\Locale\LocaleEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
@@ -218,7 +216,7 @@ trait ProductHelper
         $this->getContainer()->get('product_review.repository')->upsert([$data], Context::createDefaultContext());
     }
 
-    public function createCustomer(string $customerID): void
+    public function createCustomer(string $customerId): void
     {
         $password = 'foo';
         $email = 'foo@bar.de';
@@ -227,7 +225,7 @@ trait ProductHelper
         $this->getContainer()->get('customer.repository')->upsert(
             [
                 [
-                    'id' => $customerID,
+                    'id' => $customerId,
                     'salesChannelId' => Defaults::SALES_CHANNEL,
                     'defaultShippingAddress' => [
                         'id' => $addressId,

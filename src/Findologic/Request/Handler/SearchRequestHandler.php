@@ -84,6 +84,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         /** @var SearchRequest $searchRequest */
         $searchRequest = $this->findologicRequestFactory->getInstance($request);
         $searchRequest->setQuery((string)$request->query->get('search'));
+        $this->setUserGroup($event->getSalesChannelContext(), $searchRequest);
         $this->setPaginationParams($event, $searchRequest, $limit);
         $this->addSorting($searchRequest, $event->getCriteria());
         if ($event->getCriteria()->hasExtension('flFilters')) {

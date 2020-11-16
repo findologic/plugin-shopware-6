@@ -11,7 +11,6 @@ use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
-use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
@@ -1042,6 +1041,128 @@ class FindologicProductTest extends TestCase
         );
 
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
+    }
+
+    public function testEmptyCategoryNameShouldStillExportCategory()
+    {
+        $mainCatId = $this->getContainer()->get('category.repository')
+            ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
+
+        $categoryId = Uuid::randomHex();
+        $pathInfo = 'navigation/' . $categoryId;
+        $seoPathInfo = 'Findologic-Category';
+
+        $expectedFirstCatUrl = '/' . $seoPathInfo;
+        $expectedSecondCatUrl = '/' . $pathInfo;
+
+        $productEntity = $this->createTestProduct([
+            'categories' => [
+                [
+                    'parentId' => $mainCatId,
+                    'id' => $categoryId,
+                    'name' => ' ',
+                    'seoUrls' => [
+                        [
+                            'pathInfo' => $pathInfo,
+                            'seoPathInfo' => $seoPathInfo,
+                            'isCanonical' => true,
+                            'routeName' => 'frontend.navigation.page',
+                        ]
+                    ],
+                ],
+            ],
+        ]);
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertCount(6, $findologicProduct->getAttributes());
+        $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
+
+        $catUrls = $findologicProduct->getAttributes()[0]->getValues();
+        $this->assertCount(2, $catUrls);
+
+        $this->assertSame($expectedFirstCatUrl, $catUrls[0]);
+        $this->assertSame($expectedSecondCatUrl, $catUrls[1]);
+    }
+
+    public function testCustomerGroupsAreExportedAsUserGroups(): void
+    {
+        $context = Context::createDefaultContext();
+
+        $customerGroupRepo = $this->getContainer()->get('customer_group.repository');
+        $customerGroupRepo->upsert([
+            [
+                'name' => 'Net customer group',
+                'displayGross' => false
+            ],
+            [
+                'name' => 'Gross customer group',
+                'displayGross' => true
+            ]
+        ], $context);
+
+        $customerGroups = $customerGroupRepo->search(new Criteria(), $context);
+        // Manually sort customer group entities for asserting, since otherwise they would be sorted randomly.
+        $customerGroups->sort(function (CustomerGroupEntity $a, CustomerGroupEntity $b) {
+            if ($a->getDisplayGross() && !$b->getDisplayGross()) {
+                return 1;
+            }
+
+            if ($b->getDisplayGross() && !$a->getDisplayGross()) {
+                return -1;
+            }
+
+            return 0;
+        });
+
+        $productEntity = $this->createTestProduct();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
+            $this->shopkey,
+            $customerGroups->getElements(),
+            new XMLItem('123')
+        );
+
+        $customerGroupElements = array_values($customerGroups->getElements());
+        $standardCustomerGroup = Utils::calculateUserGroupHash($this->shopkey, $customerGroupElements[0]->getId());
+        $netCustomerGroup = Utils::calculateUserGroupHash(
+            $this->shopkey,
+            $customerGroupElements[1]->getId()
+        );
+        $grossCustomerGroup = Utils::calculateUserGroupHash(
+            $this->shopkey,
+            $customerGroupElements[2]->getId()
+        );
+
+        $actualPrices = $findologicProduct->getPrices();
+
+        $this->assertCount(4, $actualPrices);
+        $this->assertEquals($this->buildXmlPrice(10, $standardCustomerGroup), $actualPrices[0]);
+        $this->assertEquals($this->buildXmlPrice(15, $netCustomerGroup), $actualPrices[1]);
+        $this->assertEquals($this->buildXmlPrice(15, $grossCustomerGroup), $actualPrices[2]);
+        $this->assertEquals($this->buildXmlPrice(15), $actualPrices[3]);
+    }
+
+    private function buildXmlPrice(float $value, string $userGroup = ''): Price
+    {
+        $price = new Price();
+        $price->setValue($value, $userGroup);
+
+        return $price;
     }
 
     private function translateBooleanValue(bool $value): string

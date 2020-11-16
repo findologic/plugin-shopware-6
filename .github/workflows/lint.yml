@@ -1,0 +1,37 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: ['7.3']
+
+    name: Code linting (PHP ${{ matrix.php-versions }})
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP with Composer 2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, dom
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Validate dependencies
+        run: composer validate
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Run code linting
+        run: composer lint

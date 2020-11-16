@@ -8,7 +8,6 @@ use FINDOLOGIC\Export\XML\XMLExporter;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 

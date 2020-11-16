@@ -224,4 +224,13 @@ class Utils
 
         return false;
     }
+
+    public static function buildCategoryPath(array $categoryBreadCrumbs): string
+    {
+        // Remove the first element as it is the main category.
+        array_shift($categoryBreadCrumbs);
+
+        // Build category path and trim all entries.
+        return implode('_', array_map('trim', $categoryBreadCrumbs));
+    }
 }
