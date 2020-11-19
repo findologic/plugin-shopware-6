@@ -17,33 +17,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class SearchController extends ShopwareSearchController
+class SearchController
 {
-    /**
-     * @var SearchPageLoader
-     */
-    private $searchPageLoader;
+    /** @var ShopwareSearchController */
+    private $decorated;
 
-    /**
-     * @var SuggestPageLoader
-     */
-    private $suggestPageLoader;
-
-    /**
-     * @var FilterHandler
-     */
+    /** @var FilterHandler */
     private $filterHandler;
 
     public function __construct(
-        SearchPageLoader $searchPageLoader,
-        SuggestPageLoader $suggestPageLoader,
-        ?FilterHandler $filterHandler = null
+        ShopwareSearchController $decorated,
+        FilterHandler $filterHandler
     ) {
-        parent::__construct($searchPageLoader, $suggestPageLoader);
-
-        $this->searchPageLoader = $searchPageLoader;
-        $this->suggestPageLoader = $suggestPageLoader;
-        $this->filterHandler = $filterHandler ?? new FilterHandler();
+        $this->decorated = $decorated;
+        $this->filterHandler = $filterHandler;
     }
 
     /**
@@ -53,18 +40,18 @@ class SearchController extends ShopwareSearchController
      */
     public function search(SalesChannelContext $context, Request $request): Response
     {
-        if ($response = $this->handleFindologicSearchParams($request)) {
-            return $response;
+        if ($redirectResponse = $this->handleFindologicSearchParams($request)) {
+            return $redirectResponse;
         }
 
-        $page = $this->searchPageLoader->load($request, $context);
+        $response = $this->decorated->search($context, $request);
 
         /** @var LandingPage|null $landingPage */
         if ($landingPage = $context->getContext()->getExtension('flLandingPage')) {
             return $this->redirect($landingPage->getLink(), 301);
         }
 
-        return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
+        return $response;
     }
 
     /**
@@ -74,12 +61,7 @@ class SearchController extends ShopwareSearchController
      */
     public function suggest(SalesChannelContext $context, Request $request): Response
     {
-        $page = $this->suggestPageLoader->load($request, $context);
-
-        return $this->renderStorefront(
-            '@Storefront/storefront/layout/header/search-suggest.html.twig',
-            ['page' => $page]
-        );
+        return $this->decorated->suggest($context, $request);
     }
 
     /**
@@ -95,14 +77,7 @@ class SearchController extends ShopwareSearchController
      */
     public function pagelet(Request $request, SalesChannelContext $context): Response
     {
-        $request->request->set('no-aggregations', true);
-
-        $page = $this->searchPageLoader->load($request, $context);
-
-        return $this->renderStorefront(
-            '@Storefront/storefront/page/search/search-pagelet.html.twig',
-            ['page' => $page]
-        );
+        return $this->decorated->pagelet($request, $context);
     }
 
     /**
@@ -122,14 +97,7 @@ class SearchController extends ShopwareSearchController
      */
     public function ajax(Request $request, SalesChannelContext $context): Response
     {
-        $request->request->set('no-aggregations', true);
-
-        $page = $this->searchPageLoader->load($request, $context);
-
-        return $this->renderStorefront(
-            '@Storefront/storefront/page/search/search-pagelet.html.twig',
-            ['page' => $page]
-        );
+        return $this->decorated->ajax($request, $context);
     }
 
     private function handleFindologicSearchParams(Request $request): ?Response
