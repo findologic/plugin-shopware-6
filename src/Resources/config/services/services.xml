@@ -1,0 +1,128 @@
+<?xml version="1.0" ?>
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://symfony.com/schema/dic/services"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
+>
+
+    <services>
+
+        <!-- General -->
+
+        <service id="FINDOLOGIC\FinSearch\Struct\Config" class="FINDOLOGIC\FinSearch\Struct\Config" public="true">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
+        </service>
+
+        <!-- Export -->
+
+        <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
+            <argument type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
+            <tag name="monolog.logger" channel="file" />
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
+            <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
+            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
+            <argument id="serializer.mapping.cache.symfony" type="service" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">
+            <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
+            <argument type="string">findologic_finsearch</argument>
+        </service>
+
+        <service
+                class="FINDOLOGIC\FinSearch\Export\FindologicProductFactory"
+                id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory"
+                public="true"
+        />
+
+        <service id="FINDOLOGIC\FinSearch\Export\HeaderHandler" public="true">
+            <argument id="service_container" type="service" />
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Export\SalesChannelService"
+                class="FINDOLOGIC\FinSearch\Export\SalesChannelService"
+                public="true"
+        >
+            <argument type="service" id="system_config.repository" />
+            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
+        </service>
+
+        <service id="fin_search.sales_channel_context" synthetic="true" public="true"/>
+        <service id="fin_search.product_service" synthetic="true" public="true"/>
+        <service id="fin_search.dynamic_product_group" synthetic="true" public="true"/>
+
+        <!-- Storefront -->
+
+        <service
+                class="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory"
+                id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory"
+                public="true"
+        />
+
+        <service
+                class="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"
+                id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"
+                public="true"
+        >
+            <argument id="serializer.mapping.cache.symfony" type="service" />
+            <argument id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory" type="service" />
+        </service>
+
+        <service
+                class="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
+                id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
+                public="true"
+        >
+            <argument id="serializer.mapping.cache.symfony" type="service" />
+            <argument id="service_container" type="service" />
+        </service>
+
+        <service
+                class="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory"
+                id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory"
+                public="true"
+        >
+            <argument id="serializer.mapping.cache.symfony" type="service" />
+            <argument id="service_container" type="service" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\en_GB\SnippetFile_en_GB" public="true">
+            <tag name="shopware.snippet.file" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\de_DE\SnippetFile_de_DE" public="true">
+            <tag name="shopware.snippet.file" />
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Utils\TwigExtension"
+                class="FINDOLOGIC\FinSearch\Utils\TwigExtension"
+                public="false"
+        >
+            <tag name="twig.extension" />
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Struct\SystemAware"
+                class="FINDOLOGIC\FinSearch\Struct\SystemAware"
+                public="true"
+        >
+            <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
+        </service>
+
+        <service id="FINDOLOGIC\Api\Config" />
+
+        <service id="FINDOLOGIC\Api\Client">
+            <argument type="service" id="FINDOLOGIC\Api\Config" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler" />
+
+    </services>
+</container>
