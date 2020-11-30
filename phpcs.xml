@@ -33,4 +33,5 @@
 
     <rule ref="Generic.PHP.RequireStrictTypes" />
     <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="PSR12.Files.ImportStatement"/>
 </ruleset>

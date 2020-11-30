@@ -15,7 +15,6 @@ Component.register('findologic-config', {
 
   props: {
     actualConfigData: {
-      type: Object,
       required: true
     },
     allConfigs: {

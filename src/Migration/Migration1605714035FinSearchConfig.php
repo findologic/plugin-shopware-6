@@ -84,9 +84,6 @@ SQL;
                 // Do nothing here as configuration already exists
             }
         }
-
-        // After migrating, delete previous configuration as it won't be used anymore
-        $this->deleteOldConfiguration($connection);
     }
 
     private function getDefaultSalesChannelId(Connection $connection)
@@ -94,11 +91,5 @@ SQL;
         $sql = 'SELECT LOWER(HEX(`id`)) AS `id` FROM `sales_channel` WHERE `type_id` = UNHEX(?) AND `active` = \'1\'';
 
         return $connection->fetchColumn($sql, [Defaults::SALES_CHANNEL_TYPE_STOREFRONT]);
-    }
-
-    private function deleteOldConfiguration(Connection $connection): void
-    {
-        $sql = "DELETE FROM `system_config` WHERE `configuration_key` LIKE '%FinSearch.config%'";
-        $connection->executeUpdate($sql);
     }
 }

@@ -27,8 +27,6 @@ use function is_array;
 
 class FindologicConfigService
 {
-    private const CONFIG_DOMAIN = 'FinSearch.';
-
     /**
      * @var Connection
      */
@@ -129,7 +127,7 @@ class FindologicConfigService
             ->search($criteria, Context::createDefaultContext())
             ->getEntities();
 
-        return $this->buildFindologicConfig($collection);
+        return $this->buildConfig($collection);
     }
 
     /**
@@ -235,12 +233,12 @@ class FindologicConfigService
 
         /** @var FinSearchConfigCollection $configs */
         $configs = $this->finSearchConfigRepository->search($criteria, Context::createDefaultContext())->getEntities();
-        $this->configs[$key] = $this->parseFindologicConfiguration($configs);
+        $this->configs[$key] = $this->parseConfiguration($configs);
 
         return $this->configs[$key];
     }
 
-    private function buildFindologicConfig(FinSearchConfigCollection $configs): array
+    private function buildConfig(FinSearchConfigCollection $configs): array
     {
         $findologicConfig = [];
         foreach ($configs as $config) {
@@ -254,22 +252,22 @@ class FindologicConfigService
     }
 
     /**
-     * The keys of the system configs look like `core.loginRegistration.showPhoneNumberField`.
+     * The keys of the configs look like `FinSearch.config.shopkey`.
      * This method splits those strings and builds an array structure
      * ```
      * Array
      * (
-     *     [core] => Array
+     *     [FinSearch] => Array
      *         (
-     *             [loginRegistration] => Array
+     *             [config] => Array
      *                 (
-     *                     [showPhoneNumberField] => 'someValue'
+     *                     [shopkey] => 'someValue'
      *                 )
      *         )
      * )
      * ```
      */
-    private function parseFindologicConfiguration(FinSearchConfigCollection $collection): array
+    private function parseConfiguration(FinSearchConfigCollection $collection): array
     {
         $configValues = [];
 

@@ -58,7 +58,6 @@ class FindologicConfigController extends AbstractController
         $configs = $request->request->all();
         $this->saveKeyValues($salesChannelId, $languageId, $configs);
 
-        // return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         return new NoContentResponse();
     }
 
