@@ -18,6 +18,7 @@ use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -151,6 +152,36 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             return null;
         }
 
-        return Utils::buildCategoryPath($category->getBreadcrumb());
+        if ($category->getId() === $salesChannelContext->getSalesChannel()->getNavigationCategoryId()) {
+            return null;
+        }
+
+        $categoryBreadcrumb = $this->getCategoryBreadcrumb(
+            $category,
+            $salesChannelContext->getSalesChannel()->getNavigationCategory()
+        );
+
+        if (empty($categoryBreadcrumb)) {
+            return null;
+        }
+
+        return Utils::buildCategoryPath($categoryBreadcrumb);
+    }
+
+    /**
+     * Builds the category path by removing the path of the parent (root) category of the sales channel.
+     * Since Findologic does not care about any root categories, we need to get the difference between the
+     * normal category path and the root category.
+     *
+     * @return string[]
+     */
+    private function getCategoryBreadcrumb(CategoryEntity $category, CategoryEntity $root): array
+    {
+        $categoryBreadcrumbs = $category->getBreadcrumb();
+        $rootCategoryBreadcrumbs = $root->getBreadcrumb();
+
+        $path = array_splice($categoryBreadcrumbs, count($rootCategoryBreadcrumbs));
+
+        return array_values($path);
     }
 }
