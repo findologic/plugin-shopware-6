@@ -210,6 +210,14 @@ class ProductListingFeaturesSubscriberTest extends TestCase
                 'fieldSorting' => new FieldSorting('product.dateadded', 'DESC'),
                 'expectedOrder' => '' // Currently not supported by Shopware.
             ],
+            'ProductSales is ASC' => [
+                'fieldSorting' => new FieldSorting('product.sales', 'ASC'),
+                'expectedOrder' => 'salesfrequency ASC'
+            ],
+            'ProductSales is DESC' => [
+                'fieldSorting' => new FieldSorting('product.sales', 'DESC'),
+                'expectedOrder' => 'salesfrequency DESC'
+            ],
         ];
     }
 

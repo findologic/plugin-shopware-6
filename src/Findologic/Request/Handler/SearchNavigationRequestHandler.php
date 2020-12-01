@@ -14,6 +14,7 @@ use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandle
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ReleaseDateSortingHandler;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ScoreSortingHandler;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\SortingHandlerInterface;
+use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\TopSellerSortingHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
@@ -131,7 +132,8 @@ abstract class SearchNavigationRequestHandler
             new ScoreSortingHandler(),
             new PriceSortingHandler(),
             new ProductNameSortingHandler(),
-            new ReleaseDateSortingHandler()
+            new ReleaseDateSortingHandler(),
+            new TopSellerSortingHandler(),
         ];
     }
 
