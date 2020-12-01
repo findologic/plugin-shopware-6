@@ -104,14 +104,16 @@ class XmlExport extends Export
     ): ?Item {
         if ($this->isProductInCrossSellingCategory($productEntity)) {
             $category = $productEntity->getCategories()->first();
-            $this->logger->warning(sprintf(
-                'Product with id %s (%s) was not exported because it ' .
-                'is assigned to cross selling category %s (%s)',
-                $productEntity->getId(),
-                $productEntity->getName(),
-                $category->getId(),
-                implode(' > ', $category->getBreadcrumb())
-            ), ['product' => $productEntity]);
+            $this->logger->warning(
+                sprintf(
+                    'Product with id %s (%s) was not exported because it is assigned to cross selling category %s (%s)',
+                    $productEntity->getId(),
+                    $productEntity->getName(),
+                    $category->getId(),
+                    implode(' > ', $category->getBreadcrumb())
+                ),
+                ['product' => $productEntity]
+            );
 
             return null;
         }
