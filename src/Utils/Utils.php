@@ -60,29 +60,31 @@ class Utils
      */
     public static function addProductAssociations(Criteria $criteria): Criteria
     {
-        return $criteria->addAssociations([
-            'seoUrls',
-            'categories',
-            'categories.seoUrls',
-            'translations',
-            'tags',
-            'media',
-            'manufacturer',
-            'manufacturer.translations',
-            'properties',
-            'properties.group',
-            'properties.productConfiguratorSettings',
-            'properties.productConfiguratorSettings.option',
-            'properties.productConfiguratorSettings.option.group',
-            'properties.productConfiguratorSettings.option.group.translations',
-            'children',
-            'children.properties',
-            'children.properties.group',
-            'children.properties.productConfiguratorSettings',
-            'children.properties.productConfiguratorSettings.option',
-            'children.properties.productConfiguratorSettings.option.group',
-            'children.properties.productConfiguratorSettings.option.group.translations',
-        ]);
+        return $criteria->addAssociations(
+            [
+                'seoUrls',
+                'categories',
+                'categories.seoUrls',
+                'translations',
+                'tags',
+                'media',
+                'manufacturer',
+                'manufacturer.translations',
+                'properties',
+                'properties.group',
+                'properties.productConfiguratorSettings',
+                'properties.productConfiguratorSettings.option',
+                'properties.productConfiguratorSettings.option.group',
+                'properties.productConfiguratorSettings.option.group.translations',
+                'children',
+                'children.properties',
+                'children.properties.group',
+                'children.properties.productConfiguratorSettings',
+                'children.properties.productConfiguratorSettings.option',
+                'children.properties.productConfiguratorSettings.option.group',
+                'children.properties.productConfiguratorSettings.option.group.translations',
+            ]
+        );
     }
 
     public static function multiByteRawUrlEncode(string $string): string
@@ -98,16 +100,19 @@ class Utils
 
     public static function buildUrl(array $parsedUrl): string
     {
-        return (isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '')
-            . ((isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '')
-            . (isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '')
-            . (isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '')
-            . (isset($parsedUrl['user']) ? '@' : '')
-            . (isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '')
-            . (isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '')
-            . (isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '')
-            . (isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '')
-            . (isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : '');
+        return sprintf(
+            '%s%s%s%s%s%s%s%s%s%s',
+            isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '',
+            (isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '',
+            isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '',
+            isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '',
+            isset($parsedUrl['user']) ? '@' : '',
+            isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '',
+            isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '',
+            isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '',
+            isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '',
+            isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : ''
+        );
     }
 
     public static function versionLowerThan(string $version): bool

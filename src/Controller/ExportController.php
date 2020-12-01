@@ -212,7 +212,7 @@ class ExportController extends AbstractController
         /** @var Config $config */
         $config = $this->container->get(Config::class);
         if ($this->salesChannelContext) {
-            $config->initializeBySalesChannel($this->salesChannelContext->getSalesChannel()->getId());
+            $config->initializeBySalesChannel($this->salesChannelContext);
         }
 
         return $config;

@@ -17,7 +17,7 @@
             class="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"
             public="true"
         >
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <tag name="kernel.event_subscriber" />
         </service>
@@ -35,7 +35,7 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">
-            <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
+            <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating" />
             <argument type="string">findologic_finsearch</argument>
         </service>
 
@@ -99,30 +99,47 @@
         </service>
 
         <service
-                id="FINDOLOGIC\FinSearch\Struct\SystemAware"
-                class="FINDOLOGIC\FinSearch\Struct\SystemAware"
-                public="true"
+            id="FINDOLOGIC\FinSearch\Struct\SystemAware"
+            class="FINDOLOGIC\FinSearch\Struct\SystemAware"
+            public="true"
         >
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
         </service>
 
         <service
-                id="FINDOLOGIC\FinSearch\Export\SalesChannelService"
-                class="FINDOLOGIC\FinSearch\Export\SalesChannelService"
-                public="true"
+            id="FINDOLOGIC\FinSearch\Export\SalesChannelService"
+            class="FINDOLOGIC\FinSearch\Export\SalesChannelService"
+            public="true"
         >
-            <argument type="service" id="system_config.repository" />
+            <argument type="service" id="finsearch_config.repository" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Struct\Config" class="FINDOLOGIC\FinSearch\Struct\Config" public="true">
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
         </service>
 
         <service id="fin_search.sales_channel_context" synthetic="true" public="true"/>
         <service id="fin_search.product_service" synthetic="true" public="true"/>
         <service id="fin_search.dynamic_product_group" synthetic="true" public="true"/>
+
+        <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigDefinition">
+            <tag name="shopware.entity.definition" entity="finsearch_config" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService">
+            <argument id="finsearch_config.repository" type="service" />
+            <argument type="service" id="Doctrine\DBAL\Connection" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Controller\FindologicConfigController">
+            <call method="setContainer">
+                <argument id="service_container" type="service" />
+            </call>
+            <tag name="controller.service_arguments" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
+        </service>
 
     </services>
 </container>

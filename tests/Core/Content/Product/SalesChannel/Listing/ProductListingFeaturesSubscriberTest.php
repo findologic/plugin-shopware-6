@@ -14,6 +14,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware631\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as OldProductListingFeaturesSubscriber;
 // phpcs:enable
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
@@ -76,6 +77,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     /** @var SearchRequestFactory|MockObject */
     private $searchRequestFactoryMock;
+
+    /** @var FindologicConfigService|MockObject */
+    private $findologicConfigServiceMock;
 
     /** @var SystemConfigService|MockObject */
     private $systemConfigServiceMock;
@@ -660,6 +664,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->systemConfigServiceMock = $this->getMockBuilder(SystemConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $this->findologicConfigServiceMock = $this->getMockBuilder(FindologicConfigService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->serviceConfigResourceMock = $this->getMockBuilder(ServiceConfigResource::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -699,23 +706,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
                 $this->productListingSortingRegistry,
                 $this->navigationRequestFactoryMock,
                 $this->searchRequestFactoryMock,
-                $this->systemConfigServiceMock,
-                $this->serviceConfigResourceMock,
-                $this->genericPageLoaderMock,
-                $this->containerMock,
-                $this->configMock,
-                $this->apiConfigMock,
-                $this->apiClientMock
-            );
-        } else {
-            return new ProductListingFeaturesSubscriber(
-                $this->connectionMock,
-                $this->entityRepositoryMock,
-                $this->entityRepositoryMock,
-                $this->productListingSortingRegistry,
-                $this->navigationRequestFactoryMock,
-                $this->searchRequestFactoryMock,
-                $this->systemConfigServiceMock,
+                $this->findologicConfigServiceMock,
                 $this->serviceConfigResourceMock,
                 $this->genericPageLoaderMock,
                 $this->containerMock,
@@ -724,6 +715,23 @@ class ProductListingFeaturesSubscriberTest extends TestCase
                 $this->apiClientMock
             );
         }
+
+        return new ProductListingFeaturesSubscriber(
+            $this->connectionMock,
+            $this->entityRepositoryMock,
+            $this->entityRepositoryMock,
+            $this->productListingSortingRegistry,
+            $this->navigationRequestFactoryMock,
+            $this->searchRequestFactoryMock,
+            $this->systemConfigServiceMock,
+            $this->findologicConfigServiceMock,
+            $this->serviceConfigResourceMock,
+            $this->genericPageLoaderMock,
+            $this->containerMock,
+            $this->configMock,
+            $this->apiConfigMock,
+            $this->apiClientMock
+        );
     }
 
     private function getRawResponse(string $file = 'demo.xml'): SimpleXMLElement

@@ -19,8 +19,8 @@ class ProductServiceTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
 
-    /** @var SalesChannelContext|MockObject */
-    private $salesChannelContextMock;
+    /** @var SalesChannelContext */
+    private $salesChannelContext;
 
     /** @var ProductService */
     private $defaultProductService;
@@ -29,10 +29,10 @@ class ProductServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->salesChannelContextMock = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->defaultProductService = ProductService::getInstance(
             $this->getContainer(),
-            $this->salesChannelContextMock
+            $this->salesChannelContext
         );
     }
 
@@ -82,9 +82,9 @@ class ProductServiceTest extends TestCase
 
         $this->assertNull($productService->getSalesChannelContext());
 
-        $actualProductService = ProductService::getInstance($this->getContainer(), $this->salesChannelContextMock);
+        $actualProductService = ProductService::getInstance($this->getContainer(), $this->salesChannelContext);
         $this->assertSame($productService, $actualProductService);
         $this->assertInstanceOf(SalesChannelContext::class, $productService->getSalesChannelContext());
-        $this->assertSame($this->salesChannelContextMock, $productService->getSalesChannelContext());
+        $this->assertSame($this->salesChannelContext, $productService->getSalesChannelContext());
     }
 }

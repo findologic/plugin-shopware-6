@@ -31,6 +31,8 @@ use Shopware\Core\Framework\Context;
 use Symfony\Component\Routing\RouterInterface;
 use Throwable;
 
+use function sprintf;
+
 class XmlProduct
 {
     /** @var ProductEntity */
@@ -248,21 +250,23 @@ class XmlProduct
             $this->logProductInvalidException($logger, $e);
             $this->xmlItem = null;
         } catch (EmptyValueNotAllowedException $e) {
-            $logger->warning(sprintf(
-                'Product "%s" with id "%s" could not be exported. It appears to have empty values assigned to it. ' .
-                'If you see this message in your logs, please report this as a bug.',
+            $message = sprintf(
+                'Product "%s" with id "%s" could not be exported. It appears to have empty values assigned to it. 
+                If you see this message in your logs, please report this as a bug.',
                 $this->product->getTranslation('name'),
                 $this->product->getId()
-            ));
+            );
+            $logger->warning($message);
             $this->xmlItem = null;
         } catch (Throwable $e) {
-            $logger->warning(sprintf(
-                'Error while exporting the product "%s" with id "%s". If you see this message in your logs, ' .
-                'please report this as a bug. Error message: %s',
+            $message = sprintf(
+                'Error while exporting the product "%s" with id "%s". If you see this message in your logs, 
+                please report this as a bug. Error message: %s',
                 $this->product->getTranslation('name'),
                 $this->product->getId(),
                 $e->getMessage()
-            ));
+            );
+            $logger->warning($message);
             $this->xmlItem = null;
         }
     }
@@ -334,27 +338,33 @@ class XmlProduct
     private function assertItemFieldMethodsExist(string $getter, string $setter, string $hasField): void
     {
         if (!method_exists($this->findologicProduct, $hasField)) {
-            throw new RuntimeException(sprintf(
-                'Method %s::%s does not exist.',
-                get_class($this->findologicProduct),
-                $hasField
-            ));
+            throw new RuntimeException(
+                sprintf(
+                    'Method %s::%s does not exist.',
+                    get_class($this->findologicProduct),
+                    $hasField
+                )
+            );
         }
 
         if (!method_exists($this, $setter)) {
-            throw new RuntimeException(sprintf(
-                'Method %s::%s does not exist.',
-                get_class($this),
-                $setter
-            ));
+            throw new RuntimeException(
+                sprintf(
+                    'Method %s::%s does not exist.',
+                    get_class($this),
+                    $setter
+                )
+            );
         }
 
         if (!method_exists($this->findologicProduct, $getter)) {
-            throw new RuntimeException(sprintf(
-                'Method %s::%s does not exist.',
-                get_class($this->findologicProduct),
-                $getter
-            ));
+            throw new RuntimeException(
+                sprintf(
+                    'Method %s::%s does not exist.',
+                    get_class($this->findologicProduct),
+                    $getter
+                )
+            );
         }
     }
 }
