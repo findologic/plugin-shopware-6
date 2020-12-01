@@ -113,6 +113,7 @@
         >
             <argument type="service" id="finsearch_config.repository" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
+            <argument type="service" id="Shopware\Core\Framework\Routing\RequestTransformerInterface" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Struct\Config" class="FINDOLOGIC\FinSearch\Struct\Config" public="true">

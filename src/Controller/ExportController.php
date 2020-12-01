@@ -64,6 +64,9 @@ class ExportController extends AbstractController
     /** @var CacheItemPoolInterface */
     private $cache;
 
+    /** @var SalesChannelService|null */
+    private $salesChannelService;
+
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
@@ -103,7 +106,8 @@ class ExportController extends AbstractController
     protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
         $this->exportConfig = ExportConfiguration::getInstance($request);
-        $this->salesChannelContext = $context ? $this->container->get(SalesChannelService::class)
+        $this->salesChannelService = $context ? $this->container->get(SalesChannelService::class) : null;
+        $this->salesChannelContext = $this->salesChannelService ? $this->salesChannelService
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
 
         $this->productService = ProductService::getInstance($this->container, $this->salesChannelContext);
@@ -117,6 +121,8 @@ class ExportController extends AbstractController
             $this->logger,
             $this->pluginConfig->getCrossSellingCategories()
         );
+
+        $this->manipulateRequestWithSalesChannelInformation($request);
     }
 
     protected function validate(): ?Response
@@ -216,5 +222,18 @@ class ExportController extends AbstractController
         }
 
         return $config;
+    }
+
+    private function manipulateRequestWithSalesChannelInformation(Request $originalRequest): void
+    {
+        // There is no need to manipulate anything, if there is no SalesChannelContext.
+        if (!$this->salesChannelContext) {
+            return;
+        }
+
+        $request = $this->salesChannelService->getRequest($originalRequest, $this->salesChannelContext);
+        $attributes = $request->attributes->all();
+
+        $originalRequest->attributes->replace($attributes);
     }
 }
