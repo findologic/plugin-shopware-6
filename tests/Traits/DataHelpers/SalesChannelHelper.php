@@ -45,7 +45,8 @@ trait SalesChannelHelper
                     'languageId' => $languageId,
                     'snippetSetId' => $snippetSet
                 ]
-            ]
+            ],
+            'typeId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT
         ];
 
         $this->getContainer()->get('sales_channel.repository')->update(
