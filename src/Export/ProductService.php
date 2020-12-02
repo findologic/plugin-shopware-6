@@ -7,14 +7,19 @@ namespace FINDOLOGIC\FinSearch\Export;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
+use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+
+use function array_diff;
 
 class ProductService
 {
@@ -25,6 +30,12 @@ class ProductService
 
     /** @var SalesChannelContext|null */
     private $salesChannelContext;
+
+    public function __construct(ContainerInterface $container, ?SalesChannelContext $salesChannelContext = null)
+    {
+        $this->container = $container;
+        $this->salesChannelContext = $salesChannelContext;
+    }
 
     public static function getInstance(
         ContainerInterface $container,
@@ -44,12 +55,6 @@ class ProductService
         return $productService;
     }
 
-    public function __construct(ContainerInterface $container, ?SalesChannelContext $salesChannelContext = null)
-    {
-        $this->container = $container;
-        $this->salesChannelContext = $salesChannelContext;
-    }
-
     public function setSalesChannelContext(SalesChannelContext $salesChannelContext): void
     {
         $this->salesChannelContext = $salesChannelContext;
@@ -62,7 +67,7 @@ class ProductService
 
     public function getTotalProductCount(): int
     {
-        $criteria = $this->getCriteriaWithProductVisibility();
+        $criteria = $this->buildProductCriteria();
 
         /** @var IdSearchResult $result */
         $result = $this->container->get('product.repository')->searchIds(
@@ -84,10 +89,23 @@ class ProductService
             $this->addProductIdFilters($criteria, $productId);
         }
 
-        return $this->container->get('product.repository')->search(
+        /** @var EntitySearchResult $result */
+        $result = $this->container->get('product.repository')->search(
             $criteria,
             $this->salesChannelContext->getContext()
         );
+
+        /** @var ProductCollection $visibleProductsCollection */
+        $visibleProductsCollection = $result->getEntities();
+        if ($visibleProductsCollection->count() !== $limit) {
+            $inactiveProductIds = $this->getInactiveProductIds($limit, $offset, $productId, $visibleProductsCollection);
+            $variants = $this->searchActiveVariants($inactiveProductIds, $limit, $offset, $productId);
+            foreach ($variants as $variant) {
+                $result->add($variant);
+            }
+        }
+
+        return $result;
     }
 
     public function searchAllProducts(
@@ -148,6 +166,30 @@ class ProductService
         return $criteria;
     }
 
+    private function buildActiveVariantCriteria(?int $limit = null, ?int $offset = null): Criteria
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new NotFilter(NotFilter::CONNECTION_AND, [new EqualsFilter('parentId', null)]));
+
+        $this->addProductAssociations($criteria);
+
+        if ($offset !== null) {
+            $criteria->setOffset($offset);
+        }
+        if ($limit !== null) {
+            $criteria->setLimit($limit);
+        }
+
+        $criteria->addFilter(
+            new ProductAvailableFilter(
+                $this->salesChannelContext->getSalesChannel()->getId(),
+                ProductVisibilityDefinition::VISIBILITY_SEARCH
+            )
+        );
+
+        return $criteria;
+    }
+
     private function addProductIdFilters(Criteria $criteria, string $productId): void
     {
         $productFilter = [
@@ -168,5 +210,48 @@ class ProductService
                 $productFilter
             )
         );
+    }
+
+    private function searchActiveVariants(
+        array $inactiveProductIds,
+        ?int $limit,
+        ?int $offset,
+        ?string $productId
+    ): array {
+        $criteria = $this->buildActiveVariantCriteria($limit, $offset);
+        $criteria->addFilter(new EqualsAnyFilter('parentId', $inactiveProductIds));
+
+        if ($productId) {
+            $this->addProductIdFilters($criteria, $productId);
+        }
+
+        $variants = $this->container->get('product.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->getEntities();
+
+        $activeVariant = [];
+        foreach ($variants as $variant) {
+            // We only need to get the first active variant, so if we already have the the first variant
+            //  we do not check the rest of the variants.
+            if (!isset($activeVariant[$variant->getParentId()])) {
+                $activeVariant[$variant->getParentId()] = $variant;
+            }
+        }
+
+        return $activeVariant;
+    }
+
+    private function getInactiveProductIds(
+        ?int $limit,
+        ?int $offset,
+        ?string $productId,
+        ProductCollection $visibleProductsCollection
+    ): array {
+        $allProductsResult = $this->searchAllProducts($limit, $offset, $productId);
+        $allProductCollection = $allProductsResult->getEntities();
+        $allProductIds = $allProductCollection->getIds();
+        $foundIds = $visibleProductsCollection->getIds();
+
+        return array_diff($allProductIds, $foundIds);
     }
 }
