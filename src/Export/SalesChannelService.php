@@ -78,7 +78,12 @@ class SalesChannelService
 
         // There is no Request::setUrl(), therefore we need to duplicate the current request object.
         // @see https://github.com/symfony/symfony/issues/14575#issuecomment-102942494
-        $request = $originalRequest->duplicate(null, null, null, null, null,
+        $request = $originalRequest->duplicate(
+            null,
+            null,
+            null,
+            null,
+            null,
             array_merge($originalRequest->server->all(), [
                 'REQUEST_URI' => $parsedUrl['path'] ?? '/',
                 'HTTP_HOST' => $parsedUrl['host'] . (isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : ''),
