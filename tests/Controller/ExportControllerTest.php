@@ -225,6 +225,9 @@ class ExportControllerTest extends TestCase
      * URL https://some-shop.co.uk. This test ensures that the products will use the UK domain, when calling
      * the URL of the German Sales Channel with the shopkey of the United Kingdom Sales Channel:
      * https://some-shop.de/findologic?shopkey=from-united-kingdom => https://shome-shop.co.uk/detail/...
+     *
+     * Runs in a separate process to not interfere with other tests.
+     * @runInSeparateProcess
      */
     public function testProductsWithoutSeoUrlsWillExportTheUrlBasedOnTheConfiguredLanguage(): void
     {
