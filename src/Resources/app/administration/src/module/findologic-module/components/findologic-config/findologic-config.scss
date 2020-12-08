@@ -1,0 +1,9 @@
+.findologic--text-field-disabled {
+  .findologic-shopkey {
+    input {
+      &:hover {
+        cursor: not-allowed !important;
+      }
+    }
+  }
+}

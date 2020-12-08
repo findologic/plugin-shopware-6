@@ -15,6 +15,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Uuid\Exception\InvalidUuidException;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\Language\LanguageEntity;
+use Shopware\Core\System\SalesChannel\SalesChannelCollection;
 use Shopware\Core\System\SystemConfig\Exception\InvalidDomainException;
 use Shopware\Core\System\SystemConfig\Exception\InvalidKeyException;
 use Shopware\Core\System\SystemConfig\Exception\InvalidSettingValueException;
@@ -27,6 +29,10 @@ use function is_array;
 
 class FindologicConfigService
 {
+    private static $requiredConfig = [
+        'FinSearch.config.shopkey'
+    ];
+
     /**
      * @var Connection
      */
@@ -42,16 +48,25 @@ class FindologicConfigService
      */
     private $configs = [];
 
-    public function __construct(EntityRepositoryInterface $finSearchConfigRepository, Connection $connection)
-    {
+    /**
+     * @var EntityRepositoryInterface
+     */
+    private $salesChannelRepository;
+
+    public function __construct(
+        EntityRepositoryInterface $finSearchConfigRepository,
+        Connection $connection,
+        EntityRepositoryInterface $salesChannelRepository
+    ) {
         $this->finSearchConfigRepository = $finSearchConfigRepository;
         $this->connection = $connection;
+        $this->salesChannelRepository = $salesChannelRepository;
     }
 
     /**
      * @return array|bool|float|int|string|null
      */
-    public function get(string $key, string $salesChannelId, string $languageId)
+    public function get(string $key, ?string $salesChannelId, ?string $languageId)
     {
         $config = $this->load($salesChannelId, $languageId);
         $parts = explode('.', $key);
@@ -73,7 +88,7 @@ class FindologicConfigService
         return $pointer;
     }
 
-    public function getString(string $key, string $salesChannelId, string $languageId): string
+    public function getString(string $key, ?string $salesChannelId, ?string $languageId): string
     {
         $value = $this->get($key, $salesChannelId, $languageId);
         if (!is_array($value)) {
@@ -83,7 +98,7 @@ class FindologicConfigService
         throw new InvalidSettingValueException($key, 'string', gettype($value));
     }
 
-    public function getInt(string $key, string $salesChannelId, string $languageId): int
+    public function getInt(string $key, ?string $salesChannelId, ?string $languageId): int
     {
         $value = $this->get($key, $salesChannelId, $languageId);
         if (!is_array($value)) {
@@ -93,7 +108,7 @@ class FindologicConfigService
         throw new InvalidSettingValueException($key, 'int', gettype($value));
     }
 
-    public function getFloat(string $key, string $salesChannelId, string $languageId): float
+    public function getFloat(string $key, ?string $salesChannelId, ?string $languageId): float
     {
         $value = $this->get($key, $salesChannelId, $languageId);
         if (!is_array($value)) {
@@ -103,12 +118,12 @@ class FindologicConfigService
         throw new InvalidSettingValueException($key, 'float', gettype($value));
     }
 
-    public function getBool(string $key, string $salesChannelId, string $languageId): bool
+    public function getBool(string $key, ?string $salesChannelId, ?string $languageId): bool
     {
         return (bool)$this->get($key, $salesChannelId, $languageId);
     }
 
-    public function all(string $salesChannelId, string $languageId): array
+    public function all(?string $salesChannelId, ?string $languageId): array
     {
         return $this->load($salesChannelId, $languageId);
     }
@@ -118,7 +133,7 @@ class FindologicConfigService
      * @throws InvalidUuidException
      * @throws InconsistentCriteriaIdsException
      */
-    public function getConfig(string $salesChannelId, string $languageId): array
+    public function getConfig(?string $salesChannelId, ?string $languageId): array
     {
         $criteria = $this->buildCriteria($salesChannelId, $languageId);
 
@@ -133,41 +148,37 @@ class FindologicConfigService
     /**
      * @param array|bool|float|int|string|null $value
      */
-    public function set(string $key, $value, string $salesChannelId, string $languageId): void
+    public function set(string $key, $value, ?string $salesChannelId, ?string $languageId): void
     {
         $this->configs = [];
         $key = trim($key);
         $this->validate($key, $salesChannelId, $languageId);
 
-        $id = $this->getId($key, $salesChannelId, $languageId);
-        if ($value === null) {
-            if ($id) {
-                $this->finSearchConfigRepository->delete([['id' => $id]], Context::createDefaultContext());
+        // If no sales channel is given, we have to manually set it for each language of each sales channel.
+        if ($salesChannelId === null) {
+            // Required configuration must have a sales channel so we skip them in this scenario.
+            if (in_array($key, self::$requiredConfig, false)) {
+                return;
             }
-
-            return;
+            $this->setConfig($key, $salesChannelId, $languageId, $value);
+            $salesChannels = $this->getAllSalesChannels();
+            foreach ($salesChannels->getElements() as $salesChannelEntity) {
+                /** @var LanguageEntity $language */
+                foreach ($salesChannelEntity->getLanguages() as $language) {
+                    $this->setConfig($key, $salesChannelEntity->getId(), $language->getId(), $value);
+                }
+            }
         }
 
-        $this->finSearchConfigRepository->upsert(
-            [
-                [
-                    'id' => $id ?? Uuid::randomHex(),
-                    'configurationKey' => $key,
-                    'configurationValue' => $value,
-                    'salesChannelId' => $salesChannelId,
-                    'languageId' => $languageId,
-                ]
-            ],
-            Context::createDefaultContext()
-        );
+        $this->setConfig($key, $salesChannelId, $languageId, $value);
     }
 
-    public function delete(string $key, string $salesChannel, string $languageId): void
+    public function delete(string $key, ?string $salesChannel, ?string $languageId): void
     {
         $this->set($key, null, $salesChannel, $languageId);
     }
 
-    private function validate(string $key, string $salesChannelId, string $languageId): void
+    private function validate(string $key, ?string $salesChannelId, ?string $languageId): void
     {
         $key = trim($key);
         if ($key === '') {
@@ -181,7 +192,7 @@ class FindologicConfigService
         }
     }
 
-    private function getId(string $key, string $salesChannelId, string $languageId): ?string
+    private function getId(string $key, ?string $salesChannelId, ?string $languageId): ?string
     {
         $criteria = $this->buildCriteria($salesChannelId, $languageId, $key);
         $ids = $this->finSearchConfigRepository->searchIds($criteria, Context::createDefaultContext())->getIds();
@@ -189,7 +200,7 @@ class FindologicConfigService
         return array_shift($ids);
     }
 
-    private function buildCriteria(string $salesChannelId, string $languageId, ?string $key = null): Criteria
+    private function buildCriteria(?string $salesChannelId, ?string $languageId, ?string $key = null): Criteria
     {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('salesChannelId', $salesChannelId));
@@ -202,9 +213,13 @@ class FindologicConfigService
         return $criteria;
     }
 
-    private function load(string $salesChannelId, string $languageId): array
+    private function load(?string $salesChannelId, ?string $languageId): array
     {
-        $key = sprintf('%s-%s', $salesChannelId, $languageId);
+        if ($salesChannelId) {
+            $key = sprintf('%s-%s', $salesChannelId, $languageId);
+        } else {
+            $key = 'global';
+        }
 
         if (isset($this->configs[$key])) {
             return $this->configs[$key];
@@ -287,7 +302,7 @@ class FindologicConfigService
         if (empty($keys)) {
             $configValues[$key] = $value;
         } else {
-            if (!\array_key_exists($key, $configValues)) {
+            if (!array_key_exists($key, $configValues)) {
                 $configValues[$key] = [];
             }
 
@@ -295,5 +310,49 @@ class FindologicConfigService
         }
 
         return $configValues;
+    }
+
+    private function getAllSalesChannels(): SalesChannelCollection
+    {
+        $context = Context::createDefaultContext();
+
+        $criteria = new Criteria();
+        $criteria->addAssociation('languages');
+
+        /** @var SalesChannelCollection $salesChannels */
+        $salesChannels = $this->salesChannelRepository->search($criteria, $context)->getEntities();
+
+        return $salesChannels;
+    }
+
+    /**
+     * @param string $key
+     * @param string|null $salesChannelId
+     * @param string|null $languageId
+     * @param mixed|null $value
+     */
+    private function setConfig(string $key, ?string $salesChannelId, ?string $languageId, $value = null): void
+    {
+        $id = $this->getId($key, $salesChannelId, $languageId);
+        if ($value === null) {
+            if ($id) {
+                $this->finSearchConfigRepository->delete([['id' => $id]], Context::createDefaultContext());
+            }
+
+            return;
+        }
+
+        $this->finSearchConfigRepository->upsert(
+            [
+                [
+                    'id' => $id ?? Uuid::randomHex(),
+                    'configurationKey' => $key,
+                    'configurationValue' => $value,
+                    'salesChannelId' => $salesChannelId,
+                    'languageId' => $languageId,
+                ]
+            ],
+            Context::createDefaultContext()
+        );
     }
 }

@@ -10,8 +10,9 @@ use Shopware\Core\System\SalesChannel\NoContentResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+
+use function strpos;
 
 /**
  * @RouteScope(scopes={"api"})
@@ -55,7 +56,7 @@ class FindologicConfigController extends AbstractController
         $salesChannelId = $request->query->get('salesChannelId');
         $languageId = $request->query->get('languageId');
         $configs = $request->request->all();
-        $this->saveKeyValues($salesChannelId, $languageId, $configs);
+        $this->saveKeyValues($configs, $salesChannelId, $languageId);
 
         return new Response('', Response::HTTP_NO_CONTENT);
     }
@@ -66,14 +67,18 @@ class FindologicConfigController extends AbstractController
     public function batchSaveConfiguration(Request $request): Response
     {
         foreach ($request->request->all() as $key => $config) {
-            [$salesChannelId, $languageId] = explode('-', $key);
-            $this->saveKeyValues($salesChannelId, $languageId, $config);
+            if (strpos($key, '-') !== false) {
+                [$salesChannelId, $languageId] = explode('-', $key);
+                $this->saveKeyValues($config, $salesChannelId, $languageId);
+            } else {
+                $this->saveKeyValues($config);
+            }
         }
 
         return new Response('', Response::HTTP_NO_CONTENT);
     }
 
-    private function saveKeyValues(string $salesChannelId, string $languageId, array $config): void
+    private function saveKeyValues(array $config, ?string $salesChannelId = null, ?string $languageId = null): void
     {
         foreach ($config as $key => $value) {
             $this->findologicConfigService->set($key, $value, $salesChannelId, $languageId);
