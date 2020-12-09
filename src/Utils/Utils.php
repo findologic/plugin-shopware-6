@@ -11,9 +11,11 @@ use InvalidArgumentException;
 use PackageVersions\Versions;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
 
 class Utils
@@ -232,12 +234,44 @@ class Utils
         return false;
     }
 
-    public static function buildCategoryPath(array $categoryBreadCrumbs): string
+    public static function buildCategoryPath(array $categoryBreadCrumb, CategoryEntity $root): string
     {
-        // Remove the first element as it is the main category.
-        array_shift($categoryBreadCrumbs);
+        $breadcrumb = static::getCategoryBreadcrumb($categoryBreadCrumb, $root);
 
         // Build category path and trim all entries.
-        return implode('_', array_map('trim', $categoryBreadCrumbs));
+        return implode('_', array_map('trim', $breadcrumb));
+    }
+
+    public static function fetchNavigationCategoryFromSalesChannel(
+        EntityRepository $categoryRepository,
+        SalesChannelEntity $salesChannel
+    ): ?CategoryEntity {
+        $navigationCategory = $salesChannel->getNavigationCategory();
+        if (!$navigationCategory) {
+            $result = $categoryRepository->search(
+                new Criteria([$salesChannel->getNavigationCategoryId()]),
+                Context::createDefaultContext()
+            );
+
+            $navigationCategory = $result->first();
+        }
+
+        return $navigationCategory;
+    }
+
+    /**
+     * Builds the category path by removing the path of the parent (root) category of the sales channel.
+     * Since Findologic does not care about any root categories, we need to get the difference between the
+     * normal category path and the root category.
+     *
+     * @return string[]
+     */
+    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $root): array
+    {
+        $rootCategoryBreadcrumbs = $root->getBreadcrumb();
+
+        $path = array_splice($categoryBreadcrumb, count($rootCategoryBreadcrumbs));
+
+        return array_values($path);
     }
 }

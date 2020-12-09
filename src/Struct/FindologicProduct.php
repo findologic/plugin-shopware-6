@@ -118,6 +118,9 @@ class FindologicProduct extends Struct
      */
     protected $dynamicProductGroupService;
 
+    /** @var CategoryEntity */
+    protected $navigationCategory;
+
     /**
      * @param CustomerGroupEntity[] $customerGroups
      *
@@ -150,6 +153,10 @@ class FindologicProduct extends Struct
         if ($this->container->has('fin_search.dynamic_product_group')) {
             $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
         }
+        $this->navigationCategory = Utils::fetchNavigationCategoryFromSalesChannel(
+            $this->container->get('category.repository'),
+            $this->salesChannelContext->getSalesChannel()
+        );
 
         $this->setName();
         $this->setAttributes();
@@ -1069,7 +1076,11 @@ class FindologicProduct extends Struct
                 $catUrls[] = $catUrl;
             }
 
-            $categoryPath = Utils::buildCategoryPath($categoryEntity->getBreadcrumb());
+            $categoryPath = Utils::buildCategoryPath(
+                $categoryEntity->getBreadcrumb(),
+                $this->navigationCategory
+            );
+
             if (!Utils::isEmpty($categoryPath)) {
                 $categories[] = $categoryPath;
             }

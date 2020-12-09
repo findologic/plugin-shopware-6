@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Symfony\Component\HttpFoundation\Request;
@@ -348,8 +349,28 @@ class UtilsTest extends TestCase
      */
     public function testCategoryPathIsProperlyBuilt(array $breadCrumbs, string $expectedCategoryPath): void
     {
-        $categoryPath = Utils::buildCategoryPath($breadCrumbs);
+        $navigationCategoryMock = $this->getMockBuilder(CategoryEntity::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $navigationCategoryMock->expects($this->once())->method('getBreadcrumb')->willReturn(['Main']);
 
+        $categoryPath = Utils::buildCategoryPath($breadCrumbs, $navigationCategoryMock);
+        $this->assertSame($expectedCategoryPath, $categoryPath);
+    }
+
+    public function testCategoryPathIsProperlyBuiltWhenMainCategoryIsInADeeperPath(): void
+    {
+        $expectedCategoryPath = 'Cookies_Soft Cookies';
+        $breadCrumbs = ['Main', 'Food', 'Cookies', 'Soft Cookies'];
+
+        $navigationCategoryMock = $this->getMockBuilder(CategoryEntity::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $navigationCategoryMock->expects($this->once())
+            ->method('getBreadcrumb')
+            ->willReturn(['Main', 'Food']);
+
+        $categoryPath = Utils::buildCategoryPath($breadCrumbs, $navigationCategoryMock);
         $this->assertSame($expectedCategoryPath, $categoryPath);
     }
 }

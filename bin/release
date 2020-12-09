@@ -12,6 +12,7 @@ const SYS_TMP_DIR = '/tmp';
 const TMP_DIR = SYS_TMP_DIR . '/FinSearch';
 const IGNORED = [
     'FinSearch/.git/\*',
+    'FinSearch/.github/\*',
     'FinSearch/.gitignore',
     'FinSearch/.idea/\*',
     'FinSearch/.travis.yml',

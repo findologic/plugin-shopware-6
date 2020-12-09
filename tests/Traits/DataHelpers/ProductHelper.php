@@ -14,8 +14,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Shopware\Core\System\Language\LanguageEntity;
-use Shopware\Core\System\Locale\LocaleEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
@@ -46,7 +44,13 @@ trait ProductHelper
                 'children' => [
                     [
                         'id' => $newCategoryId,
-                        'name' => 'FINDOLOGIC Sub'
+                        'name' => 'FINDOLOGIC Sub',
+                        'children' => [
+                            [
+                                'id' => Uuid::randomHex(),
+                                'name' => 'Very deep'
+                            ]
+                        ]
                     ]
                 ]
             ]
