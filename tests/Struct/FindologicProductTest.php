@@ -396,6 +396,38 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    public function testProductWithMultiSelectCustomFields(): void
+    {
+        $data['customFields'] = ['multi' => [
+            'one value',
+            'another value',
+            'even a third one!'
+        ]];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $productFields = $productEntity->getCustomFields();
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+        foreach ($attributes as $attribute) {
+            $this->assertEquals($attribute->getValues(), $productFields[$attribute->getKey()]);
+        }
+    }
+
     public function ratingProvider(): array
     {
         $multipleRatings = [2.0, 4.0, 5.0, 1.0];

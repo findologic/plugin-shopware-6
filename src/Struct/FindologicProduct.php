@@ -973,7 +973,7 @@ class FindologicProduct extends Struct
             $cleanedValue = $this->getCleanedAttributeValue($value);
 
             if (!Utils::isEmpty($cleanedKey) && !Utils::isEmpty($cleanedValue)) {
-                $customFieldAttribute = new Attribute($cleanedKey, [$cleanedValue]);
+                $customFieldAttribute = new Attribute($cleanedKey, (array)$cleanedValue);
                 $attributes[] = $customFieldAttribute;
             }
         }
@@ -991,10 +991,19 @@ class FindologicProduct extends Struct
 
     /**
      * @param string|int|bool $value
-     * @return string|int
+     * @return array<string, int>|int|string
      */
     protected function getCleanedAttributeValue($value)
     {
+        if (is_array($value)) {
+            $values = [];
+            foreach ($value as $item) {
+                $values[] = $this->getCleanedAttributeValue($item);
+            }
+
+            return $values;
+        }
+
         if (is_string($value)) {
             return Utils::cleanString($value);
         }
