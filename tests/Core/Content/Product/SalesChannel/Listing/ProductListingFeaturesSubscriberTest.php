@@ -1104,8 +1104,7 @@ XML;
                 }
 
                 return null;
-            }
-        );
+            });
 
         $criteriaBefore = $eventMock->getCriteria()->cloneForRead();
         $contextBefore = clone $eventMock->getContext();
