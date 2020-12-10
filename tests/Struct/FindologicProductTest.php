@@ -392,7 +392,7 @@ class FindologicProductTest extends TestCase
 
         $attributes = $findologicProduct->getCustomFields();
         foreach ($attributes as $attribute) {
-            $this->assertEquals(current($attribute->getValues()), $productFields[$attribute->getKey()]);
+            $this->assertEquals($productFields[$attribute->getKey()], current($attribute->getValues()));
         }
     }
 
@@ -424,7 +424,7 @@ class FindologicProductTest extends TestCase
 
         $attributes = $findologicProduct->getCustomFields();
         foreach ($attributes as $attribute) {
-            $this->assertEquals($attribute->getValues(), $productFields[$attribute->getKey()]);
+            $this->assertEquals($productFields[$attribute->getKey()], $attribute->getValues());
         }
     }
 

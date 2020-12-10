@@ -990,8 +990,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @param string|int|bool $value
-     * @return array<string, int>|int|string
+     * @param array<string, int, bool>|string|int|bool $value
+     * @return array<string, int, bool>|string|int|bool
      */
     protected function getCleanedAttributeValue($value)
     {
