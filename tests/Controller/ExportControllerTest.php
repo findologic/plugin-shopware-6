@@ -241,7 +241,7 @@ class ExportControllerTest extends TestCase
             Context::createDefaultContext()
         );
 
-        $salesChannelContext = $this->buildNewSalesChannelContext($currencies, $languages);
+        $salesChannelContext = $this->createSalesChannelContext($currencies, $languages);
         $salesChannelContext->getSalesChannel()->setLanguageId($languageId);
 
         $this->getContainer()->get('sales_channel.repository')->update([
@@ -316,12 +316,12 @@ class ExportControllerTest extends TestCase
     }
 
     /**
-     * Unlike SalesChannelHelper::buildSalesChannelContext, which modifies the default sales channel, this
+     * Unlike SalesChannelHelper::buildSalesChannelContext, which by default modifies the default sales channel, this
      * method creates an entirely new Sales Channel and returns an appropriate SalesChannelContext.
      *
      * @see SalesChannelHelper::buildSalesChannelContext
      */
-    private function buildNewSalesChannelContext(
+    private function createSalesChannelContext(
         EntitySearchResult $currencies,
         EntitySearchResult $languages
     ): SalesChannelContext {
