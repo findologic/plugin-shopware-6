@@ -26,6 +26,7 @@ use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\DefaultInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -43,7 +44,12 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
+use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Page\Page;
@@ -61,6 +67,8 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class ProductListingFeaturesSubscriberTest extends TestCase
 {
     use ExtensionHelper;
+    use ProductHelper;
+    use IntegrationTestBehaviour;
 
     /** @var Connection|MockObject */
     private $connectionMock;
@@ -689,6 +697,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             switch ($name) {
                 case 'event_dispatcher':
                     return $this->eventDispatcherMock;
+                case 'category.repository':
+                    return $this->getContainer()->get('category.repository');
                 default:
                     return null;
             }
@@ -901,7 +911,10 @@ XML;
         return $entityRepoMock;
     }
 
-    private function setUpNavigationRequestMocks(): ProductListingCriteriaEvent
+    /**
+     * @return ProductListingCriteriaEvent|MockObject
+     */
+    private function setUpNavigationRequestMocks(?CategoryEntity $category = null): ProductListingCriteriaEvent
     {
         $headerMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
@@ -919,14 +932,16 @@ XML;
         $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
         $headerMock->expects($this->any())->method('getNavigation')->willReturn($categoryTreeMock);
 
-        $categoryEntityMock = $this->getMockBuilder(CategoryEntity::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        if (!$category) {
+            $category = $this->getMockBuilder(CategoryEntity::class)
+                ->disableOriginalConstructor()
+                ->getMock();
 
-        $categoryTreeMock->expects($this->any())->method('getActive')->willReturn($categoryEntityMock);
+            $category->expects($this->any())->method('getBreadcrumb')
+                ->willReturn(['Deutsch', 'Freizeit & Elektro']);
+        }
 
-        $categoryEntityMock->expects($this->any())->method('getBreadcrumb')
-            ->willReturn(['Deutsch', 'Freizeit & Elektro']);
+        $categoryTreeMock->expects($this->any())->method('getActive')->willReturn($category);
 
         /** @var ProductListingCriteriaEvent|MockObject $eventMock */
         $eventMock = $this->getMockBuilder(ProductListingCriteriaEvent::class)
@@ -1041,5 +1056,64 @@ XML;
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->{$endpoint}($eventMock);
+    }
+
+    public function testListingRequestIsNotHandledWhenDeepCategoryIsMainCategory(): void
+    {
+        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var SalesChannelEntity|MockObject $salesChannelMock */
+        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $rootCategoryMock = $this->getMockBuilder(CategoryEntity::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $rootCategoryMock->expects($this->any())->method('getId')->willReturn(Uuid::randomHex());
+
+        $rootCategoryMock->expects($this->any())->method('getBreadcrumb')
+            ->willReturn(['FINDOLOGIC Main 2', 'FINDOLOGIC Sub', 'Very deep']);
+
+        $salesChannelMock->expects($this->once())->method('getNavigationCategory')
+            ->willReturn($rootCategoryMock);
+
+        $salesChannelContextMock->expects($this->any())->method('getSalesChannel')
+            ->willReturn($salesChannelMock);
+
+        $this->createTestProduct();
+        $oneSubCategoryFilter = new Criteria();
+        $oneSubCategoryFilter->addFilter(new EqualsFilter('name', 'Very deep'))->setLimit(1);
+
+        $categoryRepo = $this->getContainer()->get('category.repository');
+        $category = $categoryRepo->search($oneSubCategoryFilter, Context::createDefaultContext())->first();
+
+        $eventMock = $this->setUpNavigationRequestMocks($category);
+        $eventMock->expects($this->any())->method('getSalesChannelContext')
+            ->willReturn($salesChannelContextMock);
+
+        /** @var Request|MockObject $requestMock */
+        $requestMock = $eventMock->getRequest();
+        $requestMock->expects($this->any())->method('get')
+            ->willReturnCallback(function ($param) {
+                if ($param === 'navigationId') {
+                    return Uuid::randomHex();
+                }
+
+                return null;
+            });
+
+        $criteriaBefore = $eventMock->getCriteria()->cloneForRead();
+        $contextBefore = clone $eventMock->getContext();
+
+        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber->handleListingRequest($eventMock);
+
+        // Ensure that Context and Criteria were not changed. Shopware handles this request.
+        $this->assertEquals($criteriaBefore, $eventMock->getCriteria());
+        $this->assertEquals($contextBefore, $eventMock->getContext());
     }
 }

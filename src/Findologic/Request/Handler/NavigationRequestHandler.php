@@ -18,6 +18,7 @@ use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -142,7 +143,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      * @throws InconsistentCriteriaIdsException
      * @throws MissingRequestParameterException
      */
-    private function fetchCategoryPath(Request $request, SalesChannelContext $salesChannelContext): ?string
+    public function fetchCategoryPath(Request $request, SalesChannelContext $salesChannelContext): ?string
     {
         $navigationCategoryParser = new NavigationCategoryParser($this->container, $this->genericPageLoader);
         $category = $navigationCategoryParser->parse($request, $salesChannelContext);
@@ -151,6 +152,22 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             return null;
         }
 
-        return Utils::buildCategoryPath($category->getBreadcrumb());
+        if ($this->currentCategoryIsRootCategory($category, $salesChannelContext)) {
+            return null;
+        }
+
+        $rootCategory = Utils::fetchNavigationCategoryFromSalesChannel(
+            $this->container->get('category.repository'),
+            $salesChannelContext->getSalesChannel()
+        );
+
+        return Utils::buildCategoryPath($category->getBreadcrumb(), $rootCategory);
+    }
+
+    private function currentCategoryIsRootCategory(
+        CategoryEntity $category,
+        SalesChannelContext $salesChannelContext
+    ): bool {
+        return $category->getId() === $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
     }
 }
