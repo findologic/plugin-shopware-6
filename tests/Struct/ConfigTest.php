@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
@@ -22,6 +24,7 @@ class ConfigTest extends TestCase
 {
     use ConfigHelper;
     use IntegrationTestBehaviour;
+    use SalesChannelHelper;
 
     public function configValuesProvider(): array
     {
@@ -62,7 +65,7 @@ class ConfigTest extends TestCase
      */
     public function testConfigPropertiesInitialization(array $data, ?ClientException $exception): void
     {
-        /** @var SystemConfigService|MockObject $configServiceMock */
+        /** @var FindologicConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $data);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
@@ -81,7 +84,7 @@ class ConfigTest extends TestCase
         }
 
         $config = new Config($configServiceMock, $serviceConfigResource);
-        $config->initializeBySalesChannel(Defaults::SALES_CHANNEL);
+        $config->initializeBySalesChannel($this->buildSalesChannelContext());
 
         $this->assertSame($data['active'], $config->isActive());
         $this->assertSame($data['shopkey'], $config->getShopkey());
@@ -96,8 +99,8 @@ class ConfigTest extends TestCase
 
     public function testConfigCanBeSerialized(): void
     {
-        /** @var SystemConfigService $systemConfigService */
-        $systemConfigService = $this->getContainer()->get(SystemConfigService::class);
+        /** @var FindologicConfigService $systemConfigService */
+        $systemConfigService = $this->getContainer()->get(FindologicConfigService::class);
 
         /** @var ServiceConfigResource $serviceConfigResource */
         $serviceConfigResource = $this->getContainer()->get(ServiceConfigResource::class);

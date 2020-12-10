@@ -34,6 +34,7 @@ class FinSearch extends Plugin
 
     public function uninstall(UninstallContext $uninstallContext): void
     {
+        parent::uninstall($uninstallContext);
         $activePlugins = $this->container->getParameter('kernel.active_plugins');
 
         // If the Extension plugin is installed we will uninstall it with the FinSearch base plugin
@@ -51,10 +52,14 @@ class FinSearch extends Plugin
             }
         }
 
-        parent::uninstall($uninstallContext);
+        if ($uninstallContext->keepUserData()) {
+            return;
+        }
+
+        $this->deleteFindologicConfig();
     }
 
-    private function getCompatibilityLayerServicesFilePath(): ?string
+    private function getCompatibilityLayerServicesFilePath(): string
     {
         if (Utils::versionLowerThan('6.2')) {
             return self::COMPATIBILITY_PATH .  '/shopware61';
@@ -71,6 +76,12 @@ class FinSearch extends Plugin
         );
 
         $loader->load('services.xml');
+    }
+
+    private function deleteFindologicConfig(): void
+    {
+        $connection = $this->container->get(Connection::class);
+        $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
     }
 }
 

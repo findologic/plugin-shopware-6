@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigEntity;
 
 class SalesChannelService
 {
@@ -32,7 +33,7 @@ class SalesChannelService
      * assigned to any sales channel.
      */
     public function getSalesChannelContext(
-        ?SalesChannelContext $currentContext,
+        SalesChannelContext $currentContext,
         string $shopkey
     ): ?SalesChannelContext {
         $systemConfigEntities = $this->systemConfigRepository->search(
@@ -40,17 +41,13 @@ class SalesChannelService
             $currentContext->getContext()
         );
 
-        /** @var SystemConfigEntity $systemConfigEntity */
+        /** @var FinSearchConfigEntity $systemConfigEntity */
         foreach ($systemConfigEntities as $systemConfigEntity) {
             if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
-                // When the configured sales channel id is null, the shopkey is configured for all sales channels.
-                if ($systemConfigEntity->getSalesChannelId() === null) {
-                    return $currentContext;
-                }
-
                 return $this->salesChannelContextFactory->create(
                     $currentContext->getToken(),
-                    $systemConfigEntity->getSalesChannelId()
+                    $systemConfigEntity->getSalesChannelId(),
+                    [SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId()]
                 );
             }
         }

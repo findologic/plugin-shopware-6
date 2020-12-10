@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Struct\Struct;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class Config extends Struct
 {
     public const DEFAULT_SEARCH_RESULT_CONTAINER = 'fl-result';
     public const DEFAULT_NAVIGATION_RESULT_CONTAINER = 'fl-navigation-result';
-
     public const ALLOW_FOR_SERIALIZATION = [
         'shopkey',
         'active',
@@ -30,7 +30,7 @@ class Config extends Struct
         'filterPosition'
     ];
 
-    /** @var SystemConfigService */
+    /** @var FindologicConfigService */
     private $systemConfigService;
 
     /** @var string|null */
@@ -66,8 +66,10 @@ class Config extends Struct
     /** @var array */
     private $crossSellingCategories = [];
 
-    public function __construct(SystemConfigService $systemConfigService, ServiceConfigResource $serviceConfigResource)
-    {
+    public function __construct(
+        FindologicConfigService $systemConfigService,
+        ServiceConfigResource $serviceConfigResource
+    ) {
         $this->systemConfigService = $systemConfigService;
         $this->serviceConfigResource = $serviceConfigResource;
     }
@@ -122,37 +124,46 @@ class Config extends Struct
     /**
      * @throws InvalidArgumentException
      */
-    public function initializeBySalesChannel(?string $salesChannelId): void
+    public function initializeBySalesChannel(SalesChannelContext $salesChannelContext): void
     {
-        $this->active = $this->getConfig($salesChannelId, 'FinSearch.config.active', false);
-        $this->shopkey = $this->getConfig($salesChannelId, 'FinSearch.config.shopkey');
+        $salesChannel = $salesChannelContext->getSalesChannel();
+        $salesChannelId = $salesChannel->getId();
+        $languageId = $salesChannel->getLanguageId();
+
+        $this->active = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.active', false);
+        $this->shopkey = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.shopkey');
         $this->activeOnCategoryPages = $this->getConfig(
             $salesChannelId,
+            $languageId,
             'FinSearch.config.activeOnCategoryPages',
             false
         );
         $this->crossSellingCategories = $this->getConfig(
             $salesChannelId,
+            $languageId,
             'FinSearch.config.crossSellingCategories',
             []
         );
         $this->searchResultContainer = $this->getConfig(
             $salesChannelId,
+            $languageId,
             'FinSearch.config.searchResultContainer',
             self::DEFAULT_SEARCH_RESULT_CONTAINER
         );
         $this->navigationResultContainer = $this->getConfig(
             $salesChannelId,
+            $languageId,
             'FinSearch.config.navigationResultContainer',
             self::DEFAULT_NAVIGATION_RESULT_CONTAINER
         );
         $this->filterPosition = $this->getConfig(
             $salesChannelId,
+            $languageId,
             'FinSearch.config.filterPosition',
             FilterPosition::TOP
         );
 
-        $this->initializeReadonlyConfig($salesChannelId);
+        $this->initializeReadonlyConfig($salesChannelId, $languageId);
 
         $this->initialized = true;
     }
@@ -165,24 +176,25 @@ class Config extends Struct
     /**
      * @throws InvalidArgumentException
      */
-    private function initializeReadonlyConfig(?string $salesChannelId): void
+    private function initializeReadonlyConfig(?string $salesChannelId, ?string $languageId): void
     {
         try {
             // Only set read-only configurations if the plugin is active
             if ($this->active) {
                 $isDirectIntegration = $this->serviceConfigResource->isDirectIntegration($this->shopkey);
                 $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
-                $integrationType = $this->systemConfigService->get('FinSearch.config.integrationType', $salesChannelId);
+                $integrationType = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.integrationType');
 
                 if ($this->integrationType !== $integrationType) {
                     $this->systemConfigService->set(
                         'FinSearch.config.integrationType',
                         $this->integrationType,
-                        $salesChannelId
+                        $salesChannelId,
+                        $languageId
                     );
                 }
 
-                $this->staging = $this->systemConfigService->get('FinSearch.config.isStaging', $salesChannelId);
+                $this->staging = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.isStaging');
                 $isStaging = $this->serviceConfigResource->isStaging($this->shopkey);
 
                 if ($this->staging !== $isStaging) {
@@ -190,7 +202,8 @@ class Config extends Struct
                     $this->systemConfigService->set(
                         'FinSearch.config.isStaging',
                         $this->staging,
-                        $salesChannelId
+                        $salesChannelId,
+                        $languageId
                     );
                 }
             }
@@ -203,9 +216,9 @@ class Config extends Struct
     /**
      * @return string|bool|null
      */
-    private function getConfig(?string $salesChannelId, string $configKey, $default = null)
+    private function getConfig(?string $salesChannelId, ?string $languageId, string $configKey, $default = null)
     {
-        $configValue = $this->systemConfigService->get($configKey, $salesChannelId);
+        $configValue = $this->systemConfigService->get($configKey, $salesChannelId, $languageId);
         if ($configValue === null || (is_string($configValue) && trim($configValue) === '')) {
             return $default;
         }

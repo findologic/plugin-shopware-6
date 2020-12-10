@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Defaults;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 trait ConfigHelper
 {
@@ -33,13 +33,18 @@ trait ConfigHelper
     private function getDefaultFindologicConfigServiceMock(
         TestCase $testClass,
         array $overrides = []
-    ): SystemConfigService {
-        /** @var SystemConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->createMock(SystemConfigService::class);
+    ): FindologicConfigService {
+        /** @var FindologicConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->createMock(FindologicConfigService::class);
         $salesChannelId = Defaults::SALES_CHANNEL;
+        $languageId = Defaults::LANGUAGE_SYSTEM;
         if (isset($overrides['salesChannelId'])) {
             $salesChannelId = $overrides['salesChannelId'];
             unset($overrides['salesChannelId']);
+        }
+        if (isset($overrides['languageId'])) {
+            $languageId = $overrides['languageId'];
+            unset($overrides['languageId']);
         }
         $defaultConfig = [
             'active' => true,
@@ -56,17 +61,48 @@ trait ConfigHelper
         $configServiceMock->method('get')
             ->willReturnMap(
                 [
-                    ['FinSearch.config.active', $salesChannelId, $config['active']],
-                    ['FinSearch.config.shopkey', $salesChannelId, $config['shopkey']],
-                    ['FinSearch.config.activeOnCategoryPages', $salesChannelId, $config['activeOnCategoryPages']],
-                    ['FinSearch.config.crossSellingCategories', $salesChannelId, $config['crossSellingCategories']],
-                    ['FinSearch.config.searchResultContainer', $salesChannelId, $config['searchResultContainer']],
+                    [
+                        'FinSearch.config.active',
+                        $salesChannelId,
+                        $languageId,
+                        $config['active']
+                    ],
+                    [
+                        'FinSearch.config.shopkey',
+                        $salesChannelId,
+                        $languageId,
+                        $config['shopkey']
+                    ],
+                    [
+                        'FinSearch.config.activeOnCategoryPages',
+                        $salesChannelId,
+                        $languageId,
+                        $config['activeOnCategoryPages']
+                    ],
+                    [
+                        'FinSearch.config.crossSellingCategories',
+                        $salesChannelId,
+                        $languageId,
+                        $config['crossSellingCategories']
+                    ],
+                    [
+                        'FinSearch.config.searchResultContainer',
+                        $salesChannelId,
+                        $languageId,
+                        $config['searchResultContainer']
+                    ],
                     [
                         'FinSearch.config.navigationResultContainer',
                         $salesChannelId,
+                        $languageId,
                         $config['navigationResultContainer']
                     ],
-                    ['FinSearch.config.integrationType', $salesChannelId, $config['integrationType']]
+                    [
+                        'FinSearch.config.integrationType',
+                        $salesChannelId,
+                        $languageId,
+                        $config['integrationType']
+                    ]
                 ]
             );
 
