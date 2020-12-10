@@ -1069,17 +1069,17 @@ XML;
             ->disableOriginalConstructor()
             ->getMock();
 
-        $navigationCategoryMock = $this->getMockBuilder(CategoryEntity::class)
+        $rootCategoryMock = $this->getMockBuilder(CategoryEntity::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $navigationCategoryMock->expects($this->any())->method('getId')->willReturn(Uuid::randomHex());
+        $rootCategoryMock->expects($this->any())->method('getId')->willReturn(Uuid::randomHex());
 
-        $navigationCategoryMock->expects($this->any())->method('getBreadcrumb')
+        $rootCategoryMock->expects($this->any())->method('getBreadcrumb')
             ->willReturn(['FINDOLOGIC Main 2', 'FINDOLOGIC Sub', 'Very deep']);
 
         $salesChannelMock->expects($this->once())->method('getNavigationCategory')
-            ->willReturn($navigationCategoryMock);
+            ->willReturn($rootCategoryMock);
 
         $salesChannelContextMock->expects($this->any())->method('getSalesChannel')
             ->willReturn($salesChannelMock);

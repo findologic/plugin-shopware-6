@@ -156,12 +156,12 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             return null;
         }
 
-        $navigationCategory = Utils::fetchNavigationCategoryFromSalesChannel(
+        $rootCategory = Utils::fetchNavigationCategoryFromSalesChannel(
             $this->container->get('category.repository'),
             $salesChannelContext->getSalesChannel()
         );
 
-        return Utils::buildCategoryPath($category->getBreadcrumb(), $navigationCategory);
+        return Utils::buildCategoryPath($category->getBreadcrumb(), $rootCategory);
     }
 
     private function currentCategoryIsRootCategory(

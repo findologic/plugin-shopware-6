@@ -234,9 +234,9 @@ class Utils
         return false;
     }
 
-    public static function buildCategoryPath(array $categoryBreadCrumb, CategoryEntity $root): string
+    public static function buildCategoryPath(array $categoryBreadCrumb, CategoryEntity $rootCategory): string
     {
-        $breadcrumb = static::getCategoryBreadcrumb($categoryBreadCrumb, $root);
+        $breadcrumb = static::getCategoryBreadcrumb($categoryBreadCrumb, $rootCategory);
 
         // Build category path and trim all entries.
         return implode('_', array_map('trim', $breadcrumb));
@@ -266,9 +266,9 @@ class Utils
      *
      * @return string[]
      */
-    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $root): array
+    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $rootCategory): array
     {
-        $rootCategoryBreadcrumbs = $root->getBreadcrumb();
+        $rootCategoryBreadcrumbs = $rootCategory->getBreadcrumb();
 
         $path = array_splice($categoryBreadcrumb, count($rootCategoryBreadcrumbs));
 

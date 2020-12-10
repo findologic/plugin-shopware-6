@@ -363,14 +363,14 @@ class UtilsTest extends TestCase
         $expectedCategoryPath = 'Cookies_Soft Cookies';
         $breadCrumbs = ['Main', 'Food', 'Cookies', 'Soft Cookies'];
 
-        $navigationCategoryMock = $this->getMockBuilder(CategoryEntity::class)
+        $rootCategoryMock = $this->getMockBuilder(CategoryEntity::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $navigationCategoryMock->expects($this->once())
+        $rootCategoryMock->expects($this->once())
             ->method('getBreadcrumb')
             ->willReturn(['Main', 'Food']);
 
-        $categoryPath = Utils::buildCategoryPath($breadCrumbs, $navigationCategoryMock);
+        $categoryPath = Utils::buildCategoryPath($breadCrumbs, $rootCategoryMock);
         $this->assertSame($expectedCategoryPath, $categoryPath);
     }
 }
