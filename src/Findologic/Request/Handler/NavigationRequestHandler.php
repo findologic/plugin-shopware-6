@@ -18,6 +18,7 @@ use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -151,7 +152,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             return null;
         }
 
-        if ($category->getId() === $salesChannelContext->getSalesChannel()->getNavigationCategoryId()) {
+        if ($this->currentCategoryIsRootCategory($category, $salesChannelContext)) {
             return null;
         }
 
@@ -161,5 +162,12 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         );
 
         return Utils::buildCategoryPath($category->getBreadcrumb(), $navigationCategory);
+    }
+
+    private function currentCategoryIsRootCategory(
+        CategoryEntity $category,
+        SalesChannelContext $salesChannelContext
+    ): bool {
+        return $category->getId() === $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
     }
 }
