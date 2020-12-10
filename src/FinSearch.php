@@ -59,7 +59,7 @@ class FinSearch extends Plugin
         $this->deleteFindologicConfig();
     }
 
-    private function getCompatibilityLayerServicesFilePath(): string
+    private function getCompatibilityLayerServicesFilePath(): ?string
     {
         if (Utils::versionLowerThan('6.2')) {
             return self::COMPATIBILITY_PATH . '/shopware61';

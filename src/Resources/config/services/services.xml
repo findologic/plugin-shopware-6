@@ -8,8 +8,13 @@
 
         <!-- General -->
 
+        <service id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService">
+            <argument id="finsearch_config.repository" type="service" />
+            <argument type="service" id="Doctrine\DBAL\Connection" />
+        </service>
+
         <service id="FINDOLOGIC\FinSearch\Struct\Config" class="FINDOLOGIC\FinSearch\Struct\Config" public="true">
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
         </service>
 
