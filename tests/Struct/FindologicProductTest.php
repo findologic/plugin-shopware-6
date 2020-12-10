@@ -396,6 +396,30 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    public function testProductWithLongCustomFieldValuesAreIgnored(): void
+    {
+        $data['customFields'] = ['long_value' => str_repeat('und wieder, ', 20000)];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $this->assertEmpty($findologicProduct->getCustomFields());
+    }
+
     public function ratingProvider(): array
     {
         $multipleRatings = [2.0, 4.0, 5.0, 1.0];

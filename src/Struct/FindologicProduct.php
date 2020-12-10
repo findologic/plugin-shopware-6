@@ -13,6 +13,7 @@ use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
+use FINDOLOGIC\Export\Helpers\DataHelper;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
@@ -996,6 +997,10 @@ class FindologicProduct extends Struct
     protected function getCleanedAttributeValue($value)
     {
         if (is_string($value)) {
+            if (mb_strlen($value) > DataHelper::ATTRIBUTE_CHARACTER_LIMIT) {
+                return '';
+            }
+
             return Utils::cleanString($value);
         }
 
