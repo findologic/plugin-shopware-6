@@ -62,7 +62,7 @@ class FinSearch extends Plugin
     private function getCompatibilityLayerServicesFilePath(): string
     {
         if (Utils::versionLowerThan('6.2')) {
-            return self::COMPATIBILITY_PATH .  '/shopware61';
+            return self::COMPATIBILITY_PATH . '/shopware61';
         }
 
         return null;
