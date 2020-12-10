@@ -12,6 +12,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Storefront\Framework\Cache\Annotation\HttpCache;
+use Shopware\Storefront\Page\Search\SearchPageLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,14 +22,19 @@ class SearchController extends StorefrontController
     /** @var ShopwareSearchController */
     private $decorated;
 
+    /** @var SearchPageLoader */
+    private $searchPageLoader;
+
     /** @var FilterHandler */
     private $filterHandler;
 
     public function __construct(
         ShopwareSearchController $decorated,
+        SearchPageLoader $searchPageLoader,
         FilterHandler $filterHandler
     ) {
         $this->decorated = $decorated;
+        $this->searchPageLoader = $searchPageLoader;
         $this->filterHandler = $filterHandler;
     }
 
@@ -43,14 +49,14 @@ class SearchController extends StorefrontController
             return $redirectResponse;
         }
 
-        $response = $this->decorated->search($context, $request);
+        $page = $this->searchPageLoader->load($request, $context);
 
         /** @var LandingPage|null $landingPage */
         if ($landingPage = $context->getContext()->getExtension('flLandingPage')) {
             return $this->redirect($landingPage->getLink(), 301);
         }
 
-        return $response;
+        return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
     }
 
     /**

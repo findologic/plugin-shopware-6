@@ -24,6 +24,7 @@
                 public="true"
         >
             <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController.inner"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader"/>
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler"/>
         </service>
 
