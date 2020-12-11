@@ -278,9 +278,6 @@ class ExportControllerTest extends TestCase
         // Explicitly remove all SEO URLs, since they were automatically created when using DAL for product creation.
         Kernel::getConnection()->executeUpdate('DELETE FROM seo_url');
 
-        // Wait a few seconds until DAL updated all entities.
-        sleep(5);
-
         $response = $this->sendExportRequest();
 
         $this->assertSame(200, $response->getStatusCode());
