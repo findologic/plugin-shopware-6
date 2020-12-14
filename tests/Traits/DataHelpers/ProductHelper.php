@@ -39,7 +39,13 @@ trait ProductHelper
                 'children' => [
                     [
                         'id' => $newCategoryId,
-                        'name' => 'FINDOLOGIC Sub'
+                        'name' => 'FINDOLOGIC Sub',
+                        'children' => [
+                            [
+                                'id' => Uuid::randomHex(),
+                                'name' => 'Very deep'
+                            ]
+                        ]
                     ]
                 ]
             ]

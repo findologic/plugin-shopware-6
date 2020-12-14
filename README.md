@@ -1,6 +1,6 @@
 # FINDOLOGIC Shopware 6 Plugin
 
-[![Build Status](https://travis-ci.com/findologic/plugin-shopware-6.svg?token=fG1Z4AFpYjQqPYU4kJVF&branch=master)](https://travis-ci.com/findologic/plugin-shopware-6)
+[![Build Status](https://github.com/findologic/plugin-shopware-6/workflows/PHPUnit/badge.svg?branch=main)](https://github.com/findologic/plugin-shopware-6/actions)
 
 ## Table of Contents
 

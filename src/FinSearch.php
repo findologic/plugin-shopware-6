@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch;
 
 use Composer\Autoload\ClassLoader;
+use Doctrine\DBAL\Connection;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
