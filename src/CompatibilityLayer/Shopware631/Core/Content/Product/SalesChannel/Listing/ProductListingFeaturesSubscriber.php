@@ -139,7 +139,12 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
         $limit = $limit ?? $event->getCriteria()->getLimit();
 
-        if ($this->allowRequest($event)) {
+        $isOnCategoryPage = !empty($this->navigationRequestHandler->fetchCategoryPath(
+            $event->getRequest(),
+            $event->getSalesChannelContext()
+        ));
+
+        if ($isOnCategoryPage && $this->allowRequest($event)) {
             // Set the limit here after the parent call as the parent call will override and the default Shopware limit
             // will be used otherwise.
             $event->getCriteria()->setLimit($limit);
