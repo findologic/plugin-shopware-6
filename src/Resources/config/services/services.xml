@@ -8,6 +8,10 @@
 
         <!-- General -->
 
+        <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigDefinition">
+            <tag name="shopware.entity.definition" entity="finsearch_config" />
+        </service>
+
         <service id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService">
             <argument id="finsearch_config.repository" type="service" />
             <argument type="service" id="Doctrine\DBAL\Connection" />
@@ -52,7 +56,7 @@
                 class="FINDOLOGIC\FinSearch\Export\SalesChannelService"
                 public="true"
         >
-            <argument type="service" id="system_config.repository" />
+            <argument type="service" id="finsearch_config.repository" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
         </service>
 
@@ -128,6 +132,16 @@
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true" />
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler" />
+
+        <!-- Administration -->
+
+        <service id="FINDOLOGIC\FinSearch\Controller\FindologicConfigController">
+            <call method="setContainer">
+                <argument id="service_container" type="service" />
+            </call>
+            <tag name="controller.service_arguments" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
+        </service>
 
     </services>
 </container>

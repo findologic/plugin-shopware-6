@@ -64,7 +64,7 @@ class FindologicSearchService
         ApiConfig $apiConfig,
         PluginConfig $pluginConfig,
         GenericPageLoader $genericPageLoader,
-        ?ProductListingSortingRegistry $legacySortingRegistry
+        ?ProductListingSortingRegistry $legacySortingRegistry = null
     ) {
         $this->container = $container;
         $this->apiClient = $apiClient;
@@ -91,6 +91,9 @@ class FindologicSearchService
 
         if ($this->allowRequest($event)) {
             $navigationRequestHandler = $this->buildNavigationRequestHandler();
+            if (!$this->isCategoryPage($navigationRequestHandler, $event)) {
+                return;
+            }
 
             $this->handleRequest($event, $navigationRequestHandler, $limit);
         }
@@ -125,8 +128,11 @@ class FindologicSearchService
     protected function allowRequest(ProductListingCriteriaEvent $event): bool
     {
         if (!$this->pluginConfig->isInitialized()) {
-            $this->pluginConfig->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
-            $this->apiConfig->setServiceId($this->pluginConfig->getShopkey());
+            $this->pluginConfig->initializeBySalesChannel($event->getSalesChannelContext());
+
+            if ($this->pluginConfig->getShopkey()) {
+                $this->apiConfig->setServiceId($this->pluginConfig->getShopkey());
+            }
         }
 
         return Utils::shouldHandleRequest(
@@ -301,5 +307,15 @@ class FindologicSearchService
         $systemAware = $this->container->get(SystemAware::class);
 
         $event->getContext()->addExtension(SystemAware::IDENTIFIER, $systemAware);
+    }
+
+    protected function isCategoryPage(NavigationRequestHandler $handler, ProductListingCriteriaEvent $event): bool
+    {
+        $isCategoryPage = $handler->fetchCategoryPath(
+            $event->getRequest(),
+            $event->getSalesChannelContext()
+        );
+
+        return !empty($isCategoryPage);
     }
 }
