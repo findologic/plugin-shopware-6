@@ -28,6 +28,7 @@ use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -70,6 +71,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     use ExtensionHelper;
     use ProductHelper;
     use IntegrationTestBehaviour;
+    use SalesChannelHelper;
 
     /** @var Connection|MockObject */
     private $connectionMock;
@@ -113,10 +115,14 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /** @var EventDispatcherInterface|MockObject */
     private $eventDispatcherMock;
 
+    /** @var SalesChannelContext */
+    private $salesChannelContext;
+
     public function setUp(): void
     {
         parent::setUp();
 
+        $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->initMocks();
     }
 
