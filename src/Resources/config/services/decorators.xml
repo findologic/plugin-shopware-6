@@ -47,6 +47,7 @@
         <service
                 id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute"
                 decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRoute"
+                decoration-on-invalid="ignore"
         >
             <argument type="service"
                       id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute.inner"/>
