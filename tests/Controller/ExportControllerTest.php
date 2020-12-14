@@ -11,21 +11,23 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\WithTestClient;
 use PHPUnit\Framework\TestCase;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Development\Kernel;
 use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Integration tests for the ExportController. All tests are run in separate processes to not interfere with each other.
+ *
+ * @runTestsInSeparateProcesses
+ */
 class ExportControllerTest extends TestCase
 {
     use WithTestClient;
@@ -227,8 +229,6 @@ class ExportControllerTest extends TestCase
      * URL https://some-shop.co.uk. This test ensures that the products will use the UK domain, when calling
      * the URL of the German Sales Channel with the shopkey of the United Kingdom Sales Channel:
      * https://some-shop.de/findologic?shopkey=from-united-kingdom => https://shome-shop.co.uk/detail/...
-     *
-     * Runs in a separate process to not interfere with other tests.
      */
     public function testProductsWithoutSeoUrlsWillExportTheUrlBasedOnTheConfiguredLanguage(): void
     {
