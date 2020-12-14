@@ -637,7 +637,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
      */
     private function getDefaultProductListingFeaturesSubscriber()
     {
-        if (Utils::versionLowerThan('6.2')) {
+        if (Utils::versionLowerThan('6.3.2')) {
             $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
                 $this->connectionMock,
                 $this->entityRepositoryMock,
