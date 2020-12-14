@@ -13,6 +13,7 @@ use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
+use FINDOLOGIC\Export\Helpers\DataHelper;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
@@ -118,6 +119,9 @@ class FindologicProduct extends Struct
      */
     protected $dynamicProductGroupService;
 
+    /** @var CategoryEntity */
+    protected $navigationCategory;
+
     /**
      * @param CustomerGroupEntity[] $customerGroups
      *
@@ -150,6 +154,10 @@ class FindologicProduct extends Struct
         if ($this->container->has('fin_search.dynamic_product_group')) {
             $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
         }
+        $this->navigationCategory = Utils::fetchNavigationCategoryFromSalesChannel(
+            $this->container->get('category.repository'),
+            $this->salesChannelContext->getSalesChannel()
+        );
 
         $this->setName();
         $this->setAttributes();
@@ -342,7 +350,7 @@ class FindologicProduct extends Struct
         /** @var SeoUrlEntity|null $seoUrlEntity */
         $seoUrlEntity = $this->getTranslatedEntity($seoUrlCollection);
 
-        return $seoUrlEntity ? $seoUrlEntity->getSeoPathInfo() : null;
+        return $seoUrlEntity ? ltrim($seoUrlEntity->getSeoPathInfo(), '/') : null;
     }
 
     protected function getTranslatedDomainBaseUrl(): ?string
@@ -353,7 +361,7 @@ class FindologicProduct extends Struct
         /** @var SalesChannelDomainEntity|null $domainEntity */
         $domainEntity = $this->getTranslatedEntity($domainCollection);
 
-        return $domainEntity ? $domainEntity->getUrl() : null;
+        return $domainEntity ? rtrim($domainEntity->getUrl(), '/') : null;
     }
 
     /**
@@ -979,7 +987,7 @@ class FindologicProduct extends Struct
             $cleanedValue = $this->getCleanedAttributeValue($value);
 
             if (!Utils::isEmpty($cleanedKey) && !Utils::isEmpty($cleanedValue)) {
-                $customFieldAttribute = new Attribute($cleanedKey, [$cleanedValue]);
+                $customFieldAttribute = new Attribute($cleanedKey, (array)$cleanedValue);
                 $attributes[] = $customFieldAttribute;
             }
         }
@@ -996,12 +1004,25 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @param string|int|bool $value
-     * @return string|int
+     * @param array<string, int, bool>|string|int|bool $value
+     * @return array<string, int, bool>|string|int|bool
      */
     protected function getCleanedAttributeValue($value)
     {
+        if (is_array($value)) {
+            $values = [];
+            foreach ($value as $item) {
+                $values[] = $this->getCleanedAttributeValue($item);
+            }
+
+            return $values;
+        }
+
         if (is_string($value)) {
+            if (mb_strlen($value) > DataHelper::ATTRIBUTE_CHARACTER_LIMIT) {
+                return '';
+            }
+
             return Utils::cleanString($value);
         }
 
@@ -1075,7 +1096,11 @@ class FindologicProduct extends Struct
                 $catUrls[] = $catUrl;
             }
 
-            $categoryPath = Utils::buildCategoryPath($categoryEntity->getBreadcrumb());
+            $categoryPath = Utils::buildCategoryPath(
+                $categoryEntity->getBreadcrumb(),
+                $this->navigationCategory
+            );
+
             if (!Utils::isEmpty($categoryPath)) {
                 $categories[] = $categoryPath;
             }

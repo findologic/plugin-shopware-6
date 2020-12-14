@@ -172,6 +172,29 @@ class ExportControllerTest extends TestCase
         $this->assertSame($expectedExtensionPluginVersion, $response->headers->get('x-findologic-extension-plugin'));
     }
 
+    protected function sendExportRequest(array $overrides = []): Response
+    {
+        $defaults = [
+            'shopkey' => self::VALID_SHOPKEY
+        ];
+
+        $params = array_merge($defaults, $overrides);
+        $client = $this->getTestClient($this->salesChannelContext);
+        $client->request('GET', '/findologic?' . http_build_query($params));
+
+        return $client->getResponse();
+    }
+
+    protected function parsePluginVersion(): string
+    {
+        $composerJsonContents = file_get_contents(__DIR__ . '/../../composer.json');
+        $parsed = json_decode($composerJsonContents, true);
+
+        // For release candidates, Shopware will internally format the version different, from how
+        // it is set in the composer.json.
+        return str_replace('rc.', 'RC', ltrim($parsed['version'], 'v'));
+    }
+
     public function testCorrectTranslatedProductIsExported(): void
     {
         $salesChannelService = $this->getContainer()->get(SalesChannelService::class);
@@ -294,29 +317,6 @@ class ExportControllerTest extends TestCase
             'http://localhost/german/detail/' . $product->getId(),
             $parsedResponse->items->item->urls->url->__toString()
         );
-    }
-
-    protected function sendExportRequest(array $overrides = []): Response
-    {
-        $defaults = [
-            'shopkey' => self::VALID_SHOPKEY
-        ];
-
-        $params = array_merge($defaults, $overrides);
-        $client = $this->getTestClient($this->salesChannelContext);
-        $client->request('GET', '/findologic?' . http_build_query($params));
-
-        return $client->getResponse();
-    }
-
-    protected function parsePluginVersion(): string
-    {
-        $composerJsonContents = file_get_contents(__DIR__ . '/../../composer.json');
-        $parsed = json_decode($composerJsonContents, true);
-
-        // For release candidates, Shopware will internally format the version different, from how
-        // it is set in the composer.json.
-        return str_replace('rc.', 'RC', ltrim($parsed['version'], 'v'));
     }
 
     /**

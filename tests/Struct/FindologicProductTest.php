@@ -391,8 +391,64 @@ class FindologicProductTest extends TestCase
 
         $attributes = $findologicProduct->getCustomFields();
         foreach ($attributes as $attribute) {
-            $this->assertEquals(current($attribute->getValues()), $productFields[$attribute->getKey()]);
+            $this->assertEquals($productFields[$attribute->getKey()], current($attribute->getValues()));
         }
+    }
+
+    public function testProductWithMultiSelectCustomFields(): void
+    {
+        $data['customFields'] = ['multi' => [
+            'one value',
+            'another value',
+            'even a third one!'
+        ]];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $productFields = $productEntity->getCustomFields();
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+        foreach ($attributes as $attribute) {
+            $this->assertEquals($productFields[$attribute->getKey()], $attribute->getValues());
+        }
+    }
+
+    public function testProductWithLongCustomFieldValuesAreIgnored(): void
+    {
+        $data['customFields'] = ['long_value' => str_repeat('und wieder, ', 20000)];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $this->assertEmpty($findologicProduct->getCustomFields());
     }
 
     public function ratingProvider(): array
