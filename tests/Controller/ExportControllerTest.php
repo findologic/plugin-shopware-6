@@ -18,6 +18,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -228,16 +229,15 @@ class ExportControllerTest extends TestCase
      * https://some-shop.de/findologic?shopkey=from-united-kingdom => https://shome-shop.co.uk/detail/...
      *
      * Runs in a separate process to not interfere with other tests.
-     * @runInSeparateProcess
      */
     public function testProductsWithoutSeoUrlsWillExportTheUrlBasedOnTheConfiguredLanguage(): void
     {
         $langRepo = $this->getContainer()->get('language.repository');
         $languages = $langRepo->search(
-            (new Criteria())->addFilter(new EqualsFilter('id', Defaults::LANGUAGE_SYSTEM)),
+            (new Criteria())->addSorting(new FieldSorting('name')),
             Context::createDefaultContext()
         );
-        $languageId = array_values($languages->getElements())[0]->getId();
+        $languageId = Defaults::LANGUAGE_SYSTEM;
 
         $currencyRepo = $this->getContainer()->get('currency.repository');
         $currencies = $currencyRepo->search(
@@ -245,7 +245,7 @@ class ExportControllerTest extends TestCase
             Context::createDefaultContext()
         );
 
-        $salesChannelContext = $this->createSalesChannelContext($currencies, $languages);
+        $salesChannelContext = $this->createSalesChannelContext($currencies, $languages, $languageId);
         $salesChannelContext->getSalesChannel()->setLanguageId($languageId);
 
         $this->getContainer()->get('sales_channel.repository')->update([
@@ -327,15 +327,14 @@ class ExportControllerTest extends TestCase
      */
     private function createSalesChannelContext(
         EntitySearchResult $currencies,
-        EntitySearchResult $languages
+        EntitySearchResult $languages,
+        string $languageId
     ): SalesChannelContext {
         $deliveryTimeRepo = $this->getContainer()->get('delivery_time.repository');
         $deliveryTimes = $deliveryTimeRepo->search(new Criteria(), Context::createDefaultContext());
 
-        $languageId = array_values($languages->getElements())[0]->getId();
-
         $overrides = [
-            'languageId' => $languages->first()->getId(),
+            'languageId' => $languageId,
             'languages' => [
                 [
                     'id' => $languages->first()->getId(),
