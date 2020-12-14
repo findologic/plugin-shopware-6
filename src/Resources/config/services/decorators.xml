@@ -69,7 +69,7 @@
             <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter"/>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader" public="true">
+        <service id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader" public="true" decoration-on-invalid="ignore">
             <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader"/>
             <argument type="service"
                       id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"/>
