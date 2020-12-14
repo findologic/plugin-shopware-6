@@ -637,14 +637,23 @@ class ProductListingFeaturesSubscriberTest extends TestCase
      */
     private function getDefaultProductListingFeaturesSubscriber()
     {
-        $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
-            $this->connectionMock,
-            $this->entityRepositoryMock,
-            $this->entityRepositoryMock,
-            $this->systemConfigServiceMock,
-            $this->productListingSortingRegistry,
-            $this->eventDispatcherMock
-        );
+        if (Utils::versionLowerThan('6.2')) {
+            $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
+                $this->connectionMock,
+                $this->entityRepositoryMock,
+                $this->productListingSortingRegistry
+            );
+        } else {
+            $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
+                $this->connectionMock,
+                $this->entityRepositoryMock,
+                $this->entityRepositoryMock,
+                $this->systemConfigServiceMock,
+                $this->productListingSortingRegistry,
+                $this->eventDispatcherMock
+            );
+        }
+
         $findologicSearchService = new FindologicSearchService(
             $this->containerMock,
             $this->apiClientMock,

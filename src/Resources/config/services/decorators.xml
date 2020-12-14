@@ -24,8 +24,13 @@
                 public="true"
         >
             <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController.inner"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader"/>
+            <argument
+                    type="service"
+                    id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader"
+                    on-invalid="null"
+            />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler"/>
+            <argument type="service" id="service_container" />
         </service>
 
         <service
@@ -34,7 +39,8 @@
                 decoration-on-invalid="ignore"
         >
             <argument type="service"
-                      id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute.inner"/>
+                      id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute.inner"
+            />
             <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"/>
             <argument type="service" id="event_dispatcher"/>
             <argument type="service" id="sales_channel.product.repository"/>
@@ -69,11 +75,23 @@
             <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter"/>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader" public="true" decoration-on-invalid="ignore">
+        <service
+                id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader"
+                decorates="Shopware\Storefront\Page\Search\SearchPageLoader"
+                public="true"
+        >
             <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader"/>
-            <argument type="service"
-                      id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"/>
+            <argument
+                    type="service"
+                    id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
+                    on-invalid="null"
+            />
             <argument type="service" id="event_dispatcher"/>
+            <argument
+                    type="service"
+                    id="FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader"
+                    on-invalid="null"
+            />
         </service>
 
     </services>

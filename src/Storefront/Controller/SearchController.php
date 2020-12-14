@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
+use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as LegacySearchPageLoader;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -13,6 +16,7 @@ use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Storefront\Framework\Cache\Annotation\HttpCache;
 use Shopware\Storefront\Page\Search\SearchPageLoader;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -30,11 +34,13 @@ class SearchController extends StorefrontController
 
     public function __construct(
         ShopwareSearchController $decorated,
-        SearchPageLoader $searchPageLoader,
-        FilterHandler $filterHandler
+        ?SearchPageLoader $searchPageLoader,
+        FilterHandler $filterHandler,
+        ContainerInterface $container
     ) {
+        $this->container = $container;
         $this->decorated = $decorated;
-        $this->searchPageLoader = $searchPageLoader;
+        $this->searchPageLoader = $this->buildSearchPageLoader($searchPageLoader);
         $this->filterHandler = $filterHandler;
     }
 
@@ -103,6 +109,19 @@ class SearchController extends StorefrontController
     public function ajax(Request $request, SalesChannelContext $context): Response
     {
         return $this->decorated->ajax($request, $context);
+    }
+
+    private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
+    {
+        if (!$searchPageLoader) {
+            if (Utils::versionLowerThan('6.2.0')) {
+                return $this->container->get(LegacySearchPageLoader::class);
+            }
+
+            return $this->container->get(FindologicSearchPageLoader::class);
+        }
+
+        return $searchPageLoader;
     }
 
     private function handleFindologicSearchParams(Request $request): ?Response

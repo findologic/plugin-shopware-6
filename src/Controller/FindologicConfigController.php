@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
-use Exception;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\NoContentResponse;
@@ -51,27 +50,27 @@ class FindologicConfigController extends AbstractController
     /**
      * @Route("/api/v{version}/_action/finsearch", name="api.action.finsearch.save", methods={"POST"})
      */
-    public function saveConfiguration(Request $request): NoContentResponse
+    public function saveConfiguration(Request $request): Response
     {
         $salesChannelId = $request->query->get('salesChannelId');
         $languageId = $request->query->get('languageId');
         $configs = $request->request->all();
         $this->saveKeyValues($salesChannelId, $languageId, $configs);
 
-        return new NoContentResponse();
+        return new Response('', Response::HTTP_NO_CONTENT);
     }
 
     /**
      * @Route("/api/v{version}/_action/finsearch/batch", name="api.action.finsearch.save.batch", methods={"POST"})
      */
-    public function batchSaveConfiguration(Request $request): NoContentResponse
+    public function batchSaveConfiguration(Request $request): Response
     {
         foreach ($request->request->all() as $key => $config) {
             [$salesChannelId, $languageId] = explode('-', $key);
             $this->saveKeyValues($salesChannelId, $languageId, $config);
         }
 
-        return new NoContentResponse();
+        return new Response('', Response::HTTP_NO_CONTENT);
     }
 
     private function saveKeyValues(string $salesChannelId, string $languageId, array $config): void
