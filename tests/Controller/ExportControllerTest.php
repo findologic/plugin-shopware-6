@@ -17,6 +17,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -232,8 +233,11 @@ class ExportControllerTest extends TestCase
     public function testProductsWithoutSeoUrlsWillExportTheUrlBasedOnTheConfiguredLanguage(): void
     {
         $langRepo = $this->getContainer()->get('language.repository');
-        $languages = $langRepo->search(new Criteria(), Context::createDefaultContext());
-        $languageId = array_values($languages->getElements())[1]->getId();
+        $languages = $langRepo->search(
+            (new Criteria())->addFilter(new EqualsFilter('id', Defaults::LANGUAGE_SYSTEM)),
+            Context::createDefaultContext()
+        );
+        $languageId = array_values($languages->getElements())[0]->getId();
 
         $currencyRepo = $this->getContainer()->get('currency.repository');
         $currencies = $currencyRepo->search(
@@ -328,7 +332,7 @@ class ExportControllerTest extends TestCase
         $deliveryTimeRepo = $this->getContainer()->get('delivery_time.repository');
         $deliveryTimes = $deliveryTimeRepo->search(new Criteria(), Context::createDefaultContext());
 
-        $languageId = array_values($languages->getElements())[1]->getId();
+        $languageId = array_values($languages->getElements())[0]->getId();
 
         $overrides = [
             'languageId' => $languages->first()->getId(),
