@@ -75,9 +75,6 @@ class SalesChannelService
             $languageId
         )->first();
 
-        if (!$domain) {
-            dd($salesChannelContext->getSalesChannel()->getDomains(), $languageId, $domain);
-        }
         $parsedUrl = parse_url($domain->getUrl());
 
         // There is no Request::setUrl(), therefore we need to duplicate the current request object.
