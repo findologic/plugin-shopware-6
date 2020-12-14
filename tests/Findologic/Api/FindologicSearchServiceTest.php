@@ -138,7 +138,10 @@ class FindologicSearchServiceTest extends TestCase
             $this->apiConfig,
             $this->pluginConfigMock,
             $this->getContainer()->get(GenericPageLoader::class),
-            $this->getContainer()->get(ProductListingSortingRegistry::class, ContainerInterface::NULL_ON_INVALID_REFERENCE)
+            $this->getContainer()->get(
+                ProductListingSortingRegistry::class,
+                ContainerInterface::NULL_ON_INVALID_REFERENCE
+            )
         );
 
         $reflector = new ReflectionObject($findologicSearchService);
