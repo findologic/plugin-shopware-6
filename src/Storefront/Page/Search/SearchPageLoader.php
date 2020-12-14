@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Page\Search;
 
-use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as LegacySearchPageLoader;
+use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as
+    LegacySearchPageLoader;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;

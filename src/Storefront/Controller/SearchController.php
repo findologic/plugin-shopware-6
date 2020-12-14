@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
-use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as LegacySearchPageLoader;
+use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as
+    LegacySearchPageLoader;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
