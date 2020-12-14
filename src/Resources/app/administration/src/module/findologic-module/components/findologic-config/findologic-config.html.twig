@@ -64,11 +64,12 @@
                             <template #content="props">
                                 <sw-multi-select
                                         name="FinSearch.config.crossSellingCategories"
-                                        :mapInheritance="props"
+{#                                        :mapInheritance="props"#}
                                         :options="categories"
                                         :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
                                         :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
                                         :disabled="props.isInherited"
+                                        :isInherited="props.isInherited"
                                         :value="props.currentValue"
                                         :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
                                         @change="props.updateCurrentValue"

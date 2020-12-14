@@ -187,7 +187,7 @@ Component.register('findologic-config', {
     },
 
     showAPIConfig() {
-      return this.integrationType === undefined || this.integrationType === 'API';
+      return this.integrationType === null || this.integrationType === 'API';
     },
 
     shopkeyPlaceholder() {
@@ -195,7 +195,7 @@ Component.register('findologic-config', {
     },
 
     showDIConfig() {
-      return this.integrationType === undefined || this.integrationType === 'Direct Integration';
+      return this.integrationType === null || this.integrationType === 'Direct Integration';
     },
 
     disabledClass () {

@@ -29,7 +29,18 @@ use function is_array;
 
 class FindologicConfigService
 {
-    private static $requiredConfig = [
+    public const
+        CONFIG_KEYS = [
+        'FinSearch.config.shopkey',
+        'FinSearch.config.active',
+        'FinSearch.config.activeOnCategoryPages',
+        'FinSearch.config.crossSellingCategories',
+        'FinSearch.config.searchResultContainer',
+        'FinSearch.config.navigationResultContainer',
+        'FinSearch.config.integrationType',
+        'FinSearch.config.filterPosition',
+    ],
+        REQUIRED_CONFIG = [
         'FinSearch.config.shopkey'
     ];
 
@@ -157,12 +168,12 @@ class FindologicConfigService
         // If no sales channel is given, we have to manually set it for each language of each sales channel.
         if ($salesChannelId === null) {
             // Required configuration must have a sales channel so we skip them in this scenario.
-            if (in_array($key, self::$requiredConfig, false)) {
+            if (in_array($key, self::REQUIRED_CONFIG, false)) {
                 return;
             }
             $this->setConfig($key, $salesChannelId, $languageId, $value);
             $salesChannels = $this->getAllSalesChannels();
-            foreach ($salesChannels->getElements() as $salesChannelEntity) {
+            foreach ($salesChannels as $salesChannelEntity) {
                 /** @var LanguageEntity $language */
                 foreach ($salesChannelEntity->getLanguages() as $language) {
                     $this->setConfig($key, $salesChannelEntity->getId(), $language->getId(), $value);
@@ -256,9 +267,13 @@ class FindologicConfigService
     private function buildConfig(FinSearchConfigCollection $configs): array
     {
         $findologicConfig = [];
+        // Set the configuration schema for enabling inheritance
+        foreach (self::CONFIG_KEYS as $configKey) {
+            $findologicConfig[$configKey] = null;
+        }
+
         foreach ($configs as $config) {
-            $keyExists = array_key_exists($config->getConfigurationKey(), $findologicConfig);
-            if (!$keyExists || !Utils::isEmpty($config->getConfigurationValue())) {
+            if (!Utils::isEmpty($config->getConfigurationValue())) {
                 $findologicConfig[$config->getConfigurationKey()] = $config->getConfigurationValue();
             }
         }
