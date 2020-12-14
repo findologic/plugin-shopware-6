@@ -76,7 +76,7 @@ class SalesChannelService
         )->first();
 
         if (!$domain) {
-            dd($languageId, $domain);
+            dd($salesChannelContext->getSalesChannel()->getDomains(), $languageId, $domain);
         }
         $parsedUrl = parse_url($domain->getUrl());
 
