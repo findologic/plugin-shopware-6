@@ -14,6 +14,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware631\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as OldProductListingFeaturesSubscriber;
 // phpcs:enable
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
+use FINDOLOGIC\FinSearch\Findologic\Api\SortingService;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
@@ -721,6 +722,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
                 $this->serviceConfigResourceMock,
                 $this->genericPageLoaderMock,
                 $this->containerMock,
+                $this->getContainer()->get(SortingService::class),
                 $this->configMock,
                 $this->apiConfigMock,
                 $this->apiClientMock
@@ -737,6 +739,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
                 $this->serviceConfigResourceMock,
                 $this->genericPageLoaderMock,
                 $this->containerMock,
+                $this->getContainer()->get(SortingService::class),
                 $this->configMock,
                 $this->apiConfigMock,
                 $this->apiClientMock
