@@ -9,6 +9,7 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\FinSearch\Exceptions\UnknownCategoryException;
+use FINDOLOGIC\FinSearch\Findologic\Api\SortingService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
@@ -74,6 +75,9 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     /** @var NavigationRequestHandler */
     protected $navigationRequestHandler;
 
+    /** @var SortingService */
+    protected $sortingService;
+
     public function __construct(
         Connection $connection,
         EntityRepositoryInterface $optionRepository,
@@ -84,6 +88,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         ServiceConfigResource $serviceConfigResource,
         GenericPageLoader $genericPageLoader,
         ContainerInterface $container,
+        SortingService $sortingService,
         ?Config $config = null,
         ?ApiConfig $apiConfig = null,
         ?ApiClient $apiClient = null
@@ -116,6 +121,8 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $this->sortingRegistry = $sortingRegistry;
         $this->navigationRequestFactory = $navigationRequestFactory;
         $this->searchRequestFactory = $searchRequestFactory;
+        $this->sortingService = $sortingService;
+
         parent::__construct($connection, $optionRepository, $sortingRegistry);
     }
 
@@ -127,7 +134,7 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             return;
         }
 
-        $this->addTopResultSorting($event);
+        $this->sortingService->handleResult($event);
     }
 
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
@@ -153,6 +160,8 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $this->handleFilters($event);
             $this->navigationRequestHandler->handleRequest($event);
             $this->setSystemAwareExtension($event);
+
+            $this->sortingService->handleRequest($event);
         }
     }
 
@@ -174,6 +183,8 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
             $this->handleFilters($event);
             $this->searchRequestHandler->handleRequest($event);
             $this->setSystemAwareExtension($event);
+
+            $this->sortingService->handleRequest($event);
         }
     }
 
@@ -183,42 +194,6 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
         $systemAware = $this->container->get(SystemAware::class);
 
         $event->getContext()->addExtension(SystemAware::IDENTIFIER, $systemAware);
-    }
-
-    private function addTopResultSorting(ProductListingResultEvent $event): void
-    {
-        $defaultSort = $event instanceof ProductSearchResultEvent ? self::DEFAULT_SEARCH_SORT : self::DEFAULT_SORT;
-        $currentSorting = $this->getCurrentSorting($event->getRequest(), $defaultSort);
-
-        $event->getResult()->setSorting($currentSorting);
-        $this->sortingRegistry->add(
-            new ProductListingSorting('score', 'filter.sortByScore', ['_score' => 'desc'])
-        );
-        $sortings = $this->sortingRegistry->getSortings();
-        /** @var ProductListingSorting $sorting */
-        foreach ($sortings as $sorting) {
-            $sorting->setActive($sorting->getKey() === $currentSorting);
-        }
-
-        $event->getResult()->setSortings($sortings);
-    }
-
-    private function getCurrentSorting(Request $request, string $default): ?string
-    {
-        $key = $request->get('order', $default);
-        if (Utils::versionLowerThan('6.2')) {
-            $key = $request->get('sort', $default);
-        }
-
-        if (!$key) {
-            return null;
-        }
-
-        if ($this->sortingRegistry->has($key)) {
-            return $key;
-        }
-
-        return $default;
     }
 
     private function handleFilters(ProductListingCriteriaEvent $event): void

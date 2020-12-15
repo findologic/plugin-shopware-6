@@ -23,6 +23,7 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader" />
             <argument type="service" id="Symfony\Component\DependencyInjection\ContainerInterface" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" />
         </service>
 
         <service
