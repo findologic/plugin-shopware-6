@@ -34,7 +34,8 @@ class SortingService
         $this->translator = $translator;
     }
 
-    public function handleRequest(ProductListingCriteriaEvent $event): void {
+    public function handleRequest(ProductListingCriteriaEvent $event): void
+    {
         if (!Utils::versionLowerThan('6.3.3.0')) {
             $this->addTopResultSorting($event);
         }
