@@ -130,6 +130,8 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true" />
+        <service id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" autowire="true" />
+        <service id="FINDOLOGIC\FinSearch\Findologic\Api\PaginationService" autowire="true" />
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler" />
 

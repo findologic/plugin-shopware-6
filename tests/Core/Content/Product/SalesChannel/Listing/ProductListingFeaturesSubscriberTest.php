@@ -12,6 +12,8 @@ use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
+use FINDOLOGIC\FinSearch\Findologic\Api\PaginationService;
+use FINDOLOGIC\FinSearch\Findologic\Api\SortingService;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
@@ -654,13 +656,20 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             );
         }
 
+        $sortingService = new SortingService(
+            $this->productListingSortingRegistry,
+            $this->getContainer()->get('translator')
+        );
+        $paginationService = new PaginationService();
+
         $findologicSearchService = new FindologicSearchService(
             $this->containerMock,
             $this->apiClientMock,
             $this->apiConfigMock,
             $this->configMock,
             $this->genericPageLoaderMock,
-            $this->productListingSortingRegistry
+            $sortingService,
+            $paginationService
         );
 
         return new ProductListingFeaturesSubscriber(
