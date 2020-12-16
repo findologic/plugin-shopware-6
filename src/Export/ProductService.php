@@ -231,8 +231,8 @@ class ProductService
 
         $activeVariant = [];
         foreach ($variants as $variant) {
-            // We only need to get the first active variant, so if we already have the the first variant
-            //  we do not check the rest of the variants.
+            // We only need to get the first active variant, so if we already have the the first variant we do not
+            // check the rest of the variants.
             if (!isset($activeVariant[$variant->getParentId()])) {
                 $activeVariant[$variant->getParentId()] = $variant;
             }
