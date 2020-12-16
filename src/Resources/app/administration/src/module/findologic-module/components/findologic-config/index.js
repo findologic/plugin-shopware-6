@@ -77,15 +77,7 @@ Component.register('findologic-config', {
     },
 
     isString(value) {
-      if (typeof value !== 'string') {
-        return true;
-      }
-    },
-
-    isArray(value) {
-      if (value.length <= 0) {
-        return true;
-      }
+      return typeof value !== 'string';
     },
 
     isBoolean(value) {
@@ -205,7 +197,7 @@ Component.register('findologic-config', {
       return this.integrationType === null || this.integrationType === 'Direct Integration';
     },
 
-    disabledClass () {
+    disabledClass() {
       return !this.selectedLanguageId ? 'findologic--text-field-disabled' : '';
     },
 

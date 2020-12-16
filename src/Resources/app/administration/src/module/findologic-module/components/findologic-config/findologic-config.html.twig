@@ -92,30 +92,19 @@
             <sw-card class="sw-card--grid" title="Export">
                 <sw-container>
                     <div class="findologic-settings-credentials-fields">
-                        <sw-inherit-wrapper
+                        <sw-multi-select
+                                name="FinSearch.config.crossSellingCategories"
+                                :options="categories"
                                 v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
-                                :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.crossSellingCategories']"
-                                :customInheritationCheckFunction="isArray"
+                                :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
+                                :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
+                                :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
                         >
-                            <template #content="props">
-                                <sw-multi-select
-                                        name="FinSearch.config.crossSellingCategories"
-                                        :mapInheritance="props"
-                                        :options="categories"
-                                        :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
-                                        :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
-                                        :disabled="props.isInherited"
-                                        :value="props.currentValue"
-                                        :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
-                                        @change="props.updateCurrentValue"
-                                >
-                                    <template #selection-label-property="{ item }">
-                                        {{ item.name }}
-                                    </template>
-
-                                </sw-multi-select>
+                            <template #selection-label-property="{ item }">
+                                {{ item.name }}
                             </template>
-                        </sw-inherit-wrapper>
+
+                        </sw-multi-select>
                     </div>
                 </sw-container>
             </sw-card>
@@ -171,26 +160,14 @@
 
             <sw-card class="sw-card--grid" v-if="showAPIConfig" :title="$tc('findologic.settingForm.api.title')">
                 <sw-container>
-
                     <div class="findologic-settings-credentials-fields">
-                        <sw-inherit-wrapper
+                        <sw-single-select
+                                :options="filterPositionOptions"
                                 v-model="actualConfigData['FinSearch.config.filterPosition']"
-                                :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.filterPosition']"
-                                :customInheritationCheckFunction="isString"
-                        >
-                            <template #content="props">
-                                <sw-single-select
-                                        :options="filterPositionOptions"
-                                        name="FinSearch.config.filterPosition"
-                                        :mapInheritance="props"
-                                        :label="$tc('findologic.settingForm.config.filterPosition.label')"
-                                        :helpText="$tc('findologic.settingForm.config.filterPosition.tooltipText')"
-                                        :disabled="props.isInherited"
-                                        :value="props.currentValue ?? 'top'"
-                                        @change="props.updateCurrentValue">
-                                </sw-single-select>
-                            </template>
-                        </sw-inherit-wrapper>
+                                name="FinSearch.config.filterPosition"
+                                :label="$tc('findologic.settingForm.config.filterPosition.label')"
+                                :helpText="$tc('findologic.settingForm.config.filterPosition.tooltipText')">
+                        </sw-single-select>
                     </div>
                 </sw-container>
             </sw-card>

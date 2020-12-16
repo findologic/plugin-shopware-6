@@ -44,8 +44,8 @@ SQL;
     }
 
     /**
-     * Custom Findologic configuration is implemented after v1.3.2, so we need to properly migrate any existing config
-     * from SystemConfig to FindologicConfig
+     * Custom Findologic configuration is implemented after 2.0, so we need to properly migrate any existing config
+     * from `SystemConfig` to `FindologicConfig`
      */
     private function insertPreviousConfigurationIfExists(Connection $connection): void
     {
@@ -80,6 +80,8 @@ SQL;
             $data['sales_channel_id'] = Uuid::fromHexToBytes($salesChannelId);
             try {
                 $connection->insert('finsearch_config', $data);
+                // After migrating, delete previous configuration as it won't be used anymore
+                $this->deleteOldConfiguration($connection);
             } catch (DBALException $ignored) {
                 // Do nothing here as configuration already exists
             }
@@ -91,5 +93,11 @@ SQL;
         $sql = 'SELECT LOWER(HEX(`id`)) AS `id` FROM `sales_channel` WHERE `type_id` = UNHEX(?) AND `active` = \'1\'';
 
         return $connection->fetchColumn($sql, [Defaults::SALES_CHANNEL_TYPE_STOREFRONT]);
+    }
+
+    private function deleteOldConfiguration(Connection $connection): void
+    {
+        $sql = "DELETE FROM `system_config` WHERE `configuration_key` LIKE '%FinSearch.config%'";
+        $connection->executeUpdate($sql);
     }
 }

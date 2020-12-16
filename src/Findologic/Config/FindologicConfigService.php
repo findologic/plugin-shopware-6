@@ -26,6 +26,7 @@ use function array_shift;
 use function explode;
 use function gettype;
 use function is_array;
+use function is_bool;
 
 class FindologicConfigService
 {
@@ -226,7 +227,7 @@ class FindologicConfigService
 
     private function load(?string $salesChannelId, ?string $languageId): array
     {
-        if ($salesChannelId) {
+        if ($languageId) {
             $key = sprintf('%s-%s', $salesChannelId, $languageId);
         } else {
             $key = 'global';
@@ -273,9 +274,16 @@ class FindologicConfigService
         }
 
         foreach ($configs as $config) {
-            if (!Utils::isEmpty($config->getConfigurationValue())) {
-                $findologicConfig[$config->getConfigurationKey()] = $config->getConfigurationValue();
+            $value = $config->getConfigurationValue();
+            $key = $config->getConfigurationKey();
+            $inheritedValuePresent = array_key_exists($key, $findologicConfig);
+            $isValueEmpty = !is_bool($value) && Utils::isEmpty($value);
+
+            if ($inheritedValuePresent && $isValueEmpty) {
+                continue;
             }
+
+            $findologicConfig[$key] = $value;
         }
 
         return $findologicConfig;
