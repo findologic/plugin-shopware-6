@@ -79,12 +79,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/guzzle.git",
-                "reference": "df63a667063dc692a577550d82f456d75529bccd"
+                "reference": "135d0f664e03a5026d4887983eca01a5bf33d463"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/guzzle/zipball/df63a667063dc692a577550d82f456d75529bccd",
-                "reference": "df63a667063dc692a577550d82f456d75529bccd",
+                "url": "https://api.github.com/repos/findologic/guzzle/zipball/135d0f664e03a5026d4887983eca01a5bf33d463",
+                "reference": "135d0f664e03a5026d4887983eca01a5bf33d463",
                 "shasum": ""
             },
             "require": {
