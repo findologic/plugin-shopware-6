@@ -160,7 +160,7 @@ class Utils
         $context->addExtension('findologicService', $findologicService);
 
         $shopkey = $config->getShopkey();
-        if ($shopkey && trim($shopkey) === '') {
+        if (!$shopkey || trim($shopkey) === '') {
             return $findologicService->disable();
         }
 
