@@ -16,6 +16,7 @@ Component.register('findologic-config', {
 
   props: {
     actualConfigData: {
+      type: Object,
       required: true,
     },
     allConfigs: {
@@ -77,6 +78,12 @@ Component.register('findologic-config', {
 
     isString(value) {
       if (typeof value !== 'string') {
+        return true;
+      }
+    },
+
+    isArray(value) {
+      if (value.length <= 0) {
         return true;
       }
     },
