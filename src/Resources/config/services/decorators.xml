@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://symfony.com/schema/dic/services"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
+>
+
+    <services>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
+                decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
+                public="true"
+        >
+            <argument
+                    type="service"
+                    id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber.inner"
+            />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService"/>
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController"
+                decorates="Shopware\Storefront\Controller\SearchController"
+                public="true"
+        >
+            <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController.inner"/>
+            <argument
+                    type="service"
+                    id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader"
+                    on-invalid="null"
+            />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler"/>
+            <argument type="service" id="service_container" />
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
+                decorates="Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
+                decoration-on-invalid="ignore"
+        >
+            <argument type="service"
+                      id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute.inner"
+            />
+            <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"/>
+            <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="sales_channel.product.repository"/>
+            <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition"/>
+            <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute"
+                decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRoute"
+                decoration-on-invalid="ignore"
+        >
+            <argument type="service"
+                      id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute.inner"/>
+            <argument type="service" id="sales_channel.product.repository"/>
+            <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition"/>
+            <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
+        </service>
+
+        <!-- Indirect Service Decorators (are used by decorators above) -->
+        <!-- Indirect Service Decorators will only override their decorated service when explicitly used -->
+
+        <service
+                id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"
+                class="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder"
+        >
+            <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter"/>
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader"
+                decorates="Shopware\Storefront\Page\Search\SearchPageLoader"
+                public="true"
+        >
+            <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader"/>
+            <argument
+                    type="service"
+                    id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
+                    on-invalid="null"
+            />
+            <argument type="service" id="event_dispatcher"/>
+            <argument
+                    type="service"
+                    id="FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader"
+                    on-invalid="null"
+            />
+        </service>
+
+    </services>
+</container>

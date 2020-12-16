@@ -160,6 +160,10 @@ class Utils
         $context->addExtension('findologicService', $findologicService);
 
         $shopkey = $config->getShopkey();
+        if (!$shopkey || trim($shopkey) === '') {
+            return $findologicService->disable();
+        }
+
         $isDirectIntegration = $serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $serviceConfigResource->isStaging($shopkey);
         $isStagingSession = static::isStagingSession($request);

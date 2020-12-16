@@ -26,7 +26,9 @@ class FinSearch extends Plugin
         // For maintaining compatibility with Shopware 6.1.x we load relevant services due to several
         // breaking changes introduced in Shopware 6.2
         // @link https://github.com/shopware/platform/blob/master/UPGRADE-6.2.md
-        $this->loadServiceXml($container, $this->getCompatibilityLayerServicesFilePath());
+        if ($path = $this->getCompatibilityLayerServicesFilePath()) {
+            $this->loadServiceXml($container, $path);
+        }
 
         parent::build($container);
     }
@@ -58,21 +60,13 @@ class FinSearch extends Plugin
         $this->deleteFindologicConfig();
     }
 
-    private function getCompatibilityLayerServicesFilePath(): string
+    private function getCompatibilityLayerServicesFilePath(): ?string
     {
         if (Utils::versionLowerThan('6.2')) {
             return self::COMPATIBILITY_PATH . '/shopware61';
         }
 
-        if (Utils::versionLowerThan('6.3.2')) {
-            return self::COMPATIBILITY_PATH . '/shopware631';
-        }
-
-        if (Utils::versionLowerThan('6.3.3')) {
-            return self::COMPATIBILITY_PATH . '/shopware632';
-        }
-
-        return self::COMPATIBILITY_PATH . '/latest';
+        return null;
     }
 
     private function loadServiceXml($container, string $filePath): void
