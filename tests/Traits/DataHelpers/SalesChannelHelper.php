@@ -27,7 +27,8 @@ trait SalesChannelHelper
         string $salesChannelId = Defaults::SALES_CHANNEL,
         string $url = 'http://test.uk',
         ?CustomerEntity $customerEntity = null,
-        ?string $languageId = Defaults::LANGUAGE_SYSTEM
+        string $languageId = Defaults::LANGUAGE_SYSTEM,
+        array $overrides = []
     ): SalesChannelContext {
         $locale = $this->getLocaleOfLanguage($languageId);
         if ($locale) {
@@ -35,7 +36,7 @@ trait SalesChannelHelper
         } else {
             $snippetSet = $this->fetchIdFromDatabase('snippet_set');
         }
-        $salesChannel = [
+        $salesChannel = array_merge([
             'id' => $salesChannelId,
             'languageId' => $languageId,
             'domains' => [
@@ -45,10 +46,11 @@ trait SalesChannelHelper
                     'languageId' => $languageId,
                     'snippetSetId' => $snippetSet
                 ]
-            ]
-        ];
+            ],
+            'typeId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT
+        ], $overrides);
 
-        $this->getContainer()->get('sales_channel.repository')->update(
+        $this->getContainer()->get('sales_channel.repository')->upsert(
             [$salesChannel],
             Context::createDefaultContext()
         );

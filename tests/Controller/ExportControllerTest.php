@@ -12,11 +12,22 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\WithTestClient;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Defaults;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Development\Kernel;
 use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Integration tests for the ExportController. All tests are run in separate processes to not interfere with each other.
+ *
+ * @runTestsInSeparateProcesses
+ */
 class ExportControllerTest extends TestCase
 {
     use WithTestClient;
@@ -229,5 +240,166 @@ class ExportControllerTest extends TestCase
 
         $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
         $this->assertSame('FINDOLOGIC Product DE', $parsedResponse->items->item->names->name->__toString());
+    }
+
+    /**
+     * Test ensures that the Shopware Router generates the product URLs based on the current language.
+     * This special case applies if a Sales Channel has multiple languages and the export is called from
+     * within a different Sales Channel. E.g.
+     *
+     * Sales Channel "Germany" can be accessed with URL https://some-shop.de, therefore the configured export
+     * URL is set to it. Now there is a second domain for "United Kingdom", which can be accessed with the
+     * URL https://some-shop.co.uk. This test ensures that the products will use the UK domain, when calling
+     * the URL of the German Sales Channel with the shopkey of the United Kingdom Sales Channel:
+     * https://some-shop.de/findologic?shopkey=from-united-kingdom => https://shome-shop.co.uk/detail/...
+     */
+    public function testProductsWithoutSeoUrlsWillExportTheUrlBasedOnTheConfiguredLanguage(): void
+    {
+        $langRepo = $this->getContainer()->get('language.repository');
+        $languages = $langRepo->search(
+            (new Criteria())->addSorting(new FieldSorting('name')),
+            Context::createDefaultContext()
+        );
+        $languageId = Defaults::LANGUAGE_SYSTEM;
+
+        $currencyRepo = $this->getContainer()->get('currency.repository');
+        $currencies = $currencyRepo->search(
+            (new Criteria())->addFilter(new EqualsFilter('isoCode', 'EUR')),
+            Context::createDefaultContext()
+        );
+
+        $salesChannelContext = $this->createSalesChannelContext($currencies, $languages, $languageId);
+        $salesChannelContext->getSalesChannel()->setLanguageId($languageId);
+
+        $this->getContainer()->get('sales_channel.repository')->update([
+            [
+                'id' => $salesChannelContext->getSalesChannel()->getId(),
+                'domains' => [
+                    [
+                        'currencyId' => $currencies->first()->getId(),
+                        'snippetSetId' =>
+                            $salesChannelContext->getSalesChannel()->getDomains()->first()->getSnippetSetId(),
+                        'url' => 'http://cool-url.com/german'
+                    ]
+                ]
+            ],
+        ], Context::createDefaultContext());
+
+        $this->enableFindologicPlugin(
+            $this->getContainer(),
+            self::VALID_SHOPKEY,
+            $salesChannelContext
+        );
+
+        $product = $this->createVisibleTestProduct([
+            'visibilities' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'salesChannelId' => $salesChannelContext->getSalesChannel()->getId(),
+                    'visibility' => 20
+                ]
+            ],
+            'seoUrls' => []
+        ]);
+
+        // Explicitly remove all SEO URLs, since they were automatically created when using DAL for product creation.
+        Kernel::getConnection()->executeUpdate('DELETE FROM seo_url');
+
+        $response = $this->sendExportRequest();
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
+        $parsedResponse = new SimpleXMLElement($response->getContent());
+
+        $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
+        $this->assertSame($product->getId(), $parsedResponse->items->item->attributes()->id->__toString());
+        $this->assertSame(
+            'http://localhost/german/detail/' . $product->getId(),
+            $parsedResponse->items->item->urls->url->__toString()
+        );
+    }
+
+    /**
+     * Unlike SalesChannelHelper::buildSalesChannelContext, which by default modifies the default sales channel, this
+     * method creates an entirely new Sales Channel and returns an appropriate SalesChannelContext.
+     *
+     * @see SalesChannelHelper::buildSalesChannelContext
+     */
+    private function createSalesChannelContext(
+        EntitySearchResult $currencies,
+        EntitySearchResult $languages,
+        string $languageId
+    ): SalesChannelContext {
+        $deliveryTimeRepo = $this->getContainer()->get('delivery_time.repository');
+        $deliveryTimes = $deliveryTimeRepo->search(new Criteria(), Context::createDefaultContext());
+
+        $overrides = [
+            'languageId' => $languageId,
+            'languages' => [
+                [
+                    'id' => $languages->first()->getId(),
+                ],
+                [
+                    'id' => $languageId
+                ]
+            ],
+            'customerGroup' => [
+                'translations' => [
+                    Defaults::LANGUAGE_SYSTEM => [
+                        'name' => 'Nice Customer Group!'
+                    ]
+                ]
+            ],
+            'currencyId' => $currencies->first()->getId(),
+            'payment' => [],
+            'shippingMethod' => [
+                'translations' => [
+                    Defaults::LANGUAGE_SYSTEM => [
+                        'name' => 'Findologic Speed Delivery'
+                    ]
+                ],
+                'availabilityRule' => [
+                    'name' => 'Verfügbarkeit',
+                    'priority' => 100
+                ],
+                'deliveryTimeId' => $deliveryTimes->first()->getId()
+            ],
+            'country' => [
+                'translations' => [
+                    Defaults::LANGUAGE_SYSTEM => [
+                        'name' => 'Austria'
+                    ]
+                ],
+            ],
+            'navigationCategory' => [
+                'translations' => [
+                    Defaults::LANGUAGE_SYSTEM => [
+                        'name' => 'MainCategoryForCoolSalesChannel'
+                    ]
+                ],
+            ],
+            'paymentMethod' => [
+                'translations' => [
+                    Defaults::LANGUAGE_SYSTEM => [
+                        'name' => 'FindoPayments'
+                    ]
+                ],
+            ],
+            'accessKey' => 'verySecure1234',
+            'translations' => [
+                Defaults::LANGUAGE_SYSTEM => [
+                    'name' => 'Cool URL Sales Channel'
+                ]
+            ],
+
+        ];
+
+        return $this->buildSalesChannelContext(
+            Uuid::randomHex(),
+            'http://cool-url.com',
+            null,
+            $languages->first()->getId(),
+            $overrides
+        );
     }
 }

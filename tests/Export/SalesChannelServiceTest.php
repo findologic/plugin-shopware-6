@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\Routing\RequestTransformerInterface;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
@@ -49,7 +50,8 @@ class SalesChannelServiceTest extends TestCase
 
         return new SalesChannelService(
             $configRepository,
-            $this->getContainer()->get(SalesChannelContextFactory::class)
+            $this->getContainer()->get(SalesChannelContextFactory::class),
+            $this->getContainer()->get(RequestTransformerInterface::class)
         );
     }
 
