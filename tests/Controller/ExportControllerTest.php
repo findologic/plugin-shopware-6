@@ -156,9 +156,9 @@ class ExportControllerTest extends TestCase
         $expectedExtensionPluginVersion = 'none';
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame($response->headers->get('x-findologic-platform'), $expectedShopwareVersion);
-        $this->assertSame($response->headers->get('x-findologic-plugin'), $expectedPluginVersion);
-        $this->assertSame($response->headers->get('x-findologic-extension-plugin'), $expectedExtensionPluginVersion);
+        $this->assertSame($expectedShopwareVersion, $response->headers->get('x-findologic-platform'));
+        $this->assertSame($expectedPluginVersion, $response->headers->get('x-findologic-plugin'));
+        $this->assertSame($expectedExtensionPluginVersion, $response->headers->get('x-findologic-extension-plugin'));
     }
 
     protected function sendExportRequest(array $overrides = []): Response
@@ -179,7 +179,9 @@ class ExportControllerTest extends TestCase
         $composerJsonContents = file_get_contents(__DIR__ . '/../../composer.json');
         $parsed = json_decode($composerJsonContents, true);
 
-        return ltrim($parsed['version'], 'v');
+        // For release candidates, Shopware will internally format the version different, from how
+        // it is set in the composer.json.
+        return str_replace('rc.', 'RC', ltrim($parsed['version'], 'v'));
     }
 
     public function testCorrectTranslatedProductIsExported(): void
