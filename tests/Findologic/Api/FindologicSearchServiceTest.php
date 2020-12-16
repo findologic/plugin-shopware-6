@@ -113,6 +113,8 @@ class FindologicSearchServiceTest extends TestCase
         bool $isFindologicEnabled
     ): void {
         $this->pluginConfigMock->expects($this->any())->method('isActive')->willReturn($isFindologicEnabled);
+        $this->pluginConfigMock->expects($this->any())->method('getShopkey')
+            ->willReturn('ABCDABCDABCDABCDABCDABCDABCDABCD');
         $this->pluginConfigMock->expects($this->any())->method('isInitialized')->willReturn(true);
         $this->serviceConfigResourceMock->expects($this->any())->method('isStaging')->willReturn($isStaging);
         $this->serviceConfigResourceMock->expects($this->any())->method('isDirectIntegration')->willReturn(false);
@@ -134,8 +136,26 @@ class FindologicSearchServiceTest extends TestCase
 
         $event = new ProductSearchCriteriaEvent($request, new Criteria(), $this->buildSalesChannelContext());
 
+        $serviceConfigResourceMock = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serviceConfigResourceMock->method('isDirectIntegration')->willReturn(false);
+
+        $containerMock = $this->getMockBuilder(ContainerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $containerMock->expects($this->any())->method('get')
+            ->willReturnCallback(function ($serviceName) use ($serviceConfigResourceMock) {
+                if ($serviceName === ServiceConfigResource::class) {
+                    return $serviceConfigResourceMock;
+                }
+
+                return $this->getContainer()->get($serviceName);
+            });
+
         $findologicSearchService = new FindologicSearchService(
-            $this->getContainer(),
+            $containerMock,
             $this->apiClientMock,
             $this->apiConfig,
             $this->pluginConfigMock,

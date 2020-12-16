@@ -302,6 +302,8 @@ class UtilsTest extends TestCase
             ->getMock();
         $configMock->expects($this->any())->method('isInitialized')->willReturn(true);
         $configMock->expects($this->any())->method('isActive')->willReturn($isActive);
+        $configMock->expects($this->any())->method('getShopkey')
+            ->willReturn('ABCDABCDABCDABCDABCDABCDABCDABCD');
         $configMock->expects($this->any())->method('isActiveOnCategoryPages')
             ->willReturn($isActiveOnCategory);
 

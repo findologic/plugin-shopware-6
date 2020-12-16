@@ -769,6 +769,8 @@ XML;
         $this->setUpCategoryRepositoryMock();
 
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->any())->method('getShopkey')
+            ->willReturn('ABCDABCDABCDABCDABCDABCDABCDABCD');
         if ($response === null) {
             $response = $this->getDefaultResponse();
         }
