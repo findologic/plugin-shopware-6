@@ -117,7 +117,7 @@ class FindologicSearchService
 
         $this->setSystemAwareExtension($event);
 
-        $this->sortingService->handleRequest($event);
+        $this->sortingService->handleRequest($event, $requestHandler);
     }
 
     protected function allowRequest(ProductListingCriteriaEvent $event): bool

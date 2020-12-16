@@ -44,7 +44,9 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
         $limit = $event->getCriteria()->getLimit();
         $this->decorated->handleListingRequest($event);
 
-        $this->findologicSearchService->doNavigation($event, $limit);
+        $limitOverride = $limit ?? $event->getCriteria()->getLimit();
+
+        $this->findologicSearchService->doNavigation($event, $limitOverride);
     }
 
     public function handleSearchRequest(ProductSearchCriteriaEvent $event): void
@@ -52,7 +54,9 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
         $limit = $event->getCriteria()->getLimit();
         $this->decorated->handleSearchRequest($event);
 
-        $this->findologicSearchService->doSearch($event, $limit);
+        $limitOverride = $limit ?? $event->getCriteria()->getLimit();
+
+        $this->findologicSearchService->doSearch($event, $limitOverride);
     }
 
     public function __call($method, $args)
