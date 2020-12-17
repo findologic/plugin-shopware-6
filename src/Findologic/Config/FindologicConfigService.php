@@ -78,7 +78,7 @@ class FindologicConfigService
     /**
      * @return array|bool|float|int|string|null
      */
-    public function get(string $key, ?string $salesChannelId, ?string $languageId)
+    public function get(string $key, ?string $salesChannelId = null, ?string $languageId = null)
     {
         $config = $this->load($salesChannelId, $languageId);
         $parts = explode('.', $key);
@@ -100,7 +100,7 @@ class FindologicConfigService
         return $pointer;
     }
 
-    public function getString(string $key, ?string $salesChannelId, ?string $languageId): string
+    public function getString(string $key, ?string $salesChannelId = null, ?string $languageId = null): string
     {
         $value = $this->get($key, $salesChannelId, $languageId);
         if (!is_array($value)) {
@@ -110,7 +110,7 @@ class FindologicConfigService
         throw new InvalidSettingValueException($key, 'string', gettype($value));
     }
 
-    public function getInt(string $key, ?string $salesChannelId, ?string $languageId): int
+    public function getInt(string $key, ?string $salesChannelId = null, ?string $languageId = null): int
     {
         $value = $this->get($key, $salesChannelId, $languageId);
         if (!is_array($value)) {
@@ -120,7 +120,7 @@ class FindologicConfigService
         throw new InvalidSettingValueException($key, 'int', gettype($value));
     }
 
-    public function getFloat(string $key, ?string $salesChannelId, ?string $languageId): float
+    public function getFloat(string $key, ?string $salesChannelId = null, ?string $languageId = null): float
     {
         $value = $this->get($key, $salesChannelId, $languageId);
         if (!is_array($value)) {
@@ -130,12 +130,12 @@ class FindologicConfigService
         throw new InvalidSettingValueException($key, 'float', gettype($value));
     }
 
-    public function getBool(string $key, ?string $salesChannelId, ?string $languageId): bool
+    public function getBool(string $key, ?string $salesChannelId = null, ?string $languageId = null): bool
     {
         return (bool)$this->get($key, $salesChannelId, $languageId);
     }
 
-    public function all(?string $salesChannelId, ?string $languageId): array
+    public function all(?string $salesChannelId = null, ?string $languageId = null): array
     {
         return $this->load($salesChannelId, $languageId);
     }
@@ -145,7 +145,7 @@ class FindologicConfigService
      * @throws InvalidUuidException
      * @throws InconsistentCriteriaIdsException
      */
-    public function getConfig(?string $salesChannelId, ?string $languageId): array
+    public function getConfig(?string $salesChannelId = null, ?string $languageId = null): array
     {
         $criteria = $this->buildCriteria($salesChannelId, $languageId);
 
@@ -160,7 +160,7 @@ class FindologicConfigService
     /**
      * @param array|bool|float|int|string|null $value
      */
-    public function set(string $key, $value, ?string $salesChannelId, ?string $languageId): void
+    public function set(string $key, $value, ?string $salesChannelId = null, ?string $languageId = null): void
     {
         $this->configs = [];
         $key = trim($key);
@@ -190,7 +190,7 @@ class FindologicConfigService
         $this->set($key, null, $salesChannel, $languageId);
     }
 
-    private function validate(string $key, ?string $salesChannelId, ?string $languageId): void
+    private function validate(string $key, ?string $salesChannelId = null, ?string $languageId = null): void
     {
         $key = trim($key);
         if ($key === '') {
@@ -204,7 +204,7 @@ class FindologicConfigService
         }
     }
 
-    private function getId(string $key, ?string $salesChannelId, ?string $languageId): ?string
+    private function getId(string $key, ?string $salesChannelId = null, ?string $languageId = null): ?string
     {
         $criteria = $this->buildCriteria($salesChannelId, $languageId, $key);
         $ids = $this->finSearchConfigRepository->searchIds($criteria, Context::createDefaultContext())->getIds();
@@ -212,11 +212,23 @@ class FindologicConfigService
         return array_shift($ids);
     }
 
-    private function buildCriteria(?string $salesChannelId, ?string $languageId, ?string $key = null): Criteria
-    {
+    private function buildCriteria(
+        ?string $salesChannelId = null,
+        ?string $languageId = null,
+        ?string $key = null
+    ): Criteria {
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('salesChannelId', $salesChannelId));
+        $criteria->addFilter(
+            new MultiFilter(
+                MultiFilter::CONNECTION_OR,
+                [new EqualsFilter('salesChannelId', $salesChannelId), new EqualsFilter('salesChannelId', null)]
+            )
+        );
         $criteria->addFilter(new EqualsFilter('languageId', $languageId));
+        $criteria->addSorting(
+            new FieldSorting('salesChannelId', FieldSorting::ASCENDING),
+            new FieldSorting('id', FieldSorting::ASCENDING)
+        );
 
         if ($key) {
             $criteria->addFilter(new EqualsFilter('configurationKey', $key));
@@ -225,7 +237,7 @@ class FindologicConfigService
         return $criteria;
     }
 
-    private function load(?string $salesChannelId, ?string $languageId): array
+    private function load(?string $salesChannelId = null, ?string $languageId = null): array
     {
         if ($languageId) {
             $key = sprintf('%s-%s', $salesChannelId, $languageId);
@@ -237,25 +249,7 @@ class FindologicConfigService
             return $this->configs[$key];
         }
 
-        $criteria = new Criteria();
-        if (method_exists($criteria, 'setTitle')) {
-            $criteria->setTitle('finsearch-config::load');
-        }
-
-        $criteria->addFilter(
-            new MultiFilter(
-                MultiFilter::CONNECTION_AND,
-                [
-                    new EqualsFilter('salesChannelId', $salesChannelId),
-                    new EqualsFilter('languageId', $languageId),
-                ]
-            )
-        );
-
-        $criteria->addSorting(
-            new FieldSorting('salesChannelId', FieldSorting::ASCENDING),
-            new FieldSorting('id', FieldSorting::ASCENDING)
-        );
+        $criteria = $this->buildCriteria($salesChannelId, $languageId);
         $criteria->setLimit(500);
 
         /** @var FinSearchConfigCollection $configs */
@@ -354,8 +348,12 @@ class FindologicConfigService
      * @param string|null $languageId
      * @param mixed|null $value
      */
-    private function setConfig(string $key, ?string $salesChannelId, ?string $languageId, $value = null): void
-    {
+    private function setConfig(
+        string $key,
+        ?string $salesChannelId = null,
+        ?string $languageId = null,
+        $value = null
+    ): void {
         $id = $this->getId($key, $salesChannelId, $languageId);
         if ($value === null) {
             if ($id) {

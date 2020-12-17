@@ -23,14 +23,20 @@ class Migration1605714035FinSearchConfig extends MigrationStep
         $sql = <<<SQL
 CREATE TABLE IF NOT EXISTS `finsearch_config` (
   `id` binary(16) NOT NULL,
-  `configuration_key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `configuration_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `configuration_value` json NOT NULL,
-  `sales_channel_id` binary(16) NOT NULL,
-  `language_id` binary(16) NOT NULL,
+  `sales_channel_id` binary(16) DEFAULT NULL,
+  `language_id` binary(16) DEFAULT NULL,
   `created_at` datetime(3) NOT NULL,
   `updated_at` datetime(3) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq.finsearch_config.key` (`configuration_key`,`sales_channel_id`,`language_id`)
+  UNIQUE KEY `uniq.finsearch_config.key` (`configuration_key`,`sales_channel_id`,`language_id`),
+  KEY `sales_channel_id` (`sales_channel_id`),
+  KEY `language_id` (`language_id`),
+  CONSTRAINT `finsearch_config_ibfk_3` FOREIGN KEY (`sales_channel_id`) REFERENCES `sales_channel` (`id`) 
+      ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `finsearch_config_ibfk_5` FOREIGN KEY (`language_id`) REFERENCES `language` (`id`) 
+      ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 SQL;
 
