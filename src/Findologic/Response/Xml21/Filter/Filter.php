@@ -214,7 +214,7 @@ abstract class Filter extends BaseFilter
     {
         if ($item->getImage() && trim($item->getImage()) !== '') {
             $filterValue->setDisplayType('media');
-        } else if ($item->getColor() && trim($item->getColor()) !== '') {
+        } elseif ($item->getColor() && trim($item->getColor()) !== '') {
             $filterValue->setDisplayType('color');
         } else {
             $filterValue->setDisplayType('none');
