@@ -275,6 +275,32 @@ class Xml21ResponseParserTest extends TestCase
                     $this->getMockResponse('XMLResponse/demoResponseWithNoResultsButWithFilters.xml')
                 ),
                 'expectedFilters' => []
+            ],
+            'response with colors without image URLs' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithColorFiltersWithoutUrl.xml')
+                ),
+                'expectedFilters' => [
+                    (new ColorPickerFilter('Farbe', 'Farbe'))
+                        ->addValue(
+                            (new ColorFilterValue('beige', 'beige', $color))
+                                ->setMedia(new Media(''))
+                                ->setColorHexCode('#F5F5DC')
+                                ->setDisplayType('color')
+                        )
+                        ->addValue(
+                            (new ColorFilterValue('blau', 'blau', $color))
+                                ->setMedia(new Media(''))
+                                ->setColorHexCode('#3c6380')
+                                ->setDisplayType('color')
+                        )
+                        ->addValue(
+                            (new ColorFilterValue('braun', 'braun', $color))
+                                ->setMedia(new Media(''))
+                                ->setColorHexCode('')
+                                ->setDisplayType('none')
+                        )
+                ]
             ]
         ];
     }
