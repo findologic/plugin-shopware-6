@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
+use DateTime;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\Image;
 use FINDOLOGIC\Export\Data\Keyword;
@@ -1212,6 +1213,52 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($this->buildXmlPrice(15, $netCustomerGroup), $actualPrices[1]);
         $this->assertEquals($this->buildXmlPrice(15, $grossCustomerGroup), $actualPrices[2]);
         $this->assertEquals($this->buildXmlPrice(15), $actualPrices[3]);
+    }
+
+    public function testHavingManyOrdersDoesNotAllocateUnreasonableAmountsOfMemory(): void
+    {
+        $productEntity = $this->createTestProduct();
+
+        $priceId = Uuid::randomHex();
+
+        $orderLineItemRepository = $this->getContainer()->get('order_line_item.repository');
+        $orderLineItemRepository->create([
+            [
+                'order' => [
+                    'billing' => [
+                    ],
+                    'currencyId' => Defaults::CURRENCY,
+                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'stateId' => Uuid::randomHex(),
+                    'currencyFactor' => 1,
+                    'billingAddressId' => Uuid::randomHex(),
+                    'orderDateTime' => new DateTime()
+                ],
+                'payload' => [
+                    'productNumber' => $productEntity->getProductNumber()
+                ],
+                'identifier' => $productEntity->getId(),
+                'quantity' => 1,
+                'label' => 'test',
+                'price' => [
+                    'unitPrice' => 10,
+                    'totalPrice' => 10,
+                    'quantity' => 10,
+                ],
+            ]
+        ], Context::createDefaultContext());
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->salesChannelContext->getContext(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
     }
 
     private function buildXmlPrice(float $value, string $userGroup = ''): Price
