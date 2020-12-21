@@ -52,12 +52,6 @@ class FindologicProduct extends Struct
     /** @var ContainerInterface */
     protected $container;
 
-    /**
-     * @deprecated will be removed in 2.0. Use $salesChannelContext->getContext() instead.
-     * @var Context
-     */
-    protected $context;
-
     /** @var SalesChannelContext */
     protected $salesChannelContext;
 
@@ -133,7 +127,6 @@ class FindologicProduct extends Struct
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        Context $context,
         string $shopkey,
         array $customerGroups,
         Item $item
@@ -141,7 +134,6 @@ class FindologicProduct extends Struct
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
-        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
         $this->item = $item;
@@ -932,18 +924,6 @@ class FindologicProduct extends Struct
         }
 
         return $seoUrls;
-    }
-
-    /**
-     * @deprecated will be removed in 2.0. Use Utils::buildCategoryPath() instead.
-     * @see Utils::buildCategoryPath()
-     */
-    protected function buildCategoryPath(CategoryEntity $categoryEntity): string
-    {
-        $breadCrumbs = $categoryEntity->getBreadcrumb();
-        array_shift($breadCrumbs);
-
-        return implode('_', $breadCrumbs);
     }
 
     protected function getSortedImages(): ProductMediaCollection
