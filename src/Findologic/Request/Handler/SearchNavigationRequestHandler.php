@@ -112,7 +112,10 @@ abstract class SearchNavigationRequestHandler
     protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
     {
         $vars = $criteria->getVars();
-        $vars['limit'] = $event->getCriteria()->getLimit();
+
+        if (!empty($vars)) {
+            $vars['limit'] = $event->getCriteria()->getLimit();
+        }
 
         // `includes` is added in Shopware >= 6.2, so we manually add this for compatibility with older versions
         if (!empty($vars) && !array_key_exists('includes', $vars)) {
