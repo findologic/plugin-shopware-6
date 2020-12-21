@@ -30,6 +30,15 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 abstract class SearchNavigationRequestHandler
 {
     /**
+     * Contains criteria variable keys, which have been added in newer Shopware versions.
+     * If they're not set (e.g. an older Shopware version), these values will be defaulted to null.
+     */
+    private const NEW_CRITERIA_VARS = [
+        'includes',
+        'title',
+    ];
+
+    /**
      * @var ServiceConfigResource
      */
     protected $serviceConfigResource;
@@ -115,15 +124,13 @@ abstract class SearchNavigationRequestHandler
 
         if (!empty($vars)) {
             $vars['limit'] = $event->getCriteria()->getLimit();
-        }
 
-        // `includes` is added in Shopware >= 6.2, so we manually add this for compatibility with older versions
-        if (!empty($vars) && !array_key_exists('includes', $vars)) {
-            $vars['includes'] = null;
-        }
-        // `title` is added in Shopware >= 6.3, so we manually add this for compatibility with older versions
-        if (!empty($vars) && !array_key_exists('title', $vars)) {
-            $vars['title'] = null;
+            // Default new criteria vars to allow compatibility with older Shopware versions.
+            foreach (self::NEW_CRITERIA_VARS as $varName) {
+                if (!array_key_exists($varName, $vars)) {
+                    $vars[$varName] = null;
+                }
+            }
         }
 
         $event->getCriteria()->assign($vars);

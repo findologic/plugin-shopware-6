@@ -1053,7 +1053,7 @@ XML;
             $expectedAssign['source'] = null;
         }
         $expectedAssign['title'] = null;
-        $expectedAssign['limit'] = $expectedLimit === Pagination::DEFAULT_LIMIT ? null : $expectedLimit;
+        $expectedAssign['limit'] = $expectedLimit;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $invokeCountAssign = $isNavigationRequest ? $this->never() : $this->once();
@@ -1061,9 +1061,7 @@ XML;
         $criteriaMock->expects($invokeCountAssign)->method('assign')->with($expectedAssign);
         $criteriaMock->expects($invokeCountOffset)->method('getOffset')->willReturn(0);
         // Add this check to ensure that if no custom limit is provided, it uses the default limit
-        if ($expectedLimit !== Pagination::DEFAULT_LIMIT) {
-            $criteriaMock->expects($this->any())->method('getLimit')->willReturn($expectedLimit);
-        }
+        $criteriaMock->expects($this->any())->method('getLimit')->willReturn($expectedLimit);
 
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
