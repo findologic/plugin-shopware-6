@@ -12,6 +12,29 @@ information that you will need, in case you have an extension plugin that
 overrides or implements any classes of the main plugin.  
 Information about private methods won't be preserved.
 
+## Deprecations
+
+Methods, properties, method arguments, etc. that have previously been marked as `@deprecated`
+have been removed, updated or replaced.
+
+Extension plugins that **override the export, will break**. For a full overview
+of all changes necessary for the extension plugin, please see changes below, or directly check the relevant changes:
+[v1.0.1...v2.0.0](https://github.com/findologic/plugin-shopware-6-extension/compare/v1.0.1...v2.0.0).
+
+### Export
+
+* `FINDOLOGIC\FinSearch\Export\FindologicProductFactory`
+  * Signature of method `FindologicProductFactory::buildInstance` has been updated to
+    `buildInstance(ProductEntity $product, RouterInterface $router, ContainerInterface $container, string $shopkey, array $customerGroups, Item $item): FindologicProduct`.
+* `FINDOLOGIC\FinSearch\Export\XmlProduct`
+    * Signature of method `XmlProduct::__construct` has been updated to
+      `__construct(ProductEntity $product, RouterInterface $router, ContainerInterface $container, string $shopkey, array $customerGroups)`.
+### Struct
+
+* `FINDOLOGIC\FinSearch\Struct\FindologicProduct`
+    * Signature of method `FindologicProduct::__construct` has been updated to
+      `__construct(ProductEntity $product, RouterInterface $router, ContainerInterface $container, string $shopkey, array $customerGroups, Item $item)`.
+
 ## Changes
 
 ### Controller
