@@ -31,7 +31,7 @@ abstract class SearchNavigationRequestHandler
 {
     /**
      * Contains criteria variable keys, which have been added in newer Shopware versions.
-     * If they're not set (e.g. an older Shopware version), these values will be defaulted to null.
+     * If they're not set (e.g. an older Shopware version), these values will be set to null by default.
      */
     private const NEW_CRITERIA_VARS = [
         'includes',
@@ -125,7 +125,7 @@ abstract class SearchNavigationRequestHandler
         if (!empty($vars)) {
             $vars['limit'] = $event->getCriteria()->getLimit();
 
-            // Default new criteria vars to allow compatibility with older Shopware versions.
+            // Set criteria default vars to allow compatibility with older Shopware versions.
             foreach (self::NEW_CRITERIA_VARS as $varName) {
                 if (!array_key_exists($varName, $vars)) {
                     $vars[$varName] = null;
