@@ -23,7 +23,7 @@
 
                                 <sw-inherit-wrapper
                                         v-model="actualConfigData['FinSearch.config.active']"
-                                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.active']"
+                                        :inheritedValue="getInheritedValue('FinSearch.config.active')"
                                         :customInheritationCheckFunction="isBoolean"
                                 >
                                     <template #content="props">
@@ -42,7 +42,7 @@
 
                                 <sw-inherit-wrapper
                                         v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
-                                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.activeOnCategoryPages']"
+                                        :inheritedValue="getInheritedValue('FinSearch.config.activeOnCategoryPages')"
                                         :customInheritationCheckFunction="isBoolean"
                                 >
                                     <template #content="props">
@@ -68,7 +68,7 @@
                                 <span class="divider"></span>
                                 <sw-inherit-wrapper
                                         v-model="actualConfigData['FinSearch.config.integrationType']"
-                                        :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.integrationType']"
+                                        :inheritedValue="getInheritedValue('FinSearch.config.integrationType')"
                                 >
                                     <template #content="props">
                                         <sw-text-field
@@ -117,7 +117,7 @@
                     <div class="findologic-settings-credentials-fields">
                         <sw-inherit-wrapper
                                 v-model="actualConfigData['FinSearch.config.searchResultContainer']"
-                                :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.searchResultContainer']"
+                                :inheritedValue="getInheritedValue('FinSearch.config.searchResultContainer')"
                                 :customInheritationCheckFunction="isString"
                         >
                             <template #content="props">
@@ -137,7 +137,7 @@
 
                         <sw-inherit-wrapper
                                 v-model="actualConfigData['FinSearch.config.navigationResultContainer']"
-                                :inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null']['FinSearch.config.navigationResultContainer']"
+                                :inheritedValue="getInheritedValue('FinSearch.config.navigationResultContainer')"
                                 :customInheritationCheckFunction="isString"
                         >
                             <template #content="props">

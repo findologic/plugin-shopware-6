@@ -50,7 +50,7 @@ SQL;
     }
 
     /**
-     * Custom Findologic configuration is implemented after 2.0, so we need to properly migrate any existing config
+     * Custom Findologic configuration is implemented in 2.0, so we need to properly migrate any existing config
      * from `SystemConfig` to `FindologicConfig`
      */
     private function insertPreviousConfigurationIfExists(Connection $connection): void

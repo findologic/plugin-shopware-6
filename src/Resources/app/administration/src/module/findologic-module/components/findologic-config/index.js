@@ -84,6 +84,10 @@ Component.register('findologic-config', {
       return typeof value !== 'boolean';
     },
 
+    getInheritedValue(key) {
+      return this.selectedSalesChannelId === null ? null : this.allConfigs['null'][key];
+    },
+
     /**
      * @public
      * @param result

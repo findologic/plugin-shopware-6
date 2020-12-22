@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 
-class FindologicServiceTest extends TestCase
+class FindologicConfigServiceTest extends TestCase
 {
     use IntegrationTestBehaviour;
 
@@ -30,7 +30,7 @@ class FindologicServiceTest extends TestCase
         );
     }
 
-    public function configurationProvider()
+    public function configurationProvider(): array
     {
         return [
             'Value is boolean true' => [true],
@@ -48,7 +48,7 @@ class FindologicServiceTest extends TestCase
     /**
      * @dataProvider configurationProvider
      */
-    public function testConfigurationIsSetCorrectly($expectedValue)
+    public function testConfigurationIsSetCorrectly($expectedValue): void
     {
         $this->findologicConfigService->set('foo.bar', $expectedValue);
         $actual = $this->findologicConfigService->get('foo.bar');
@@ -58,7 +58,7 @@ class FindologicServiceTest extends TestCase
     /**
      * @dataProvider configurationProvider
      */
-    public function testCorrectConfigurationReturnedForProvidedSalesChannel($expectedValue)
+    public function testCorrectConfigurationReturnedForProvidedSalesChannel($expectedValue): void
     {
         $this->findologicConfigService->set('foo.bar', $expectedValue, Defaults::SALES_CHANNEL);
         $actual = $this->findologicConfigService->get('foo.bar', Defaults::SALES_CHANNEL);
@@ -68,9 +68,9 @@ class FindologicServiceTest extends TestCase
     /**
      * @dataProvider configurationProvider
      */
-    public function testInheritConfigurationIsReturned($expectedValue)
+    public function testInheritConfigurationIsReturned($expectedValue): void
     {
-        $this->findologicConfigService->set('foo.bar', $expectedValue);
+        $this->findologicConfigService->set('foo.bar', $expectedValue, null, null);
         $actual = $this->findologicConfigService->get('foo.bar', Defaults::SALES_CHANNEL);
         static::assertSame($expectedValue, $actual);
     }

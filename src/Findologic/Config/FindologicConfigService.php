@@ -30,8 +30,7 @@ use function is_bool;
 
 class FindologicConfigService
 {
-    public const
-        CONFIG_KEYS = [
+    public const CONFIG_KEYS = [
         'FinSearch.config.shopkey',
         'FinSearch.config.active',
         'FinSearch.config.activeOnCategoryPages',
@@ -40,8 +39,9 @@ class FindologicConfigService
         'FinSearch.config.navigationResultContainer',
         'FinSearch.config.integrationType',
         'FinSearch.config.filterPosition',
-    ],
-        REQUIRED_CONFIG = [
+    ];
+
+    public const REQUIRED_CONFIG_KEYS = [
         'FinSearch.config.shopkey'
     ];
 
@@ -169,7 +169,7 @@ class FindologicConfigService
         // If no sales channel is given, we have to manually set it for each language of each sales channel.
         if ($salesChannelId === null) {
             // Required configuration must have a sales channel so we skip them in this scenario.
-            if (in_array($key, self::REQUIRED_CONFIG, false)) {
+            if (in_array($key, self::REQUIRED_CONFIG_KEYS, false)) {
                 return;
             }
             $this->setConfig($key, $salesChannelId, $languageId, $value);
@@ -259,7 +259,7 @@ class FindologicConfigService
         return $this->configs[$key];
     }
 
-    private function buildConfig(FinSearchConfigCollection $configs): array
+    private function buildConfig(FinSearchConfigCollection $options): array
     {
         $findologicConfig = [];
         // Set the configuration schema for enabling inheritance
@@ -267,13 +267,12 @@ class FindologicConfigService
             $findologicConfig[$configKey] = null;
         }
 
-        foreach ($configs as $config) {
+        foreach ($options as $config) {
             $value = $config->getConfigurationValue();
             $key = $config->getConfigurationKey();
-            $inheritedValuePresent = array_key_exists($key, $findologicConfig);
             $isValueEmpty = !is_bool($value) && Utils::isEmpty($value);
 
-            if ($inheritedValuePresent && $isValueEmpty) {
+            if ($isValueEmpty) {
                 continue;
             }
 
