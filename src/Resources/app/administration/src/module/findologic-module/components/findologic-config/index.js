@@ -1,7 +1,8 @@
 import template from './findologic-config.html.twig';
+import './findologic-config.scss';
 
-const { Component, Mixin } = Shopware;
-const { Criteria } = Shopware.Data;
+const {Component, Mixin} = Shopware;
+const {Criteria} = Shopware.Data;
 
 Component.register('findologic-config', {
   template,
@@ -10,73 +11,81 @@ Component.register('findologic-config', {
   inject: ['repositoryFactory'],
 
   mixins: [
-    Mixin.getByName('notification')
+    Mixin.getByName('notification'),
   ],
 
   props: {
     actualConfigData: {
-      required: true
+      type: Object,
+      required: true,
     },
     allConfigs: {
       type: Object,
-      required: true
+      required: true,
     },
     shopkeyErrorState: {
-      required: true
+      required: true,
     },
     selectedSalesChannelId: {
       type: String,
       required: false,
-      default: null
+      default: null,
+    },
+    selectedLanguageId: {
+      type: String,
+      required: false,
+      default: null,
     },
     isStagingShop: {
       type: Boolean,
       required: true,
-      default: false
+      default: false,
     },
     isValidShopkey: {
       type: Boolean,
       required: true,
-      default: false
+      default: false,
     },
     isActive: {
       type: Boolean,
       required: true,
-      default: false
+      default: false,
     },
     shopkeyAvailable: {
       type: Boolean,
       required: true,
-      default: false
-    }
+      default: false,
+    },
   },
 
-  data () {
+  data() {
     return {
       isLoading: false,
       term: null,
       categories: [],
-      categoryIds: []
+      categoryIds: [],
     };
   },
 
-  created () {
+  created() {
     this.createdComponent();
   },
 
   methods: {
-    createdComponent () {
+    createdComponent() {
       this.getCategories();
     },
 
-    isString (value) {
-      if (typeof value !== 'string') {
-        return true;
-      }
+    isString(value) {
+      return typeof value !== 'string';
     },
 
-    isBoolean (value) {
+    isBoolean(value) {
       return typeof value !== 'boolean';
+    },
+
+    getInheritedValue(key) {
+      return this.selectedSalesChannelId === null ? null : this.allConfigs['null'][key];
     },
 
     /**
@@ -86,9 +95,9 @@ Component.register('findologic-config', {
      * @param order
      * @returns {function(*, *): number}
      */
-    sortByProperty (result, prop = 'name', order = 'asc') {
+    sortByProperty(result, prop = 'name', order = 'asc') {
 
-      result.sort(function (a, b) {
+      result.sort(function(a, b) {
         // Use toUpperCase() to ignore character casing
         const case1 = typeof a[prop] === 'string' ? a[prop].toUpperCase() : a[prop];
         const case2 = typeof b[prop] === 'string' ? b[prop].toUpperCase() : b[prop];
@@ -108,11 +117,11 @@ Component.register('findologic-config', {
     /**
      * @public
      */
-    openSalesChannelUrl () {
+    openSalesChannelUrl() {
       if (this.selectedSalesChannelId !== null) {
         const criteria = new Criteria();
         criteria.addFilter(
-          Criteria.equals('id', this.selectedSalesChannelId)
+            Criteria.equals('id', this.selectedSalesChannelId),
         );
         criteria.setLimit(1);
         criteria.addAssociation('domains');
@@ -128,7 +137,7 @@ Component.register('findologic-config', {
     /**
      * @private
      */
-    _openDefaultUrl () {
+    _openDefaultUrl() {
       const url = `${window.location.origin}?findologic=on`;
       window.open(url, '_blank');
     },
@@ -137,7 +146,7 @@ Component.register('findologic-config', {
      * @param {Object} domain
      * @private
      */
-    _openStagingUrl (domain) {
+    _openStagingUrl(domain) {
       if (domain) {
         const url = `${domain.url}?findologic=on`;
         window.open(url, '_blank');
@@ -149,7 +158,7 @@ Component.register('findologic-config', {
     /**
      * @public
      */
-    getCategories () {
+    getCategories() {
       this.isLoading = true;
 
       const translatedCategories = [];
@@ -160,7 +169,7 @@ Component.register('findologic-config', {
           translatedCategories.push({
             value: category.id,
             name: category.name,
-            label: category.translated.breadcrumb.join(' > ')
+            label: category.translated.breadcrumb.join(' > '),
           });
         });
 
@@ -168,7 +177,7 @@ Component.register('findologic-config', {
       }).finally(() => {
         this.isLoading = false;
       });
-    }
+    },
   },
 
   computed: {
@@ -176,27 +185,35 @@ Component.register('findologic-config', {
      * @public
      * @returns {boolean}
      */
-    showTestButton () {
+    showTestButton() {
       return this.isActive && this.shopkeyAvailable && this.isValidShopkey && this.isStagingShop;
     },
 
-    showAPIConfig () {
-      return this.integrationType === undefined || this.integrationType === 'API';
+    showAPIConfig() {
+      return this.integrationType === null || this.integrationType === 'API';
     },
 
-    showDIConfig () {
-      return this.integrationType === undefined || this.integrationType === 'Direct Integration';
+    shopkeyPlaceholder() {
+      return !this.selectedLanguageId ? this.$tc('findologic.selectSalesChannel') : '';
     },
 
-    filterPositionOptions () {
+    showDIConfig() {
+      return this.integrationType === null || this.integrationType === 'Direct Integration';
+    },
+
+    disabledClass() {
+      return !this.selectedLanguageId ? 'findologic--text-field-disabled' : '';
+    },
+
+    filterPositionOptions() {
       return [
         {
           label: this.$tc('findologic.settingForm.config.filterPosition.top.label'),
-          value: 'top'
+          value: 'top',
         },
         {
           label: this.$tc('findologic.settingForm.config.filterPosition.left.label'),
-          value: 'left'
+          value: 'left',
         }];
     },
 
@@ -204,15 +221,15 @@ Component.register('findologic-config', {
       return this.actualConfigData['FinSearch.config.integrationType'];
     },
 
-    salesChannelRepository () {
+    salesChannelRepository() {
       return this.repositoryFactory.create('sales_channel');
     },
 
-    categoryRepository () {
+    categoryRepository() {
       return this.repositoryFactory.create('category');
     },
 
-    categoryCriteria () {
+    categoryCriteria() {
       const criteria = new Criteria(1, 500);
       criteria.addSorting(Criteria.sort('name', 'ASC'));
       criteria.addSorting(Criteria.sort('parentId', 'ASC'));
@@ -222,6 +239,6 @@ Component.register('findologic-config', {
       }
 
       return criteria;
-    }
-  }
+    },
+  },
 });
