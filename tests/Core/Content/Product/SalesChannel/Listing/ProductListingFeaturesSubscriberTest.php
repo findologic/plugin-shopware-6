@@ -941,7 +941,17 @@ XML;
                 'endpoint' => 'handleListingRequest',
                 'expectedLimit' => 24,
                 'isNavigationRequest' => true
-            ]
+            ],
+            'search request with custom higher limit' => [
+                'endpoint' => 'handleSearchRequest',
+                'expectedLimit' => 35,
+                'isNavigationRequest' => false
+            ],
+            'navigation request with custom higher limit' => [
+                'endpoint' => 'handleListingRequest',
+                'expectedLimit' => 35,
+                'isNavigationRequest' => true
+            ],
         ];
     }
 
@@ -986,17 +996,15 @@ XML;
             $expectedAssign['source'] = null;
         }
         $expectedAssign['title'] = null;
+        $expectedAssign['limit'] = $expectedLimit;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $invokeCountAssign = $isNavigationRequest ? $this->never() : $this->once();
         $invokeCountOffset = $isNavigationRequest ? $this->never() : $this->exactly(3);
-        $invokeCountLimit = $isNavigationRequest ? $this->once() : $this->exactly(3);
         $criteriaMock->expects($invokeCountAssign)->method('assign')->with($expectedAssign);
         $criteriaMock->expects($invokeCountOffset)->method('getOffset')->willReturn(0);
         // Add this check to ensure that if no custom limit is provided, it uses the default limit
-        if ($expectedLimit !== Pagination::DEFAULT_LIMIT) {
-            $criteriaMock->expects($invokeCountLimit)->method('getLimit')->willReturn($expectedLimit);
-        }
+        $criteriaMock->expects($this->any())->method('getLimit')->willReturn($expectedLimit);
 
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 

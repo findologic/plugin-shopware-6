@@ -32,11 +32,8 @@ abstract class Filter extends BaseFilter
     /**
      * Builds a new filter instance. May return null for unsupported filter types. Throws an exception for unknown
      * filter types.
-     *
-     * @param Client|null $client Used to fetch images from vendor image or color filters. If not set a new client
-     *                            instance will be created internally.
      */
-    public static function getInstance(ApiFilter $filter, ?Client $client = null): ?Filter
+    public static function getInstance(ApiFilter $filter): ?Filter
     {
         switch (true) {
             case $filter instanceof ApiLabelTextFilter:
@@ -50,9 +47,9 @@ abstract class Filter extends BaseFilter
 
                 return static::handleRangeSliderFilter($filter);
             case $filter instanceof ApiColorPickerFilter:
-                return static::handleColorPickerFilter($filter, $client);
+                return static::handleColorPickerFilter($filter);
             case $filter instanceof ApiVendorImageFilter:
-                return static::handleVendorImageFilter($filter, $client);
+                return static::handleVendorImageFilter($filter);
             case $filter instanceof ApiCategoryFilter:
                 return static::handleCategoryFilter($filter);
             default:
@@ -121,10 +118,9 @@ abstract class Filter extends BaseFilter
         return $customFilter;
     }
 
-    private static function handleColorPickerFilter(ApiColorPickerFilter $filter, ?Client $client): ColorPickerFilter
+    private static function handleColorPickerFilter(ApiColorPickerFilter $filter): ColorPickerFilter
     {
         $customFilter = new ColorPickerFilter($filter->getName(), $filter->getDisplay());
-        $imageUrls = [];
 
         /** @var ColorItem $item */
         foreach ($filter->getItems() as $item) {
@@ -133,29 +129,20 @@ abstract class Filter extends BaseFilter
             $filterValue = new ColorFilterValue($item->getName(), $item->getName(), $filter->getName());
             $filterValue->setColorHexCode($item->getColor());
 
+            self::setColorPickerDisplayType($item, $filterValue);
+
             $media = new Media($item->getImage());
             $filterValue->setMedia($media);
 
             $customFilter->addValue($filterValue);
         }
 
-        $filterImageHandler = new FilterValueImageHandler($client);
-        $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
-
-        /** @var ColorFilterValue $filterValue */
-        foreach ($customFilter->getValues() as $filterValue) {
-            if (in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
-                $filterValue->setDisplayType('media');
-            }
-        }
-
         return $customFilter;
     }
 
-    private static function handleVendorImageFilter(ApiVendorImageFilter $filter, ?Client $client): VendorImageFilter
+    private static function handleVendorImageFilter(ApiVendorImageFilter $filter): VendorImageFilter
     {
         $customFilter = new VendorImageFilter($filter->getName(), $filter->getDisplay());
-        $imageUrls = [];
 
         /** @var VendorImageItem $item */
         foreach ($filter->getItems() as $item) {
@@ -164,16 +151,7 @@ abstract class Filter extends BaseFilter
             $media = new Media($item->getImage());
             $filterValue->setMedia($media);
             $customFilter->addValue($filterValue);
-        }
-
-        $filterImageHandler = new FilterValueImageHandler($client);
-        $validImages = $filterImageHandler->getValidImageUrls($imageUrls);
-
-        /** @var ImageFilterValue $filterValue */
-        foreach ($customFilter->getValues() as $filterValue) {
-            if (!in_array($filterValue->getMedia()->getUrl(), $validImages, true)) {
-                $filterValue->setDisplayType('none');
-            }
+            $filterValue->setDisplayType('media');
         }
 
         return $customFilter;
@@ -230,5 +208,16 @@ abstract class Filter extends BaseFilter
         }
 
         return $customFilter;
+    }
+
+    private static function setColorPickerDisplayType(ColorItem $item, ColorFilterValue $filterValue): void
+    {
+        if ($item->getImage() && trim($item->getImage()) !== '') {
+            $filterValue->setDisplayType('media');
+        } elseif ($item->getColor() && trim($item->getColor()) !== '') {
+            $filterValue->setDisplayType('color');
+        } else {
+            $filterValue->setDisplayType('none');
+        }
     }
 }
