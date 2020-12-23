@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<searchResult xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/findologic/xml-response-schema/master/schema.xsd">
+    <servers>
+        <frontend>martell.frontend.findologic.com</frontend>
+        <backend>hydra.backend.findologic.com</backend>
+    </servers>
+    <query>
+        <limit first="0" count="24" />
+        <queryString type="corrected">ps3</queryString>
+        <originalQuery allow-override="1">original query</originalQuery>
+        <didYouMeanQuery>ps4</didYouMeanQuery>
+    </query>
+    <promotion link="https://promotion.com/" image="https://promotion.com/promotion.png" />
+    <results>
+        <count>1808</count>
+    </results>
+    <products>
+        <product id="019111105-37900" relevance="1.3862943649292">
+            <properties>
+                <property name="ordernumber">019111105-37900</property>
+            </properties>
+        </product>
+        <product id="029214085-37860" relevance="1.3862943649292" />
+    </products>
+    <filters>
+        <main>
+            <filter>
+                <name>Farbe</name>
+                <display>Farbe</display>
+                <select>multiselect</select>
+                <selectedItems>1</selectedItems>
+                <type>color</type>
+                <items>
+                    <item>
+                        <name>beige</name>
+                        <weight>0.10730088502169</weight>
+                        <color>#F5F5DC</color>
+                    </item>
+                    <item selected="1">
+                        <name>blau</name>
+                        <weight>0.3296460211277</weight>
+                        <color>#3c6380</color>
+                    </item>
+                    <item>
+                        <name>braun</name>
+                        <weight>0.90265488624573</weight>
+                    </item>
+                </items>
+            </filter>
+        </main>
+        <other />
+    </filters>
+</searchResult>
