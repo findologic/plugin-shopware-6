@@ -41,9 +41,6 @@ class XmlProduct
     /** @var RouterInterface */
     private $router;
 
-    /** @var Context */
-    private $context;
-
     /** @var ContainerInterface */
     private $container;
 
@@ -75,14 +72,12 @@ class XmlProduct
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        Context $context,
         string $shopkey,
         array $customerGroups
     ) {
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
-        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
 
@@ -216,7 +211,6 @@ class XmlProduct
             $this->product,
             $this->router,
             $this->container,
-            $this->context,
             $this->shopkey,
             $this->customerGroups,
             $this->xmlItem

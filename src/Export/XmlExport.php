@@ -122,7 +122,6 @@ class XmlExport extends Export
             $productEntity,
             $this->router,
             $this->container,
-            $this->container->get('fin_search.sales_channel_context')->getContext(),
             $shopkey,
             $customerGroups
         );

@@ -28,7 +28,6 @@ class FindologicProductFactory
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        Context $context,
         string $shopkey,
         array $customerGroups,
         Item $item
@@ -37,7 +36,6 @@ class FindologicProductFactory
             $product,
             $router,
             $container,
-            $context,
             $shopkey,
             $customerGroups,
             $item

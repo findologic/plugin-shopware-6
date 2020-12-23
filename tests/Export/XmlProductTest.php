@@ -63,7 +63,6 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -109,7 +108,6 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $containerMock,
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             []
         );
@@ -138,7 +136,6 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -185,7 +182,6 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $container ?? $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             []
         );

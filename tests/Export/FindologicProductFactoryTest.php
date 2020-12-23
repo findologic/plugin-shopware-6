@@ -58,7 +58,6 @@ class FindologicProductFactoryTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
