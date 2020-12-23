@@ -270,9 +270,7 @@ class FindologicConfigService
         foreach ($options as $config) {
             $value = $config->getConfigurationValue();
             $key = $config->getConfigurationKey();
-            $isValueEmpty = !is_bool($value) && Utils::isEmpty($value);
-
-            if ($isValueEmpty) {
+            if (Utils::isEmpty($value)) {
                 continue;
             }
 
