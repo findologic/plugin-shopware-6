@@ -12,6 +12,11 @@
             <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter" />
         </service>
 
+        <service id="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder"
+                 decorates="Shopware\Elasticsearch\Product\ProductSearchBuilder">
+            <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter" />
+        </service>
+
         <service
             id="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"
             class="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"
