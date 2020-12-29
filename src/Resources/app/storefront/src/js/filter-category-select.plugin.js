@@ -6,7 +6,12 @@ import deepmerge from 'deepmerge';
 export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     static options = deepmerge(FilterBasePlugin.options, {
         checkboxSelector: '.filter-category-select-checkbox',
-        countSelector: '.filter-multi-select-count'
+        countSelector: '.filter-multi-select-count',
+        listItemSelector: '.filter-multi-select-list-item',
+        snippets: {
+            disabledFilterText: 'Filter not active'
+        },
+        mainFilterButtonSelector: '.filter-panel-item-toggle'
     });
 
     init() {
@@ -116,6 +121,9 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         }
 
         this.listing.changeListing();
+        if (this.options.disableEmptyFilter) {
+            this.listing.sendDisabledFiltersRequest();
+        }
     }
 
     /**

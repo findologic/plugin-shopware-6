@@ -7,9 +7,13 @@ namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as
     LegacySearchPageLoader;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
+use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -18,6 +22,7 @@ use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Storefront\Framework\Cache\Annotation\HttpCache;
 use Shopware\Storefront\Page\Search\SearchPageLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,16 +38,23 @@ class SearchController extends StorefrontController
     /** @var FilterHandler */
     private $filterHandler;
 
+    /**
+     * @var AbstractProductSearchRoute
+     */
+    private $productSearchRoute;
+
     public function __construct(
         ShopwareSearchController $decorated,
         ?SearchPageLoader $searchPageLoader,
         FilterHandler $filterHandler,
-        ContainerInterface $container
+        ContainerInterface $container,
+        AbstractProductSearchRoute $productSearchRoute
     ) {
         $this->container = $container;
         $this->decorated = $decorated;
         $this->searchPageLoader = $this->buildSearchPageLoader($searchPageLoader);
         $this->filterHandler = $filterHandler;
+        $this->productSearchRoute = $productSearchRoute;
     }
 
     /**
@@ -78,9 +90,7 @@ class SearchController extends StorefrontController
 
     /**
      * @HttpCache()
-     *
      * Route to load the listing filters
-     *
      * @RouteScope(scopes={"storefront"})
      * @Route("/widgets/search/{search}", name="widgets.search.pagelet", methods={"GET", "POST"},
      *     defaults={"XmlHttpRequest"=true})
@@ -94,9 +104,7 @@ class SearchController extends StorefrontController
 
     /**
      * @HttpCache()
-     *
      * Route to load the listing filters
-     *
      * @RouteScope(scopes={"storefront"})
      * @Route(
      *      "/widgets/search",
@@ -132,5 +140,36 @@ class SearchController extends StorefrontController
         }
 
         return null;
+    }
+
+    /**
+     * @HttpCache()
+     * Route to load the available listing filters
+     * @RouteScope(scopes={"storefront"})
+     * @Route("/widgets/search/filter", name="widgets.search.filter", methods={"GET", "POST"},
+     *     defaults={"XmlHttpRequest"=true})
+     *
+     */
+    public function filter(Request $request, SalesChannelContext $context): Response
+    {
+        $criteria = new Criteria();
+        $criteria->setTitle('search-page');
+
+        $result = $this->productSearchRoute
+            ->load($request, $context, $criteria)
+            ->getListingResult();
+
+        $filters = [];
+        /** @var FiltersExtension $filterExtension */
+        $filterExtension = $result->getCriteria()->getExtension('flFilters');
+        foreach ($filterExtension->getFilters() as $filter) {
+            /** @var FilterValue[] $values */
+            $values = $filter->getValues();
+            foreach ($values as $value) {
+                $filters[$filter->getId()][] = $value->getUuid();
+            }
+        }
+
+        return new JsonResponse($filters);
     }
 }
