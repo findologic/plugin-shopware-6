@@ -11,7 +11,7 @@ class FilterValue extends Struct
 {
     public const DELIMITER = '>';
 
-    /** @var string */
+    /** @var string|null */
     protected $uuid;
 
     /** @var string */
@@ -54,7 +54,7 @@ class FilterValue extends Struct
         return $this->translated;
     }
 
-    public function getUuid(): string
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }

@@ -148,10 +148,10 @@ class SearchController extends StorefrontController
      * @RouteScope(scopes={"storefront"})
      * @Route("/widgets/search/filter", name="widgets.search.filter", methods={"GET", "POST"},
      *     defaults={"XmlHttpRequest"=true})
-     *
      */
     public function filter(Request $request, SalesChannelContext $context): Response
     {
+        $filters = [];
         $criteria = new Criteria();
         $criteria->setTitle('search-page');
 
@@ -159,14 +159,13 @@ class SearchController extends StorefrontController
             ->load($request, $context, $criteria)
             ->getListingResult();
 
-        $filters = [];
         /** @var FiltersExtension $filterExtension */
         $filterExtension = $result->getCriteria()->getExtension('flFilters');
         foreach ($filterExtension->getFilters() as $filter) {
             /** @var FilterValue[] $values */
             $values = $filter->getValues();
             foreach ($values as $value) {
-                $filters[$filter->getId()][] = $value->getUuid();
+                $filters[$filter->getId()][] = $value->getUuid() ?? $value->getId();
             }
         }
 
