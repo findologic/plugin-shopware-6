@@ -1020,29 +1020,26 @@ class FindologicProductTest extends TestCase
         $firstSeoUrlId = Uuid::randomHex();
         $lastSeoUrlId = Uuid::randomHex();
 
-        $seoUrlRepo->upsert(
+        $seoUrlRepo->upsert([
             [
-                [
-                    'id' => $firstSeoUrlId,
-                    'pathInfo' => '/detail/' . Uuid::randomHex(),
-                    'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
-                    'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page',
-                    'languageId' => $language->getId(),
-                    'salesChannelId' => $salesChannel->getId()
-                ],
-                [
-                    'id' => $lastSeoUrlId,
-                    'pathInfo' => '/detail/' . Uuid::randomHex(),
-                    'seoPathInfo' => 'I-Should-Not-Be-Used/Because/Wrong/Language',
-                    'isCanonical' => true,
-                    'routeName' => 'frontend.detail.page',
-                    'languageId' => $defaultLanguageId,
-                    'salesChannelId' => $salesChannel->getId()
-                ]
+                'id' => $firstSeoUrlId,
+                'pathInfo' => '/detail/' . Uuid::randomHex(),
+                'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
+                'isCanonical' => true,
+                'routeName' => 'frontend.detail.page',
+                'languageId' => $language->getId(),
+                'salesChannelId' => $salesChannel->getId()
             ],
-            $defaultContext
-        );
+            [
+                'id' => $lastSeoUrlId,
+                'pathInfo' => '/detail/' . Uuid::randomHex(),
+                'seoPathInfo' => 'I-Should-Not-Be-Used/Because/Wrong/Language',
+                'isCanonical' => true,
+                'routeName' => 'frontend.detail.page',
+                'languageId' => $defaultLanguageId,
+                'salesChannelId' => $salesChannel->getId()
+            ]
+        ], $defaultContext);
 
         $productEntity = $this->createTestProduct();
 
@@ -1051,29 +1048,21 @@ class FindologicProductTest extends TestCase
         // is asynchronous and runs in another thread.
         // See https://issues.shopware.com/issues/NEXT-11429.
         sleep(5);
-        $seoUrls = array_values(
-            array_map(
-                function ($id) {
-                    return ['id' => $id];
-                },
-                $productEntity->getSeoUrls()->getIds()
-            )
-        );
+        $seoUrls = array_values(array_map(function ($id) {
+            return ['id' => $id];
+        }, $productEntity->getSeoUrls()->getIds()));
         $seoUrlRepo->delete($seoUrls, $defaultContext);
 
         $productRepo = $this->getContainer()->get('product.repository');
-        $productRepo->update(
+        $productRepo->update([
             [
-                [
-                    'id' => $productEntity->getId(),
-                    'seoUrls' => [
-                        ['id' => $firstSeoUrlId],
-                        ['id' => $lastSeoUrlId]
-                    ]
+                'id' => $productEntity->getId(),
+                'seoUrls' => [
+                    ['id' => $firstSeoUrlId],
+                    ['id' => $lastSeoUrlId]
                 ]
-            ],
-            $defaultContext
-        );
+            ]
+        ], $defaultContext);
 
         $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
         $storeFrontSalesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
@@ -1083,11 +1072,9 @@ class FindologicProductTest extends TestCase
 
         // Manually sort the correct SEO URL below all other SEO URLs, to ensure the SEO URL is not correct, because
         // it is the first one in the database, but that the proper translation matches instead.
-        $productEntity->getSeoUrls()->sort(
-            function (SeoUrlEntity $seoUrlEntity) {
-                return $seoUrlEntity->getSeoPathInfo() === 'I-Should-Be-Used/Because/Used/Language' ? -1 : 1;
-            }
-        );
+        $productEntity->getSeoUrls()->sort(function (SeoUrlEntity $seoUrlEntity) {
+            return $seoUrlEntity->getSeoPathInfo() === 'I-Should-Be-Used/Because/Used/Language' ? -1 : 1;
+        });
 
         /** @var SalesChannelDomainEntity $domainEntity */
         $domainEntity = $salesChannel->getDomains()->filter(
@@ -1097,11 +1084,9 @@ class FindologicProductTest extends TestCase
         )->first();
         $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
         /** @var SeoUrlEntity $seoUrlEntity */
-        $seoUrlEntity = $seoUrls->filter(
-            function (SeoUrlEntity $seoUrl) use ($salesChannel) {
-                return $seoUrl->getLanguageId() === $salesChannel->getLanguageId();
-            }
-        )->first();
+        $seoUrlEntity = $seoUrls->filter(function (SeoUrlEntity $seoUrl) use ($salesChannel) {
+            return $seoUrl->getLanguageId() === $salesChannel->getLanguageId();
+        })->first();
 
         $expectedUrl = sprintf('%s/%s', $domainEntity->getUrl(), $seoUrlEntity->getSeoPathInfo());
 
@@ -1130,25 +1115,23 @@ class FindologicProductTest extends TestCase
         $expectedFirstCatUrl = '/' . $seoPathInfo;
         $expectedSecondCatUrl = '/' . $pathInfo;
 
-        $productEntity = $this->createTestProduct(
-            [
-                'categories' => [
-                    [
-                        'parentId' => $mainCatId,
-                        'id' => $categoryId,
-                        'name' => ' ',
-                        'seoUrls' => [
-                            [
-                                'pathInfo' => $pathInfo,
-                                'seoPathInfo' => $seoPathInfo,
-                                'isCanonical' => true,
-                                'routeName' => 'frontend.navigation.page',
-                            ]
-                        ],
+        $productEntity = $this->createTestProduct([
+            'categories' => [
+                [
+                    'parentId' => $mainCatId,
+                    'id' => $categoryId,
+                    'name' => ' ',
+                    'seoUrls' => [
+                        [
+                            'pathInfo' => $pathInfo,
+                            'seoPathInfo' => $seoPathInfo,
+                            'isCanonical' => true,
+                            'routeName' => 'frontend.navigation.page',
+                        ]
                     ],
                 ],
-            ]
-        );
+            ],
+        ]);
 
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
@@ -1175,35 +1158,30 @@ class FindologicProductTest extends TestCase
         $context = Context::createDefaultContext();
 
         $customerGroupRepo = $this->getContainer()->get('customer_group.repository');
-        $customerGroupRepo->upsert(
+        $customerGroupRepo->upsert([
             [
-                [
-                    'name' => 'Net customer group',
-                    'displayGross' => false
-                ],
-                [
-                    'name' => 'Gross customer group',
-                    'displayGross' => true
-                ]
+                'name' => 'Net customer group',
+                'displayGross' => false
             ],
-            $context
-        );
+            [
+                'name' => 'Gross customer group',
+                'displayGross' => true
+            ]
+        ], $context);
 
         $customerGroups = $customerGroupRepo->search(new Criteria(), $context);
         // Manually sort customer group entities for asserting, since otherwise they would be sorted randomly.
-        $customerGroups->sort(
-            function (CustomerGroupEntity $a, CustomerGroupEntity $b) {
-                if ($a->getDisplayGross() && !$b->getDisplayGross()) {
-                    return 1;
-                }
-
-                if ($b->getDisplayGross() && !$a->getDisplayGross()) {
-                    return -1;
-                }
-
-                return 0;
+        $customerGroups->sort(function (CustomerGroupEntity $a, CustomerGroupEntity $b) {
+            if ($a->getDisplayGross() && !$b->getDisplayGross()) {
+                return 1;
             }
-        );
+
+            if ($b->getDisplayGross() && !$a->getDisplayGross()) {
+                return -1;
+            }
+
+            return 0;
+        });
 
         $productEntity = $this->createTestProduct();
 
