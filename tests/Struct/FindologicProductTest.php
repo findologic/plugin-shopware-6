@@ -43,6 +43,8 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\Routing\RouterInterface;
 
+use function current;
+
 class FindologicProductTest extends TestCase
 {
     use IntegrationTestBehaviour;
@@ -1209,5 +1211,45 @@ class FindologicProductTest extends TestCase
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
 
         return $this->getContainer()->get('translator')->trans($translationKey);
+    }
+
+    public function testProductListPrice(): void
+    {
+        $productEntity = $this->createTestProduct(
+            [
+                'price' => [
+                    [
+                        'currencyId' => Defaults::CURRENCY,
+                        'gross' => 50,
+                        'net' => 40,
+                        'linked' => false,
+                        'listPrice' => [
+                            'net' => 20,
+                            'gross' => 25,
+                            'linked' => false
+                        ]
+                    ]
+                ],
+            ]
+        );
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        foreach ($findologicProduct->getProperties() as $property) {
+            if ($property->getKey() === 'old_price') {
+                $this->assertEquals(25, current($property->getAllValues()));
+            }
+            if ($property->getKey() === 'old_price_net') {
+                $this->assertEquals(20, current($property->getAllValues()));
+            }
+        }
     }
 }
