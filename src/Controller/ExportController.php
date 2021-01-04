@@ -72,17 +72,12 @@ class ExportController extends AbstractController
         RouterInterface $router,
         HeaderHandler $headerHandler,
         SalesChannelContextFactory $salesChannelContextFactory,
-        CacheItemPoolInterface $cache = null
+        CacheItemPoolInterface $cache
     ) {
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
-
-        // @deprecated tag:v2.0.0 - Cache will be required
-        if (!$cache) {
-            $cache = $this->container->get('serializer.mapping.cache.symfony');
-        }
         $this->cache = $cache;
     }
 
