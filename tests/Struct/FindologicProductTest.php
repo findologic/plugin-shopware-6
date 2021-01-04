@@ -1243,13 +1243,21 @@ class FindologicProductTest extends TestCase
             new XMLItem('123')
         );
 
+        $hasListPrice = false;
+        $hasListPriceNet = false;
+
         foreach ($findologicProduct->getProperties() as $property) {
             if ($property->getKey() === 'old_price') {
+                $hasListPrice = true;
                 $this->assertEquals(25, current($property->getAllValues()));
             }
             if ($property->getKey() === 'old_price_net') {
+                $hasListPriceNet = true;
                 $this->assertEquals(20, current($property->getAllValues()));
             }
         }
+
+        $this->assertTrue($hasListPrice);
+        $this->assertTrue($hasListPriceNet);
     }
 }
