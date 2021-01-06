@@ -30,6 +30,7 @@ use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
+use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -44,6 +45,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\Routing\RouterInterface;
 
 use function current;
+use function strtolower;
 
 class FindologicProductTest extends TestCase
 {
@@ -749,6 +751,19 @@ class FindologicProductTest extends TestCase
             $properties[] = $property;
         }
 
+        if ($productEntity->getPrice()) {
+            /** @var ProductPrice $price */
+            $price = $productEntity->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
+            if ($price) {
+                /** @var ProductPrice $listPrice */
+                $listPrice = $price->getListPrice();
+                if ($listPrice) {
+                    $properties[] = new Property('old_price', [(string)$listPrice->getGross()]);
+                    $properties[] = new Property('old_price_net', [(string)$listPrice->getNet()]);
+                }
+            }
+        }
+
         return $properties;
     }
 
@@ -1213,13 +1228,29 @@ class FindologicProductTest extends TestCase
         return $this->getContainer()->get('translator')->trans($translationKey);
     }
 
-    public function testProductListPrice(): void
+    public function listPriceProvider(): array
+    {
+        return [
+            'List price is available for the sales channel currency' => [
+                'currencyId' => Defaults::CURRENCY,
+                'isPriceAvailable' => true
+            ],
+            'List price is available for a different currency' => [
+                'currencyId' => '2e6632da54b046bea95ba892a389d104',
+                'isPriceAvailable' => false
+            ]
+        ];
+    }
+    /**
+     * @dataProvider listPriceProvider
+     */
+    public function testProductListPrice(string $currencyId, bool $isPriceAvailable): void
     {
         $productEntity = $this->createTestProduct(
             [
                 'price' => [
                     [
-                        'currencyId' => Defaults::CURRENCY,
+                        'currencyId' => $currencyId,
                         'gross' => 50,
                         'net' => 40,
                         'linked' => false,
@@ -1257,7 +1288,7 @@ class FindologicProductTest extends TestCase
             }
         }
 
-        $this->assertTrue($hasListPrice);
-        $this->assertTrue($hasListPriceNet);
+        $this->assertSame($isPriceAvailable, $hasListPrice);
+        $this->assertSame($isPriceAvailable, $hasListPriceNet);
     }
 }

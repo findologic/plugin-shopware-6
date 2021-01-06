@@ -629,9 +629,12 @@ class FindologicProduct extends Struct
             $this->addProperty('vendorlogo', $value);
         }
 
-        if ($this->product->getPrice() && $this->product->getPrice()->first()) {
+        if ($this->product->getPrice()) {
             /** @var ProductPrice $price */
-            $price = $this->product->getPrice()->first();
+            $price = $this->product->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
+            if (!$price) {
+                return;
+            }
 
             /** @var ProductPrice $listPrice */
             $listPrice = $price->getListPrice();
