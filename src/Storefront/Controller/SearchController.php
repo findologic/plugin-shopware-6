@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
-use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as
-    LegacySearchPageLoader;
+use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as LegacySearchPageLoader;
+use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
+use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
@@ -38,23 +38,21 @@ class SearchController extends StorefrontController
     /** @var FilterHandler */
     private $filterHandler;
 
-    /**
-     * @var AbstractProductSearchRoute
-     */
-    private $productSearchRoute;
+    /** @var FindologicSearchService */
+    private $findologicSearchService;
 
     public function __construct(
         ShopwareSearchController $decorated,
         ?SearchPageLoader $searchPageLoader,
         FilterHandler $filterHandler,
         ContainerInterface $container,
-        AbstractProductSearchRoute $productSearchRoute
+        FindologicSearchService $findologicSearchService
     ) {
         $this->container = $container;
         $this->decorated = $decorated;
         $this->searchPageLoader = $this->buildSearchPageLoader($searchPageLoader);
         $this->filterHandler = $filterHandler;
-        $this->productSearchRoute = $productSearchRoute;
+        $this->findologicSearchService = $findologicSearchService;
     }
 
     /**
@@ -151,16 +149,16 @@ class SearchController extends StorefrontController
      */
     public function filter(Request $request, SalesChannelContext $context): Response
     {
-        $filters = [];
-        $criteria = new Criteria();
-        $criteria->setTitle('search-page');
+        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $context);
+        if (!$this->findologicSearchService->allowRequest($event)) {
+            return $this->decorated->filter($request, $context);
+        }
 
-        $result = $this->productSearchRoute
-            ->load($request, $context, $criteria)
-            ->getListingResult();
+        $filters = [];
+        $this->findologicSearchService->doFilter($event);
 
         /** @var FiltersExtension $filterExtension */
-        $filterExtension = $result->getCriteria()->getExtension('flFilters');
+        $filterExtension = $event->getCriteria()->getExtension('flAvailableFilters');
         foreach ($filterExtension->getFilters() as $filter) {
             /** @var FilterValue[] $values */
             $values = $filter->getValues();

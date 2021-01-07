@@ -106,7 +106,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      * @throws ServiceNotAliveException
      * @throws UnknownCategoryException
      */
-    public function doRequest(ShopwareEvent $event, ?int $limit = null): Response
+    public function doRequest(ShopwareEvent $event, ?int $limit = null, ?bool $forceFilter = null): Response
     {
         // Prevent exception if someone really tried to order by score on a category page.
         if ($event->getRequest()->query->get('sort') === 'score') {
@@ -131,7 +131,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $this->setPaginationParams($event, $navigationRequest, $limit);
         $this->addSorting($navigationRequest, $event->getCriteria());
 
-        if ($event->getCriteria()->hasExtension('flFilters')) {
+        if ($forceFilter || $event->getCriteria()->hasExtension('flFilters')) {
             $this->filterHandler->handleFilters($event, $navigationRequest);
         }
 

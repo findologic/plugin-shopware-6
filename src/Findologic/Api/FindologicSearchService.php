@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Api;
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
+use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\FinSearch\Exceptions\Search\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
@@ -19,6 +20,7 @@ use FINDOLOGIC\FinSearch\Struct\Config as PluginConfig;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -124,7 +126,7 @@ class FindologicSearchService
         $this->sortingService->handleRequest($event, $requestHandler);
     }
 
-    protected function allowRequest(ProductListingCriteriaEvent $event): bool
+    public function allowRequest(ProductListingCriteriaEvent $event): bool
     {
         if (!$this->pluginConfig->isInitialized()) {
             $this->pluginConfig->initializeBySalesChannel($event->getSalesChannelContext());
@@ -149,19 +151,7 @@ class FindologicSearchService
     ): void {
         try {
             $response = $requestHandler->doRequest($event, self::FILTER_REQUEST_LIMIT);
-            $serviceConfigResource = $this->container->get(ServiceConfigResource::class);
-
-            $responseParser = ResponseParser::getInstance(
-                $response,
-                $serviceConfigResource,
-                $this->pluginConfig
-            );
-            $filters = $responseParser->getFiltersExtension();
-            $filtersWithSmartSuggestBlocks = $responseParser->getFiltersWithSmartSuggestBlocks(
-                $filters,
-                $serviceConfigResource->getSmartSuggestBlocks($this->pluginConfig->getShopkey()),
-                $event->getRequest()->query->all()
-            );
+            $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
 
             $event->getCriteria()->addExtension('flFilters', $filtersWithSmartSuggestBlocks);
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
@@ -212,5 +202,54 @@ class FindologicSearchService
         );
 
         return !empty($isCategoryPage);
+    }
+
+    public function doFilter(ProductListingCriteriaEvent $event): void
+    {
+        $limit = self::FILTER_REQUEST_LIMIT;
+        if ($this->allowRequest($event)) {
+            $navigationRequestHandler = $this->buildNavigationRequestHandler();
+            if ($this->isCategoryPage($navigationRequestHandler, $event)) {
+                $this->handleSelectableFilters($event, $navigationRequestHandler, $limit);
+            }
+
+            $this->handleSelectableFilters($event, $this->buildSearchRequestHandler(), $limit);
+        }
+    }
+
+    protected function handleSelectableFilters(
+        ProductListingCriteriaEvent $event,
+        SearchNavigationRequestHandler $requestHandler,
+        ?int $limit
+    ): void {
+        $response = $requestHandler->doRequest($event, $limit, true);
+        $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
+
+        $event->getCriteria()->addExtension('flAvailableFilters', $filtersWithSmartSuggestBlocks);
+    }
+
+    /**
+     * @param Response $response
+     * @param ProductListingCriteriaEvent $event
+     *
+     * @return mixed
+     */
+    protected function parseFiltersFromResponse(
+        Response $response,
+        ProductListingCriteriaEvent $event
+    ) {
+        $serviceConfigResource = $this->container->get(ServiceConfigResource::class);
+        $responseParser = ResponseParser::getInstance(
+            $response,
+            $serviceConfigResource,
+            $this->pluginConfig
+        );
+        $filters = $responseParser->getFiltersExtension();
+
+        return $responseParser->getFiltersWithSmartSuggestBlocks(
+            $filters,
+            $serviceConfigResource->getSmartSuggestBlocks($this->pluginConfig->getShopkey()),
+            $event->getRequest()->query->all()
+        );
     }
 }

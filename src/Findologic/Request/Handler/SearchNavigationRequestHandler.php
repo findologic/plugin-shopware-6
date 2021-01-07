@@ -96,7 +96,7 @@ abstract class SearchNavigationRequestHandler
      *
      * @param int|null $limit limited amount of products
      */
-    abstract public function doRequest(ShopwareEvent $event, ?int $limit = null): Response;
+    abstract public function doRequest(ShopwareEvent $event, ?int $limit = null, ?bool $forceFilter = null): Response;
 
     /**
      * @throws ServiceNotAliveException
