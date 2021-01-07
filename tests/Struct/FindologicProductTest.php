@@ -11,7 +11,6 @@ use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
-use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
@@ -34,6 +33,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\Language\LanguageEntity;
@@ -42,6 +42,7 @@ use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class FindologicProductTest extends TestCase
@@ -1212,6 +1213,54 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($this->buildXmlPrice(15, $netCustomerGroup), $actualPrices[1]);
         $this->assertEquals($this->buildXmlPrice(15, $grossCustomerGroup), $actualPrices[2]);
         $this->assertEquals($this->buildXmlPrice(15), $actualPrices[3]);
+    }
+
+    public function testUsesMemoryEfficientWayToFetchSalesFrequency(): void
+    {
+        $expectedSalesFrequency = 1337;
+
+        $productEntity = $this->createTestProduct();
+
+        $containerMock = $this->getMockBuilder(ContainerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderLineItemRepositoryMock = $this->getMockBuilder(EntityRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $searchResultMock = $this->getMockBuilder(IdSearchResult::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // Ensure only memory efficient calls are being made.
+        $orderLineItemRepositoryMock->expects($this->once())->method('searchIds')
+            ->willReturn($searchResultMock);
+        $orderLineItemRepositoryMock->expects($this->never())->method('search');
+        $searchResultMock->expects($this->once())->method('getTotal')->willReturn($expectedSalesFrequency);
+
+        $containerMock->expects($this->any())->method('get')->willReturnCallback(
+            function (string $name) use ($orderLineItemRepositoryMock) {
+                if ($name === 'order_line_item.repository') {
+                    return $orderLineItemRepositoryMock;
+                }
+
+                return $this->getContainer()->get($name);
+            }
+        );
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $containerMock,
+            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
     }
 
     private function buildXmlPrice(float $value, string $userGroup = ''): Price
