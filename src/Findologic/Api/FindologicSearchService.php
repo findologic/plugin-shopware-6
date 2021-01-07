@@ -148,19 +148,7 @@ class FindologicSearchService
     ): void {
         try {
             $response = $requestHandler->doRequest($event, self::FILTER_REQUEST_LIMIT);
-            $serviceConfigResource = $this->container->get(ServiceConfigResource::class);
-
-            $responseParser = ResponseParser::getInstance(
-                $response,
-                $serviceConfigResource,
-                $this->pluginConfig
-            );
-            $filters = $responseParser->getFiltersExtension();
-            $filtersWithSmartSuggestBlocks = $responseParser->getFiltersWithSmartSuggestBlocks(
-                $filters,
-                $serviceConfigResource->getSmartSuggestBlocks($this->pluginConfig->getShopkey()),
-                $event->getRequest()->query->all()
-            );
+            $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
 
             $event->getCriteria()->addExtension('flFilters', $filtersWithSmartSuggestBlocks);
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
@@ -223,5 +211,54 @@ class FindologicSearchService
         }
 
         $findologicService->disable();
+    }
+
+    public function doFilter(ProductListingCriteriaEvent $event): void
+    {
+        $limit = self::FILTER_REQUEST_LIMIT;
+        if ($this->allowRequest($event)) {
+            $navigationRequestHandler = $this->buildNavigationRequestHandler();
+            if ($this->isCategoryPage($navigationRequestHandler, $event)) {
+                $this->handleSelectableFilters($event, $navigationRequestHandler, $limit);
+            }
+
+            $this->handleSelectableFilters($event, $this->buildSearchRequestHandler(), $limit);
+        }
+    }
+
+    protected function handleSelectableFilters(
+        ProductListingCriteriaEvent $event,
+        SearchNavigationRequestHandler $requestHandler,
+        ?int $limit
+    ): void {
+        $response = $requestHandler->doRequest($event, $limit, true);
+        $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
+
+        $event->getCriteria()->addExtension('flAvailableFilters', $filtersWithSmartSuggestBlocks);
+    }
+
+    /**
+     * @param Response $response
+     * @param ProductListingCriteriaEvent $event
+     *
+     * @return mixed
+     */
+    protected function parseFiltersFromResponse(
+        Response $response,
+        ProductListingCriteriaEvent $event
+    ) {
+        $serviceConfigResource = $this->container->get(ServiceConfigResource::class);
+        $responseParser = ResponseParser::getInstance(
+            $response,
+            $serviceConfigResource,
+            $this->pluginConfig
+        );
+        $filters = $responseParser->getFiltersExtension();
+
+        return $responseParser->getFiltersWithSmartSuggestBlocks(
+            $filters,
+            $serviceConfigResource->getSmartSuggestBlocks($this->pluginConfig->getShopkey()),
+            $event->getRequest()->query->all()
+        );
     }
 }
