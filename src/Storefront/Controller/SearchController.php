@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
-use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as LegacySearchPageLoader;
+use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader
+    as LegacySearchPageLoader;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
@@ -163,7 +164,7 @@ class SearchController extends StorefrontController
             /** @var FilterValue[] $values */
             $values = $filter->getValues();
             foreach ($values as $value) {
-                $filters[$filter->getId()][] = $value->getUuid() ?? $value->getId();
+                $filters[$filter->getId()]['entities'][] = $value;
             }
         }
 
