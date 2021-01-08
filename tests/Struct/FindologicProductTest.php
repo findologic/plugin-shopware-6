@@ -753,10 +753,8 @@ class FindologicProductTest extends TestCase
         }
 
         if ($productEntity->getPrice()) {
-            /** @var ProductPrice $price */
             $price = $productEntity->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
             if ($price) {
-                /** @var ProductPrice $listPrice */
                 $listPrice = $price->getListPrice();
                 if ($listPrice) {
                     $properties[] = new Property('old_price', [(string)$listPrice->getGross()]);
