@@ -486,9 +486,9 @@ class FindologicProduct extends Struct
 
         /** @var EntityRepository $orderLineItemRepository */
         $orderLineItemRepository = $this->container->get('order_line_item.repository');
-        $orders = $orderLineItemRepository->search($criteria, $this->salesChannelContext->getContext());
+        $orders = $orderLineItemRepository->searchIds($criteria, $this->salesChannelContext->getContext());
 
-        $this->salesFrequency = $orders->count();
+        $this->salesFrequency = $orders->getTotal();
     }
 
     /**
