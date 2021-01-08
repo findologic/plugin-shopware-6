@@ -28,10 +28,10 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
@@ -628,6 +628,21 @@ class FindologicProduct extends Struct
             $value = $this->product->getManufacturer()->getMedia()->getUrl();
             $this->addProperty('vendorlogo', $value);
         }
+
+        if ($this->product->getPrice()) {
+            /** @var ProductPrice $price */
+            $price = $this->product->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
+            if (!$price) {
+                return;
+            }
+
+            /** @var ProductPrice $listPrice */
+            $listPrice = $price->getListPrice();
+            if ($listPrice) {
+                $this->addProperty('old_price', (string)$listPrice->getGross());
+                $this->addProperty('old_price_net', (string)$listPrice->getNet());
+            }
+        }
     }
 
     public function hasProperties(): bool
@@ -985,6 +1000,7 @@ class FindologicProduct extends Struct
 
     /**
      * @param array<string, int, bool>|string|int|bool $value
+     *
      * @return array<string, int, bool>|string|int|bool
      */
     protected function getCleanedAttributeValue($value)
