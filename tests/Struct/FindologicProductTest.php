@@ -31,7 +31,6 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
-use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -754,10 +753,8 @@ class FindologicProductTest extends TestCase
         }
 
         if ($productEntity->getPrice()) {
-            /** @var ProductPrice $price */
             $price = $productEntity->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
             if ($price) {
-                /** @var ProductPrice $listPrice */
                 $listPrice = $price->getListPrice();
                 if ($listPrice) {
                     $properties[] = new Property('old_price', [(string)$listPrice->getGross()]);
