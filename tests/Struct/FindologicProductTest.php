@@ -1275,7 +1275,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $containerMock,
-            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
