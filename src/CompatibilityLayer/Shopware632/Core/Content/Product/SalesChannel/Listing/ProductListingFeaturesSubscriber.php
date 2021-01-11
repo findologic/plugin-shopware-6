@@ -137,7 +137,8 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
     {
         parent::handleResult($event);
 
-        if (!$event->getContext()->getExtension('findologicService')->getEnabled()) {
+        $findologicService = $event->getContext()->getExtension('findologicService');
+        if (!$findologicService || !$findologicService->getEnabled()) {
             return;
         }
 

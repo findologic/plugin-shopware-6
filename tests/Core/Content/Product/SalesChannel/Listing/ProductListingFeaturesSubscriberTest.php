@@ -28,6 +28,7 @@ use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -36,11 +37,14 @@ use ReflectionObject;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Tree\Tree;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
+use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -70,6 +74,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     use ExtensionHelper;
     use ProductHelper;
     use IntegrationTestBehaviour;
+    use SalesChannelHelper;
 
     /** @var Connection|MockObject */
     private $connectionMock;
@@ -1126,5 +1131,32 @@ XML;
         // Ensure that Context and Criteria were not changed. Shopware handles this request.
         $this->assertEquals($criteriaBefore, $eventMock->getCriteria());
         $this->assertEquals($contextBefore, $eventMock->getContext());
+    }
+
+    public function testHandleResultDoesNotThrowExceptionWhenCalledManually(): void
+    {
+        $this->initMocks();
+
+        $criteria = new Criteria();
+        $criteria->addExtension('sortings', $this->productListingSortingRegistry->getProductSortingEntities());
+
+        $result = new ProductListingResult(
+            0,
+            new EntityCollection(),
+            new AggregationResultCollection(),
+            $criteria,
+            Context::createDefaultContext()
+        );
+
+        $orderParam = Utils::versionLowerThan('6.2') ? 'sort' : 'order';
+
+        $event = new ProductListingResultEvent(
+            new Request([$orderParam => 'score']),
+            $result,
+            $this->buildSalesChannelContext()
+        );
+
+        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber->handleResult($event);
     }
 }
