@@ -27,17 +27,14 @@ class SortingServiceTest extends TestCase
 
     public function legacySortingProvider(): array
     {
-        // In Shopware 6.1, score sorting was prefixed with "_".
-        $scoreSorting = Utils::versionLowerThan('6.2') ? '_score' : 'score';
-
         return [
             'no explicit sorting provided' => [
                 'request' => new Request(),
                 'expectedOrder' => 'name-asc'
             ],
             'explicit sorting by "_score" provided' => [
-                'request' => new Request(['order' => $scoreSorting]),
-                'expectedOrder' => $scoreSorting
+                'request' => new Request(['order' => 'topseller']),
+                'expectedOrder' => 'topseller'
             ],
             'explicit unknown order provided' => [
                 'request' => new Request(['order' => 'i do not know']),
