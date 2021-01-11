@@ -62,6 +62,9 @@ class SearchNavigationRequestHandlerTest extends TestCase
     /** @var GenericPageLoader|MockObject */
     private $genericPageLoaderMock;
 
+    /** @var SalesChannelContext */
+    protected $salesChannelContext;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -84,16 +87,16 @@ class SearchNavigationRequestHandlerTest extends TestCase
     public function testAddsUserGroupHashForSearch(): void
     {
         $customer = $this->createAndGetCustomer();
-        $salesChannelContext = $this->buildSalesChannelContext(
+        $this->salesChannelContext = $this->buildSalesChannelContext(
             Defaults::SALES_CHANNEL,
             'http://test.at',
             $customer
         );
-        $event = $this->buildSearchEvent($salesChannelContext);
+        $event = $this->buildSearchEvent($this->salesChannelContext);
 
         $expectedUserGroup = Utils::calculateUserGroupHash(
             self::VALID_SHOPKEY,
-            $salesChannelContext->getCustomer()->getGroupId()
+            $this->salesChannelContext->getCustomer()->getGroupId()
         );
 
         $searchRequest = new SearchRequest();
@@ -114,7 +117,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
     public function testAddsUserGroupHashForNavigation(): void
     {
         $customer = $this->createAndGetCustomer();
-        $salesChannelContext = $this->buildSalesChannelContext(
+        $this->salesChannelContext = $this->buildSalesChannelContext(
             Defaults::SALES_CHANNEL,
             'http://test.at',
             $customer
@@ -130,11 +133,14 @@ class SearchNavigationRequestHandlerTest extends TestCase
         $categoryRepo = $this->getContainer()->get('category.repository');
         $category = $categoryRepo->search($oneSubCategoryFilter, Context::createDefaultContext())->first();
 
-        $event = $this->buildNavigationEvent($salesChannelContext, new Request(['navigationId' => $category->getId()]));
+        $event = $this->buildNavigationEvent(
+            $this->salesChannelContext,
+            new Request(['navigationId' => $category->getId()])
+        );
 
         $expectedUserGroup = Utils::calculateUserGroupHash(
             self::VALID_SHOPKEY,
-            $salesChannelContext->getCustomer()->getGroupId()
+            $this->salesChannelContext->getCustomer()->getGroupId()
         );
 
         $navigationRequest = new NavigationRequest();

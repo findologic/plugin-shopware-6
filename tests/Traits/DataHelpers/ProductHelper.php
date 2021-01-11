@@ -29,13 +29,8 @@ trait ProductHelper
         $redId = Uuid::randomHex();
         $colorId = Uuid::randomHex();
 
-        /** @var ContainerInterface $container */
         $container = $this->getContainer();
-
-        $contextFactory = $container->get(SalesChannelContextFactory::class);
-        /** @var SalesChannelContext $salesChannelContext */
-        $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
-        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
         $categoryData = [
             [
@@ -56,18 +51,9 @@ trait ProductHelper
             ]
         ];
         $container->get('category.repository')->upsert($categoryData, $context);
-
-        /** @var EntityRepository $salesChannelRepo */
-        $salesChannelRepo = $container->get('sales_channel.repository');
-        /** @var SalesChannelEntity $salesChannel */
-        $salesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
-
         $seoUrlRepo = $container->get('seo_url.repository');
         $seoUrls = $seoUrlRepo->search(new Criteria(), Context::createDefaultContext());
-        $seoUrlsStoreFrontContext = $seoUrlRepo->search(new Criteria(), $contextFactory->create(
-            Uuid::randomHex(),
-            $salesChannel->getId()
-        )->getContext());
+        $seoUrlsStoreFrontContext = $seoUrlRepo->search(new Criteria(), $this->salesChannelContext->getContext());
 
         $productSeoUrls = [];
         if ($seoUrls->count() === 0 && $seoUrlsStoreFrontContext->count() === 0) {
@@ -117,13 +103,11 @@ trait ProductHelper
             ],
             'seoUrls' => $productSeoUrls,
             'translations' => [
-                'en-GB' => [
-                    'customTranslated' => [
-                        'root' => 'FINDOLOGIC Translated',
-                    ],
-                ],
                 'de-DE' => [
-                    'customTranslated' => null,
+                    'name' => 'FINDOLOGIC Product DE',
+                ],
+                'en-GB' => [
+                    'name' => 'FINDOLOGIC Product EN',
                 ],
             ],
             'properties' => [
@@ -178,11 +162,25 @@ trait ProductHelper
         try {
             $criteria = new Criteria([$id]);
             $criteria = Utils::addProductAssociations($criteria);
+            $criteria->addAssociation('visibilities');
 
             return $container->get('product.repository')->search($criteria, $context)->get($id);
         } catch (InconsistentCriteriaIdsException $e) {
             return null;
         }
+    }
+
+    public function createVisibleTestProduct(array $overrides = []): ?ProductEntity
+    {
+        return $this->createTestProduct(array_merge([
+            'visibilities' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'visibility' => 20
+                ]
+            ]
+        ], $overrides));
     }
 
     public function createProductReview(string $id, float $points, string $productId, bool $active): void

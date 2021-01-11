@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Subscriber;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
@@ -19,11 +20,11 @@ class FrontendSubscriber implements EventSubscriberInterface
     /** @var Config */
     private $config;
 
-    /** @var ServiceConfigResource */
+    /** @var FindologicConfigService */
     private $serviceConfigResource;
 
     public function __construct(
-        SystemConfigService $systemConfigService,
+        FindologicConfigService $systemConfigService,
         ServiceConfigResource $serviceConfigResource,
         ?Config $config = null
     ) {
@@ -46,7 +47,7 @@ class FrontendSubscriber implements EventSubscriberInterface
      */
     public function onHeaderLoaded(HeaderPageletLoadedEvent $event): void
     {
-        $this->config->initializeBySalesChannel($event->getSalesChannelContext()->getSalesChannel()->getId());
+        $this->config->initializeBySalesChannel($event->getSalesChannelContext());
 
         // This will store the plugin config for usage in our templates
         $event->getPagelet()->addExtension('flConfig', $this->config);

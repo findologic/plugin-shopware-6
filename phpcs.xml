@@ -33,4 +33,10 @@
 
     <rule ref="Generic.PHP.RequireStrictTypes" />
     <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="PSR12.Files.ImportStatement"/>
+    <rule ref="Squiz.Strings.ConcatenationSpacing">
+        <properties>
+            <property name="spacing" value="1" />
+        </properties>
+    </rule>
 </ruleset>

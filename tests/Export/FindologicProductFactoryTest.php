@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\Export\XML\XMLItem;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
@@ -58,7 +58,6 @@ class FindologicProductFactoryTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
