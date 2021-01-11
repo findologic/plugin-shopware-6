@@ -4,45 +4,48 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
-use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as
-    LegacySearchPageLoader;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
-use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
-use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Storefront\Framework\Cache\Annotation\HttpCache;
 use Shopware\Storefront\Page\Search\SearchPageLoader;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Shopware\Storefront\Page\Suggest\SuggestPageLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class SearchController extends StorefrontController
+class SearchController extends ShopwareSearchController
 {
-    /** @var ShopwareSearchController */
-    private $decorated;
-
-    /** @var SearchPageLoader */
+    /**
+     * @var SearchPageLoader
+     */
     private $searchPageLoader;
 
-    /** @var FilterHandler */
+    /**
+     * @var SuggestPageLoader
+     */
+    private $suggestPageLoader;
+
+    /**
+     * @var FilterHandler
+     */
     private $filterHandler;
 
     public function __construct(
-        ShopwareSearchController $decorated,
-        ?SearchPageLoader $searchPageLoader,
-        FilterHandler $filterHandler,
-        ContainerInterface $container
+        SearchPageLoader $searchPageLoader,
+        SuggestPageLoader $suggestPageLoader,
+        AbstractProductSearchRoute $abstractProductSearchRoute,
+        ?FilterHandler $filterHandler = null
     ) {
-        $this->container = $container;
-        $this->decorated = $decorated;
-        $this->searchPageLoader = $this->buildSearchPageLoader($searchPageLoader);
-        $this->filterHandler = $filterHandler;
+        parent::__construct($searchPageLoader, $suggestPageLoader, $abstractProductSearchRoute);
+
+        $this->searchPageLoader = $searchPageLoader;
+        $this->suggestPageLoader = $suggestPageLoader;
+        $this->filterHandler = $filterHandler ?? new FilterHandler();
     }
 
     /**
@@ -52,8 +55,8 @@ class SearchController extends StorefrontController
      */
     public function search(SalesChannelContext $context, Request $request): Response
     {
-        if ($redirectResponse = $this->handleFindologicSearchParams($request)) {
-            return $redirectResponse;
+        if ($response = $this->handleFindologicSearchParams($request)) {
+            return $response;
         }
 
         $page = $this->searchPageLoader->load($request, $context);
@@ -73,7 +76,12 @@ class SearchController extends StorefrontController
      */
     public function suggest(SalesChannelContext $context, Request $request): Response
     {
-        return $this->decorated->suggest($context, $request);
+        $page = $this->suggestPageLoader->load($request, $context);
+
+        return $this->renderStorefront(
+            '@Storefront/storefront/layout/header/search-suggest.html.twig',
+            ['page' => $page]
+        );
     }
 
     /**
@@ -89,7 +97,14 @@ class SearchController extends StorefrontController
      */
     public function pagelet(Request $request, SalesChannelContext $context): Response
     {
-        return $this->decorated->pagelet($request, $context);
+        $request->request->set('no-aggregations', true);
+
+        $page = $this->searchPageLoader->load($request, $context);
+
+        return $this->renderStorefront(
+            '@Storefront/storefront/page/search/search-pagelet.html.twig',
+            ['page' => $page]
+        );
     }
 
     /**
@@ -109,20 +124,14 @@ class SearchController extends StorefrontController
      */
     public function ajax(Request $request, SalesChannelContext $context): Response
     {
-        return $this->decorated->ajax($request, $context);
-    }
+        $request->request->set('no-aggregations', true);
 
-    private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
-    {
-        if (!$searchPageLoader) {
-            if (Utils::versionLowerThan('6.2.0')) {
-                return $this->container->get(LegacySearchPageLoader::class);
-            }
+        $page = $this->searchPageLoader->load($request, $context);
 
-            return $this->container->get(FindologicSearchPageLoader::class);
-        }
-
-        return $searchPageLoader;
+        return $this->renderStorefront(
+            '@Storefront/storefront/page/search/search-pagelet.html.twig',
+            ['page' => $page]
+        );
     }
 
     private function handleFindologicSearchParams(Request $request): ?Response

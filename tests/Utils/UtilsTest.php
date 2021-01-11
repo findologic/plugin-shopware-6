@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Utils;
 
-use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 
@@ -53,8 +50,8 @@ class UtilsTest extends TestCase
             ],
             'Strings with whitespace' => [
                 ' Findologic123 ',
-                'Findologic123',
-                'Expected string to be trimmed'
+                ' Findologic123 ',
+                'Expected string to not be trimmed'
             ],
             'String with control characters' => [
                 "Findologic\n1\t2\r3",
@@ -302,8 +299,6 @@ class UtilsTest extends TestCase
             ->getMock();
         $configMock->expects($this->any())->method('isInitialized')->willReturn(true);
         $configMock->expects($this->any())->method('isActive')->willReturn($isActive);
-        $configMock->expects($this->any())->method('getShopkey')
-            ->willReturn('ABCDABCDABCDABCDABCDABCDABCDABCD');
         $configMock->expects($this->any())->method('isActiveOnCategoryPages')
             ->willReturn($isActiveOnCategory);
 
@@ -321,27 +316,6 @@ class UtilsTest extends TestCase
         $this->assertSame($expectedFindologicActive, $shouldHandleRequest);
         $this->assertSame($expectedFindologicActive, $findologicService->getEnabled());
         $this->assertSame($expectedSmartSuggestActive, $findologicService->getSmartSuggestEnabled());
-    }
-
-    public function testShouldHandleRequestThrowsExceptionInCaseConfigIsNotInitialized(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Config needs to be initialized first!');
-
-        /** @var FindologicConfigService $systemConfigService */
-        $systemConfigService = $this->getContainer()->get(FindologicConfigService::class);
-
-        $nonInitializedConfig = new Config(
-            $systemConfigService,
-            $this->getContainer()->get(ServiceConfigResource::class)
-        );
-
-        Utils::shouldHandleRequest(
-            new Request(),
-            Context::createDefaultContext(),
-            $this->getContainer()->get(ServiceConfigResource::class),
-            $nonInitializedConfig
-        );
     }
 
     public function categoryProvider(): array

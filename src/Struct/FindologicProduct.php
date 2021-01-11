@@ -14,10 +14,10 @@ use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
 use FINDOLOGIC\Export\Helpers\DataHelper;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
@@ -28,10 +28,10 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
@@ -51,6 +51,12 @@ class FindologicProduct extends Struct
 
     /** @var ContainerInterface */
     protected $container;
+
+    /**
+     * @deprecated will be removed in 2.0. Use $salesChannelContext->getContext() instead.
+     * @var Context
+     */
+    protected $context;
 
     /** @var SalesChannelContext */
     protected $salesChannelContext;
@@ -109,7 +115,7 @@ class FindologicProduct extends Struct
     protected $translator;
 
     /**
-     * @var DynamicProductGroupService|null
+     * @var DynamicProductGroupService
      */
     protected $dynamicProductGroupService;
 
@@ -127,6 +133,7 @@ class FindologicProduct extends Struct
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
+        Context $context,
         string $shopkey,
         array $customerGroups,
         Item $item
@@ -134,6 +141,7 @@ class FindologicProduct extends Struct
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
+        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
         $this->item = $item;
@@ -191,7 +199,7 @@ class FindologicProduct extends Struct
     public function getName(): string
     {
         if (!$this->hasName()) {
-            throw new AccessEmptyPropertyException($this->product);
+            throw new AccessEmptyPropertyException();
         }
 
         return $this->name;
@@ -204,7 +212,7 @@ class FindologicProduct extends Struct
     {
         $name = $this->product->getTranslation('name');
         if (Utils::isEmpty($name)) {
-            throw new ProductHasNoNameException($this->product);
+            throw new ProductHasNoNameException();
         }
 
         $this->name = Utils::removeControlCharacters($name);
@@ -217,7 +225,7 @@ class FindologicProduct extends Struct
     public function getAttributes(): array
     {
         if (!$this->hasAttributes()) {
-            throw new AccessEmptyPropertyException($this->product);
+            throw new AccessEmptyPropertyException();
         }
 
         return $this->attributes;
@@ -242,7 +250,7 @@ class FindologicProduct extends Struct
     public function getPrices(): array
     {
         if (!$this->hasPrices()) {
-            throw new AccessEmptyPropertyException($this->product);
+            throw new AccessEmptyPropertyException();
         }
 
         return $this->prices;
@@ -390,7 +398,7 @@ class FindologicProduct extends Struct
     public function getKeywords(): array
     {
         if (!$this->hasKeywords()) {
-            throw new AccessEmptyPropertyException($this->product);
+            throw new AccessEmptyPropertyException();
         }
 
         return $this->keywords;
@@ -420,7 +428,7 @@ class FindologicProduct extends Struct
     public function getImages(): array
     {
         if (!$this->hasImages()) {
-            throw new AccessEmptyPropertyException($this->product);
+            throw new AccessEmptyPropertyException();
         }
 
         return $this->images;
@@ -473,12 +481,6 @@ class FindologicProduct extends Struct
         return $this->salesFrequency;
     }
 
-    public function hasSalesFrequency(): bool
-    {
-        // In case a product has no sales, it's sales frequency would still be 0.
-        return true;
-    }
-
     protected function setSalesFrequency(): void
     {
         $criteria = new Criteria();
@@ -486,9 +488,9 @@ class FindologicProduct extends Struct
 
         /** @var EntityRepository $orderLineItemRepository */
         $orderLineItemRepository = $this->container->get('order_line_item.repository');
-        $orders = $orderLineItemRepository->searchIds($criteria, $this->salesChannelContext->getContext());
+        $orders = $orderLineItemRepository->search($criteria, $this->salesChannelContext->getContext());
 
-        $this->salesFrequency = $orders->getTotal();
+        $this->salesFrequency = $orders->count();
     }
 
     /**
@@ -498,7 +500,7 @@ class FindologicProduct extends Struct
     public function getUserGroups(): array
     {
         if (!$this->hasUserGroups()) {
-            throw new AccessEmptyPropertyException($this->product);
+            throw new AccessEmptyPropertyException();
         }
 
         return $this->userGroups;
@@ -525,7 +527,7 @@ class FindologicProduct extends Struct
     public function getOrdernumbers(): array
     {
         if (!$this->hasOrdernumbers()) {
-            throw new AccessEmptyPropertyException($this->product);
+            throw new AccessEmptyPropertyException();
         }
 
         return $this->ordernumbers;
@@ -551,7 +553,7 @@ class FindologicProduct extends Struct
     public function getProperties(): array
     {
         if (!$this->hasProperties()) {
-            throw new AccessEmptyPropertyException($this->product);
+            throw new AccessEmptyPropertyException();
         }
 
         return $this->properties;
@@ -627,21 +629,6 @@ class FindologicProduct extends Struct
         if ($this->product->getManufacturer() && $this->product->getManufacturer()->getMedia()) {
             $value = $this->product->getManufacturer()->getMedia()->getUrl();
             $this->addProperty('vendorlogo', $value);
-        }
-
-        if ($this->product->getPrice()) {
-            /** @var ProductPrice $price */
-            $price = $this->product->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
-            if (!$price) {
-                return;
-            }
-
-            /** @var ProductPrice $listPrice */
-            $listPrice = $price->getListPrice();
-            if ($listPrice) {
-                $this->addProperty('old_price', (string)$listPrice->getGross());
-                $this->addProperty('old_price_net', (string)$listPrice->getNet());
-            }
         }
     }
 
@@ -811,7 +798,7 @@ class FindologicProduct extends Struct
     {
         $productCategories = $this->product->getCategories();
         if ($productCategories === null || empty($productCategories->count())) {
-            throw new ProductHasNoCategoriesException($this->product);
+            throw new ProductHasNoCategoriesException();
         }
 
         $categoryAttribute = new Attribute('cat');
@@ -891,7 +878,7 @@ class FindologicProduct extends Struct
     {
         $prices = $this->getPricesFromProduct($this->product);
         if (Utils::isEmpty($prices)) {
-            throw new ProductHasNoPricesException($this->product);
+            throw new ProductHasNoPricesException();
         }
 
         $this->prices = array_merge($this->prices, $prices);
@@ -939,6 +926,18 @@ class FindologicProduct extends Struct
         }
 
         return $seoUrls;
+    }
+
+    /**
+     * @deprecated will be removed in 2.0. Use Utils::buildCategoryPath() instead.
+     * @see Utils::buildCategoryPath()
+     */
+    protected function buildCategoryPath(CategoryEntity $categoryEntity): string
+    {
+        $breadCrumbs = $categoryEntity->getBreadcrumb();
+        array_shift($breadCrumbs);
+
+        return implode('_', $breadCrumbs);
     }
 
     protected function getSortedImages(): ProductMediaCollection
@@ -1000,7 +999,6 @@ class FindologicProduct extends Struct
 
     /**
      * @param array<string, int, bool>|string|int|bool $value
-     *
      * @return array<string, int, bool>|string|int|bool
      */
     protected function getCleanedAttributeValue($value)

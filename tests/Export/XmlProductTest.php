@@ -7,11 +7,11 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 use FINDOLOGIC\Export\Data\DateAdded;
 use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\XML\XMLItem;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoAttributesException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoAttributesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\XmlProduct;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
@@ -63,15 +63,16 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
         ])->getMock();
-        $findologicProductMock->expects($this->exactly(2))->method('hasName')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getName')->willReturn('some name');
-        $findologicProductMock->expects($this->exactly(2))->method('hasAttributes')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('hasAttributes')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getAttributes')->willReturn([]);
-        $findologicProductMock->expects($this->exactly(2))->method('hasPrices')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('hasPrices')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getPrices')->willReturn([]);
         $findologicProductMock->expects($this->once())->method('hasDescription')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getDescription')->willReturn('some description');
@@ -85,7 +86,6 @@ class XmlProductTest extends TestCase
         $findologicProductMock->expects($this->once())->method('getKeywords')->willReturn([]);
         $findologicProductMock->expects($this->once())->method('hasImages')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getImages')->willReturn([]);
-        $findologicProductMock->expects($this->once())->method('hasSalesFrequency')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getSalesFrequency')->willReturn(1);
         $findologicProductMock->expects($this->once())->method('hasUserGroups')->willReturn(true);
         $findologicProductMock->expects($this->once())->method('getUserGroups')->willReturn([]);
@@ -104,17 +104,16 @@ class XmlProductTest extends TestCase
             ->with(FindologicProductFactory::class)
             ->willReturn($findologicFactoryMock);
 
-        $xmlProduct = new XmlProduct(
+        $xmlItem = new XmlProduct(
             $productEntity,
             $this->getContainer()->get('router'),
             $containerMock,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             []
         );
-        $xmlProduct->buildXmlItem();
-        $xmlItem = $xmlProduct->getXmlItem();
 
-        $this->assertInstanceOf(Item::class, $xmlItem);
+        $this->assertInstanceOf(Item::class, $xmlItem->getXmlItem());
     }
 
     /**
@@ -136,13 +135,14 @@ class XmlProductTest extends TestCase
             $productEntity,
             $this->getContainer()->get('router'),
             $this->getContainer(),
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
         ])->getMock();
         $findologicProductMock->expects($this->once())->method('hasName')->willReturn(true);
+        $findologicProductMock->expects($this->once())->method('getName')->willReturn($productEntity->getName());
         $findologicProductMock->expects($this->once())->method('hasAttributes')->willReturn(false);
-        $findologicProductMock->expects($this->never())->method('getName');
         $findologicProductMock->expects($this->never())->method('getAttributes');
         $findologicProductMock->expects($this->never())->method('hasPrices');
         $findologicProductMock->expects($this->never())->method('getPrices');
@@ -157,31 +157,11 @@ class XmlProductTest extends TestCase
             ->with(FindologicProductFactory::class)
             ->willReturn($findologicFactoryMock);
 
-        $xmlProduct = $this->getDefaultXmlProduct($productEntity, $containerMock);
-        $xmlProduct->buildXmlItem();
-    }
-
-    public function testKeywordsAreNotRequired(): void
-    {
-        $product = $this->createVisibleTestProduct(['tags' => []]);
-
-        $xmlProduct = $this->getDefaultXmlProduct($product);
-        $xmlProduct->buildXmlItem();
-
-        $xmlItem = $xmlProduct->getXmlItem();
-
-        $this->assertNotNull($xmlItem);
-        $this->assertSame($product->getId(), $xmlItem->getId());
-    }
-
-    private function getDefaultXmlProduct(
-        ProductEntity $productEntity,
-        ?ContainerInterface $container = null
-    ): XmlProduct {
-        return new XmlProduct(
+        new XmlProduct(
             $productEntity,
             $this->getContainer()->get('router'),
-            $container ?? $this->getContainer(),
+            $containerMock,
+            $this->salesChannelContext->getContext(),
             $this->shopkey,
             []
         );

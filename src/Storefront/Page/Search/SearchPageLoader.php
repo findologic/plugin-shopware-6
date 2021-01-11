@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Page\Search;
 
-use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as
-    LegacySearchPageLoader;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Page\StorefrontSearchResult;
 use Shopware\Storefront\Page\GenericPageLoader;
@@ -27,12 +26,9 @@ class SearchPageLoader extends ShopwareSearchPageLoader
     private $genericLoader;
 
     /**
-     * @var AbstractProductSearchRoute|null
+     * @var AbstractProductSearchRoute
      */
     private $productSearchRoute;
-
-    /** @var LegacySearchPageLoader|null */
-    private $legacyPageLoader;
 
     /**
      * @var EventDispatcherInterface
@@ -41,14 +37,13 @@ class SearchPageLoader extends ShopwareSearchPageLoader
 
     public function __construct(
         GenericPageLoader $genericLoader,
-        ?AbstractProductSearchRoute $productSearchRoute,
-        EventDispatcherInterface $eventDispatcher,
-        ?LegacySearchPageLoader $legacyPageLoader
+        AbstractProductSearchRoute $productSearchRoute,
+        EventDispatcherInterface $eventDispatcher
     ) {
+        parent::__construct($genericLoader, $productSearchRoute, $eventDispatcher);
         $this->genericLoader = $genericLoader;
         $this->productSearchRoute = $productSearchRoute;
         $this->eventDispatcher = $eventDispatcher;
-        $this->legacyPageLoader = $legacyPageLoader;
     }
 
     /**
@@ -57,10 +52,6 @@ class SearchPageLoader extends ShopwareSearchPageLoader
      */
     public function load(Request $request, SalesChannelContext $salesChannelContext): SearchPage
     {
-        if ($this->legacyPageLoader) {
-            return $this->legacyPageLoader->load($request, $salesChannelContext);
-        }
-
         if (method_exists(SearchPage::class, 'setSearchResult')) {
             return $this->legacyLoad($request, $salesChannelContext);
         }

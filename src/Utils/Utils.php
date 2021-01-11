@@ -46,7 +46,7 @@ class Utils
 
         $result = preg_replace('/[\x{0000}-\x{001F}]|[\x{007F}]|[\x{0080}-\x{009F}]/u', '', $string);
 
-        return trim($result) ?? trim($string);
+        return $result ?? $string;
     }
 
     public static function removeSpecialChars(?string $string): string
@@ -63,31 +63,35 @@ class Utils
      */
     public static function addProductAssociations(Criteria $criteria): Criteria
     {
-        return $criteria->addAssociations(
-            [
-                'seoUrls',
-                'categories',
-                'categories.seoUrls',
-                'translations',
-                'tags',
-                'media',
-                'manufacturer',
-                'manufacturer.translations',
-                'properties',
-                'properties.group',
-                'properties.productConfiguratorSettings',
-                'properties.productConfiguratorSettings.option',
-                'properties.productConfiguratorSettings.option.group',
-                'properties.productConfiguratorSettings.option.group.translations',
-                'children',
-                'children.properties',
-                'children.properties.group',
-                'children.properties.productConfiguratorSettings',
-                'children.properties.productConfiguratorSettings.option',
-                'children.properties.productConfiguratorSettings.option.group',
-                'children.properties.productConfiguratorSettings.option.group.translations',
-            ]
-        );
+        $associations = [
+            'seoUrls',
+            'categories',
+            'categories.seoUrls',
+            'translations',
+            'tags',
+            'media',
+            'manufacturer',
+            'manufacturer.translations',
+            'properties',
+            'properties.group',
+            'properties.productConfiguratorSettings',
+            'properties.productConfiguratorSettings.option',
+            'properties.productConfiguratorSettings.option.group',
+            'properties.productConfiguratorSettings.option.group.translations',
+            'children',
+            'children.properties',
+            'children.properties.group',
+            'children.properties.productConfiguratorSettings',
+            'children.properties.productConfiguratorSettings.option',
+            'children.properties.productConfiguratorSettings.option.group',
+            'children.properties.productConfiguratorSettings.option.group.translations',
+        ];
+
+        foreach ($associations as $association) {
+            $criteria->addAssociation($association);
+        }
+
+        return $criteria;
     }
 
     public static function multiByteRawUrlEncode(string $string): string
@@ -103,19 +107,16 @@ class Utils
 
     public static function buildUrl(array $parsedUrl): string
     {
-        return sprintf(
-            '%s%s%s%s%s%s%s%s%s%s',
-            isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '',
-            (isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '',
-            isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '',
-            isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '',
-            isset($parsedUrl['user']) ? '@' : '',
-            isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '',
-            isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '',
-            isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '',
-            isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '',
-            isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : ''
-        );
+        return (isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '')
+            . ((isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '')
+            . (isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '')
+            . (isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '')
+            . (isset($parsedUrl['user']) ? '@' : '')
+            . (isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '')
+            . (isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '')
+            . (isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '')
+            . (isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '')
+            . (isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : '');
     }
 
     public static function versionLowerThan(string $version): bool
@@ -160,10 +161,6 @@ class Utils
         $context->addExtension('findologicService', $findologicService);
 
         $shopkey = $config->getShopkey();
-        if (!$shopkey || trim($shopkey) === '') {
-            return $findologicService->disable();
-        }
-
         $isDirectIntegration = $serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $serviceConfigResource->isStaging($shopkey);
         $isStagingSession = static::isStagingSession($request);

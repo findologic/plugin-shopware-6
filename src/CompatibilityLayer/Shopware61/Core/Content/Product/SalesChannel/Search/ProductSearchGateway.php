@@ -6,7 +6,8 @@ namespace FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Core\Content\Produc
 
 use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Core\Content\Product\SalesChannel\FindologicProductListingGateway
     as DecoratedProductListingGateway;
-use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchGateway as ShopwareProductSearchGateway;
+use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchGateway
+    as ShopwareProductSearchGateway;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;

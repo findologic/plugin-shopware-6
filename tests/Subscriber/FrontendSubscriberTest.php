@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
-use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
@@ -41,7 +40,7 @@ class FrontendSubscriberTest extends TestCase
     {
         $shopkey = $this->getShopkey();
 
-        /** @var FindologicConfigService|MockObject $configServiceMock */
+        /** @var SystemConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
 
         /** @var HeaderPageletLoadedEvent|MockObject $headerPageletLoadedEventMock */
@@ -90,11 +89,35 @@ class FrontendSubscriberTest extends TestCase
                 )
             );
 
-        $salesChannelContext = $this->buildSalesChannelContext();
+        /** @var SalesChannelContext|MockObject $salesChannelContextMock */
+        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var SalesChannelEntity|MockObject $salesChannelMock */
+        $salesChannelMock = $this->getMockBuilder(SalesChannelEntity::class)->disableOriginalConstructor()->getMock();
+        $salesChannelMock->method('getId')->willReturn(Defaults::SALES_CHANNEL);
+
+        $salesChannelContextMock->expects($this->any())
+            ->method('getContext')
+            ->willReturn(Context::createDefaultContext());
+
+        $salesChannelContextMock->method('getSalesChannel')->willReturn($salesChannelMock);
+
+        /** @var CustomerGroupEntity|MockObject $customerGroupEntityMock */
+        $customerGroupEntityMock = $this->getMockBuilder(CustomerGroupEntity::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $customerGroupEntityMock->expects($this->once())->method('getId')->willReturn('1');
+
+        $salesChannelContextMock->expects($this->once())
+            ->method('getCurrentCustomerGroup')
+            ->willReturn($customerGroupEntityMock);
+
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')
             ->willReturn($headerPageletMock);
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')
-            ->willReturn($salesChannelContext);
+            ->willReturn($salesChannelContextMock);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
         $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
@@ -107,5 +130,24 @@ class FrontendSubscriberTest extends TestCase
         );
 
         $frontendSubscriber->onHeaderLoaded($headerPageletLoadedEventMock);
+    }
+
+    public function responseProvider(): array
+    {
+        $response = new Xml21Response($this->getDemoXMLResponse());
+
+        $productIds = array_map(
+            static function (Product $product) {
+                return $product->getId();
+            },
+            $response->getProducts()
+        );
+
+        return [
+            'Response matches the product Ids' => [
+                'response' => $response,
+                'productIds' => $productIds
+            ],
+        ];
     }
 }

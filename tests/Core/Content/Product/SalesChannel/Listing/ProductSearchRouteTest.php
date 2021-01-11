@@ -32,7 +32,7 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->productDefinitionMock,
             $this->criteriaBuilderMock,
             $this->serviceConfigResourceMock,
-            $this->findologicConfigServiceMock,
+            $this->systemConfigServiceMock,
             $this->configMock
         );
     }
