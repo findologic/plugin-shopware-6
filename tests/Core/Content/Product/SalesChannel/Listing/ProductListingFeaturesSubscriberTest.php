@@ -1138,7 +1138,7 @@ XML;
         $this->initMocks();
 
         $criteria = new Criteria();
-        if (Utils::versionLowerThan('6.3.2')) {
+        if (!Utils::versionLowerThan('6.3.2')) {
             $criteria->addExtension('sortings', $this->productListingSortingRegistry->getProductSortingEntities());
         }
 
