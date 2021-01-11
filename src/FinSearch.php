@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch;
 
 use Composer\Autoload\ClassLoader;
+use Doctrine\DBAL\Connection;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -25,13 +26,16 @@ class FinSearch extends Plugin
         // For maintaining compatibility with Shopware 6.1.x we load relevant services due to several
         // breaking changes introduced in Shopware 6.2
         // @link https://github.com/shopware/platform/blob/master/UPGRADE-6.2.md
-        $this->loadServiceXml($container, $this->getCompatibilityLayerServicesFilePath());
+        if ($path = $this->getCompatibilityLayerServicesFilePath()) {
+            $this->loadServiceXml($container, $path);
+        }
 
         parent::build($container);
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
     {
+        parent::uninstall($uninstallContext);
         $activePlugins = $this->container->getParameter('kernel.active_plugins');
 
         // If the Extension plugin is installed we will uninstall it with the FinSearch base plugin
@@ -49,20 +53,20 @@ class FinSearch extends Plugin
             }
         }
 
-        parent::uninstall($uninstallContext);
+        if ($uninstallContext->keepUserData()) {
+            return;
+        }
+
+        $this->deleteFindologicConfig();
     }
 
-    private function getCompatibilityLayerServicesFilePath(): string
+    private function getCompatibilityLayerServicesFilePath(): ?string
     {
         if (Utils::versionLowerThan('6.2')) {
-            return self::COMPATIBILITY_PATH .  '/shopware61';
-        } elseif (Utils::versionLowerThan('6.3.2')) {
-            return self::COMPATIBILITY_PATH . '/shopware631';
-        } elseif (Utils::versionLowerThan('6.3.3')) {
-            return self::COMPATIBILITY_PATH . '/shopware632';
-        } else {
-            return self::COMPATIBILITY_PATH . '/latest';
+            return self::COMPATIBILITY_PATH . '/shopware61';
         }
+
+        return null;
     }
 
     private function loadServiceXml($container, string $filePath): void
@@ -73,6 +77,12 @@ class FinSearch extends Plugin
         );
 
         $loader->load('services.xml');
+    }
+
+    private function deleteFindologicConfig(): void
+    {
+        $connection = $this->container->get(Connection::class);
+        $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
     }
 }
 

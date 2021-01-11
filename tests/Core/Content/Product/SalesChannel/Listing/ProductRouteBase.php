@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
@@ -66,6 +67,11 @@ abstract class ProductRouteBase extends TestCase
      */
     protected $configMock;
 
+    /**
+     * @var FindologicConfigService|MockObject
+     */
+    protected $findologicConfigServiceMock;
+
     protected function setUp(): void
     {
         $this->eventDispatcherMock = $this->getMockBuilder(EventDispatcherInterface::class)
@@ -93,6 +99,10 @@ abstract class ProductRouteBase extends TestCase
             ->getMock();
 
         $this->systemConfigServiceMock = $this->getMockBuilder(SystemConfigService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->findologicConfigServiceMock = $this->getMockBuilder(FindologicConfigService::class)
             ->disableOriginalConstructor()
             ->getMock();
 

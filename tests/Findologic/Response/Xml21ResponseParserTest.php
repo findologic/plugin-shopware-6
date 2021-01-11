@@ -191,22 +191,22 @@ class Xml21ResponseParserTest extends TestCase
         $expectedVendorFilter = new VendorImageFilter($vendor, 'Hersteller');
         $expectedVendorFilter->addValue(
             (new ImageFilterValue('Anderson, Gusikowski and Barton', 'Anderson, Gusikowski and Barton', $vendor))
-                ->setDisplayType('none')
+                ->setDisplayType('media')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/anderson_gusikowski_and_barton.png'))
         );
         $expectedVendorFilter->addValue(
             (new ImageFilterValue('Bednar Ltd', 'Bednar Ltd', $vendor))
-                ->setDisplayType('none')
+                ->setDisplayType('media')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/bednar_ltd.png'))
         );
         $expectedVendorFilter->addValue(
             (new ImageFilterValue('Buckridge-Fisher', 'Buckridge-Fisher', $vendor))
-                ->setDisplayType('none')
+                ->setDisplayType('media')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/buckridge_fisher.png'))
         );
         $expectedVendorFilter->addValue(
             (new ImageFilterValue('Connelly, Eichmann and Weissnat', 'Connelly, Eichmann and Weissnat', $vendor))
-                ->setDisplayType('none')
+                ->setDisplayType('media')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/connelly_eichmann_and_weissnat.png'))
         );
 
@@ -229,16 +229,19 @@ class Xml21ResponseParserTest extends TestCase
             (new ColorFilterValue('beige', 'beige', $color))
                 ->setColorHexCode('#F5F5DC')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/beige.gif'))
+                ->setDisplayType('media')
         );
         $expectedColorFilter->addValue(
             (new ColorFilterValue('blau', 'blau', $color))
                 ->setColorHexCode('#3c6380')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/blau.gif'))
+                ->setDisplayType('media')
         );
         $expectedColorFilter->addValue(
             (new ColorFilterValue('braun', 'braun', $color))
                 ->setColorHexCode('#94651e')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/braun.gif'))
+                ->setDisplayType('media')
         );
 
         $material = 'Material';
@@ -272,6 +275,32 @@ class Xml21ResponseParserTest extends TestCase
                     $this->getMockResponse('XMLResponse/demoResponseWithNoResultsButWithFilters.xml')
                 ),
                 'expectedFilters' => []
+            ],
+            'response with colors without image URLs' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithColorFiltersWithoutUrl.xml')
+                ),
+                'expectedFilters' => [
+                    (new ColorPickerFilter('Farbe', 'Farbe'))
+                        ->addValue(
+                            (new ColorFilterValue('beige', 'beige', $color))
+                                ->setMedia(new Media(''))
+                                ->setColorHexCode('#F5F5DC')
+                                ->setDisplayType('color')
+                        )
+                        ->addValue(
+                            (new ColorFilterValue('blau', 'blau', $color))
+                                ->setMedia(new Media(''))
+                                ->setColorHexCode('#3c6380')
+                                ->setDisplayType('color')
+                        )
+                        ->addValue(
+                            (new ColorFilterValue('braun', 'braun', $color))
+                                ->setMedia(new Media(''))
+                                ->setColorHexCode('')
+                                ->setDisplayType('none')
+                        )
+                ]
             ]
         ];
     }
