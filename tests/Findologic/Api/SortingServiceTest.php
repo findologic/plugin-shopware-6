@@ -35,9 +35,9 @@ class SortingServiceTest extends TestCase
                 'request' => new Request(),
                 'expectedOrder' => 'name-asc'
             ],
-            'explicit sorting by "_score" provided' => [
-                'request' => new Request([$orderParameter => 'topseller']),
-                'expectedOrder' => 'topseller'
+            'explicit sorting by "name-desc" provided' => [
+                'request' => new Request([$orderParameter => 'name-desc']),
+                'expectedOrder' => 'name-desc'
             ],
             'explicit unknown order provided' => [
                 'request' => new Request([$orderParameter => 'i do not know']),
