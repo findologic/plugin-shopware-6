@@ -27,17 +27,20 @@ class SortingServiceTest extends TestCase
 
     public function legacySortingProvider(): array
     {
+        // In Shopware 6.1, this parameter was called "sort".
+        $orderParameter = Utils::versionLowerThan('6.2') ? 'sort' : 'order';
+
         return [
             'no explicit sorting provided' => [
                 'request' => new Request(),
                 'expectedOrder' => 'name-asc'
             ],
             'explicit sorting by "_score" provided' => [
-                'request' => new Request(['order' => 'topseller']),
+                'request' => new Request([$orderParameter => 'topseller']),
                 'expectedOrder' => 'topseller'
             ],
             'explicit unknown order provided' => [
-                'request' => new Request(['order' => 'i do not know']),
+                'request' => new Request([$orderParameter => 'i do not know']),
                 'expectedOrder' => 'name-asc'
             ],
         ];
