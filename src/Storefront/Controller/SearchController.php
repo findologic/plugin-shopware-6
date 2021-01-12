@@ -155,19 +155,36 @@ class SearchController extends StorefrontController
             return $this->decorated->filter($request, $context);
         }
 
-        $filters = [];
         $this->findologicSearchService->doFilter($event);
 
         /** @var FiltersExtension $filterExtension */
         $filterExtension = $event->getCriteria()->getExtension('flAvailableFilters');
+
+        $result = [];
         foreach ($filterExtension->getFilters() as $filter) {
+            $filterName = $filter->getId();
+            $newFilter = [];
+            $newFilter['name'] = $filterName;
+            $newFilter['translated'][] = [
+                'name' => $filterName
+            ];
+
             /** @var FilterValue[] $values */
             $values = $filter->getValues();
             foreach ($values as $value) {
-                $filters[$filter->getId()]['entities'][] = $value;
+                $valueId = $value->getUuid() ?? $value->getId();
+                $newFilter[] = [
+                    'id' => $valueId,
+                    'name' => $valueId,
+                    'translated' => [
+                        'name' => $valueId
+                    ]
+                ];
             }
+
+            $result[$filterName]['entities'][] = $newFilter;
         }
 
-        return new JsonResponse($filters);
+        return new JsonResponse($result);
     }
 }

@@ -216,12 +216,13 @@ class FindologicSearchService
     public function doFilter(ProductListingCriteriaEvent $event): void
     {
         $limit = self::FILTER_REQUEST_LIMIT;
-        $navigationRequestHandler = $this->buildNavigationRequestHandler();
-        if ($this->isCategoryPage($navigationRequestHandler, $event)) {
-            $this->handleSelectableFilters($event, $navigationRequestHandler, $limit);
+        $handler = $this->buildNavigationRequestHandler();
+        if (!$this->isCategoryPage($handler, $event)) {
+            $handler = $this->buildSearchRequestHandler();
         }
 
-        $this->handleSelectableFilters($event, $this->buildSearchRequestHandler(), $limit);
+        $this->handleFilters($event, $handler);
+        $this->handleSelectableFilters($event, $handler, $limit);
     }
 
     protected function handleSelectableFilters(
