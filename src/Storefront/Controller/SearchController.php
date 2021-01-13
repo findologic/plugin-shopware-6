@@ -163,26 +163,14 @@ class SearchController extends StorefrontController
         $result = [];
         foreach ($filterExtension->getFilters() as $filter) {
             $filterName = $filter->getId();
-            $newFilter = [];
-            $newFilter['name'] = $filterName;
-            $newFilter['translated'][] = [
-                'name' => $filterName
-            ];
 
             /** @var FilterValue[] $values */
             $values = $filter->getValues();
+
             foreach ($values as $value) {
                 $valueId = $value->getUuid() ?? $value->getId();
-                $newFilter[] = [
-                    'id' => $valueId,
-                    'name' => $valueId,
-                    'translated' => [
-                        'name' => $valueId
-                    ]
-                ];
+                $result[$filterName]['entities'][] = ['id' => $valueId, 'translated' => ['name' => $value->getName()]];
             }
-
-            $result[$filterName]['entities'][] = $newFilter;
         }
 
         return new JsonResponse($result);
