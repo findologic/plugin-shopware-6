@@ -72,7 +72,7 @@ class FindologicConfigController extends AbstractController
             [$salesChannelId, $languageId] = explode('-', $key);
 
             $currentShopkey = $config['FinSearch.config.shopkey'];
-            if (in_array($currentShopkey, $shopkeys, false)) {
+            if ($currentShopkey && in_array($currentShopkey, $shopkeys, false)) {
                 throw new ShopkeyAlreadyExistsException();
             }
 
