@@ -261,6 +261,7 @@ Component.register('findologic-page', {
             return this.httpClient
                 .get(`https://account.findologic.com/api/v1/shopkey/validate/${this.shopkey}`)
                 .then((response) => {
+                    this.isLoading = false;
                     const status = String(response.status);
                     return status.startsWith('2');
                 })
@@ -276,16 +277,24 @@ Component.register('findologic-page', {
         },
 
         onSelectedSalesChannel(salesChannelId) {
+            this.language = [];
+            this.selectedLanguageId = null;
             if (this.salesChannel === undefined || salesChannelId === null) {
-                this.selectedLanguageId = null;
-                this.language = [];
                 return;
             }
+
             let selectedChannel = this.salesChannel.find(item => item.id = salesChannelId);
             if (selectedChannel) {
                 this.selectedSalesChannelId = salesChannelId;
+                selectedChannel.languages.forEach((language) => {
+                    this.language.push({
+                        name: language.name,
+                        id: language.id
+                    });
+
+                });
+
                 this.selectedLanguageId = selectedChannel.languageId;
-                this.language = selectedChannel.languages;
             }
         }
 

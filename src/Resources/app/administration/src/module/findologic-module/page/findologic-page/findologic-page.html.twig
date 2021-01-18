@@ -59,18 +59,17 @@
                                             </template>
                                         </sw-entity-single-select>
 
-                                        <sw-entity-single-select
-                                                ref="languageSelection"
-                                                class="sw-language-switch__select"
-                                                entity="language"
+                                        <sw-select-field
                                                 id="language"
-                                                size="medium"
-                                                :placeholder="$tc('findologic.selectSalesChannel')"
-                                                :disabled="!selectedSalesChannelId"
                                                 required
                                                 v-model="selectedLanguageId"
                                                 @change="onSelectedLanguage">
-                                        </sw-entity-single-select>
+                                            <option value="" selected>{{ $tc('findologic.selectSalesChannel') }}</option>
+                                            <option v-for="option in language" :value="option.id">
+                                                {{ option.name }}
+                                            </option>
+
+                                        </sw-select-field>
                                     {% endblock %}
                                 </sw-card>
 
