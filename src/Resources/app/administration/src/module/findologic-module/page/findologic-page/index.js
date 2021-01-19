@@ -41,16 +41,6 @@ Component.register('findologic-page', {
     },
 
     watch: {
-        selectedLanguageId: {
-            handler(languageId) {
-                if (!languageId) {
-                    return;
-                }
-
-                this.createdComponent();
-            }
-        },
-
         shopkey() {
             this.shopkeyErrorState = null;
             if (this.isValidShopkey) {
@@ -111,26 +101,20 @@ Component.register('findologic-page', {
 
     methods: {
         createdComponent() {
-            if (this.allConfigs[this.configKey]) {
-                return;
-            }
-
-            if (!this.actualConfigData && (this.selectedSalesChannelId && this.selectedLanguageId)) {
+            if (this.selectedSalesChannelId && this.selectedLanguageId) {
                 this.readAll().then((values) => {
                     values['FinSearch.config.filterPosition'] = 'top';
                     this.actualConfigData = values;
                 });
             }
 
-            if (!this.salesChannel.length) {
-                let criteria = new Criteria();
-                criteria.addAssociation('languages');
-                criteria.addFilter(Criteria.equals('active', true));
+            let criteria = new Criteria();
+            criteria.addAssociation('languages');
+            criteria.addFilter(Criteria.equals('active', true));
 
-                this.salesChannelRepository.search(criteria, Shopware.Context.api).then(res => {
-                    this.salesChannel = res;
-                });
-            }
+            this.salesChannelRepository.search(criteria, Shopware.Context.api).then(res => {
+                this.salesChannel = res;
+            });
         },
 
         readAll() {
@@ -278,8 +262,8 @@ Component.register('findologic-page', {
 
         onSelectedSalesChannel(salesChannelId) {
             this.language = [];
-            this.selectedLanguageId = null;
             if (this.salesChannel === undefined || salesChannelId === null) {
+                this.onSelectedLanguage(null);
                 return;
             }
 
@@ -294,7 +278,7 @@ Component.register('findologic-page', {
 
                 });
 
-                this.selectedLanguageId = selectedChannel.languageId;
+                this.onSelectedLanguage(selectedChannel.languageId);
             }
         }
 
