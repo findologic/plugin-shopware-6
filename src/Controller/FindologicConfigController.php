@@ -67,16 +67,19 @@ class FindologicConfigController extends AbstractController
      */
     public function batchSaveConfiguration(Request $request): Response
     {
-        $shopkeys = [];
+        $allShopkeys = [];
         foreach ($request->request->all() as $key => $config) {
             [$salesChannelId, $languageId] = explode('-', $key);
 
-            $currentShopkey = $config['FinSearch.config.shopkey'];
-            if ($currentShopkey && in_array($currentShopkey, $shopkeys, false)) {
-                throw new ShopkeyAlreadyExistsException();
+            $shopkey = $config['FinSearch.config.shopkey'];
+            if ($shopkey) {
+                if (!in_array($shopkey, $allShopkeys, false)) {
+                    $allShopkeys[] = $shopkey;
+                } else {
+                    throw new ShopkeyAlreadyExistsException();
+                }
             }
 
-            $shopkeys[] = $currentShopkey;
             $this->saveKeyValues($salesChannelId, $languageId, $config);
         }
 
