@@ -171,6 +171,12 @@ class ProductListingFeaturesSubscriber extends ShopwareProductListingFeaturesSub
 
             $this->sortingService->handleRequest($event);
         }
+
+        if (!$isOnCategoryPage) {
+            /** @var FindologicService $findologicService */
+            $findologicService = $event->getContext()->getExtension('findologicService');
+            $findologicService->disable();
+        }
     }
 
     public function handleSearchRequest(ProductSearchCriteriaEvent $event): void
