@@ -267,7 +267,7 @@ Component.register('findologic-page', {
                 return;
             }
 
-            let selectedChannel = this.salesChannel.find(item => item.id = salesChannelId);
+            let selectedChannel = this.salesChannel.find(item => item.id === salesChannelId);
             if (selectedChannel) {
                 this.selectedSalesChannelId = salesChannelId;
                 selectedChannel.languages.forEach((language) => {
