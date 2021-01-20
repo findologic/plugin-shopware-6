@@ -108,13 +108,15 @@ Component.register('findologic-page', {
                 });
             }
 
-            let criteria = new Criteria();
-            criteria.addAssociation('languages');
-            criteria.addFilter(Criteria.equals('active', true));
+            if(!this.salesChannel.length) {
+                let criteria = new Criteria();
+                criteria.addAssociation('languages');
+                criteria.addFilter(Criteria.equals('active', true));
 
-            this.salesChannelRepository.search(criteria, Shopware.Context.api).then(res => {
-                this.salesChannel = res;
-            });
+                this.salesChannelRepository.search(criteria, Shopware.Context.api).then(res => {
+                    this.salesChannel = res;
+                });
+            }
         },
 
         readAll() {
@@ -273,14 +275,13 @@ Component.register('findologic-page', {
                 selectedChannel.languages.forEach((language) => {
                     this.language.push({
                         name: language.name,
-                        id: language.id
+                        label: language.name,
+                        value: language.id
                     });
-
                 });
 
                 this.onSelectedLanguage(selectedChannel.languageId);
             }
         }
-
     }
 });
