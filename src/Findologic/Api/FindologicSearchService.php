@@ -87,6 +87,9 @@ class FindologicSearchService
         if ($this->allowRequest($event)) {
             $navigationRequestHandler = $this->buildNavigationRequestHandler();
             if (!$this->isCategoryPage($navigationRequestHandler, $event)) {
+                /** @var FindologicService $findologicService */
+                $findologicService = $event->getContext()->getExtension('findologicService');
+                $findologicService->disable();
                 return;
             }
 
