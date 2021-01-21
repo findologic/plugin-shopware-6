@@ -212,6 +212,8 @@ class FindologicSearchServiceTest extends TestCase
             }
         );
 
+        // The root category is considered unknown, as this is a category, which is not directly
+        // indexed by Findologic.
         $request = new Request(['navigationId' => $this->getRootCategory()->getId()]);
         $salesChannelContext = $this->buildSalesChannelContext();
         $salesChannelContext->getContext()->addExtension('findologicService', $findologicService);
