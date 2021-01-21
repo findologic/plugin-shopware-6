@@ -42,6 +42,16 @@ Component.register('findologic-page', {
     },
 
     watch: {
+        selectedLanguageId: {
+            handler(languageId) {
+                if (!languageId) {
+                    return;
+                }
+
+                this.createdComponent();
+            }
+        },
+
         shopkey() {
             this.shopkeyErrorState = null;
             if (this.isValidShopkey) {
@@ -102,19 +112,26 @@ Component.register('findologic-page', {
 
     methods: {
         createdComponent() {
-            if (this.selectedSalesChannelId && this.selectedLanguageId) {
+            if (this.allConfigs[this.configKey]) {
+                return;
+            }
+            if (!this.actualConfigData && (this.selectedSalesChannelId && this.selectedLanguageId)) {
+                this.isLoading = true;
                 this.readAll().then((values) => {
                     values['FinSearch.config.filterPosition'] = 'top';
                     this.actualConfigData = values;
+                    this.isLoading = false;
                 });
             }
 
-            if(!this.salesChannel.length) {
+            if (!this.salesChannel.length) {
+                this.isLoading = true;
                 let criteria = new Criteria();
                 criteria.addAssociation('languages');
                 criteria.addFilter(Criteria.equals('active', true));
 
                 this.salesChannelRepository.search(criteria, Shopware.Context.api).then(res => {
+                    this.isLoading = false;
                     this.salesChannel = res;
                 });
             }
@@ -169,6 +186,8 @@ Component.register('findologic-page', {
          * @private
          */
         _save() {
+            this.isLoading = true;
+            this.isSaveSuccessful = false;
             this.FinsearchConfigApiService.batchSave(this.allConfigs).then((res) => {
                 this.shopkeyExists = false;
                 this.shopkeyErrorState = null;
@@ -247,7 +266,6 @@ Component.register('findologic-page', {
                     message: this.$tc('findologic.shopkeyExists')
                 });
             }
-
         },
 
         /**
