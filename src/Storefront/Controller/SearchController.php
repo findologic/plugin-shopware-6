@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
-use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader
-    as LegacySearchPageLoader;
+use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as LegacySearchPageLoader;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\LabelTextFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\SelectDropdownFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
@@ -56,6 +59,19 @@ class SearchController extends StorefrontController
         $this->findologicSearchService = $findologicSearchService;
     }
 
+    private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
+    {
+        if (!$searchPageLoader) {
+            if (Utils::versionLowerThan('6.2.0')) {
+                return $this->container->get(LegacySearchPageLoader::class);
+            }
+
+            return $this->container->get(FindologicSearchPageLoader::class);
+        }
+
+        return $searchPageLoader;
+    }
+
     /**
      * @HttpCache()
      * @RouteScope(scopes={"storefront"})
@@ -75,6 +91,15 @@ class SearchController extends StorefrontController
         }
 
         return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
+    }
+
+    private function handleFindologicSearchParams(Request $request): ?Response
+    {
+        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
+            return $this->redirect($uri);
+        }
+
+        return null;
     }
 
     /**
@@ -119,28 +144,6 @@ class SearchController extends StorefrontController
         return $this->decorated->ajax($request, $context);
     }
 
-    private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
-    {
-        if (!$searchPageLoader) {
-            if (Utils::versionLowerThan('6.2.0')) {
-                return $this->container->get(LegacySearchPageLoader::class);
-            }
-
-            return $this->container->get(FindologicSearchPageLoader::class);
-        }
-
-        return $searchPageLoader;
-    }
-
-    private function handleFindologicSearchParams(Request $request): ?Response
-    {
-        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
-            return $this->redirect($uri);
-        }
-
-        return null;
-    }
-
     /**
      * @HttpCache()
      * Route to load the available listing filters
@@ -156,22 +159,7 @@ class SearchController extends StorefrontController
         }
 
         $this->findologicSearchService->doFilter($event);
-
-        /** @var FiltersExtension $filterExtension */
-        $filterExtension = $event->getCriteria()->getExtension('flAvailableFilters');
-
-        $result = [];
-        foreach ($filterExtension->getFilters() as $filter) {
-            $filterName = $filter->getId();
-
-            /** @var FilterValue[] $values */
-            $values = $filter->getValues();
-
-            foreach ($values as $value) {
-                $valueId = $value->getUuid() ?? $value->getId();
-                $result[$filterName]['entities'][] = ['id' => $valueId, 'translated' => ['name' => $value->getName()]];
-            }
-        }
+        $result = $this->filterHandler->handleAvailableFilters($event);
 
         return new JsonResponse($result);
     }
