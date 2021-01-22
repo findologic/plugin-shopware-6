@@ -6,11 +6,9 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\LabelTextFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\SelectDropdownFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\VendorImageFilter;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
@@ -233,7 +231,16 @@ class FilterHandler
                 continue;
             }
 
-            if (
+            if ($filter instanceof VendorImageFilter) {
+                foreach ($values as $value) {
+                    $valueId = $value->getName();
+                    $result[$filterName]['entities'][] =
+                        ['id' => $valueId, 'translated' => ['name' => $valueId]];
+                }
+
+                continue;
+            }
+            /*if (
                 $filter instanceof SelectDropdownFilter ||
                 $filter instanceof LabelTextFilter ||
                 $filter instanceof ColorPickerFilter
@@ -250,11 +257,13 @@ class FilterHandler
                     'options' => $options
                 ];
             } else {
-                foreach ($values as $value) {
-                    $valueId = $value->getUuid() ?? $value->getId();
-                    $result[$filterName]['entities'][] =
-                        ['id' => $valueId, 'translated' => ['name' => $valueId]];
-                }
+
+            }*/
+
+            foreach ($values as $value) {
+                $valueId = $value->getUuid() ?? $value->getId();
+                $result[$filterName]['entities'][] =
+                    ['id' => $valueId, 'translated' => ['name' => $valueId]];
             }
         }
 
