@@ -7,15 +7,22 @@ namespace FINDOLOGIC\FinSearch;
 use Composer\Autoload\ClassLoader;
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
+use FINDOLOGIC\FinSearch\Exceptions\PluginNotCompatibleException;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
+use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+
+use function file_get_contents;
+use function json_decode;
+use function ltrim;
+use function version_compare;
 
 class FinSearch extends Plugin
 {
@@ -31,6 +38,29 @@ class FinSearch extends Plugin
         }
 
         parent::build($container);
+    }
+
+    public function install(InstallContext $installContext): void
+    {
+        parent::install($installContext);
+
+        $currentShopwareVersion = $installContext->getCurrentShopwareVersion();
+        $composerJsonContents = file_get_contents(__DIR__ . '/../composer.json');
+        $parsed = json_decode($composerJsonContents, true);
+        $requiredPackages = $parsed['require'];
+
+        if (isset($requiredPackages['shopware/core'])) {
+            $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
+            $lowestSupported = ltrim(current($compatibleVersions), '^');
+            $highestSupported = ltrim(end($compatibleVersions), '^');
+
+            $isLower = version_compare($currentShopwareVersion, $lowestSupported, '<');
+            $isHigher = version_compare($currentShopwareVersion, $highestSupported, '>');
+            if ($isLower || $isHigher) {
+                $error = 'Dieses Plugin ist nicht kompatibel mit der verwendeten Shopware Version';
+                throw new PluginNotCompatibleException($error);
+            }
+        }
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
