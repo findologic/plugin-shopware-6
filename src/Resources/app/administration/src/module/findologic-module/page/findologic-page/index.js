@@ -63,6 +63,10 @@ Component.register('findologic-page', {
 
     computed: {
         configKey() {
+            if(!this.selectedSalesChannelId || !this.selectedLanguageId) {
+                return null;
+            }
+
             return this.selectedSalesChannelId + '-' + this.selectedLanguageId;
         },
 
@@ -112,13 +116,13 @@ Component.register('findologic-page', {
 
     methods: {
         createdComponent() {
-            if (this.allConfigs[this.configKey]) {
-                return;
-            }
-            if (!this.actualConfigData && (this.selectedSalesChannelId && this.selectedLanguageId)) {
+            if ((this.selectedSalesChannelId && this.selectedLanguageId)) {
                 this.isLoading = true;
                 this.readAll().then((values) => {
-                    values['FinSearch.config.filterPosition'] = 'top';
+                    if(!values['FinSearch.config.filterPosition']) {
+                        values['FinSearch.config.filterPosition'] = 'top';
+                    }
+
                     this.actualConfigData = values;
                     this.isLoading = false;
                 });
@@ -137,8 +141,8 @@ Component.register('findologic-page', {
             }
         },
 
-        readAll() {
-            return this.FinsearchConfigApiService.getValues(this.selectedSalesChannelId, this.selectedLanguageId);
+        async readAll() {
+            return await this.FinsearchConfigApiService.getValues(this.selectedSalesChannelId, this.selectedLanguageId);
         },
 
         /**
@@ -301,15 +305,15 @@ Component.register('findologic-page', {
             let selectedChannel = this.salesChannel.find(item => item.id === salesChannelId);
             if (selectedChannel) {
                 this.selectedSalesChannelId = salesChannelId;
+                this.onSelectedLanguage(selectedChannel.languageId);
                 selectedChannel.languages.forEach((language) => {
                     this.language.push({
                         name: language.name,
                         label: language.name,
                         value: language.id
                     });
-                });
 
-                this.onSelectedLanguage(selectedChannel.languageId);
+                });
             }
         }
     }
