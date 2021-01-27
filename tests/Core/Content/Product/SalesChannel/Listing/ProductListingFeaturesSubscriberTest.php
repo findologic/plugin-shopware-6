@@ -1074,4 +1074,33 @@ XML;
         $this->assertEquals($criteriaBefore, $eventMock->getCriteria());
         $this->assertEquals($contextBefore, $eventMock->getContext());
     }
+
+    public function testHandleResultDoesNotThrowExceptionWhenCalledManually(): void
+    {
+        $this->initMocks();
+
+        $criteria = new Criteria();
+        if (!Utils::versionLowerThan('6.3.2')) {
+            $criteria->addExtension('sortings', $this->productListingSortingRegistry->getProductSortingEntities());
+        }
+
+        $result = new ProductListingResult(
+            0,
+            new EntityCollection(),
+            new AggregationResultCollection(),
+            $criteria,
+            Context::createDefaultContext()
+        );
+
+        $orderParam = Utils::versionLowerThan('6.2') ? 'sort' : 'order';
+
+        $event = new ProductListingResultEvent(
+            new Request([$orderParam => 'score']),
+            $result,
+            $this->buildSalesChannelContext()
+        );
+
+        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber->handleResult($event);
+    }
 }
