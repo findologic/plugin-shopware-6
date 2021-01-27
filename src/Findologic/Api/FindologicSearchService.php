@@ -99,7 +99,8 @@ class FindologicSearchService
 
     public function handleResult(ProductListingResultEvent $event): void
     {
-        if (!$event->getContext()->getExtension('findologicService')->getEnabled()) {
+        $findologicService = $event->getContext()->getExtension('findologicService');
+        if (!$findologicService || !$findologicService->getEnabled()) {
             return;
         }
 
