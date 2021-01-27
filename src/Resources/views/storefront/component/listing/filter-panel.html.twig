@@ -16,14 +16,15 @@
             {% for filter in filters %}
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\LabelTextFilter") or
                     filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\SelectDropdownFilter") %}
-                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-multi-select.html.twig' with {
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-property-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
                         hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
-                        pluginSelector: 'filter-property-select'
+                        pluginSelector: 'filter-property-select',
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 
@@ -49,7 +50,8 @@
                         minKey: filter.minKey,
                         maxKey: filter.maxKey,
                         pluginSelector: 'filter-range-slider',
-                        currencySymbol: filter.unit
+                        currencySymbol: filter.unit,
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 
@@ -62,7 +64,8 @@
                         hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: filter.displayType,
-                        pluginSelector: 'filter-property-select'
+                        pluginSelector: 'filter-property-select',
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 
@@ -74,7 +77,8 @@
                         hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
-                        pluginSelector: 'filter-category-select'
+                        pluginSelector: 'filter-category-select',
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 
@@ -86,7 +90,8 @@
                         name: filter.id,
                         hidden: filter.hidden,
                         displayName: filter.name,
-                        pluginSelector: 'filter-rating'
+                        pluginSelector: 'filter-rating',
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 
