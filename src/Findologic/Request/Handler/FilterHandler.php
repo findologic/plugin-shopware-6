@@ -231,15 +231,15 @@ class FilterHandler
                 continue;
             }
 
-            if ($filter instanceof VendorImageFilter) {
-                foreach ($values as $value) {
-                    $valueId = $value->getName();
-                    $result[$filterName]['entities'][] =
-                        ['id' => $valueId, 'translated' => ['name' => $valueId]];
-                }
-
-                continue;
-            }
+//            if ($filter instanceof VendorImageFilter) {
+//                foreach ($values as $value) {
+//                    $valueId = $value->getName();
+//                    $result[$filterName]['entities'][] =
+//                        ['id' => $valueId, 'translated' => ['name' => $valueId]];
+//                }
+//
+//                continue;
+//            }
             /*if (
                 $filter instanceof SelectDropdownFilter ||
                 $filter instanceof LabelTextFilter ||
@@ -260,13 +260,30 @@ class FilterHandler
 
             }*/
 
+            $filterValues = [];
             foreach ($values as $value) {
                 $valueId = $value->getUuid() ?? $value->getId();
-                $result[$filterName]['entities'][] =
-                    ['id' => $valueId, 'translated' => ['name' => $valueId]];
+                // Add both id and name as values, to allow both filter with and without ids to
+                // use the same endpoint.
+                $filterValues[] = [
+                    'id' => $valueId,
+                    'translated' => ['name' => $value->getTranslated()->getName()]
+                ];
+                $filterValues[] = [
+                    'id' => $value->getTranslated()->getName(),
+                    'translated' => ['name' => $value->getTranslated()->getName()]
+                ];
             }
+            $vendorFilter = [
+                'translated' => ['name' => $filter->getName()],
+                'options' => $filterValues
+            ];
+
+            $result[$filterName]['entities'][] = $vendorFilter;
         }
 
-        return $result;
+        $actualResult['properties']['entities'] = $result;
+
+        return array_merge($actualResult, $result);
     }
 }
