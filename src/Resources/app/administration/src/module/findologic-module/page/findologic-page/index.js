@@ -41,16 +41,6 @@ Component.register('findologic-page', {
     },
 
     watch: {
-        selectedLanguageId: {
-            handler(languageId) {
-                if (!languageId) {
-                    return;
-                }
-
-                this.createdComponent();
-            }
-        },
-
         shopkey() {
             this.shopkeyErrorState = null;
             if (this.isValidShopkey) {
@@ -111,18 +101,14 @@ Component.register('findologic-page', {
 
     methods: {
         createdComponent() {
-            if (this.allConfigs[this.configKey]) {
-                return;
-            }
-
-            if (!this.actualConfigData && (this.selectedSalesChannelId && this.selectedLanguageId)) {
+            if (this.selectedSalesChannelId && this.selectedLanguageId) {
                 this.readAll().then((values) => {
                     values['FinSearch.config.filterPosition'] = 'top';
                     this.actualConfigData = values;
                 });
             }
 
-            if (!this.salesChannel.length) {
+            if(!this.salesChannel.length) {
                 let criteria = new Criteria();
                 criteria.addAssociation('languages');
                 criteria.addFilter(Criteria.equals('active', true));
@@ -261,6 +247,7 @@ Component.register('findologic-page', {
             return this.httpClient
                 .get(`https://account.findologic.com/api/v1/shopkey/validate/${this.shopkey}`)
                 .then((response) => {
+                    this.isLoading = false;
                     const status = String(response.status);
                     return status.startsWith('2');
                 })
@@ -276,18 +263,25 @@ Component.register('findologic-page', {
         },
 
         onSelectedSalesChannel(salesChannelId) {
+            this.language = [];
             if (this.salesChannel === undefined || salesChannelId === null) {
-                this.selectedLanguageId = null;
-                this.language = [];
+                this.onSelectedLanguage(null);
                 return;
             }
-            let selectedChannel = this.salesChannel.find(item => item.id = salesChannelId);
+
+            let selectedChannel = this.salesChannel.find(item => item.id === salesChannelId);
             if (selectedChannel) {
                 this.selectedSalesChannelId = salesChannelId;
-                this.selectedLanguageId = selectedChannel.languageId;
-                this.language = selectedChannel.languages;
+                selectedChannel.languages.forEach((language) => {
+                    this.language.push({
+                        name: language.name,
+                        label: language.name,
+                        value: language.id
+                    });
+                });
+
+                this.onSelectedLanguage(selectedChannel.languageId);
             }
         }
-
     }
 });
