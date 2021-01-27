@@ -18,6 +18,7 @@ Component.register('findologic-page', {
             isLoading: false,
             isSaveSuccessful: false,
             isStagingShop: false,
+            shopkeyExists: false,
             isRegisteredShopkey: null,
             isActive: false,
             config: null,
@@ -169,6 +170,7 @@ Component.register('findologic-page', {
          */
         _save() {
             this.FinsearchConfigApiService.batchSave(this.allConfigs).then((res) => {
+                this.shopkeyExists = false;
                 this.shopkeyErrorState = null;
                 this.isLoading = false;
                 this.isSaveSuccessful = true;
@@ -183,10 +185,8 @@ Component.register('findologic-page', {
             }).catch((e) => {
                 this.isSaveSuccessful = false;
                 this.isLoading = false;
-                this.createNotificationError({
-                    title: this.$tc('findologic.settingForm.titleError'),
-                    message: e.message
-                });
+                this.shopkeyExists = true;
+                this._setErrorStates(true);
             });
         },
 
@@ -207,6 +207,11 @@ Component.register('findologic-page', {
                 this.shopkeyErrorState = {
                     code: 1,
                     detail: this.$tc('findologic.notRegisteredShopkey')
+                };
+            } else if (this.shopkeyExists === true) {
+                this.shopkeyErrorState = {
+                    code: 1,
+                    detail: this.$tc('findologic.shopkeyExists')
                 };
             } else {
                 this.shopkeyErrorState = null;
@@ -236,7 +241,13 @@ Component.register('findologic-page', {
                     title: this.$tc('findologic.settingForm.titleError'),
                     message: this.$tc('findologic.notRegisteredShopkey')
                 });
+            } else if (this.shopkeyExists === true) {
+                this.createNotificationError({
+                    title: this.$tc('findologic.settingForm.titleError'),
+                    message: this.$tc('findologic.shopkeyExists')
+                });
             }
+
         },
 
         /**

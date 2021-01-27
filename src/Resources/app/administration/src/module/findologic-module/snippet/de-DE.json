@@ -6,6 +6,7 @@
     },
     "fieldRequired": "Shopkey ist erforderlich.",
     "invalidShopkey": "Ungültiger Shopkey.",
+    "shopkeyExists": "Dieser Shopkey is bereits einer anderen Sprache zugeordnet.",
     "notRegisteredShopkey": "Der eingegebene Shopkey ist keinem bekannten Service zugeordnet.",
     "selectSalesChannel": "Bitte wählen Sie einen Verkaufskanal...",
     "settingForm": {

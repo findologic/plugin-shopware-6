@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
+use FINDOLOGIC\FinSearch\Exceptions\Config\ShopkeyAlreadyExistsException;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Shopware\Core\System\SalesChannel\NoContentResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+
+use function in_array;
 
 /**
  * @RouteScope(scopes={"api"})
@@ -65,8 +67,19 @@ class FindologicConfigController extends AbstractController
      */
     public function batchSaveConfiguration(Request $request): Response
     {
+        $allShopkeys = [];
         foreach ($request->request->all() as $key => $config) {
             [$salesChannelId, $languageId] = explode('-', $key);
+
+            $shopkey = $config['FinSearch.config.shopkey'];
+            if ($shopkey) {
+                if (!in_array($shopkey, $allShopkeys, false)) {
+                    $allShopkeys[] = $shopkey;
+                } else {
+                    throw new ShopkeyAlreadyExistsException();
+                }
+            }
+
             $this->saveKeyValues($salesChannelId, $languageId, $config);
         }
 
