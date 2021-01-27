@@ -36,13 +36,17 @@ use ReflectionClass;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Tree\Tree;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
+use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as
     ShopwareProductListingFeaturesSubscriber;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingEntity;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -1073,5 +1077,34 @@ XML;
         // Ensure that Context and Criteria were not changed. Shopware handles this request.
         $this->assertEquals($criteriaBefore, $eventMock->getCriteria());
         $this->assertEquals($contextBefore, $eventMock->getContext());
+    }
+
+    public function testHandleResultDoesNotThrowExceptionWhenCalledManually(): void
+    {
+        $this->initMocks();
+
+        $criteria = new Criteria();
+        if (!Utils::versionLowerThan('6.3.2')) {
+            $criteria->addExtension('sortings', $this->productListingSortingRegistry->getProductSortingEntities());
+        }
+
+        $result = new ProductListingResult(
+            0,
+            new EntityCollection(),
+            new AggregationResultCollection(),
+            $criteria,
+            Context::createDefaultContext()
+        );
+
+        $orderParam = Utils::versionLowerThan('6.2') ? 'sort' : 'order';
+
+        $event = new ProductListingResultEvent(
+            new Request([$orderParam => 'score']),
+            $result,
+            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.de')
+        );
+
+        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber->handleResult($event);
     }
 }

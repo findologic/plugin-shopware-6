@@ -11,15 +11,18 @@ use FINDOLOGIC\FinSearch\Findologic\Api\PaginationService;
 use FINDOLOGIC\FinSearch\Findologic\Api\SortingService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config as PluginConfig;
+use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionObject;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Storefront\Page\GenericPageLoader;
+use Shopware\Storefront\Page\Page;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -169,5 +172,68 @@ class FindologicSearchServiceTest extends TestCase
         $method->setAccessible(true);
         $isEnabled = $method->invoke($findologicSearchService, $event);
         $this->assertSame($isFindologicEnabled, $isEnabled);
+    }
+
+    public function testAllowedRequestButUnknownCategoryDisablesFindologic(): void
+    {
+        $genericPageLoaderMock = $this->getMockBuilder(GenericPageLoader::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $findologicSearchService = new FindologicSearchService(
+            $this->getContainer(),
+            $this->apiClientMock,
+            $this->apiConfig,
+            $this->pluginConfigMock,
+            $genericPageLoaderMock,
+            $this->getContainer()->get(SortingService::class),
+            $this->getContainer()->get(PaginationService::class)
+        );
+
+        $genericPageLoaderMock->expects($this->once())->method('load')->willreturn(new Page());
+
+        $this->pluginConfigMock->expects($this->any())->method('isInitialized')->willReturn(true);
+
+        $findologicService = new FindologicService();
+        $findologicService->enable();
+        $findologicService->enableSmartSuggest();
+
+        $contextMock = $this->getMockBuilder(Context::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $contextMock->expects($this->any())->method('getExtension')->willReturnCallback(
+            function (string $name) use ($findologicService) {
+                if ($name === 'findologicService') {
+                    return $findologicService;
+                }
+
+                return null;
+            }
+        );
+
+        // The root category is considered unknown, as this is a category, which is not directly
+        // indexed by Findologic.
+        $request = new Request(['navigationId' => $this->getRootCategory()->getId()]);
+        $salesChannelContext = $this->buildSalesChannelContext();
+        $salesChannelContext->getContext()->addExtension('findologicService', $findologicService);
+
+        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $salesChannelContext);
+
+        $findologicSearchService->doNavigation($event);
+
+        $this->assertFalse($findologicService->getEnabled());
+        $this->assertTrue($findologicService->getSmartSuggestEnabled()); // State of SS shouldn't be changed.
+    }
+
+    private function getRootCategory(): CategoryEntity
+    {
+        $categoryRepo = $this->getContainer()->get('category.repository');
+        $categories = $categoryRepo->search(new Criteria(), Context::createDefaultContext());
+
+        /** @var CategoryEntity $expectedCategory */
+        return $categories->filter(function (CategoryEntity $category) {
+            return $category->getParentId() === null;
+        })->first();
     }
 }

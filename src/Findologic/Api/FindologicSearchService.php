@@ -87,6 +87,9 @@ class FindologicSearchService
         if ($this->allowRequest($event)) {
             $navigationRequestHandler = $this->buildNavigationRequestHandler();
             if (!$this->isCategoryPage($navigationRequestHandler, $event)) {
+                /** @var FindologicService $findologicService */
+                $findologicService = $event->getContext()->getExtension('findologicService');
+                $findologicService->disable();
                 return;
             }
 
@@ -96,7 +99,8 @@ class FindologicSearchService
 
     public function handleResult(ProductListingResultEvent $event): void
     {
-        if (!$event->getContext()->getExtension('findologicService')->getEnabled()) {
+        $findologicService = $event->getContext()->getExtension('findologicService');
+        if (!$findologicService || !$findologicService->getEnabled()) {
             return;
         }
 

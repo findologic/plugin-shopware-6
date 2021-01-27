@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandl
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSorting;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
@@ -19,8 +20,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SortingService
 {
-    public const DEFAULT_SORT = 'score';
-
     /** @var ProductListingSortingRegistry|null */
     private $legacySortingRegistry;
 
@@ -78,7 +77,10 @@ class SortingService
 
     protected function addLegacyTopResultSorting(ProductListingResultEvent $event): void
     {
-        $currentSorting = $this->getCurrentLegacySorting($event->getRequest(), self::DEFAULT_SORT);
+        $currentSorting = $this->getCurrentLegacySorting(
+            $event->getRequest(),
+            ProductListingFeaturesSubscriber::DEFAULT_SORT
+        );
 
         $event->getResult()->setSorting($currentSorting);
         $this->legacySortingRegistry->add(
