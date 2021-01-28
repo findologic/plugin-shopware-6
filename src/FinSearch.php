@@ -47,17 +47,22 @@ class FinSearch extends Plugin
         $currentShopwareVersion = $installContext->getCurrentShopwareVersion();
         $composerJsonContents = file_get_contents(__DIR__ . '/../composer.json');
         $parsed = json_decode($composerJsonContents, true);
-        $requiredPackages = $parsed['require'];
+        // Do nothing if there is no require property in the json as we probably are in development
+        if (!$parsed) {
+            return;
+        }
 
+        $requiredPackages = $parsed['require'];
         if (isset($requiredPackages['shopware/core'])) {
             $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
             $lowestSupported = ltrim(current($compatibleVersions), '^');
             $highestSupported = ltrim(end($compatibleVersions), '^');
-
+            // If the current shopware version does not come in between our lowest and highest supported version,
+            // we throw an exception and stop the plugin installation.
             $isLower = version_compare($currentShopwareVersion, $lowestSupported, '<');
             $isHigher = version_compare($currentShopwareVersion, $highestSupported, '>');
             if ($isLower || $isHigher) {
-                $error = 'Dieses Plugin ist nicht kompatibel mit der verwendeten Shopware Version';
+                $error = 'This plugin is not compatible with the used Shopware version';
                 throw new PluginNotCompatibleException($error);
             }
         }
