@@ -1110,6 +1110,11 @@ class FindologicProduct extends Struct
             return '';
         }
 
-        return rtrim(parse_url($url, PHP_URL_PATH), '/');
+        $path = parse_url($url, PHP_URL_PATH);
+        if (!$path) {
+            return '';
+        }
+
+        return rtrim($path, '/');
     }
 }
