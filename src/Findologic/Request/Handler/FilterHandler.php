@@ -228,58 +228,28 @@ class FilterHandler
             if ($filter instanceof RatingFilter) {
                 $max = end($values);
                 $result[$filterName]['max'] = $max->getId();
-                continue;
-            }
-
-//            if ($filter instanceof VendorImageFilter) {
-//                foreach ($values as $value) {
-//                    $valueId = $value->getName();
-//                    $result[$filterName]['entities'][] =
-//                        ['id' => $valueId, 'translated' => ['name' => $valueId]];
-//                }
-//
-//                continue;
-//            }
-            /*if (
-                $filter instanceof SelectDropdownFilter ||
-                $filter instanceof LabelTextFilter ||
-                $filter instanceof ColorPickerFilter
-            ) {
-                $options = [];
+            } else {
+                $filterValues = [];
                 foreach ($values as $value) {
                     $valueId = $value->getUuid() ?? $value->getId();
-                    $options[] = ['id' => $valueId, 'translated' => ['name' => $valueId]];
+                    // Add both id and name as values, to allow both filter with and without ids to
+                    // use the same endpoint.
+                    $filterValues[] = [
+                        'id' => $valueId,
+                        'translated' => ['name' => $value->getTranslated()->getName()]
+                    ];
+                    $filterValues[] = [
+                        'id' => $value->getTranslated()->getName(),
+                        'translated' => ['name' => $value->getTranslated()->getName()]
+                    ];
                 }
-
-                $result['properties']['entities'][] = [
-                    'id' => $filterName,
-                    'translated' => ['name' => $filterName],
-                    'options' => $options
+                $vendorFilter = [
+                    'translated' => ['name' => $filter->getName()],
+                    'options' => $filterValues
                 ];
-            } else {
 
-            }*/
-
-            $filterValues = [];
-            foreach ($values as $value) {
-                $valueId = $value->getUuid() ?? $value->getId();
-                // Add both id and name as values, to allow both filter with and without ids to
-                // use the same endpoint.
-                $filterValues[] = [
-                    'id' => $valueId,
-                    'translated' => ['name' => $value->getTranslated()->getName()]
-                ];
-                $filterValues[] = [
-                    'id' => $value->getTranslated()->getName(),
-                    'translated' => ['name' => $value->getTranslated()->getName()]
-                ];
+                $result[$filterName]['entities'][] = $vendorFilter;
             }
-            $vendorFilter = [
-                'translated' => ['name' => $filter->getName()],
-                'options' => $filterValues
-            ];
-
-            $result[$filterName]['entities'][] = $vendorFilter;
         }
 
         $actualResult['properties']['entities'] = $result;
