@@ -28,14 +28,13 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
-use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Struct\Collection;
 use Shopware\Core\Framework\Struct\Struct;
-use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
@@ -338,10 +337,18 @@ class FindologicProduct extends Struct
     {
         $salesChannel = $this->salesChannelContext->getSalesChannel();
         $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        $collectionWithoutDeletedEntities = $this->filterDeletedSeoUrls($seoUrlCollection);
 
-        /** @var SeoUrlEntity|null $seoUrlEntity */
-        $seoUrlEntity = $this->getTranslatedEntity($seoUrlCollection);
+        $seoUrlEntities = $this->getTranslatedEntities($collectionWithoutDeletedEntities);
+        if (!$seoUrlEntities) {
+            return null;
+        }
 
+        $canonicalSeoUrl = $seoUrlEntities->filter(function (SeoUrlEntity $entity) {
+            return $entity->getIsCanonical();
+        })->first();
+
+        $seoUrlEntity = $canonicalSeoUrl ?? $seoUrlEntities->first();
         return $seoUrlEntity ? ltrim($seoUrlEntity->getSeoPathInfo(), '/') : null;
     }
 
@@ -350,17 +357,15 @@ class FindologicProduct extends Struct
         $salesChannel = $this->salesChannelContext->getSalesChannel();
         $domainCollection = $salesChannel->getDomains();
 
-        /** @var SalesChannelDomainEntity|null $domainEntity */
-        $domainEntity = $this->getTranslatedEntity($domainCollection);
+        $domainEntities = $this->getTranslatedEntities($domainCollection);
 
-        return $domainEntity ? rtrim($domainEntity->getUrl(), '/') : null;
+        return $domainEntities->first() ? rtrim($domainEntities->first()->getUrl(), '/') : null;
     }
 
     /**
-     * Finds the first entity of a collection for the export language and returns it. If none is found,
-     * null is returned.
+     * Filters the given collection to only return entities for the current language.
      */
-    protected function getTranslatedEntity(?EntityCollection $collection): ?Entity
+    protected function getTranslatedEntities(?EntityCollection $collection): ?Collection
     {
         if (!$collection) {
             return null;
@@ -375,7 +380,14 @@ class FindologicProduct extends Struct
             return null;
         }
 
-        return $translatedEntities->first();
+        return $translatedEntities;
+    }
+
+    protected function filterDeletedSeoUrls(SeoUrlCollection $collection): SeoUrlCollection
+    {
+        return $collection->filter(function (SeoUrlEntity $entity) {
+            return !$entity->getIsDeleted();
+        });
     }
 
     public function hasUrl(): bool
