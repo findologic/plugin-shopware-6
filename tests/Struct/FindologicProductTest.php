@@ -1389,4 +1389,60 @@ class FindologicProductTest extends TestCase
 
         return $currencyId;
     }
+
+    public function testCatUrlsContainDomainPathAsPrefix(): void
+    {
+        $expectedPath = '/staging/public';
+        $fullDomain = 'http://test.de' . $expectedPath;
+        $domainRepo = $this->getContainer()->get('sales_channel_domain.repository');
+
+        $domainRepo->create([[
+            'url' => $fullDomain,
+            'salesChannelId' => Defaults::SALES_CHANNEL,
+            'currencyId' => Defaults::CURRENCY,
+            'snippetSet' => [
+                'name' => 'oof',
+                'baseFile' => 'de.json',
+                'iso' => 'de_AT'
+            ]
+        ]], Context::createDefaultContext());
+
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('url', $fullDomain));
+
+        // Wait until the domain entity has been created, since DAL works with events and these events
+        // run asynchronously on a different thread.
+        do {
+            $result = $domainRepo->search($criteria, Context::createDefaultContext());
+        } while ($result->getTotal() <= 0);
+
+        // The sales channel should use the newly generated URL instead of the default domain.
+        $this->salesChannelContext->getSalesChannel()->setLanguageId($result->getEntities()->first()->getLanguageId());
+        $this->salesChannelContext->getSalesChannel()->setDomains($result->getEntities());
+
+        $productEntity = $this->createTestProduct();
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getAttributes();
+        $hasCatUrls = false;
+        foreach ($attributes as $attribute) {
+            if ($attribute->getKey() === 'cat_url') {
+                $hasCatUrls = true;
+
+                foreach ($attribute->getValues() as $value) {
+                    $this->assertStringStartsWith($expectedPath, $value);
+                }
+            }
+        }
+
+        $this->assertTrue($hasCatUrls);
+    }
 }
