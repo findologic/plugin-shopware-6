@@ -1057,7 +1057,7 @@ class FindologicProduct extends Struct
         }
     }
 
-    private function parseCategoryAttributes(
+    protected function parseCategoryAttributes(
         array $categoryCollection,
         array &$catUrls,
         array &$categories
@@ -1083,7 +1083,7 @@ class FindologicProduct extends Struct
                 foreach ($seoUrls->getElements() as $seoUrlEntity) {
                     $catUrl = $seoUrlEntity->getSeoPathInfo();
                     if (!Utils::isEmpty($catUrl)) {
-                        $catUrls[] = sprintf('/%s', ltrim($catUrl, '/'));
+                        $catUrls[] = $this->getCatUrlPrefix() . sprintf('/%s', ltrim($catUrl, '/'));
                     }
                 }
             }
@@ -1113,5 +1113,20 @@ class FindologicProduct extends Struct
                 $categories[] = $categoryPath;
             }
         }
+    }
+
+    protected function getCatUrlPrefix(): string
+    {
+        $url = $this->getTranslatedDomainBaseUrl();
+        if (!$url) {
+            return '';
+        }
+
+        $path = parse_url($url, PHP_URL_PATH);
+        if (!$path) {
+            return '';
+        }
+
+        return rtrim($path, '/');
     }
 }
