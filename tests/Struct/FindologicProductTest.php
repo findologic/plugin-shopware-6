@@ -1437,7 +1437,6 @@ class FindologicProductTest extends TestCase
         foreach ($attributes as $attribute) {
             if ($attribute->getKey() === 'cat_url') {
                 foreach ($attribute->getValues() as $value) {
-
                     // We only care about SEO URLs of categories. Non-SEO categories are automatically generated
                     // by the Shopware router.
                     if (!(strpos($value, $catUrlWithoutSeoUrlPrefix) === 0)) {
