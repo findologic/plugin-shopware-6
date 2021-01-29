@@ -1089,7 +1089,7 @@ class FindologicProduct extends Struct
             );
 
             if (!Utils::isEmpty($catUrl)) {
-                $catUrls[] = $this->getCatUrlPrefix() . $catUrl;
+                $catUrls[] = $catUrl;
             }
 
             $categoryPath = Utils::buildCategoryPath(

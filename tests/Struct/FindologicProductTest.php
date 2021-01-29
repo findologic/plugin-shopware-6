@@ -1395,6 +1395,7 @@ class FindologicProductTest extends TestCase
         $expectedPath = '/staging/public';
         $fullDomain = 'http://test.de' . $expectedPath;
         $domainRepo = $this->getContainer()->get('sales_channel_domain.repository');
+        $catUrlWithoutSeoUrlPrefix = '/navigation';
 
         $domainRepo->create([[
             'url' => $fullDomain,
@@ -1432,17 +1433,21 @@ class FindologicProductTest extends TestCase
         );
 
         $attributes = $findologicProduct->getAttributes();
-        $hasCatUrls = false;
+        $hasSeoCatUrls = false;
         foreach ($attributes as $attribute) {
             if ($attribute->getKey() === 'cat_url') {
-                $hasCatUrls = true;
-
                 foreach ($attribute->getValues() as $value) {
-                    $this->assertStringStartsWith($expectedPath, $value);
+
+                    // We only care about SEO URLs of categories. Non-SEO categories are automatically generated
+                    // by the Shopware router.
+                    if (!(strpos($value, $catUrlWithoutSeoUrlPrefix) === 0)) {
+                        $hasSeoCatUrls = true;
+                        $this->assertStringStartsWith($expectedPath, $value);
+                    }
                 }
             }
         }
 
-        $this->assertTrue($hasCatUrls);
+        $this->assertTrue($hasSeoCatUrls);
     }
 }
