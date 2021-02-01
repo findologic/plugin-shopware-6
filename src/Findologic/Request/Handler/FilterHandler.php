@@ -6,9 +6,9 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\VendorImageFilter;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
@@ -213,12 +213,14 @@ class FilterHandler
         return '?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
     }
 
-    public function handleAvailableFilters(ShopwareEvent $event)
+    public function handleAvailableFilters(ShopwareEvent $event): array
     {
         /** @var FiltersExtension $filterExtension */
         $filterExtension = $event->getCriteria()->getExtension('flAvailableFilters');
-
         $result = [];
+        // Always send rating filter otherwise the JS fails and filter disabling does not work.
+        $result['rating']['max'] = 5;
+
         foreach ($filterExtension->getFilters() as $filter) {
             $filterName = $filter->getId();
 
@@ -238,17 +240,23 @@ class FilterHandler
                         'id' => $valueId,
                         'translated' => ['name' => $value->getTranslated()->getName()]
                     ];
-                    $filterValues[] = [
-                        'id' => $value->getTranslated()->getName(),
-                        'translated' => ['name' => $value->getTranslated()->getName()]
-                    ];
+
+                    if (!$filter instanceof CategoryFilter) {
+                        $filterValues[] = [
+                            'id' => $value->getTranslated()->getName(),
+                            'translated' => ['name' => $value->getTranslated()->getName()]
+                        ];
+                    }
                 }
-                $vendorFilter = [
-                    'translated' => ['name' => $filter->getName()],
+
+                $entityValues = [
+                    'translated' => [
+                        'name' => $filter instanceof CategoryFilter ? $filter->getId() : $filter->getName()
+                    ],
                     'options' => $filterValues
                 ];
 
-                $result[$filterName]['entities'][] = $vendorFilter;
+                $result[$filterName]['entities'][] = $entityValues;
             }
         }
 
