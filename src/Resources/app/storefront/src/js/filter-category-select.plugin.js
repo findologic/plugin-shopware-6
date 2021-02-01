@@ -6,12 +6,21 @@ import deepmerge from 'deepmerge';
 export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     static options = deepmerge(FilterBasePlugin.options, {
         checkboxSelector: '.filter-category-select-checkbox',
-        countSelector: '.filter-multi-select-count'
+        countSelector: '.filter-multi-select-count',
+        listItemSelector: '.filter-multi-select-list-item',
+        snippets: {
+            disabledFilterText: 'Filter not active'
+        },
+        mainFilterButtonSelector: '.filter-panel-item-toggle'
     });
 
     init() {
         this.selection = [];
         this.counter = DomAccess.querySelector(this.el, this.options.countSelector);
+
+        setTimeout(() => {
+            this.listing.registerFilter(this);
+        }, 500);
 
         this._registerEvents();
     }
@@ -161,6 +170,19 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     }
 
     /**
+     * @private
+     */
+    _enableAll() {
+        const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
+
+        Iterator.iterate(checkboxes, (checkbox) => {
+            checkbox.checked = false;
+            checkbox.indeterminate = false;
+            checkbox.disabled = false;
+        });
+    }
+
+    /**
      * @param ids
      * @private
      */
@@ -181,5 +203,64 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     getSelected() {
         return DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:checked`, false);
+    }
+
+    refreshDisabledState(filter) {
+        const activeItems = [];
+        const properties = filter[this.options.name];
+        const entities = properties.entities;
+
+        if (entities.length === 0) {
+            this._disableAll();
+            return;
+        }
+
+        const property = entities.find(entity => entity.translated.name === this.options.name);
+        console.log({property: property});
+
+        if (property) {
+            activeItems.push(...property.options);
+        } else {
+            this._disableAll();
+            return;
+        }
+
+        this._disableInactiveFilterOptions(activeItems.map(entity => entity.id));
+    }
+
+
+
+    /**
+     * @private
+     */
+    _disableInactiveFilterOptions(activeItemIds) {
+        const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
+        Iterator.iterate(checkboxes, (checkbox) => {
+            console.log({active: activeItemIds});
+            console.log({checked: checkbox.id});
+            if (checkbox.checked === true) {
+                return;
+            }
+
+            if (activeItemIds.includes(checkbox.id)) {
+                this.enableOption(checkbox);
+            } else {
+                this.disableOption(checkbox);
+            }
+        });
+    }
+
+    /**
+     * @public
+     */
+    disableOption(input){
+        input.disabled = true;
+    }
+
+    /**
+     * @public
+     */
+    enableOption(input) {
+        input.disabled = false;
     }
 }
