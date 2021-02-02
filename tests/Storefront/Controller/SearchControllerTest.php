@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Storefront\Controller\SearchController as FindologicSea
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\WithTestClient;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Test\Controller\StorefrontControllerTestBehaviour;
@@ -45,6 +46,10 @@ class SearchControllerTest extends TestCase
      */
     public function testFilterDisableRequestIsCalled(bool $active): void
     {
+        if (Utils::versionLowerThan('6.3.3.0')) {
+            $this->markTestSkipped('Filter disabling feature was introduced in Shopware 6.3.3.0');
+        }
+
         $request = new Request(['search' => 'abc']);
         if ($active) {
             $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
