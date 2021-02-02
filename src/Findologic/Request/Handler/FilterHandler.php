@@ -218,8 +218,9 @@ class FilterHandler
         /** @var FiltersExtension $filterExtension */
         $filterExtension = $event->getCriteria()->getExtension('flAvailableFilters');
         $result = [];
-        // Always send rating filter otherwise the JS fails and filter disabling does not work.
-        $result['rating']['max'] = 5;
+        // Always send rating filter otherwise filter disabling does not work correctly. It will eventually
+        // be overridden with actual value from the Findologic response if the rating filter exists.
+        $result[RatingFilter::RATING_FILTER_NAME]['max'] = 0;
 
         foreach ($filterExtension->getFilters() as $filter) {
             $filterName = $filter->getId();
