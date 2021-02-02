@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch;
 
 use Composer\Autoload\ClassLoader;
+use Composer\Semver\Comparator;
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
 use FINDOLOGIC\FinSearch\Exceptions\PluginNotCompatibleException;
@@ -19,10 +20,11 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
+use function current;
+use function end;
+use function explode;
 use function file_get_contents;
 use function json_decode;
-use function ltrim;
-use function version_compare;
 
 class FinSearch extends Plugin
 {
@@ -44,27 +46,8 @@ class FinSearch extends Plugin
     {
         parent::install($installContext);
 
-        $currentShopwareVersion = $installContext->getCurrentShopwareVersion();
-        $composerJsonContents = file_get_contents(__DIR__ . '/../composer.json');
-        $parsed = json_decode($composerJsonContents, true);
-        // Do nothing if there is no require property in the json as we probably are in development
-        if (!$parsed) {
-            return;
-        }
-
-        $requiredPackages = $parsed['require'];
-        if (isset($requiredPackages['shopware/core'])) {
-            $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
-            $lowestSupported = ltrim(current($compatibleVersions), '^');
-            $highestSupported = ltrim(end($compatibleVersions), '^');
-            // If the current shopware version does not come in between our lowest and highest supported version,
-            // we throw an exception and stop the plugin installation.
-            $isLower = version_compare($currentShopwareVersion, $lowestSupported, '<');
-            $isHigher = version_compare($currentShopwareVersion, $highestSupported, '>');
-            if ($isLower || $isHigher) {
-                $error = 'This plugin is not compatible with the used Shopware version';
-                throw new PluginNotCompatibleException($error);
-            }
+        if (!$this->isCompatible($installContext)) {
+            throw new PluginNotCompatibleException();
         }
     }
 
@@ -112,6 +95,32 @@ class FinSearch extends Plugin
         );
 
         $loader->load('services.xml');
+    }
+
+    private function isCompatible(InstallContext $installContext): bool
+    {
+        $currentShopwareVersion = $installContext->getCurrentShopwareVersion();
+        $composerJsonContents = file_get_contents(__DIR__ . '/../composer.json');
+        $parsed = json_decode($composerJsonContents, true);
+        // Do nothing if there is no require property in the json as we probably are in development
+        if (!$parsed) {
+            return true;
+        }
+
+        $requiredPackages = $parsed['require'];
+        if (isset($requiredPackages['shopware/core'])) {
+            $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
+            $lowestSupported = current($compatibleVersions);
+            $highestSupported = end($compatibleVersions);
+            $isLower = Comparator::lessThan($currentShopwareVersion, $lowestSupported);
+            $isHigher = Comparator::greaterThan($highestSupported, $currentShopwareVersion);
+
+            if ($isLower || $isHigher) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function deleteFindologicConfig(): void
