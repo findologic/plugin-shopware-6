@@ -24,6 +24,7 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
+use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
@@ -161,7 +162,7 @@ class FindologicProductTest extends TestCase
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'Storefront'));
 
-        $result = $repos->search($criteria, Context::createDefaultContext());
+        $result = $repos->search($criteria, $salesChannelContext);
         /** @var SalesChannelEntity $additionalSalesChannel */
         $additionalSalesChannel = $result->first();
         $additionalSalesChannelId = $additionalSalesChannel->getId();
@@ -371,7 +372,7 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($properties, $findologicProduct->getProperties());
     }
 
-    public function thumbnailProvider()
+    public function thumbnailProvider(): array
     {
         return [
             '3 thumbnails 400x400, 600x600 and 1000x100, the image of width 600 is taken' => [
@@ -381,8 +382,7 @@ class FindologicProductTest extends TestCase
                         ['width' => 600, 'height' => 600, 'highDpi' => false],
                         ['width' => 1000, 'height' => 100, 'highDpi' => false]
                     ]
-                ],
-                'expectedImageWidth' => 600
+                ]
             ],
             '2 thumbnails 800x800 and 2000x200, the image of width 800 is taken' => [
                 'thumbnails' => $data['cover']['media'] = [
@@ -390,8 +390,7 @@ class FindologicProductTest extends TestCase
                         ['width' => 800, 'height' => 800, 'highDpi' => false],
                         ['width' => 2000, 'height' => 200, 'highDpi' => false]
                     ]
-                ],
-                'expectedImageWidth' => 800
+                ]
             ],
             '3 thumbnails 100x100, 200x200 and 400x400, the image directly assigned to the product is taken' => [
                 'thumbnails' => $data['cover']['media'] = [
@@ -400,19 +399,17 @@ class FindologicProductTest extends TestCase
                         ['width' => 200, 'height' => 200, 'highDpi' => false],
                         ['width' => 400, 'height' => 400, 'highDpi' => false]
                     ]
-                ],
-                'expectedImageWidth' => 1000
+                ]
             ],
             '0 thumbnails, the image directly assigned to the product is taken' => [
-                'thumbnails' => $data['cover']['media'] = ['thumbnails' => null],
-                'expectedImageWidth' => 1000
+                'thumbnails' => $data['cover']['media'] = ['thumbnails' => null]
             ]
         ];
     }
     /**
      * @dataProvider thumbnailProvider
      */
-    public function testCorrectThumbnailImageIsExported(array $thumbnails, int $expectedImageWidth): void
+    public function testCorrectThumbnailImageIsExported(array $thumbnails): void
     {
         $productEntity = $this->createTestProduct($thumbnails);
         $images = $this->getImages($productEntity);
@@ -471,26 +468,26 @@ class FindologicProductTest extends TestCase
 
             $thumbnails = $media->getThumbnails();
             if (!$thumbnails) {
+                $encodedUrl = $this->getEncodedUrl($media->getUrl());
+                if (!Utils::isEmpty($encodedUrl)) {
+                    $images[] = new Image($encodedUrl);
+                }
                 continue;
             }
 
-            $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
-                return $thumbnail->getWidth() >= 600;
-            });
-
-            $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
-                if ($a->getWidth() !== $b->getWidth()) {
-                    return $a->getWidth() <=> $b->getWidth();
-                }
-
-                return 0;
-            });
-
+            $filteredThumbnails = $this->filterThumbnails($thumbnails);
             $image = $filteredThumbnails->first() ?? $media;
             if ($image) {
                 $encodedThumbnailUrl = $this->getEncodedUrl($image->getUrl());
                 if (!Utils::isEmpty($encodedThumbnailUrl)) {
                     $images[] = new Image($encodedThumbnailUrl);
+                }
+            }
+
+            foreach ($thumbnails as $thumbnailEntity) {
+                $encodedThumbnailUrl = $this->getEncodedUrl($thumbnailEntity->getUrl());
+                if (!Utils::isEmpty($encodedThumbnailUrl)) {
+                    $images[] = new Image($encodedThumbnailUrl, Image::TYPE_THUMBNAIL);
                 }
             }
         }
@@ -1481,6 +1478,23 @@ class FindologicProductTest extends TestCase
 
         $this->assertSame($isPriceAvailable, $hasListPrice);
         $this->assertSame($isPriceAvailable, $hasListPriceNet);
+    }
+
+    private function filterThumbnails(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
+    {
+        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
+            return $thumbnail->getWidth() >= 600;
+        });
+
+        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
+            if ($a->getWidth() !== $b->getWidth()) {
+                return $a->getWidth() <=> $b->getWidth();
+            }
+
+            return 0;
+        });
+
+        return $filteredThumbnails;
     }
 
     private function createCurrency(): string

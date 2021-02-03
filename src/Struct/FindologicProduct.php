@@ -23,6 +23,7 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
+use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
@@ -463,26 +464,28 @@ class FindologicProduct extends Struct
 
             $thumbnails = $media->getThumbnails();
             if (!$thumbnails) {
+                $encodedUrl = $this->getEncodedUrl($media->getUrl());
+                if (!Utils::isEmpty($encodedUrl)) {
+                    $this->images[] = new Image($encodedUrl);
+                }
                 continue;
             }
 
-            $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
-                return $thumbnail->getWidth() >= 600;
-            });
+            $filteredThumbnails = $this->filterThumbnails($thumbnails);
 
-            $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
-                if ($a->getWidth() !== $b->getWidth()) {
-                    return $a->getWidth() <=> $b->getWidth();
-                }
-
-                return 0;
-            });
-
+            // Use the thumbnail as the main image if available, otherwise fallback to the directly assigned image.
             $image = $filteredThumbnails->first() ?? $media;
             if ($image) {
                 $encodedThumbnailUrl = $this->getEncodedUrl($image->getUrl());
                 if (!Utils::isEmpty($encodedThumbnailUrl)) {
                     $this->images[] = new Image($encodedThumbnailUrl);
+                }
+            }
+
+            foreach ($thumbnails as $thumbnailEntity) {
+                $encodedThumbnailUrl = $this->getEncodedUrl($thumbnailEntity->getUrl());
+                if (!Utils::isEmpty($encodedThumbnailUrl)) {
+                    $this->images[] = new Image($encodedThumbnailUrl, Image::TYPE_THUMBNAIL);
                 }
             }
         }
@@ -1141,5 +1144,22 @@ class FindologicProduct extends Struct
         }
 
         return rtrim($path, '/');
+    }
+
+    protected function filterThumbnails(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
+    {
+        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
+            return $thumbnail->getWidth() >= 600;
+        });
+
+        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
+            if ($a->getWidth() !== $b->getWidth()) {
+                return $a->getWidth() <=> $b->getWidth();
+            }
+
+            return 0;
+        });
+
+        return $filteredThumbnails;
     }
 }
