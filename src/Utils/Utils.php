@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Utils;
 
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use InvalidArgumentException;
 use PackageVersions\Versions;
@@ -21,9 +17,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
-
-use function array_merge;
-use function end;
 
 class Utils
 {
@@ -283,52 +276,5 @@ class Utils
         }
 
         return $navigationCategory;
-    }
-
-    public static function parseFindologicFiltersForShopware(FiltersExtension $filtersExtension): array
-    {
-        $result = [];
-        $result[RatingFilter::RATING_FILTER_NAME]['max'] = 0;
-
-        foreach ($filtersExtension->getFilters() as $filter) {
-            $filterName = $filter->getId();
-
-            /** @var FilterValue[] $values */
-            $values = $filter->getValues();
-
-            if ($filter instanceof RatingFilter) {
-                $max = end($values);
-                $result[$filterName]['max'] = $max->getId();
-            } else {
-                $filterValues = [];
-                foreach ($values as $value) {
-                    $valueId = $value->getUuid() ?? $value->getId();
-                    $filterValues[] = [
-                        'id' => $valueId,
-                        'translated' => ['name' => $value->getTranslated()->getName()]
-                    ];
-
-                    if (!$filter instanceof CategoryFilter) {
-                        $filterValues[] = [
-                            'id' => $value->getTranslated()->getName(),
-                            'translated' => ['name' => $value->getTranslated()->getName()]
-                        ];
-                    }
-                }
-
-                $entityValues = [
-                    'translated' => [
-                        'name' => $filter instanceof CategoryFilter ? $filter->getId() : $filter->getName()
-                    ],
-                    'options' => $filterValues
-                ];
-
-                $result[$filterName]['entities'][] = $entityValues;
-            }
-        }
-
-        $actualResult['properties']['entities'] = $result;
-
-        return array_merge($actualResult, $result);
     }
 }

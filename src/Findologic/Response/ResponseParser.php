@@ -81,5 +81,5 @@ abstract class ResponseParser
         FiltersExtension $flFilters,
         array $smartSuggestBlocks,
         array $params
-    );
+    ): FiltersExtension;
 }

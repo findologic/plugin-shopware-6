@@ -17,10 +17,10 @@ use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config as PluginConfig;
+use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -92,6 +92,7 @@ class FindologicSearchService
                 /** @var FindologicService $findologicService */
                 $findologicService = $event->getContext()->getExtension('findologicService');
                 $findologicService->disable();
+
                 return;
             }
 
@@ -126,7 +127,7 @@ class FindologicSearchService
         $this->sortingService->handleRequest($event, $requestHandler);
     }
 
-    public function allowRequest(ProductListingCriteriaEvent $event): bool
+    protected function allowRequest(ProductListingCriteriaEvent $event): bool
     {
         if (!$this->pluginConfig->isInitialized()) {
             $this->pluginConfig->initializeBySalesChannel($event->getSalesChannelContext());
@@ -206,14 +207,13 @@ class FindologicSearchService
 
     public function doFilter(ProductListingCriteriaEvent $event): void
     {
-        $limit = self::FILTER_REQUEST_LIMIT;
         $handler = $this->buildNavigationRequestHandler();
         if (!$this->isCategoryPage($handler, $event)) {
             $handler = $this->buildSearchRequestHandler();
         }
 
         $this->handleFilters($event, $handler);
-        $this->handleSelectableFilters($event, $handler, $limit);
+        $this->handleSelectableFilters($event, $handler, self::FILTER_REQUEST_LIMIT);
     }
 
     protected function handleSelectableFilters(
@@ -221,22 +221,16 @@ class FindologicSearchService
         SearchNavigationRequestHandler $requestHandler,
         ?int $limit
     ): void {
-        $response = $requestHandler->doRequest($event, $limit, true);
+        $response = $requestHandler->doRequest($event, $limit);
         $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
 
         $event->getCriteria()->addExtension('flAvailableFilters', $filtersWithSmartSuggestBlocks);
     }
 
-    /**
-     * @param Response $response
-     * @param ProductListingCriteriaEvent $event
-     *
-     * @return mixed
-     */
     protected function parseFiltersFromResponse(
         Response $response,
         ProductListingCriteriaEvent $event
-    ) {
+    ): FiltersExtension {
         $serviceConfigResource = $this->container->get(ServiceConfigResource::class);
         $responseParser = ResponseParser::getInstance(
             $response,

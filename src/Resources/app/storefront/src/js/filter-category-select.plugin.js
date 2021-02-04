@@ -228,16 +228,12 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         this._disableInactiveFilterOptions(activeItems.map(entity => entity.id));
     }
 
-
-
     /**
      * @private
      */
     _disableInactiveFilterOptions(activeItemIds) {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
-            console.log({active: activeItemIds});
-            console.log({checked: checkbox.id});
             if (checkbox.checked === true) {
                 return;
             }
