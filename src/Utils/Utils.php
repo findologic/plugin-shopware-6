@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Utils;
 
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use InvalidArgumentException;
 use PackageVersions\Versions;
@@ -17,6 +21,9 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
+
+use function array_merge;
+use function end;
 
 class Utils
 {
@@ -186,14 +193,6 @@ class Utils
         return $findologicService->enable();
     }
 
-    public static function isFindologicEnabled(SalesChannelContext $context): bool
-    {
-        /** @var FindologicService $findologicService */
-        $findologicService = $context->getContext()->getExtension('findologicService');
-
-        return $findologicService ? $findologicService->getEnabled() : false;
-    }
-
     public static function isStagingSession(Request $request): bool
     {
         $findologic = $request->get('findologic');
@@ -214,6 +213,14 @@ class Utils
         }
 
         return false;
+    }
+
+    public static function isFindologicEnabled(SalesChannelContext $context): bool
+    {
+        /** @var FindologicService $findologicService */
+        $findologicService = $context->getContext()->getExtension('findologicService');
+
+        return $findologicService ? $findologicService->getEnabled() : false;
     }
 
     public static function isEmpty($value): bool
@@ -245,6 +252,22 @@ class Utils
         return implode('_', array_map('trim', $breadcrumb));
     }
 
+    /**
+     * Builds the category path by removing the path of the parent (root) category of the sales channel.
+     * Since Findologic does not care about any root categories, we need to get the difference between the
+     * normal category path and the root category.
+     *
+     * @return string[]
+     */
+    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $rootCategory): array
+    {
+        $rootCategoryBreadcrumbs = $rootCategory->getBreadcrumb();
+
+        $path = array_splice($categoryBreadcrumb, count($rootCategoryBreadcrumbs));
+
+        return array_values($path);
+    }
+
     public static function fetchNavigationCategoryFromSalesChannel(
         EntityRepository $categoryRepository,
         SalesChannelEntity $salesChannel
@@ -262,19 +285,50 @@ class Utils
         return $navigationCategory;
     }
 
-    /**
-     * Builds the category path by removing the path of the parent (root) category of the sales channel.
-     * Since Findologic does not care about any root categories, we need to get the difference between the
-     * normal category path and the root category.
-     *
-     * @return string[]
-     */
-    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $rootCategory): array
+    public static function parseFindologicFiltersForShopware(FiltersExtension $filtersExtension): array
     {
-        $rootCategoryBreadcrumbs = $rootCategory->getBreadcrumb();
+        $result = [];
+        $result[RatingFilter::RATING_FILTER_NAME]['max'] = 0;
 
-        $path = array_splice($categoryBreadcrumb, count($rootCategoryBreadcrumbs));
+        foreach ($filtersExtension->getFilters() as $filter) {
+            $filterName = $filter->getId();
 
-        return array_values($path);
+            /** @var FilterValue[] $values */
+            $values = $filter->getValues();
+
+            if ($filter instanceof RatingFilter) {
+                $max = end($values);
+                $result[$filterName]['max'] = $max->getId();
+            } else {
+                $filterValues = [];
+                foreach ($values as $value) {
+                    $valueId = $value->getUuid() ?? $value->getId();
+                    $filterValues[] = [
+                        'id' => $valueId,
+                        'translated' => ['name' => $value->getTranslated()->getName()]
+                    ];
+
+                    if (!$filter instanceof CategoryFilter) {
+                        $filterValues[] = [
+                            'id' => $value->getTranslated()->getName(),
+                            'translated' => ['name' => $value->getTranslated()->getName()]
+                        ];
+                    }
+                }
+
+                $entityValues = [
+                    'translated' => [
+                        'name' => $filter instanceof CategoryFilter ? $filter->getId() : $filter->getName()
+                    ],
+                    'options' => $filterValues
+                ];
+
+                $result[$filterName]['entities'][] = $entityValues;
+            }
+        }
+
+        $actualResult['properties']['entities'] = $result;
+
+        return array_merge($actualResult, $result);
     }
 }

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Storefront\Controller;
 
+use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21ResponseParser;
 use FINDOLOGIC\FinSearch\Storefront\Controller\SearchController as FindologicSearchController;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\WithTestClient;
@@ -14,7 +17,10 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Test\Controller\StorefrontControllerTestBehaviour;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+
+use function json_decode;
 
 class SearchControllerTest extends TestCase
 {
@@ -22,6 +28,7 @@ class SearchControllerTest extends TestCase
     use SalesChannelHelper;
     use PluginConfigHelper;
     use StorefrontControllerTestBehaviour;
+    use MockResponseHelper;
 
     private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
@@ -60,7 +67,11 @@ class SearchControllerTest extends TestCase
 
         $mockFindologicService->expects($this->once())->method('allowRequest')->willReturn($active);
 
-        $filters = [];
+        $response = new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithAvailableFilters.xml'));
+        $parser = new Xml21ResponseParser($response);
+        $filtersExtension = $parser->getFiltersExtension();
+        $filters = Utils::parseFindologicFiltersForShopware($filtersExtension);
+
         $mockFilterHandler = $this->getMockBuilder(FilterHandler::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -77,5 +88,15 @@ class SearchControllerTest extends TestCase
 
         $response = $controller->filter($request, $this->salesChannelContext);
         $this->assertTrue($response->isOk());
+        $this->assertInstanceOf(JsonResponse::class, $response);
+
+        if ($active) {
+            $availableFilters = ['properties', 'rating', 'price', 'Farbe', 'Material', 'vendor', 'cat'];
+            $data = json_decode($response->getContent(), true);
+            $this->assertIsArray($data);
+            foreach ($availableFilters as $availableFilter) {
+                $this->assertArrayHasKey($availableFilter, $data);
+            }
+        }
     }
 }
