@@ -24,7 +24,9 @@ use function current;
 use function end;
 use function explode;
 use function file_get_contents;
+use function is_numeric;
 use function json_decode;
+use function ltrim;
 
 class FinSearch extends Plugin
 {
@@ -99,7 +101,7 @@ class FinSearch extends Plugin
 
     private function isCompatible(InstallContext $installContext): bool
     {
-        $currentShopwareVersion = $installContext->getCurrentShopwareVersion();
+        $currentVersion = $installContext->getCurrentShopwareVersion();
         $composerJsonContents = file_get_contents(__DIR__ . '/../composer.json');
         $parsed = json_decode($composerJsonContents, true);
         // Do nothing if there is no require property in the json as we probably are in development
@@ -110,11 +112,8 @@ class FinSearch extends Plugin
         $requiredPackages = $parsed['require'];
         if (isset($requiredPackages['shopware/core'])) {
             $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
-            $lowestSupported = current($compatibleVersions);
-            $highestSupported = end($compatibleVersions);
-            $isLower = Comparator::lessThan($currentShopwareVersion, $lowestSupported);
-            $isHigher = Comparator::greaterThan($highestSupported, $currentShopwareVersion);
-
+            $isLower = $this->isVersionLower($currentVersion, $compatibleVersions);
+            $isHigher = $this->isVersionHigher($currentVersion, $compatibleVersions);
             if ($isLower || $isHigher) {
                 return false;
             }
@@ -127,6 +126,24 @@ class FinSearch extends Plugin
     {
         $connection = $this->container->get(Connection::class);
         $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
+    }
+
+    private function isVersionLower(string $currentVersion, array $compatibleVersions): bool
+    {
+        $compatibleVersion = current($compatibleVersions);
+
+        return Comparator::lessThan($currentVersion, $compatibleVersion);
+    }
+
+    private function isVersionHigher(string $currentVersion, array $compatibleVersions): bool
+    {
+        $compatibleVersion = end($compatibleVersions);
+        $highestCompatible = ltrim($compatibleVersion, '^');
+        if (is_numeric($highestCompatible)) {
+            $highestCompatible += 0.1;
+        }
+
+        return Comparator::greaterThan($currentVersion, $highestCompatible);
     }
 }
 
