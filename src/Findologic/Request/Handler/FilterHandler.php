@@ -6,10 +6,9 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
@@ -217,52 +216,7 @@ class FilterHandler
     {
         /** @var FiltersExtension $filterExtension */
         $filterExtension = $event->getCriteria()->getExtension('flAvailableFilters');
-        $result = [];
-        // Always send rating filter otherwise filter disabling does not work correctly. It will eventually
-        // be overridden with actual value from the Findologic response if the rating filter exists.
-        $result[RatingFilter::RATING_FILTER_NAME]['max'] = 0;
 
-        foreach ($filterExtension->getFilters() as $filter) {
-            $filterName = $filter->getId();
-
-            /** @var FilterValue[] $values */
-            $values = $filter->getValues();
-
-            if ($filter instanceof RatingFilter) {
-                $max = end($values);
-                $result[$filterName]['max'] = $max->getId();
-            } else {
-                $filterValues = [];
-                foreach ($values as $value) {
-                    $valueId = $value->getUuid() ?? $value->getId();
-                    // Add both id and name as values, to allow both filter with and without ids to
-                    // use the same endpoint.
-                    $filterValues[] = [
-                        'id' => $valueId,
-                        'translated' => ['name' => $value->getTranslated()->getName()]
-                    ];
-
-                    if (!$filter instanceof CategoryFilter) {
-                        $filterValues[] = [
-                            'id' => $value->getTranslated()->getName(),
-                            'translated' => ['name' => $value->getTranslated()->getName()]
-                        ];
-                    }
-                }
-
-                $entityValues = [
-                    'translated' => [
-                        'name' => $filter instanceof CategoryFilter ? $filter->getId() : $filter->getName()
-                    ],
-                    'options' => $filterValues
-                ];
-
-                $result[$filterName]['entities'][] = $entityValues;
-            }
-        }
-
-        $actualResult['properties']['entities'] = $result;
-
-        return array_merge($actualResult, $result);
+        return Utils::parseFindologicFiltersForShopware($filterExtension);
     }
 }
