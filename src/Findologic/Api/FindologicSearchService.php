@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Api;
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
+use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\FinSearch\Exceptions\Search\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
@@ -16,6 +17,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config as PluginConfig;
+use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -215,14 +217,13 @@ class FindologicSearchService
 
     public function doFilter(ProductListingCriteriaEvent $event): void
     {
-        $limit = self::FILTER_REQUEST_LIMIT;
         $handler = $this->buildNavigationRequestHandler();
         if (!$this->isCategoryPage($handler, $event)) {
             $handler = $this->buildSearchRequestHandler();
         }
 
         $this->handleFilters($event, $handler);
-        $this->handleSelectableFilters($event, $handler, $limit);
+        $this->handleSelectableFilters($event, $handler, self::FILTER_REQUEST_LIMIT);
     }
 
     protected function handleSelectableFilters(
@@ -230,22 +231,16 @@ class FindologicSearchService
         SearchNavigationRequestHandler $requestHandler,
         ?int $limit
     ): void {
-        $response = $requestHandler->doRequest($event, $limit, true);
+        $response = $requestHandler->doRequest($event, $limit);
         $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
 
         $event->getCriteria()->addExtension('flAvailableFilters', $filtersWithSmartSuggestBlocks);
     }
 
-    /**
-     * @param Response $response
-     * @param ProductListingCriteriaEvent $event
-     *
-     * @return mixed
-     */
     protected function parseFiltersFromResponse(
         Response $response,
         ProductListingCriteriaEvent $event
-    ) {
+    ): FiltersExtension {
         $serviceConfigResource = $this->container->get(ServiceConfigResource::class);
         $responseParser = ResponseParser::getInstance(
             $response,

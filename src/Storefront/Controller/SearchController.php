@@ -7,8 +7,11 @@ namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader
     as LegacySearchPageLoader;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -40,18 +43,32 @@ class SearchController extends StorefrontController
     /** @var FindologicSearchService */
     private $findologicSearchService;
 
+    /**
+     * @var ServiceConfigResource
+     */
+    private $serviceConfigResource;
+
+    /**
+     * @var Config
+     */
+    private $config;
+
     public function __construct(
         ShopwareSearchController $decorated,
         ?SearchPageLoader $searchPageLoader,
         FilterHandler $filterHandler,
         ContainerInterface $container,
-        FindologicSearchService $findologicSearchService
+        FindologicSearchService $findologicSearchService,
+        ServiceConfigResource $serviceConfigResource,
+        FindologicConfigService $findologicConfigService,
     ) {
         $this->container = $container;
         $this->decorated = $decorated;
         $this->searchPageLoader = $this->buildSearchPageLoader($searchPageLoader);
         $this->filterHandler = $filterHandler;
         $this->findologicSearchService = $findologicSearchService;
+        $this->serviceConfigResource = $serviceConfigResource;
+        $this->config = new Config($findologicConfigService, $serviceConfigResource);
     }
 
     private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
@@ -149,7 +166,14 @@ class SearchController extends StorefrontController
     public function filter(Request $request, SalesChannelContext $context): Response
     {
         $event = new ProductSearchCriteriaEvent($request, new Criteria(), $context);
-        if (!$this->findologicSearchService->allowRequest($event)) {
+        $shouldHandleRequest = Utils::shouldHandleRequest(
+            $request,
+            $context->getContext(),
+            $this->serviceConfigResource,
+            $this->config
+        );
+
+        if (!$shouldHandleRequest) {
             return $this->decorated->filter($request, $context);
         }
 
