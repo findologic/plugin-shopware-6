@@ -465,28 +465,22 @@ class FindologicProduct extends Struct
             $thumbnails = $media->getThumbnails();
             if (!$thumbnails) {
                 $encodedUrl = $this->getEncodedUrl($media->getUrl());
-                if (!Utils::isEmpty($encodedUrl)) {
-                    $this->images[] = new Image($encodedUrl);
-                }
+                $this->addMediaUrl($encodedUrl);
                 continue;
             }
 
-            $filteredThumbnails = $this->filterThumbnails($thumbnails);
+            $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
 
             // Use the thumbnail as the main image if available, otherwise fallback to the directly assigned image.
             $image = $filteredThumbnails->first() ?? $media;
             if ($image) {
-                $encodedThumbnailUrl = $this->getEncodedUrl($image->getUrl());
-                if (!Utils::isEmpty($encodedThumbnailUrl)) {
-                    $this->images[] = new Image($encodedThumbnailUrl);
-                }
+                $encodedUrl = $this->getEncodedUrl($image->getUrl());
+                $this->addMediaUrl($encodedUrl);
             }
 
             foreach ($thumbnails as $thumbnailEntity) {
                 $encodedThumbnailUrl = $this->getEncodedUrl($thumbnailEntity->getUrl());
-                if (!Utils::isEmpty($encodedThumbnailUrl)) {
-                    $this->images[] = new Image($encodedThumbnailUrl, Image::TYPE_THUMBNAIL);
-                }
+                $this->addMediaUrl($encodedThumbnailUrl, true);
             }
         }
     }
@@ -1146,20 +1140,24 @@ class FindologicProduct extends Struct
         return rtrim($path, '/');
     }
 
-    protected function filterThumbnails(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
+    protected function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
     {
         $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
             return $thumbnail->getWidth() >= 600;
         });
 
         $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
-            if ($a->getWidth() !== $b->getWidth()) {
-                return $a->getWidth() <=> $b->getWidth();
-            }
-
-            return 0;
+            return $a->getWidth() <=> $b->getWidth();
         });
 
         return $filteredThumbnails;
+    }
+
+    private function addMediaUrl(string $encodedUrl, bool $isThumbnail = false): void
+    {
+        if (!Utils::isEmpty($encodedUrl)) {
+            $type = $isThumbnail ? Image::TYPE_THUMBNAIL : Image::TYPE_DEFAULT;
+            $this->images[] = new Image($encodedUrl, $type);
+        }
     }
 }
