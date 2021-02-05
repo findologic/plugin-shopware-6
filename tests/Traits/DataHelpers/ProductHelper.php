@@ -13,6 +13,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
 
+use function array_merge_recursive;
+
 trait ProductHelper
 {
     public function createVisibleTestProduct(array $overrides = []): ?ProductEntity
@@ -91,32 +93,14 @@ trait ProductHelper
                     'mediaType' => 'image/png',
                     'mimeType' => 'image/png',
                     'fileExtension' => 'png',
-                    'fileName' => 'file - ' . (new \DateTime())->getTimestamp(),
+                    'fileName' => 'findologic',
                     'thumbnails' => [
-                        [
-                            'width' => 400,
-                            'height' => 400,
-                            'highDpi' => false,
-                            'url' => 'https://via.placeholder.com/400'
-                        ],
-                        [
-                            'width' => 500,
-                            'height' => 500,
-                            'highDpi' => false,
-                            'url' => 'https://via.placeholder.com/500'
-                        ],
                         [
                             'width' => 600,
                             'height' => 600,
                             'highDpi' => false,
                             'url' => 'https://via.placeholder.com/600'
-                        ],
-                        [
-                            'width' => 800,
-                            'height' => 800,
-                            'highDpi' => false,
-                            'url' => 'https://via.placeholder.com/800'
-                        ],
+                        ]
                     ],
                     'translations' => [
                         'DEFAULT' => [
@@ -188,7 +172,7 @@ trait ProductHelper
 
         $productInfo = [];
         // Main product data
-        $productInfo[] = array_merge($productData, $data);
+        $productInfo[] = array_replace_recursive($productData, $data);
 
         if ($withVariant) {
             // Standard variant data
