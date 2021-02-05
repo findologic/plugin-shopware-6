@@ -60,7 +60,7 @@ class SearchController extends StorefrontController
         ContainerInterface $container,
         FindologicSearchService $findologicSearchService,
         ServiceConfigResource $serviceConfigResource,
-        FindologicConfigService $findologicConfigService,
+        FindologicConfigService $findologicConfigService
     ) {
         $this->container = $container;
         $this->decorated = $decorated;
