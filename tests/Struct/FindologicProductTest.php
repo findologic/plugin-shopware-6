@@ -925,10 +925,8 @@ class FindologicProductTest extends TestCase
         $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
         $firstThumbnail = $filteredThumbnails->first();
 
-        $this->assertNotNull($firstThumbnail);
-        $this->assertGreaterThanOrEqual(600, $firstThumbnail->getWidth());
-
-        $url = $this->getEncodedUrl($firstThumbnail->getUrl());
+        $image = $firstThumbnail ?? $media->first();
+        $url = $this->getEncodedUrl($image->getUrl());
         $images[] = new Image($url);
 
         foreach ($thumbnails as $thumbnail) {
@@ -1506,7 +1504,8 @@ class FindologicProductTest extends TestCase
                         'highDpi' => false,
                         'url' => 'https://via.placeholder.com/100'
                     ]
-                ]
+                ],
+                'expectedWidth' => 600
             ],
             '2 thumbnails 800x800 and 2000x200, the image of width 800 is taken' => [
                 'thumbnails' => [
@@ -1522,7 +1521,8 @@ class FindologicProductTest extends TestCase
                         'highDpi' => false,
                         'url' => 'https://via.placeholder.com/200'
                     ]
-                ]
+                ],
+                'expectedWidth' => 800
             ],
             '3 thumbnails 100x100, 200x200 and 400x400, the image directly assigned to the product is taken' => [
                 'thumbnails' => [
@@ -1544,10 +1544,12 @@ class FindologicProductTest extends TestCase
                         'highDpi' => false,
                         'url' => 'https://via.placeholder.com/400'
                     ]
-                ]
+                ],
+                'expectedWidth' => null
             ],
             '0 thumbnails, the image directly assigned to the product is taken' => [
-                'thumbnails' => []
+                'thumbnails' => null,
+                'expectedWidth' => null
             ]
         ];
     }
@@ -1555,7 +1557,7 @@ class FindologicProductTest extends TestCase
     /**
      * @dataProvider thumbnailProvider
      */
-    public function testCorrectThumbnailImageIsExported(array $thumbnails): void
+    public function testCorrectThumbnailImageIsExported(?array $thumbnails): void
     {
         $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]]);
         $images = $this->getImages($productEntity);
@@ -1589,5 +1591,29 @@ class FindologicProductTest extends TestCase
         });
 
         return $filteredThumbnails;
+    }
+
+    /**
+     * @dataProvider thumbnailProvider
+     */
+    public function testImageThumbnailsAreFilteredAndSortedByWidth(?array $thumbnails, ?int $expectedWidth): void
+    {
+        $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]]);
+        $mediaCollection = $productEntity->getMedia();
+        $media = $mediaCollection->getMedia();
+        $thumbnailCollection = $media->first()->getThumbnails();
+
+        $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnailCollection);
+        $thumbnail = $filteredThumbnails->first();
+
+        if ($expectedWidth !== null) {
+            $this->assertNotNull($thumbnail);
+            $this->assertSame($expectedWidth, $thumbnail->getWidth());
+            foreach ($filteredThumbnails as $filteredThumbnail) {
+                $this->assertGreaterThanOrEqual(600, $filteredThumbnail->getWidth());
+            }
+        } else {
+            $this->assertNull($thumbnail);
+        }
     }
 }
