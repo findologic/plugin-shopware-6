@@ -99,27 +99,32 @@ class FinSearch extends Plugin
         $loader->load('services.xml');
     }
 
-    private function isCompatible(InstallContext $installContext): bool
+    /**
+     * Pass `composerJsonPath` parameter specifically for unit-testing. In a real scenario, this will always be taken
+     * from the plugin's actual `composer.json` file.
+     */
+    public static function isCompatible(InstallContext $installContext, string $composerJsonPath = null): bool
     {
         $currentVersion = $installContext->getCurrentShopwareVersion();
-        $composerJsonContents = file_get_contents(__DIR__ . '/../composer.json');
+        if ($composerJsonPath === null) {
+            $composerJsonPath = __DIR__ . '/../composer.json';
+        }
+
+        $composerJsonContents = file_get_contents($composerJsonPath);
         $parsed = json_decode($composerJsonContents, true);
-        // Do nothing if there is no require property in the json as we probably are in development
-        if (!$parsed) {
+        $requiredPackages = $parsed['require'];
+
+        // If Shopware is not required in the json file, we probably are using the plugin's development version, so
+        // the plugin will always be compatible in such a case.
+        if (!isset($requiredPackages['shopware/core'])) {
             return true;
         }
 
-        $requiredPackages = $parsed['require'];
-        if (isset($requiredPackages['shopware/core'])) {
-            $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
-            $isLower = $this->isVersionLower($currentVersion, $compatibleVersions);
-            $isHigher = $this->isVersionHigher($currentVersion, $compatibleVersions);
-            if ($isLower || $isHigher) {
-                return false;
-            }
-        }
+        $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
+        $isLower = self::isVersionLower($currentVersion, $compatibleVersions);
+        $isHigher = self::isVersionHigher($currentVersion, $compatibleVersions);
 
-        return true;
+        return !($isLower || $isHigher);
     }
 
     private function deleteFindologicConfig(): void
@@ -128,14 +133,14 @@ class FinSearch extends Plugin
         $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
     }
 
-    private function isVersionLower(string $currentVersion, array $compatibleVersions): bool
+    protected static function isVersionLower(string $currentVersion, array $compatibleVersions): bool
     {
         $compatibleVersion = current($compatibleVersions);
 
         return Comparator::lessThan($currentVersion, $compatibleVersion);
     }
 
-    private function isVersionHigher(string $currentVersion, array $compatibleVersions): bool
+    protected static function isVersionHigher(string $currentVersion, array $compatibleVersions): bool
     {
         $compatibleVersion = end($compatibleVersions);
         $highestCompatible = ltrim($compatibleVersion, '^');
