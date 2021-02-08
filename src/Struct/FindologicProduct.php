@@ -25,12 +25,14 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
+use Shopware\Core\Content\Media\MediaEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
@@ -464,23 +466,19 @@ class FindologicProduct extends Struct
 
             $thumbnails = $media->getThumbnails();
             if (!$thumbnails) {
-                $encodedUrl = $this->getEncodedUrl($media->getUrl());
-                $this->addMediaUrl($encodedUrl);
+                $this->setImageUrl($media);
                 continue;
             }
 
             $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
-
             // Use the thumbnail as the main image if available, otherwise fallback to the directly assigned image.
             $image = $filteredThumbnails->first() ?? $media;
             if ($image) {
-                $encodedUrl = $this->getEncodedUrl($image->getUrl());
-                $this->addMediaUrl($encodedUrl);
+                $this->setImageUrl($image);
             }
 
             foreach ($thumbnails as $thumbnailEntity) {
-                $encodedThumbnailUrl = $this->getEncodedUrl($thumbnailEntity->getUrl());
-                $this->addMediaUrl($encodedThumbnailUrl, true);
+                $this->addThumbnailUrl($thumbnailEntity);
             }
         }
     }
@@ -1153,11 +1151,22 @@ class FindologicProduct extends Struct
         return $filteredThumbnails;
     }
 
-    private function addMediaUrl(string $encodedUrl, bool $isThumbnail = false): void
+    /**
+     * @param MediaThumbnailEntity|MediaEntity $media
+     */
+    private function setImageUrl(Entity $media): void
     {
+        $encodedUrl = $this->getEncodedUrl($media->getUrl());
         if (!Utils::isEmpty($encodedUrl)) {
-            $type = $isThumbnail ? Image::TYPE_THUMBNAIL : Image::TYPE_DEFAULT;
-            $this->images[] = new Image($encodedUrl, $type);
+            $this->images[] = new Image($encodedUrl);
+        }
+    }
+
+    private function addThumbnailUrl(MediaThumbnailEntity $media): void
+    {
+        $encodedUrl = $this->getEncodedUrl($media->getUrl());
+        if (!Utils::isEmpty($encodedUrl)) {
+            $this->images[] = new Image($encodedUrl, Image::TYPE_THUMBNAIL);
         }
     }
 }

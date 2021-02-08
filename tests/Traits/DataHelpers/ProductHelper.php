@@ -13,8 +13,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
 
-use function array_merge_recursive;
-
 trait ProductHelper
 {
     public function createVisibleTestProduct(array $overrides = []): ?ProductEntity
@@ -30,8 +28,11 @@ trait ProductHelper
         ], $overrides));
     }
 
-    public function createTestProduct(array $data = [], bool $withVariant = false): ?ProductEntity
-    {
+    public function createTestProduct(
+        array $data = [],
+        bool $withVariant = false,
+        bool $doRecursive = false
+    ): ?ProductEntity {
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();
         $categoryId = Uuid::randomHex();
@@ -172,7 +173,11 @@ trait ProductHelper
 
         $productInfo = [];
         // Main product data
-        $productInfo[] = array_replace_recursive($productData, $data);
+        if ($doRecursive) {
+            $productInfo[] = array_replace_recursive($productData, $data);
+        } else {
+            $productInfo[] = array_merge($productData, $data);
+        }
 
         if ($withVariant) {
             // Standard variant data

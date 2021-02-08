@@ -1504,8 +1504,7 @@ class FindologicProductTest extends TestCase
                         'highDpi' => false,
                         'url' => 'https://via.placeholder.com/100'
                     ]
-                ],
-                'expectedWidth' => 600
+                ]
             ],
             '2 thumbnails 800x800 and 2000x200, the image of width 800 is taken' => [
                 'thumbnails' => [
@@ -1521,8 +1520,7 @@ class FindologicProductTest extends TestCase
                         'highDpi' => false,
                         'url' => 'https://via.placeholder.com/200'
                     ]
-                ],
-                'expectedWidth' => 800
+                ]
             ],
             '3 thumbnails 100x100, 200x200 and 400x400, the image directly assigned to the product is taken' => [
                 'thumbnails' => [
@@ -1544,13 +1542,9 @@ class FindologicProductTest extends TestCase
                         'highDpi' => false,
                         'url' => 'https://via.placeholder.com/400'
                     ]
-                ],
-                'expectedWidth' => null
+                ]
             ],
-            '0 thumbnails, the image directly assigned to the product is taken' => [
-                'thumbnails' => null,
-                'expectedWidth' => null
-            ]
+            '0 thumbnails, the image directly assigned to the product is taken' => ['thumbnails' => null]
         ];
     }
 
@@ -1559,7 +1553,7 @@ class FindologicProductTest extends TestCase
      */
     public function testCorrectThumbnailImageIsExported(?array $thumbnails): void
     {
-        $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]]);
+        $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]], false, true);
         $images = $this->getImages($productEntity);
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
@@ -1593,27 +1587,60 @@ class FindologicProductTest extends TestCase
         return $filteredThumbnails;
     }
 
-    /**
-     * @dataProvider thumbnailProvider
-     */
-    public function testImageThumbnailsAreFilteredAndSortedByWidth(?array $thumbnails, ?int $expectedWidth): void
+    public function widthSizesProvider()
     {
-        $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]]);
+        return [
+            'Max 600 width is provided' => [
+                'widthSizes' => [100, 200, 300, 400, 500, 600],
+                'expected' => [600]
+            ],
+            'Min 600 width is provided' => [
+                'widthSizes' => [600, 800, 200, 500],
+                'expected' => [600, 800]
+            ],
+            'Random width are provided' => [
+                'widthSizes' => [800, 100, 650, 120, 2000, 1000],
+                'expected' => [650, 800, 1000, 2000]
+            ],
+            'Less than 600 width is provided' => [
+                'widthSizes' => [100, 200, 300, 500],
+                'expected' => []
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider widthSizesProvider
+     */
+    public function testImageThumbnailsAreFilteredAndSortedByWidth(array $widthSizes, array $expected): void
+    {
+        $thumbnails = $this->generateThumbnailData($widthSizes);
+        $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]], false, true);
         $mediaCollection = $productEntity->getMedia();
         $media = $mediaCollection->getMedia();
         $thumbnailCollection = $media->first()->getThumbnails();
 
+        $width = [];
         $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnailCollection);
-        $thumbnail = $filteredThumbnails->first();
-
-        if ($expectedWidth !== null) {
-            $this->assertNotNull($thumbnail);
-            $this->assertSame($expectedWidth, $thumbnail->getWidth());
-            foreach ($filteredThumbnails as $filteredThumbnail) {
-                $this->assertGreaterThanOrEqual(600, $filteredThumbnail->getWidth());
-            }
-        } else {
-            $this->assertNull($thumbnail);
+        foreach ($filteredThumbnails as $filteredThumbnail) {
+            $width[] = $filteredThumbnail->getWidth();
         }
+
+        $this->assertSame($expected, $width);
+    }
+
+    private function generateThumbnailData(array $sizes): array
+    {
+        $thumbnails = [];
+        foreach ($sizes as $width) {
+            $thumbnails[] = [
+                'width' => $width,
+                'height' => 100,
+                'highDpi' => false,
+                'url' => 'https://via.placeholder.com/100'
+            ];
+        }
+
+        return $thumbnails;
     }
 }
