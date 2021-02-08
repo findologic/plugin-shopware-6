@@ -8,6 +8,7 @@ use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
@@ -235,17 +236,19 @@ class FilterHandler
 
             if ($filter instanceof RatingFilter) {
                 $max = end($values);
-                $result[$filterName]['max'] = $max->getId();
+                $result[RatingFilter::RATING_FILTER_NAME]['max'] = $max->getId();
             } else {
                 $filterValues = [];
-                foreach ($values as $value) {
-                    $valueId = $value->getUuid() ?? $value->getId();
-                    $filterValues[] = [
-                        'id' => $valueId,
-                        'translated' => ['name' => $value->getTranslated()->getName()]
-                    ];
 
-                    if (!$filter instanceof CategoryFilter) {
+                if ($filter instanceof CategoryFilter) {
+                    $this->handleCategoryFilters($values, $filterValues);
+                } else {
+                    foreach ($values as $value) {
+                        $valueId = $value->getUuid() ?? $value->getId();
+                        $filterValues[] = [
+                            'id' => $valueId,
+                            'translated' => ['name' => $value->getTranslated()->getName()]
+                        ];
                         $filterValues[] = [
                             'id' => $value->getTranslated()->getName(),
                             'translated' => ['name' => $value->getTranslated()->getName()]
@@ -267,5 +270,23 @@ class FilterHandler
         $actualResult['properties']['entities'] = $result;
 
         return array_merge($actualResult, $result);
+    }
+
+    /**
+     * @param FilterValue[] $values
+     */
+    private function handleCategoryFilters(array $values, array &$filterValues): void
+    {
+        /** @var CategoryFilterValue $value */
+        foreach ($values as $value) {
+            $valueId = $value->getId();
+            $filterValues[] = [
+                'id' => $valueId,
+                'translated' => ['name' => $value->getTranslated()->getName()]
+            ];
+            if ($value->getValues()) {
+                $this->handleCategoryFilters($value->getValues(), $filterValues);
+            }
+        }
     }
 }

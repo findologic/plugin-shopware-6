@@ -217,6 +217,10 @@ class FindologicSearchService
 
     public function doFilter(ProductListingCriteriaEvent $event): void
     {
+        if (!$this->allowRequest($event)) {
+            return;
+        }
+
         $handler = $this->buildNavigationRequestHandler();
         if (!$this->isCategoryPage($handler, $event)) {
             $handler = $this->buildSearchRequestHandler();

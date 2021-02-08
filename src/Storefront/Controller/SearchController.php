@@ -43,14 +43,10 @@ class SearchController extends StorefrontController
     /** @var FindologicSearchService */
     private $findologicSearchService;
 
-    /**
-     * @var ServiceConfigResource
-     */
+    /** @var ServiceConfigResource */
     private $serviceConfigResource;
 
-    /**
-     * @var Config
-     */
+    /** @var Config */
     private $config;
 
     public function __construct(
@@ -60,7 +56,7 @@ class SearchController extends StorefrontController
         ContainerInterface $container,
         FindologicSearchService $findologicSearchService,
         ServiceConfigResource $serviceConfigResource,
-        FindologicConfigService $findologicConfigService
+        Config $config
     ) {
         $this->container = $container;
         $this->decorated = $decorated;
@@ -68,7 +64,7 @@ class SearchController extends StorefrontController
         $this->filterHandler = $filterHandler;
         $this->findologicSearchService = $findologicSearchService;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->config = new Config($findologicConfigService, $serviceConfigResource);
+        $this->config = $config;
     }
 
     private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
@@ -166,19 +162,12 @@ class SearchController extends StorefrontController
     public function filter(Request $request, SalesChannelContext $context): Response
     {
         $event = new ProductSearchCriteriaEvent($request, new Criteria(), $context);
-        $shouldHandleRequest = Utils::shouldHandleRequest(
-            $request,
-            $context->getContext(),
-            $this->serviceConfigResource,
-            $this->config
-        );
-
-        if (!$shouldHandleRequest) {
-            return $this->decorated->filter($request, $context);
-        }
-
         $this->findologicSearchService->doFilter($event);
         $result = $this->filterHandler->handleAvailableFilters($event);
+
+        if (!$event->getCriteria()->hasExtension('flAvailableFilters')) {
+            return $this->decorated->filter($request, $context);
+        }
 
         return new JsonResponse($result);
     }
