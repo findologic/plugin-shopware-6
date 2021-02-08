@@ -32,7 +32,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, dom
+          extensions: mbstring, dom, gd
           coverage: xdebug
           tools: composer:v2
         if: matrix.shopware-versions != 6.1
