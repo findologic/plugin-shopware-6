@@ -102,13 +102,7 @@ trait ProductHelper
                             'highDpi' => false,
                             'url' => 'https://via.placeholder.com/600'
                         ]
-                    ],
-                    'translations' => [
-                        'DEFAULT' => [
-                            'title' => 'cover media title',
-                            'alt' => 'cover media alt',
-                        ],
-                    ],
+                    ]
                 ],
             ],
             'manufacturerNumber' => Uuid::randomHex(),
