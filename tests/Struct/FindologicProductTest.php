@@ -1544,14 +1544,14 @@ class FindologicProductTest extends TestCase
                     ]
                 ]
             ],
-            '0 thumbnails, the image directly assigned to the product is taken' => ['thumbnails' => null]
+            '0 thumbnails, the image directly assigned to the product is taken' => ['thumbnails' => []]
         ];
     }
 
     /**
      * @dataProvider thumbnailProvider
      */
-    public function testCorrectThumbnailImageIsExported(?array $thumbnails): void
+    public function testCorrectThumbnailImageIsExported(array $thumbnails): void
     {
         $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]], false, true);
         $images = $this->getImages($productEntity);
