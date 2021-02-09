@@ -29,9 +29,9 @@ trait ProductHelper
     }
 
     public function createTestProduct(
-        array $data = [],
+        array $overrideData = [],
         bool $withVariant = false,
-        bool $doRecursive = false
+        bool $overrideRecursively = false
     ): ?ProductEntity {
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();
@@ -167,10 +167,10 @@ trait ProductHelper
 
         $productInfo = [];
         // Main product data
-        if ($doRecursive) {
-            $productInfo[] = array_replace_recursive($productData, $data);
+        if ($overrideRecursively) {
+            $productInfo[] = array_replace_recursive($productData, $overrideData);
         } else {
-            $productInfo[] = array_merge($productData, $data);
+            $productInfo[] = array_merge($productData, $overrideData);
         }
 
         if ($withVariant) {
@@ -186,7 +186,7 @@ trait ProductHelper
                 'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
             ];
 
-            $productInfo[] = array_merge($variantData, $data);
+            $productInfo[] = array_merge($variantData, $overrideData);
         }
 
         $container->get('product.repository')->upsert($productInfo, $context);

@@ -1154,7 +1154,7 @@ class FindologicProduct extends Struct
     /**
      * @param MediaThumbnailEntity|MediaEntity $media
      */
-    private function setImageUrl(Entity $media): void
+    protected function setImageUrl(Entity $media): void
     {
         $encodedUrl = $this->getEncodedUrl($media->getUrl());
         if (!Utils::isEmpty($encodedUrl)) {
@@ -1162,7 +1162,7 @@ class FindologicProduct extends Struct
         }
     }
 
-    private function addThumbnailUrl(MediaThumbnailEntity $media): void
+    protected function addThumbnailUrl(MediaThumbnailEntity $media): void
     {
         $encodedUrl = $this->getEncodedUrl($media->getUrl());
         if (!Utils::isEmpty($encodedUrl)) {

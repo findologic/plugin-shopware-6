@@ -1587,7 +1587,7 @@ class FindologicProductTest extends TestCase
         return $filteredThumbnails;
     }
 
-    public function widthSizesProvider()
+    public function widthSizesProvider(): array
     {
         return [
             'Max 600 width is provided' => [
