@@ -1116,6 +1116,8 @@ XML;
 
     public function testHandleListingRequestDoesNotThrowAnExceptionWhenCalledManuallyOnANonCategoryPage(): void
     {
+        $addExtensionWasCalled = false;
+
         $this->configMock->expects($this->any())->method('getShopkey')
             ->willReturn('ABCDABCDABCDABCDABCDABCDABCDABCD');
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
@@ -1131,6 +1133,17 @@ XML;
         $eventMock->expects($this->any())->method('getSalesChannelContext')
             ->willReturn($salesChannelContextMock);
 
+        /** @var Context|MockObject $contextMock */
+        $contextMock = $eventMock->getContext();
+        $contextMock->expects($this->any())->method('addExtension')
+            ->willReturnCallback(function (string $name, $value) use (&$addExtensionWasCalled) {
+                if ($name === 'findologicService') {
+                    $addExtensionWasCalled = true;
+                    $this->assertEquals(new FindologicService(), $value);
+                }
+            }
+        );
+
         /** @var Request|MockObject $requestMock */
         $requestMock = $eventMock->getRequest();
         $requestMock->expects($this->any())->method('get')
@@ -1144,5 +1157,7 @@ XML;
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleListingRequest($eventMock);
+
+        $this->assertTrue($addExtensionWasCalled);
     }
 }
