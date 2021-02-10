@@ -864,8 +864,10 @@ XML;
     /**
      * @return ProductListingCriteriaEvent|MockObject
      */
-    private function setUpNavigationRequestMocks(?CategoryEntity $category = null): ProductListingCriteriaEvent
-    {
+    private function setUpNavigationRequestMocks(
+        ?CategoryEntity $category = null,
+        ?array $extensionMapOverride = null
+    ): ProductListingCriteriaEvent {
         $headerMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -902,10 +904,14 @@ XML;
 
         $findologicService = new FindologicService();
         $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension();
-        $defaultExtensionMap = [
-            ['findologicService', $findologicService],
-            ['flSmartDidYouMean', $smartDidYouMean]
-        ];
+
+        $defaultExtensionMap = $extensionMapOverride;
+        if ($defaultExtensionMap === null) {
+            $defaultExtensionMap = [
+                ['findologicService', $findologicService],
+                ['flSmartDidYouMean', $smartDidYouMean]
+            ];
+        }
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
         $contextMock->expects($this->any())->method('getExtension')->willReturnMap($defaultExtensionMap);
@@ -1106,5 +1112,37 @@ XML;
 
         $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
         $subscriber->handleResult($event);
+    }
+
+    public function testHandleListingRequestDoesNotThrowAnExceptionWhenCalledManuallyOnANonCategoryPage(): void
+    {
+        $this->configMock->expects($this->any())->method('getShopkey')
+            ->willReturn('ABCDABCDABCDABCDABCDABCDABCDABCD');
+        $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
+        $this->configMock->expects($this->any())->method('isActiveOnCategoryPages')->willReturn(true);
+        $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $eventMock = $this->setUpNavigationRequestMocks(null, [
+            ['findologicService', null],
+            ['flSmartDidYouMean', $this->getDefaultSmartDidYouMeanExtension()]
+        ]);
+        $eventMock->expects($this->any())->method('getSalesChannelContext')
+            ->willReturn($salesChannelContextMock);
+
+        /** @var Request|MockObject $requestMock */
+        $requestMock = $eventMock->getRequest();
+        $requestMock->expects($this->any())->method('get')
+            ->willReturnCallback(function ($param) {
+                if ($param === 'navigationId') {
+                    return Uuid::randomHex();
+                }
+
+                return null;
+            });
+
+        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber->handleListingRequest($eventMock);
     }
 }

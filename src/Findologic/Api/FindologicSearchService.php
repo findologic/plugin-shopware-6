@@ -87,9 +87,8 @@ class FindologicSearchService
         if ($this->allowRequest($event)) {
             $navigationRequestHandler = $this->buildNavigationRequestHandler();
             if (!$this->isCategoryPage($navigationRequestHandler, $event)) {
-                /** @var FindologicService $findologicService */
-                $findologicService = $event->getContext()->getExtension('findologicService');
-                $findologicService->disable();
+                $this->disableFindologicService($event);
+
                 return;
             }
 
@@ -212,5 +211,17 @@ class FindologicSearchService
         );
 
         return !empty($isCategoryPage);
+    }
+
+    protected function disableFindologicService(ProductListingCriteriaEvent $event): void
+    {
+        /** @var FindologicService|null $findologicService */
+        $findologicService = $event->getContext()->getExtension('findologicService');
+        if (!$findologicService) {
+            $findologicService = new FindologicService();
+            $event->getContext()->addExtension('findologicService', $findologicService);
+        }
+
+        $findologicService->disable();
     }
 }
