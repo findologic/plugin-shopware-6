@@ -24,6 +24,8 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
+use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
+use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
@@ -46,7 +48,12 @@ use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouterInterface;
 
+use function array_map;
 use function current;
+use function explode;
+use function getenv;
+use function implode;
+use function parse_url;
 
 class FindologicProductTest extends TestCase
 {
@@ -155,7 +162,7 @@ class FindologicProductTest extends TestCase
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'Storefront'));
 
-        $result = $repos->search($criteria, Context::createDefaultContext());
+        $result = $repos->search($criteria, $salesChannelContext->getContext());
         /** @var SalesChannelEntity $additionalSalesChannel */
         $additionalSalesChannel = $result->first();
         $additionalSalesChannelId = $additionalSalesChannel->getId();
@@ -326,7 +333,7 @@ class FindologicProductTest extends TestCase
         $productEntity = $this->createTestProduct();
 
         $productTag = new Keyword('FINDOLOGIC Tag');
-        $images = $this->getImages();
+        $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
         $customerGroupEntities = $this->getContainer()
@@ -895,27 +902,49 @@ class FindologicProductTest extends TestCase
     /**
      * @return Image[]
      */
-    private function getImages(): array
+    private function getImages(ProductEntity $productEntity): array
     {
         $images = [];
-        $requestContext = $this->router->getContext();
-        $schemaAuthority = $requestContext->getScheme() . '://' . $requestContext->getHost();
-        if ($requestContext->getHttpPort() !== 80) {
-            $schemaAuthority .= ':' . $requestContext->getHttpPort();
-        } elseif ($requestContext->getHttpsPort() !== 443) {
-            $schemaAuthority .= ':' . $requestContext->getHttpsPort();
+        if (!$productEntity->getMedia() || !$productEntity->getMedia()->count()) {
+            $fallbackImage = sprintf(
+                '%s/%s',
+                getenv('APP_URL'),
+                'bundles/storefront/assets/icon/default/placeholder.svg'
+            );
+
+            $images[] = new Image($fallbackImage);
+            $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
+
+            return $images;
         }
 
-        $fallbackImage = sprintf(
-            '%s/%s',
-            $schemaAuthority,
-            'bundles/storefront/assets/icon/default/placeholder.svg'
-        );
+        $mediaCollection = $productEntity->getMedia();
+        $media = $mediaCollection->getMedia();
+        $thumbnails = $media->first()->getThumbnails();
 
-        $images[] = new Image($fallbackImage);
-        $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
+        $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
+        $firstThumbnail = $filteredThumbnails->first();
+
+        $image = $firstThumbnail ?? $media->first();
+        $url = $this->getEncodedUrl($image->getUrl());
+        $images[] = new Image($url);
+
+        foreach ($thumbnails as $thumbnail) {
+            $url = $this->getEncodedUrl($thumbnail->getUrl());
+            $images[] = new Image($url, Image::TYPE_THUMBNAIL);
+        }
 
         return $images;
+    }
+
+    protected function getEncodedUrl(string $url): string
+    {
+        $parsedUrl = parse_url($url);
+        $urlPath = explode('/', $parsedUrl['path']);
+        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
+        $parsedUrl['path'] = implode('/', $encodedPath);
+
+        return Utils::buildUrl($parsedUrl);
     }
 
     public function emptyValuesProvider(): array
@@ -1117,7 +1146,7 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
     }
 
-    public function testEmptyCategoryNameShouldStillExportCategory()
+    public function testEmptyCategoryNameShouldStillExportCategory(): void
     {
         $mainCatId = $this->getContainer()->get('category.repository')
             ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
@@ -1397,16 +1426,18 @@ class FindologicProductTest extends TestCase
         $domainRepo = $this->getContainer()->get('sales_channel_domain.repository');
         $catUrlWithoutSeoUrlPrefix = '/navigation';
 
-        $domainRepo->create([[
-            'url' => $fullDomain,
-            'salesChannelId' => Defaults::SALES_CHANNEL,
-            'currencyId' => Defaults::CURRENCY,
-            'snippetSet' => [
-                'name' => 'oof',
-                'baseFile' => 'de.json',
-                'iso' => 'de_AT'
+        $domainRepo->create([
+            [
+                'url' => $fullDomain,
+                'salesChannelId' => Defaults::SALES_CHANNEL,
+                'currencyId' => Defaults::CURRENCY,
+                'snippetSet' => [
+                    'name' => 'oof',
+                    'baseFile' => 'de.json',
+                    'iso' => 'de_AT'
+                ]
             ]
-        ]], Context::createDefaultContext());
+        ], Context::createDefaultContext());
 
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('url', $fullDomain));
@@ -1448,5 +1479,168 @@ class FindologicProductTest extends TestCase
         }
 
         $this->assertTrue($hasSeoCatUrls);
+    }
+
+    public function thumbnailProvider(): array
+    {
+        return [
+            '3 thumbnails 400x400, 600x600 and 1000x100, the image of width 600 is taken' => [
+                'thumbnails' => [
+                    [
+                        'width' => 400,
+                        'height' => 400,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/400'
+                    ],
+                    [
+                        'width' => 600,
+                        'height' => 600,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/600'
+                    ],
+                    [
+                        'width' => 1000,
+                        'height' => 100,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/100'
+                    ]
+                ]
+            ],
+            '2 thumbnails 800x800 and 2000x200, the image of width 800 is taken' => [
+                'thumbnails' => [
+                    [
+                        'width' => 800,
+                        'height' => 800,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/800'
+                    ],
+                    [
+                        'width' => 2000,
+                        'height' => 200,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/200'
+                    ]
+                ]
+            ],
+            '3 thumbnails 100x100, 200x200 and 400x400, the image directly assigned to the product is taken' => [
+                'thumbnails' => [
+                    [
+                        'width' => 100,
+                        'height' => 100,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/100'
+                    ],
+                    [
+                        'width' => 200,
+                        'height' => 200,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/200'
+                    ],
+                    [
+                        'width' => 400,
+                        'height' => 400,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/400'
+                    ]
+                ]
+            ],
+            '0 thumbnails, the image directly assigned to the product is taken' => ['thumbnails' => []]
+        ];
+    }
+
+    /**
+     * @dataProvider thumbnailProvider
+     */
+    public function testCorrectThumbnailImageIsExported(array $thumbnails): void
+    {
+        $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]], false, true);
+        $images = $this->getImages($productEntity);
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $findologicImages = $findologicProduct->getImages();
+        $this->assertEquals($images, $findologicImages);
+    }
+
+    private function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
+    {
+        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
+            return $thumbnail->getWidth() >= 600;
+        });
+
+        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
+            return $a->getWidth() <=> $b->getWidth();
+        });
+
+        return $filteredThumbnails;
+    }
+
+    public function widthSizesProvider(): array
+    {
+        return [
+            'Max 600 width is provided' => [
+                'widthSizes' => [100, 200, 300, 400, 500, 600],
+                'expected' => [600]
+            ],
+            'Min 600 width is provided' => [
+                'widthSizes' => [600, 800, 200, 500],
+                'expected' => [600, 800]
+            ],
+            'Random width are provided' => [
+                'widthSizes' => [800, 100, 650, 120, 2000, 1000],
+                'expected' => [650, 800, 1000, 2000]
+            ],
+            'Less than 600 width is provided' => [
+                'widthSizes' => [100, 200, 300, 500],
+                'expected' => []
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider widthSizesProvider
+     */
+    public function testImageThumbnailsAreFilteredAndSortedByWidth(array $widthSizes, array $expected): void
+    {
+        $thumbnails = $this->generateThumbnailData($widthSizes);
+        $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]], false, true);
+        $mediaCollection = $productEntity->getMedia();
+        $media = $mediaCollection->getMedia();
+        $thumbnailCollection = $media->first()->getThumbnails();
+
+        $width = [];
+        $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnailCollection);
+        foreach ($filteredThumbnails as $filteredThumbnail) {
+            $width[] = $filteredThumbnail->getWidth();
+        }
+
+        $this->assertSame($expected, $width);
+    }
+
+    private function generateThumbnailData(array $sizes): array
+    {
+        $thumbnails = [];
+        foreach ($sizes as $width) {
+            $thumbnails[] = [
+                'width' => $width,
+                'height' => 100,
+                'highDpi' => false,
+                'url' => 'https://via.placeholder.com/100'
+            ];
+        }
+
+        return $thumbnails;
     }
 }
