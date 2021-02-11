@@ -477,9 +477,7 @@ class FindologicProduct extends Struct
                 $this->setImageUrl($image);
             }
 
-            foreach ($thumbnails as $thumbnailEntity) {
-                $this->addThumbnailUrl($thumbnailEntity);
-            }
+            $this->addThumbnailImages($filteredThumbnails);
         }
     }
 
@@ -1167,6 +1165,23 @@ class FindologicProduct extends Struct
         $encodedUrl = $this->getEncodedUrl($media->getUrl());
         if (!Utils::isEmpty($encodedUrl)) {
             $this->images[] = new Image($encodedUrl, Image::TYPE_THUMBNAIL);
+        }
+    }
+
+    /**
+     * Goes through all given thumbnails, and will only add one thumbnail width as thumbnail. This avoids
+     * the adding of thumbnails in all various sizes.
+     */
+    protected function addThumbnailImages(MediaThumbnailCollection $thumbnails): void
+    {
+        $imageIds = [];
+        foreach ($thumbnails as $thumbnailEntity) {
+            if (in_array($thumbnailEntity->getMediaId(), $imageIds)) {
+                continue;
+            }
+
+            $this->addThumbnailUrl($thumbnailEntity);
+            $imageIds[] = $thumbnailEntity->getMediaId();
         }
     }
 }

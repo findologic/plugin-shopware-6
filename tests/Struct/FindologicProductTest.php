@@ -929,9 +929,15 @@ class FindologicProductTest extends TestCase
         $url = $this->getEncodedUrl($image->getUrl());
         $images[] = new Image($url);
 
+        $imageIds = [];
         foreach ($thumbnails as $thumbnail) {
+            if (in_array($thumbnail->getMediaId(), $imageIds)) {
+                continue;
+            }
+
             $url = $this->getEncodedUrl($thumbnail->getUrl());
             $images[] = new Image($url, Image::TYPE_THUMBNAIL);
+            $imageIds[] = $thumbnail->getMediaId();
         }
 
         return $images;
@@ -1504,6 +1510,10 @@ class FindologicProductTest extends TestCase
                         'highDpi' => false,
                         'url' => 'https://via.placeholder.com/100'
                     ]
+                ],
+                'expectedImages' => [
+                    '600x600',
+                    '600x600',
                 ]
             ],
             '2 thumbnails 800x800 and 2000x200, the image of width 800 is taken' => [
@@ -1520,6 +1530,10 @@ class FindologicProductTest extends TestCase
                         'highDpi' => false,
                         'url' => 'https://via.placeholder.com/200'
                     ]
+                ],
+                'expectedImages' => [
+                    '800x800',
+                    '800x800',
                 ]
             ],
             '3 thumbnails 100x100, 200x200 and 400x400, the image directly assigned to the product is taken' => [
@@ -1542,19 +1556,77 @@ class FindologicProductTest extends TestCase
                         'highDpi' => false,
                         'url' => 'https://via.placeholder.com/400'
                     ]
+                ],
+                'expectedImages' => [
+                    'findologic.png'
                 ]
             ],
-            '0 thumbnails, the image directly assigned to the product is taken' => ['thumbnails' => []]
+            '0 thumbnails, the automatically generated thumbnail is taken' => [
+                'thumbnails' => [],
+                'expectedImages' => [
+                    '600x600',
+                    '600x600'
+                ]
+            ],
+            'Same thumbnail exists in various sizes will only export one size' => [
+                'thumbnails' => [
+                    [
+                        'width' => 800,
+                        'height' => 800,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/800'
+                    ],
+                    [
+                        'width' => 1000,
+                        'height' => 1000,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1000'
+                    ],
+                    [
+                        'width' => 1200,
+                        'height' => 1200,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1200'
+                    ],
+                    [
+                        'width' => 1400,
+                        'height' => 1400,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1400'
+                    ],
+                    [
+                        'width' => 1600,
+                        'height' => 1600,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1600'
+                    ],
+                    [
+                        'width' => 1800,
+                        'height' => 1800,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1800'
+                    ],
+                ],
+                'expectedImages' => [
+                    '800x800',
+                    '800x800',
+                ]
+            ]
         ];
     }
 
     /**
      * @dataProvider thumbnailProvider
      */
-    public function testCorrectThumbnailImageIsExported(array $thumbnails): void
+    public function testCorrectThumbnailImageIsExported(array $thumbnails, array $expectedImages): void
     {
-        $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]], false, true);
-        $images = $this->getImages($productEntity);
+        $productData = ['cover' => ['media' => ['thumbnails' => $thumbnails]]];
+        $productEntity = $this->createTestProduct(
+            $productData,
+            false,
+            true
+        );
+
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
             ->search(new Criteria(), $this->salesChannelContext->getContext())
@@ -1570,8 +1642,12 @@ class FindologicProductTest extends TestCase
             new XMLItem('123')
         );
 
-        $findologicImages = $findologicProduct->getImages();
-        $this->assertEquals($images, $findologicImages);
+        $actualImages = $this->urlDecodeImages($findologicProduct->getImages());
+        $this->assertCount(count($expectedImages), $actualImages);
+
+        foreach ($expectedImages as $key => $expectedImage) {
+            $this->assertStringContainsString($expectedImage, $actualImages[$key]->getUrl());
+        }
     }
 
     private function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
@@ -1585,6 +1661,19 @@ class FindologicProductTest extends TestCase
         });
 
         return $filteredThumbnails;
+    }
+
+    /**
+     * URL decodes images. This avoids having to debug the difference between URL encoded characters.
+     *
+     * @param Image[] $images
+     * @return Image[]
+     */
+    private function urlDecodeImages(array $images): array
+    {
+        return array_map(function (Image $image) {
+            return new Image(urldecode($image->getUrl()), $image->getType(), $image->getUsergroup());
+        }, $images);
     }
 
     public function widthSizesProvider(): array
