@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ['7.2', '7.3']
+        php-versions: ['7.2', '7.3', '7.4']
         shopware-versions: ['6.1', '6.2', 'trunk']
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
@@ -87,3 +87,5 @@ jobs:
         run: |
           cd development/custom/plugins/plugin-shopware-6
           SYMFONY_DEPRECATIONS_HELPER=disabled composer test
+        # Current trunk version does support >= PHP 7.4, therefore we can not test on older versions.
+        if: ${{ !(( matrix.shopware-versions == 'trunk' && matrix.php-versions == '7.2') || (matrix.shopware-versions == 'trunk' && matrix.php-versions == '7.3')) }}
