@@ -1141,8 +1141,7 @@ XML;
                     $addExtensionWasCalled = true;
                     $this->assertEquals(new FindologicService(), $value);
                 }
-            }
-        );
+            });
 
         /** @var Request|MockObject $requestMock */
         $requestMock = $eventMock->getRequest();
