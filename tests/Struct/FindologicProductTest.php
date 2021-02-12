@@ -1512,8 +1512,14 @@ class FindologicProductTest extends TestCase
                     ]
                 ],
                 'expectedImages' => [
-                    '600x600',
-                    '600x600',
+                    [
+                        'url' => '600x600',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
+                    [
+                        'url' => '600x600',
+                        'type' => Image::TYPE_THUMBNAIL
+                    ],
                 ]
             ],
             '2 thumbnails 800x800 and 2000x200, the image of width 800 is taken' => [
@@ -1532,8 +1538,14 @@ class FindologicProductTest extends TestCase
                     ]
                 ],
                 'expectedImages' => [
-                    '800x800',
-                    '800x800',
+                    [
+                        'url' => '800x800',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
+                    [
+                        'url' => '800x800',
+                        'type' => Image::TYPE_THUMBNAIL
+                    ],
                 ]
             ],
             '3 thumbnails 100x100, 200x200 and 400x400, the image directly assigned to the product is taken' => [
@@ -1558,14 +1570,23 @@ class FindologicProductTest extends TestCase
                     ]
                 ],
                 'expectedImages' => [
-                    'findologic.png'
+                    [
+                        'url' => 'findologic.png',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
                 ]
             ],
             '0 thumbnails, the automatically generated thumbnail is taken' => [
                 'thumbnails' => [],
                 'expectedImages' => [
-                    '600x600',
-                    '600x600'
+                    [
+                        'url' => '600x600',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
+                    [
+                        'url' => '600x600',
+                        'type' => Image::TYPE_THUMBNAIL
+                    ],
                 ]
             ],
             'Same thumbnail exists in various sizes will only export one size' => [
@@ -1608,8 +1629,14 @@ class FindologicProductTest extends TestCase
                     ],
                 ],
                 'expectedImages' => [
-                    '800x800',
-                    '800x800',
+                    [
+                        'url' => '800x800',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
+                    [
+                        'url' => '800x800',
+                        'type' => Image::TYPE_THUMBNAIL
+                    ],
                 ]
             ]
         ];
@@ -1646,7 +1673,8 @@ class FindologicProductTest extends TestCase
         $this->assertCount(count($expectedImages), $actualImages);
 
         foreach ($expectedImages as $key => $expectedImage) {
-            $this->assertStringContainsString($expectedImage, $actualImages[$key]->getUrl());
+            $this->assertStringContainsString($expectedImage['url'], $actualImages[$key]->getUrl());
+            $this->assertSame($expectedImage['type'], $actualImages[$key]->getType());
         }
     }
 

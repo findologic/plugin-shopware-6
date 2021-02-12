@@ -1169,8 +1169,8 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * Goes through all given thumbnails, and will only add one thumbnail width as thumbnail. This avoids
-     * the adding of thumbnails in all various sizes.
+     * Go through all given thumbnails and only add one thumbnail image. This avoids exporting thumbnails in
+     * all various sizes.
      */
     protected function addThumbnailImages(MediaThumbnailCollection $thumbnails): void
     {
