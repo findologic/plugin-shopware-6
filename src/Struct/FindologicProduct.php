@@ -45,6 +45,8 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+use function method_exists;
+
 class FindologicProduct extends Struct
 {
     /** @var ProductEntity */
@@ -650,16 +652,20 @@ class FindologicProduct extends Struct
         if ($this->product->getPrice()) {
             /** @var ProductPrice $price */
             $price = $this->product->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
-            if (!$price) {
-                return;
+            if ($price) {
+                /** @var ProductPrice $listPrice */
+                $listPrice = $price->getListPrice();
+                if ($listPrice) {
+                    $this->addProperty('old_price', (string)$listPrice->getGross());
+                    $this->addProperty('old_price_net', (string)$listPrice->getNet());
+                }
             }
+        }
 
-            /** @var ProductPrice $listPrice */
-            $listPrice = $price->getListPrice();
-            if ($listPrice) {
-                $this->addProperty('old_price', (string)$listPrice->getGross());
-                $this->addProperty('old_price_net', (string)$listPrice->getNet());
-            }
+        if (method_exists($this->product, 'getMarkAsTopseller')) {
+            $promotion = $this->product->getMarkAsTopseller() ?? false;
+            $promotionValue = $this->translateBooleanValue($promotion);
+            $this->addProperty('product_promotion', $promotionValue);
         }
     }
 
