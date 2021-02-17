@@ -772,6 +772,12 @@ class FindologicProductTest extends TestCase
             }
         }
 
+        if (method_exists($productEntity, 'getMarkAsTopseller')) {
+            $promotion = $productEntity->getMarkAsTopseller() ?? false;
+            $promotionValue = $this->translateBooleanValue($promotion);
+            $properties[] = new Property('product_promotion', [$promotionValue]);
+        }
+
         return $properties;
     }
 
