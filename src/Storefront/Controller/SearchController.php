@@ -7,11 +7,8 @@ namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader
     as LegacySearchPageLoader;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
-use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
-use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
-use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;

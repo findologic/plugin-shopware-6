@@ -247,7 +247,7 @@ class FilterHandler
                         $valueId = $value->getUuid() ?? $value->getId();
                         $filterValues[] = [
                             'id' => $valueId,
-                            'translated' => ['name' => $value->getTranslated()->getName()]
+                            'translated' => ['name' => $valueId]
                         ];
                         $filterValues[] = [
                             'id' => $value->getTranslated()->getName(),
@@ -274,6 +274,7 @@ class FilterHandler
 
     /**
      * @param FilterValue[] $values
+     * @param array<string,array> $filterValues
      */
     private function handleCategoryFilters(array $values, array &$filterValues): void
     {
@@ -282,7 +283,7 @@ class FilterHandler
             $valueId = $value->getId();
             $filterValues[] = [
                 'id' => $valueId,
-                'translated' => ['name' => $value->getTranslated()->getName()]
+                'translated' => ['name' => $valueId]
             ];
             if ($value->getValues()) {
                 $this->handleCategoryFilters($value->getValues(), $filterValues);
