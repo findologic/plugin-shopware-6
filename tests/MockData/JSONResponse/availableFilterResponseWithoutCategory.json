@@ -1,0 +1,388 @@
+{
+  "properties": {
+    "entities": {
+      "rating": {
+        "max": 0
+      },
+      "price": {
+        "entities": [
+          {
+            "translated": {
+              "name": "Preis"
+            },
+            "options": [
+              {
+                "id": "price>0.39 - 13.4",
+                "translated": {
+                  "name": "0.39 - 13.4"
+                }
+              },
+              {
+                "id": "0.39 - 13.4",
+                "translated": {
+                  "name": "0.39 - 13.4"
+                }
+              },
+              {
+                "id": "price>13.45 - 25.99",
+                "translated": {
+                  "name": "13.45 - 25.99"
+                }
+              },
+              {
+                "id": "13.45 - 25.99",
+                "translated": {
+                  "name": "13.45 - 25.99"
+                }
+              },
+              {
+                "id": "price>26 - 40.3",
+                "translated": {
+                  "name": "26 - 40.3"
+                }
+              },
+              {
+                "id": "26 - 40.3",
+                "translated": {
+                  "name": "26 - 40.3"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "Farbe": {
+        "entities": [
+          {
+            "translated": {
+              "name": "Farbe"
+            },
+            "options": [
+              {
+                "id": "Farbe>beige",
+                "translated": {
+                  "name": "beige"
+                }
+              },
+              {
+                "id": "beige",
+                "translated": {
+                  "name": "beige"
+                }
+              },
+              {
+                "id": "Farbe>blau",
+                "translated": {
+                  "name": "blau"
+                }
+              },
+              {
+                "id": "blau",
+                "translated": {
+                  "name": "blau"
+                }
+              },
+              {
+                "id": "Farbe>braun",
+                "translated": {
+                  "name": "braun"
+                }
+              },
+              {
+                "id": "braun",
+                "translated": {
+                  "name": "braun"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "Material": {
+        "entities": [
+          {
+            "translated": {
+              "name": "Material"
+            },
+            "options": [
+              {
+                "id": "Material>Hartgep\u00e4ck",
+                "translated": {
+                  "name": "Hartgep\u00e4ck"
+                }
+              },
+              {
+                "id": "Hartgep\u00e4ck",
+                "translated": {
+                  "name": "Hartgep\u00e4ck"
+                }
+              },
+              {
+                "id": "Material>Leder",
+                "translated": {
+                  "name": "Leder"
+                }
+              },
+              {
+                "id": "Leder",
+                "translated": {
+                  "name": "Leder"
+                }
+              },
+              {
+                "id": "Material>Nylon",
+                "translated": {
+                  "name": "Nylon"
+                }
+              },
+              {
+                "id": "Nylon",
+                "translated": {
+                  "name": "Nylon"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "vendor": {
+        "entities": [
+          {
+            "translated": {
+              "name": "Hersteller"
+            },
+            "options": [
+              {
+                "id": "vendor>Bodenschatz",
+                "translated": {
+                  "name": "Bodenschatz"
+                }
+              },
+              {
+                "id": "Bodenschatz",
+                "translated": {
+                  "name": "Bodenschatz"
+                }
+              },
+              {
+                "id": "vendor>Braun B\u00fcffel",
+                "translated": {
+                  "name": "Braun B\u00fcffel"
+                }
+              },
+              {
+                "id": "Braun B\u00fcffel",
+                "translated": {
+                  "name": "Braun B\u00fcffel"
+                }
+              },
+              {
+                "id": "vendor>Camel Active",
+                "translated": {
+                  "name": "Camel Active"
+                }
+              },
+              {
+                "id": "Camel Active",
+                "translated": {
+                  "name": "Camel Active"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "rating": {
+    "max": 0
+  },
+  "price": {
+    "entities": [
+      {
+        "translated": {
+          "name": "Preis"
+        },
+        "options": [
+          {
+            "id": "price>0.39 - 13.4",
+            "translated": {
+              "name": "0.39 - 13.4"
+            }
+          },
+          {
+            "id": "0.39 - 13.4",
+            "translated": {
+              "name": "0.39 - 13.4"
+            }
+          },
+          {
+            "id": "price>13.45 - 25.99",
+            "translated": {
+              "name": "13.45 - 25.99"
+            }
+          },
+          {
+            "id": "13.45 - 25.99",
+            "translated": {
+              "name": "13.45 - 25.99"
+            }
+          },
+          {
+            "id": "price>26 - 40.3",
+            "translated": {
+              "name": "26 - 40.3"
+            }
+          },
+          {
+            "id": "26 - 40.3",
+            "translated": {
+              "name": "26 - 40.3"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "Farbe": {
+    "entities": [
+      {
+        "translated": {
+          "name": "Farbe"
+        },
+        "options": [
+          {
+            "id": "Farbe>beige",
+            "translated": {
+              "name": "beige"
+            }
+          },
+          {
+            "id": "beige",
+            "translated": {
+              "name": "beige"
+            }
+          },
+          {
+            "id": "Farbe>blau",
+            "translated": {
+              "name": "blau"
+            }
+          },
+          {
+            "id": "blau",
+            "translated": {
+              "name": "blau"
+            }
+          },
+          {
+            "id": "Farbe>braun",
+            "translated": {
+              "name": "braun"
+            }
+          },
+          {
+            "id": "braun",
+            "translated": {
+              "name": "braun"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "Material": {
+    "entities": [
+      {
+        "translated": {
+          "name": "Material"
+        },
+        "options": [
+          {
+            "id": "Material>Hartgep\u00e4ck",
+            "translated": {
+              "name": "Hartgep\u00e4ck"
+            }
+          },
+          {
+            "id": "Hartgep\u00e4ck",
+            "translated": {
+              "name": "Hartgep\u00e4ck"
+            }
+          },
+          {
+            "id": "Material>Leder",
+            "translated": {
+              "name": "Leder"
+            }
+          },
+          {
+            "id": "Leder",
+            "translated": {
+              "name": "Leder"
+            }
+          },
+          {
+            "id": "Material>Nylon",
+            "translated": {
+              "name": "Nylon"
+            }
+          },
+          {
+            "id": "Nylon",
+            "translated": {
+              "name": "Nylon"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "vendor": {
+    "entities": [
+      {
+        "translated": {
+          "name": "Hersteller"
+        },
+        "options": [
+          {
+            "id": "vendor>Bodenschatz",
+            "translated": {
+              "name": "Bodenschatz"
+            }
+          },
+          {
+            "id": "Bodenschatz",
+            "translated": {
+              "name": "Bodenschatz"
+            }
+          },
+          {
+            "id": "vendor>Braun B\u00fcffel",
+            "translated": {
+              "name": "Braun B\u00fcffel"
+            }
+          },
+          {
+            "id": "Braun B\u00fcffel",
+            "translated": {
+              "name": "Braun B\u00fcffel"
+            }
+          },
+          {
+            "id": "vendor>Camel Active",
+            "translated": {
+              "name": "Camel Active"
+            }
+          },
+          {
+            "id": "Camel Active",
+            "translated": {
+              "name": "Camel Active"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

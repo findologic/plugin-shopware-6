@@ -43,28 +43,18 @@ class SearchController extends StorefrontController
     /** @var FindologicSearchService */
     private $findologicSearchService;
 
-    /** @var ServiceConfigResource */
-    private $serviceConfigResource;
-
-    /** @var Config */
-    private $config;
-
     public function __construct(
         ShopwareSearchController $decorated,
         ?SearchPageLoader $searchPageLoader,
         FilterHandler $filterHandler,
         ContainerInterface $container,
-        FindologicSearchService $findologicSearchService,
-        ServiceConfigResource $serviceConfigResource,
-        Config $config
+        FindologicSearchService $findologicSearchService
     ) {
         $this->container = $container;
         $this->decorated = $decorated;
         $this->searchPageLoader = $this->buildSearchPageLoader($searchPageLoader);
         $this->filterHandler = $filterHandler;
         $this->findologicSearchService = $findologicSearchService;
-        $this->serviceConfigResource = $serviceConfigResource;
-        $this->config = $config;
     }
 
     private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
