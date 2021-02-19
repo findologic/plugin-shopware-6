@@ -228,8 +228,8 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     disableOption(input){
-        let listItem = input.closest('.custom-checkbox');
-        listItem.classList.add('disabled');
+        let listItem = input.closest(this.options.listItemSelector);
+        listItem.classList.add('fl-disabled');
         listItem.setAttribute('title', this.options.snippets.disabledFilterText);
         input.disabled = true;
     }
@@ -238,9 +238,9 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     enableOption(input) {
-        let listItem = input.closest('.custom-checkbox');
+        let listItem = input.closest(this.options.listItemSelector);
         listItem.removeAttribute('title');
-        listItem.classList.remove('disabled');
+        listItem.classList.remove('fl-disabled');
         input.disabled = false;
     }
 
@@ -259,7 +259,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     disableFilter() {
         const mainFilterButton = DomAccess.querySelector(this.el, this.options.mainFilterButtonSelector);
-        mainFilterButton.classList.add('disabled');
+        mainFilterButton.classList.add('fl-disabled');
         mainFilterButton.setAttribute('disabled', 'disabled');
         mainFilterButton.setAttribute('title', this.options.snippets.disabledFilterText);
     }
@@ -269,7 +269,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     enableFilter() {
         const mainFilterButton = DomAccess.querySelector(this.el, this.options.mainFilterButtonSelector);
-        mainFilterButton.classList.remove('disabled');
+        mainFilterButton.classList.remove('fl-disabled');
         mainFilterButton.removeAttribute('disabled');
         mainFilterButton.removeAttribute('title');
     }

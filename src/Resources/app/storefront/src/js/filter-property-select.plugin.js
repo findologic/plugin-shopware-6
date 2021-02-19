@@ -33,10 +33,6 @@ export default class FlFilterPropertySelectPlugin extends FilterPropertySelectPl
             this.enableFilter();
         }
 
-        if (actualValues[this.options.name].length > 0) {
-            return;
-        }
-
         this._disableInactiveFilterOptions(activeItems.map(entity => entity.id));
     }
 }

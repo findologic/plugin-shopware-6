@@ -11,11 +11,6 @@
   .custom-checkbox {
     max-width: 290px;
 
-    &.disabled,
-    &:disabled {
-      opacity: calc(.3/.5);
-    }
-
     .custom-control-label span {
       display: block;
       white-space: nowrap;
@@ -44,4 +39,8 @@
 .filter-multi-select-cat > div {
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.fl-disabled {
+  opacity: .3;
 }
