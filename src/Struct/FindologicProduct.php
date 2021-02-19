@@ -663,9 +663,9 @@ class FindologicProduct extends Struct
         }
 
         if (method_exists($this->product, 'getMarkAsTopseller')) {
-            $promotion = $this->product->getMarkAsTopseller() ?? false;
-            $promotionValue = $this->translateBooleanValue($promotion);
-            $this->addProperty('product_promotion', $promotionValue);
+            $isMarkedAsTopseller = $this->product->getMarkAsTopseller() ?? false;
+            $translated = $this->translateBooleanValue($isMarkedAsTopseller);
+            $this->addProperty('product_promotion', $translated);
         }
     }
 

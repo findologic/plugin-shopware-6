@@ -766,15 +766,20 @@ class FindologicProductTest extends TestCase
             if ($price) {
                 $listPrice = $price->getListPrice();
                 if ($listPrice) {
-                    $properties[] = new Property('old_price', [(string)$listPrice->getGross()]);
-                    $properties[] = new Property('old_price_net', [(string)$listPrice->getNet()]);
+                    $property = new Property('old_price');
+                    $property->addValue((string)$listPrice->getGross());
+                    $properties[] = $property;
+
+                    $property = new Property('old_price_net');
+                    $property->addValue((string)$listPrice->getNet());
+                    $properties[] = $property;
                 }
             }
         }
 
         if (method_exists($productEntity, 'getMarkAsTopseller')) {
-            $promotion = $productEntity->getMarkAsTopseller() ?? false;
-            $promotionValue = $this->translateBooleanValue($promotion);
+            $isMarkedAsTopseller = $productEntity->getMarkAsTopseller() ?? false;
+            $promotionValue = $this->translateBooleanValue($isMarkedAsTopseller);
             $property = new Property('product_promotion');
             $property->addValue($promotionValue);
             $properties[] = $property;
