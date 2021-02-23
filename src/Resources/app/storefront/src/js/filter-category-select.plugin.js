@@ -228,7 +228,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     disableOption(input){
-        let listItem = input.closest(this.options.listItemSelector);
+        let listItem = input.closest('.custom-checkbox');
         listItem.classList.add('fl-disabled');
         listItem.setAttribute('title', this.options.snippets.disabledFilterText);
         input.disabled = true;
@@ -238,7 +238,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     enableOption(input) {
-        let listItem = input.closest(this.options.listItemSelector);
+        let listItem = input.closest('.custom-checkbox');
         listItem.removeAttribute('title');
         listItem.classList.remove('fl-disabled');
         input.disabled = false;
