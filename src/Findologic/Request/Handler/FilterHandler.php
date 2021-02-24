@@ -217,19 +217,26 @@ class FilterHandler
 
     public function handleAvailableFilters(ShopwareEvent $event): array
     {
-        /** @var FiltersExtension $filterExtension */
-        $filterExtension = $event->getCriteria()->getExtension('flAvailableFilters');
+        /** @var FiltersExtension $availableFilters */
+        $availableFilters = $event->getCriteria()->getExtension('flAvailableFilters');
+        $allFilters = $event->getCriteria()->getExtension('flFilters');
 
-        return $this->parseFindologicFiltersForShopware($filterExtension);
+        return $this->parseFindologicFiltersForShopware($availableFilters, $allFilters);
     }
 
-    private function parseFindologicFiltersForShopware(FiltersExtension $filterExtension): array
-    {
+    private function parseFindologicFiltersForShopware(
+        FiltersExtension $availableFilters,
+        FiltersExtension $allFilters
+    ): array {
         $result = [];
         $result[RatingFilter::RATING_FILTER_NAME]['max'] = 0;
 
-        foreach ($filterExtension->getFilters() as $filter) {
-            $filterName = $filter->getId();
+        foreach ($allFilters->getFilters() as $filterWithAllValues) {
+            $filterName = $filterWithAllValues->getId();
+            if (!$filter = $availableFilters->getFilter($filterName)) {
+                $result[$filterName]['entities'] = [];
+                continue;
+            }
 
             /** @var FilterValue[] $values */
             $values = $filter->getValues();
