@@ -88,11 +88,15 @@ class SearchControllerTest extends TestCase
             $this->markTestSkipped('Filter disabling feature was introduced in Shopware 6.3.3.0');
         }
 
-        $availableFiltersResponse = new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithNoResults.xml'));
+        $availableFiltersResponse = new Xml21Response(
+            $this->getMockResponse('XMLResponse/demoResponseWithNoResults.xml')
+        );
         $responseParser = new Xml21ResponseParser($availableFiltersResponse);
         $availableFilters = $responseParser->getFiltersExtension();
 
-        $allFiltersResponse = new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithAllFilterTypes.xml'));
+        $allFiltersResponse = new Xml21Response(
+            $this->getMockResponse('XMLResponse/demoResponseWithAllFilterTypes.xml')
+        );
         $parser = new Xml21ResponseParser($allFiltersResponse);
         $allFilters = $parser->getFiltersExtension();
 
