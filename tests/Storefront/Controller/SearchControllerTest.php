@@ -71,13 +71,91 @@ class SearchControllerTest extends TestCase
 
         $request = new Request();
         $criteria = new Criteria();
-        $criteria->setExtensions(['flAvailableFilters' => $filterExtension]);
+        $criteria->setExtensions(['flAvailableFilters' => $filterExtension, 'flFilters' => $filterExtension]);
         $eventMock->method('getRequest')->willReturn($request);
         $eventMock->method('getCriteria')->willReturn($criteria);
 
         $filterHandler = new FilterHandler();
         $filterResponse = $filterHandler->handleAvailableFilters($eventMock);
         $expectedFilters = json_decode($this->getMockResponse($expectedResponse), true);
+
+        $this->assertSame($filterResponse, $expectedFilters);
+    }
+
+    public function testFiltersWhichAreNotInTheAvailableFilterResponseAreStillReturned(): void
+    {
+        if (Utils::versionLowerThan('6.3.3.0')) {
+            $this->markTestSkipped('Filter disabling feature was introduced in Shopware 6.3.3.0');
+        }
+
+        $availableFiltersResponse = new Xml21Response(
+            $this->getMockResponse('XMLResponse/demoResponseWithNoResults.xml')
+        );
+        $responseParser = new Xml21ResponseParser($availableFiltersResponse);
+        $availableFilters = $responseParser->getFiltersExtension();
+
+        $allFiltersResponse = new Xml21Response(
+            $this->getMockResponse('XMLResponse/demoResponseWithAllFilterTypes.xml')
+        );
+        $parser = new Xml21ResponseParser($allFiltersResponse);
+        $allFilters = $parser->getFiltersExtension();
+
+        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $request = new Request();
+        $criteria = new Criteria();
+        $criteria->setExtensions(['flAvailableFilters' => $availableFilters, 'flFilters' => $allFilters]);
+        $eventMock->method('getRequest')->willReturn($request);
+        $eventMock->method('getCriteria')->willReturn($criteria);
+
+        $filterHandler = new FilterHandler();
+        $filterResponse = $filterHandler->handleAvailableFilters($eventMock);
+        $expectedFilters = [
+            'properties' => [
+                'entities' => [
+                    'rating' => [
+                        'max' => 0,
+                        'entities' => []
+                    ],
+                    'cat' => [
+                        'entities' => []
+                    ],
+                    'vendor' => [
+                        'entities' => []
+                    ],
+                    'price' => [
+                        'entities' => []
+                    ],
+                    'Farbe' => [
+                        'entities' => []
+                    ],
+                    'Material' => [
+                        'entities' => []
+                    ],
+                ]
+            ],
+            'rating' => [
+                'max' => 0,
+                'entities' => []
+            ],
+            'cat' => [
+                'entities' => []
+            ],
+            'vendor' => [
+                'entities' => []
+            ],
+            'price' => [
+                'entities' => []
+            ],
+            'Farbe' => [
+                'entities' => []
+            ],
+            'Material' => [
+                'entities' => []
+            ],
+        ];
 
         $this->assertSame($filterResponse, $expectedFilters);
     }
