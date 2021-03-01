@@ -92,9 +92,14 @@ abstract class Filter extends BaseFilter
     {
         $customFilter = new RangeSliderFilter($filter->getName(), $filter->getDisplay());
         $unit = $filter->getAttributes()->getUnit();
+        $step = $filter->getAttributes()->getStepSize();
 
         if ($unit !== null) {
             $customFilter->setUnit($unit);
+        }
+
+        if ($step !== null) {
+            $customFilter->setStep($step);
         }
 
         /** @var RangeSliderItem $item */

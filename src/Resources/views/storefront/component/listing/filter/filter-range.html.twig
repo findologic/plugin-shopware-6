@@ -1,0 +1,43 @@
+{% sw_extends '@Storefront/storefront/component/listing/filter/filter-range.html.twig' %}
+
+{% block component_filter_range %}
+    {% set filterRangeOptions = {
+        name: name,
+        price: price,
+        minKey: minKey,
+        maxKey: maxKey,
+        currencySymbol: currencySymbol,
+        snippets: {
+            filterRangeActiveMinLabel: filterRangeActiveMinLabel,
+            filterRangeActiveMaxLabel: filterRangeActiveMaxLabel,
+            filterRangeErrorMessage: filterRangeErrorMessage
+        }
+    } %}
+
+    {{ parent() }}
+{% endblock %}
+
+{% block component_filter_range_container %}
+
+    {{ parent() }}
+
+    <div class="fl--range-slider"></div>
+{% endblock %}
+
+ {% block component_filter_range_min_input %}
+     <input class="form-control min-input"
+            type="number"
+            step="{{ price.step }}"
+            name="min-price"
+            min="{{ price.min }}"
+            max="{{ price.max }}">
+ {% endblock %}
+
+{% block component_filter_range_max_input %}
+    <input class="form-control max-input"
+           type="number"
+           step="{{ price.step }}"
+           name="max-price"
+           min="{{ price.min }}"
+           max="{{ price.max }}">
+{% endblock %}
