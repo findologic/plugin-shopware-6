@@ -71,8 +71,8 @@ class FindologicConfigController extends AbstractController
         foreach ($request->request->all() as $key => $config) {
             [$salesChannelId, $languageId] = explode('-', $key);
 
-            $shopkey = $config['FinSearch.config.shopkey'];
-            if ($shopkey) {
+            if (isset($config['FinSearch.config.shopkey'])) {
+                $shopkey = $config['FinSearch.config.shopkey'];
                 if (!in_array($shopkey, $allShopkeys, false)) {
                     $allShopkeys[] = $shopkey;
                 } else {

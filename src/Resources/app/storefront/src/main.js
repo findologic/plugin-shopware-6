@@ -3,10 +3,12 @@ import FilterCategorySelect from './js/filter-category-select.plugin';
 import '../node_modules/nouislider/distribute/nouislider.css';
 
 const noUiSlider = require('@nouislider');
+import FilterPropertySelect from './js/filter-property-select.plugin';
 
 /** Register plugins in the plugin manager */
 const PluginManager = window.PluginManager;
 PluginManager.register('FilterCategorySelect', FilterCategorySelect, '[data-filter-category-select]');
+PluginManager.override('FilterPropertySelect', FilterPropertySelect, '[data-filter-property-select]');
 
 // This code may be removed, but left there as an example. Once uncommented, it will create a range-slider
 // above the page header.

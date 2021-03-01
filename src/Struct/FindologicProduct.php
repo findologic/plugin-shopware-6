@@ -23,11 +23,16 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
+use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
+use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
+use Shopware\Core\Content\Media\MediaEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
+use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
@@ -39,6 +44,8 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+
+use function method_exists;
 
 class FindologicProduct extends Struct
 {
@@ -164,26 +171,6 @@ class FindologicProduct extends Struct
         $this->setProperties();
     }
 
-    public function hasName(): bool
-    {
-        return !Utils::isEmpty($this->name);
-    }
-
-    public function hasAttributes(): bool
-    {
-        return !Utils::isEmpty($this->attributes);
-    }
-
-    public function hasPrices(): bool
-    {
-        return !Utils::isEmpty($this->prices);
-    }
-
-    public function hasDescription(): bool
-    {
-        return !Utils::isEmpty($this->description);
-    }
-
     /**
      * @throws AccessEmptyPropertyException
      */
@@ -207,6 +194,11 @@ class FindologicProduct extends Struct
         }
 
         $this->name = Utils::removeControlCharacters($name);
+    }
+
+    public function hasName(): bool
+    {
+        return !Utils::isEmpty($this->name);
     }
 
     /**
@@ -234,6 +226,11 @@ class FindologicProduct extends Struct
         $this->setAdditionalAttributes();
     }
 
+    public function hasAttributes(): bool
+    {
+        return !Utils::isEmpty($this->attributes);
+    }
+
     /**
      * @return Price[]
      * @throws AccessEmptyPropertyException
@@ -256,6 +253,11 @@ class FindologicProduct extends Struct
         $this->setProductPrices();
     }
 
+    public function hasPrices(): bool
+    {
+        return !Utils::isEmpty($this->prices);
+    }
+
     /**
      * @throws AccessEmptyPropertyException
      */
@@ -274,6 +276,11 @@ class FindologicProduct extends Struct
         if (!Utils::isEmpty($description)) {
             $this->description = Utils::cleanString($description);
         }
+    }
+
+    public function hasDescription(): bool
+    {
+        return !Utils::isEmpty($this->description);
     }
 
     /**
@@ -333,6 +340,11 @@ class FindologicProduct extends Struct
         $this->url = $productUrl;
     }
 
+    public function hasUrl(): bool
+    {
+        return $this->url && !Utils::isEmpty($this->url);
+    }
+
     protected function getTranslatedSeoPath(): ?string
     {
         $salesChannel = $this->salesChannelContext->getSalesChannel();
@@ -349,6 +361,7 @@ class FindologicProduct extends Struct
         })->first();
 
         $seoUrlEntity = $canonicalSeoUrl ?? $seoUrlEntities->first();
+
         return $seoUrlEntity ? ltrim($seoUrlEntity->getSeoPathInfo(), '/') : null;
     }
 
@@ -388,11 +401,6 @@ class FindologicProduct extends Struct
         return $collection->filter(function (SeoUrlEntity $entity) {
             return !$entity->getIsDeleted();
         });
-    }
-
-    public function hasUrl(): bool
-    {
-        return $this->url && !Utils::isEmpty($this->url);
     }
 
     /**
@@ -451,27 +459,27 @@ class FindologicProduct extends Struct
             return;
         }
 
+        /** @var ProductMediaEntity $mediaEntity */
         foreach ($this->getSortedImages() as $mediaEntity) {
-            if (!$mediaEntity->getMedia() || !$mediaEntity->getMedia()->getUrl()) {
+            $media = $mediaEntity->getMedia();
+            if (!$media || !$media->getUrl()) {
                 continue;
             }
 
-            $encodedUrl = $this->getEncodedUrl($mediaEntity->getMedia()->getUrl());
-            if (!Utils::isEmpty($encodedUrl)) {
-                $this->images[] = new Image($encodedUrl);
-            }
-
-            $thumbnails = $mediaEntity->getMedia()->getThumbnails();
+            $thumbnails = $media->getThumbnails();
             if (!$thumbnails) {
+                $this->setImageUrl($media);
                 continue;
             }
 
-            foreach ($thumbnails as $thumbnailEntity) {
-                $encodedThumbnailUrl = $this->getEncodedUrl($thumbnailEntity->getUrl());
-                if (!Utils::isEmpty($encodedThumbnailUrl)) {
-                    $this->images[] = new Image($encodedThumbnailUrl, Image::TYPE_THUMBNAIL);
-                }
+            $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
+            // Use the thumbnail as the main image if available, otherwise fallback to the directly assigned image.
+            $image = $filteredThumbnails->first() ?? $media;
+            if ($image) {
+                $this->setImageUrl($image);
             }
+
+            $this->addThumbnailImages($filteredThumbnails);
         }
     }
 
@@ -485,12 +493,6 @@ class FindologicProduct extends Struct
         return $this->salesFrequency;
     }
 
-    public function hasSalesFrequency(): bool
-    {
-        // In case a product has no sales, it's sales frequency would still be 0.
-        return true;
-    }
-
     protected function setSalesFrequency(): void
     {
         $criteria = new Criteria();
@@ -501,6 +503,12 @@ class FindologicProduct extends Struct
         $orders = $orderLineItemRepository->searchIds($criteria, $this->salesChannelContext->getContext());
 
         $this->salesFrequency = $orders->getTotal();
+    }
+
+    public function hasSalesFrequency(): bool
+    {
+        // In case a product has no sales, it's sales frequency would still be 0.
+        return true;
     }
 
     /**
@@ -644,16 +652,20 @@ class FindologicProduct extends Struct
         if ($this->product->getPrice()) {
             /** @var ProductPrice $price */
             $price = $this->product->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
-            if (!$price) {
-                return;
+            if ($price) {
+                /** @var ProductPrice $listPrice */
+                $listPrice = $price->getListPrice();
+                if ($listPrice) {
+                    $this->addProperty('old_price', (string)$listPrice->getGross());
+                    $this->addProperty('old_price_net', (string)$listPrice->getNet());
+                }
             }
+        }
 
-            /** @var ProductPrice $listPrice */
-            $listPrice = $price->getListPrice();
-            if ($listPrice) {
-                $this->addProperty('old_price', (string)$listPrice->getGross());
-                $this->addProperty('old_price_net', (string)$listPrice->getNet());
-            }
+        if (method_exists($this->product, 'getMarkAsTopseller')) {
+            $isMarkedAsTopseller = $this->product->getMarkAsTopseller() ?? false;
+            $translated = $this->translateBooleanValue($isMarkedAsTopseller);
+            $this->addProperty('product_promotion', $translated);
         }
     }
 
@@ -1128,5 +1140,54 @@ class FindologicProduct extends Struct
         }
 
         return rtrim($path, '/');
+    }
+
+    protected function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
+    {
+        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
+            return $thumbnail->getWidth() >= 600;
+        });
+
+        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
+            return $a->getWidth() <=> $b->getWidth();
+        });
+
+        return $filteredThumbnails;
+    }
+
+    /**
+     * @param MediaThumbnailEntity|MediaEntity $media
+     */
+    protected function setImageUrl(Entity $media): void
+    {
+        $encodedUrl = $this->getEncodedUrl($media->getUrl());
+        if (!Utils::isEmpty($encodedUrl)) {
+            $this->images[] = new Image($encodedUrl);
+        }
+    }
+
+    protected function addThumbnailUrl(MediaThumbnailEntity $media): void
+    {
+        $encodedUrl = $this->getEncodedUrl($media->getUrl());
+        if (!Utils::isEmpty($encodedUrl)) {
+            $this->images[] = new Image($encodedUrl, Image::TYPE_THUMBNAIL);
+        }
+    }
+
+    /**
+     * Go through all given thumbnails and only add one thumbnail image. This avoids exporting thumbnails in
+     * all various sizes.
+     */
+    protected function addThumbnailImages(MediaThumbnailCollection $thumbnails): void
+    {
+        $imageIds = [];
+        foreach ($thumbnails as $thumbnailEntity) {
+            if (in_array($thumbnailEntity->getMediaId(), $imageIds)) {
+                continue;
+            }
+
+            $this->addThumbnailUrl($thumbnailEntity);
+            $imageIds[] = $thumbnailEntity->getMediaId();
+        }
     }
 }

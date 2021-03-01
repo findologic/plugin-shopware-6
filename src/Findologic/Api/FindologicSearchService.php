@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Api;
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
+use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\FinSearch\Exceptions\Search\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
@@ -16,6 +17,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config as PluginConfig;
+use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -87,9 +89,8 @@ class FindologicSearchService
         if ($this->allowRequest($event)) {
             $navigationRequestHandler = $this->buildNavigationRequestHandler();
             if (!$this->isCategoryPage($navigationRequestHandler, $event)) {
-                /** @var FindologicService $findologicService */
-                $findologicService = $event->getContext()->getExtension('findologicService');
-                $findologicService->disable();
+                $this->disableFindologicService($event);
+
                 return;
             }
 
@@ -149,19 +150,7 @@ class FindologicSearchService
     ): void {
         try {
             $response = $requestHandler->doRequest($event, self::FILTER_REQUEST_LIMIT);
-            $serviceConfigResource = $this->container->get(ServiceConfigResource::class);
-
-            $responseParser = ResponseParser::getInstance(
-                $response,
-                $serviceConfigResource,
-                $this->pluginConfig
-            );
-            $filters = $responseParser->getFiltersExtension();
-            $filtersWithSmartSuggestBlocks = $responseParser->getFiltersWithSmartSuggestBlocks(
-                $filters,
-                $serviceConfigResource->getSmartSuggestBlocks($this->pluginConfig->getShopkey()),
-                $event->getRequest()->query->all()
-            );
+            $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
 
             $event->getCriteria()->addExtension('flFilters', $filtersWithSmartSuggestBlocks);
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
@@ -212,5 +201,62 @@ class FindologicSearchService
         );
 
         return !empty($isCategoryPage);
+    }
+
+    protected function disableFindologicService(ProductListingCriteriaEvent $event): void
+    {
+        /** @var FindologicService|null $findologicService */
+        $findologicService = $event->getContext()->getExtension('findologicService');
+        if (!$findologicService) {
+            $findologicService = new FindologicService();
+            $event->getContext()->addExtension('findologicService', $findologicService);
+        }
+
+        $findologicService->disable();
+    }
+
+    public function doFilter(ProductListingCriteriaEvent $event): void
+    {
+        if (!$this->allowRequest($event)) {
+            return;
+        }
+
+        $handler = $this->buildNavigationRequestHandler();
+        if (!$this->isCategoryPage($handler, $event)) {
+            $handler = $this->buildSearchRequestHandler();
+        }
+
+        $this->handleFilters($event, $handler);
+        $this->handleSelectableFilters($event, $handler, self::FILTER_REQUEST_LIMIT);
+    }
+
+    protected function handleSelectableFilters(
+        ProductListingCriteriaEvent $event,
+        SearchNavigationRequestHandler $requestHandler,
+        ?int $limit
+    ): void {
+        $response = $requestHandler->doRequest($event, $limit);
+        $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
+
+        $event->getCriteria()->addExtension('flAvailableFilters', $filtersWithSmartSuggestBlocks);
+    }
+
+    protected function parseFiltersFromResponse(
+        Response $response,
+        ProductListingCriteriaEvent $event
+    ): FiltersExtension {
+        $serviceConfigResource = $this->container->get(ServiceConfigResource::class);
+        $responseParser = ResponseParser::getInstance(
+            $response,
+            $serviceConfigResource,
+            $this->pluginConfig
+        );
+        $filters = $responseParser->getFiltersExtension();
+
+        return $responseParser->getFiltersWithSmartSuggestBlocks(
+            $filters,
+            $serviceConfigResource->getSmartSuggestBlocks($this->pluginConfig->getShopkey()),
+            $event->getRequest()->query->all()
+        );
     }
 }

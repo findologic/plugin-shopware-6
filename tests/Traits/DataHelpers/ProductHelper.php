@@ -5,23 +5,34 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 
 trait ProductHelper
 {
-    public function createTestProduct(array $data = [], bool $withVariant = false): ?ProductEntity
+    public function createVisibleTestProduct(array $overrides = []): ?ProductEntity
     {
+        return $this->createTestProduct(array_merge([
+            'visibilities' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'visibility' => 20
+                ]
+            ]
+        ], $overrides));
+    }
+
+    public function createTestProduct(
+        array $overrideData = [],
+        bool $withVariant = false,
+        bool $overrideRecursively = false
+    ): ?ProductEntity {
         $context = Context::createDefaultContext();
         $id = Uuid::randomHex();
         $categoryId = Uuid::randomHex();
@@ -31,7 +42,6 @@ trait ProductHelper
 
         $container = $this->getContainer();
         $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-
         $categoryData = [
             [
                 'id' => Uuid::randomHex(),
@@ -77,6 +87,24 @@ trait ProductHelper
                 ['id' => Uuid::randomHex(), 'name' => 'FINDOLOGIC Tag']
             ],
             'name' => 'FINDOLOGIC Product',
+            'cover' => [
+                'media' => [
+                    'url' => 'https://via.placeholder.com/1000',
+                    'private' => false,
+                    'mediaType' => 'image/png',
+                    'mimeType' => 'image/png',
+                    'fileExtension' => 'png',
+                    'fileName' => 'findologic',
+                    'thumbnails' => [
+                        [
+                            'width' => 600,
+                            'height' => 600,
+                            'highDpi' => false,
+                            'url' => 'https://via.placeholder.com/600'
+                        ]
+                    ]
+                ],
+            ],
             'manufacturerNumber' => Uuid::randomHex(),
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
             'manufacturer' => ['name' => 'FINDOLOGIC'],
@@ -139,7 +167,11 @@ trait ProductHelper
 
         $productInfo = [];
         // Main product data
-        $productInfo[] = array_merge($productData, $data);
+        if ($overrideRecursively) {
+            $productInfo[] = array_replace_recursive($productData, $overrideData);
+        } else {
+            $productInfo[] = array_merge($productData, $overrideData);
+        }
 
         if ($withVariant) {
             // Standard variant data
@@ -154,7 +186,7 @@ trait ProductHelper
                 'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
             ];
 
-            $productInfo[] = array_merge($variantData, $data);
+            $productInfo[] = array_merge($variantData, $overrideData);
         }
 
         $container->get('product.repository')->upsert($productInfo, $context);
@@ -168,19 +200,6 @@ trait ProductHelper
         } catch (InconsistentCriteriaIdsException $e) {
             return null;
         }
-    }
-
-    public function createVisibleTestProduct(array $overrides = []): ?ProductEntity
-    {
-        return $this->createTestProduct(array_merge([
-            'visibilities' => [
-                [
-                    'id' => Uuid::randomHex(),
-                    'salesChannelId' => Defaults::SALES_CHANNEL,
-                    'visibility' => 20
-                ]
-            ]
-        ], $overrides));
     }
 
     public function createProductReview(string $id, float $points, string $productId, bool $active): void

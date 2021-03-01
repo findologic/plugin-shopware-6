@@ -5,17 +5,28 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch;
 
 use Composer\Autoload\ClassLoader;
+use Composer\Semver\Comparator;
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
+use FINDOLOGIC\FinSearch\Exceptions\PluginNotCompatibleException;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
+use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+
+use function current;
+use function end;
+use function explode;
+use function file_get_contents;
+use function is_numeric;
+use function json_decode;
+use function ltrim;
 
 class FinSearch extends Plugin
 {
@@ -31,6 +42,15 @@ class FinSearch extends Plugin
         }
 
         parent::build($container);
+    }
+
+    public function install(InstallContext $installContext): void
+    {
+        parent::install($installContext);
+
+        if (!$this->isCompatible($installContext)) {
+            throw new PluginNotCompatibleException();
+        }
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
@@ -79,10 +99,56 @@ class FinSearch extends Plugin
         $loader->load('services.xml');
     }
 
+    /**
+     * Pass `composerJsonPath` parameter specifically for unit-testing. In a real scenario, this will always be taken
+     * from the plugin's actual `composer.json` file.
+     */
+    public static function isCompatible(InstallContext $installContext, string $composerJsonPath = null): bool
+    {
+        $currentVersion = $installContext->getCurrentShopwareVersion();
+        if ($composerJsonPath === null) {
+            $composerJsonPath = __DIR__ . '/../composer.json';
+        }
+
+        $composerJsonContents = file_get_contents($composerJsonPath);
+        $parsed = json_decode($composerJsonContents, true);
+        $requiredPackages = $parsed['require'];
+
+        // If Shopware is not required in the json file, we probably are using the plugin's development version, so
+        // the plugin will always be compatible in such a case.
+        if (!isset($requiredPackages['shopware/core'])) {
+            return true;
+        }
+
+        $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
+        $isLower = self::isVersionLower($currentVersion, $compatibleVersions);
+        $isHigher = self::isVersionHigher($currentVersion, $compatibleVersions);
+
+        return !($isLower || $isHigher);
+    }
+
     private function deleteFindologicConfig(): void
     {
         $connection = $this->container->get(Connection::class);
         $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
+    }
+
+    protected static function isVersionLower(string $currentVersion, array $compatibleVersions): bool
+    {
+        $compatibleVersion = current($compatibleVersions);
+
+        return Comparator::lessThan($currentVersion, $compatibleVersion);
+    }
+
+    protected static function isVersionHigher(string $currentVersion, array $compatibleVersions): bool
+    {
+        $compatibleVersion = end($compatibleVersions);
+        $highestCompatible = ltrim($compatibleVersion, '^');
+        if (is_numeric($highestCompatible)) {
+            $highestCompatible += 0.1;
+        }
+
+        return Comparator::greaterThan($currentVersion, $highestCompatible);
     }
 }
 

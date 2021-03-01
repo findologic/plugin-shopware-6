@@ -31,6 +31,7 @@
             />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler"/>
             <argument type="service" id="service_container" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" />
         </service>
 
         <service

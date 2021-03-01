@@ -256,12 +256,12 @@ class Xml21ResponseParserTest extends TestCase
                     $this->getMockResponse('XMLResponse/demoResponseWithAllFilterTypes.xml')
                 ),
                 'expectedFilters' => [
-                    $expectedCategoryFilter,
-                    $expectedVendorFilter,
-                    $expectedPriceFilter,
-                    $expectedColorFilter,
-                    $expectedSelectDropdownFilter,
-                    $expectedRatingFilter
+                    'cat' => $expectedCategoryFilter,
+                    'vendor' => $expectedVendorFilter,
+                    'price' => $expectedPriceFilter,
+                    'Farbe' => $expectedColorFilter,
+                    'Material' => $expectedSelectDropdownFilter,
+                    'rating' => $expectedRatingFilter
                 ]
             ],
             'response without results' => [
@@ -281,7 +281,7 @@ class Xml21ResponseParserTest extends TestCase
                     $this->getMockResponse('XMLResponse/demoResponseWithColorFiltersWithoutUrl.xml')
                 ),
                 'expectedFilters' => [
-                    (new ColorPickerFilter('Farbe', 'Farbe'))
+                    'Farbe' => (new ColorPickerFilter('Farbe', 'Farbe'))
                         ->addValue(
                             (new ColorFilterValue('beige', 'beige', $color))
                                 ->setMedia(new Media(''))
