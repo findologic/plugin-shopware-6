@@ -52,6 +52,7 @@ class SearchControllerTest extends TestCase
             ]
         ];
     }
+
     /**
      * @dataProvider availableFilterProvider
      */

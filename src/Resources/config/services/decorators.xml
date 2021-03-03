@@ -35,6 +35,17 @@
         </service>
 
         <service
+                id="FINDOLOGIC\FinSearch\Storefront\Controller\CmsController"
+                decorates="Shopware\Storefront\Controller\CmsController"
+                public="true"
+        >
+            <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Controller\CmsController.inner"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler"/>
+            <argument type="service" id="service_container" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" />
+        </service>
+
+        <service
                 id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
                 decorates="Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRoute"
                 decoration-on-invalid="ignore"
