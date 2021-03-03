@@ -20,8 +20,10 @@ export default class FlFilterRangePlugin extends FilterRangePlugin {
     this._sliderContainer = DomAccess.querySelector(this.el, this.options.sliderContainer);
     this._sliderContainer.prepend(slider);
 
+    let start = this._inputMin.value ? this._inputMin.value : this.options.price.min;
+    let end = this._inputMax.value ? this._inputMax.value : this.options.price.max;
     noUiSlider.create(slider, {
-      start: [this._inputMin.value, this._inputMax.value],
+      start: [start, end],
       connect: true,
       step: this.options.price.step,
       range: {
@@ -34,6 +36,52 @@ export default class FlFilterRangePlugin extends FilterRangePlugin {
     slider.noUiSlider.on('update', this.onUpdateValues.bind(this));
     slider.noUiSlider.on('set', this._onChangeInput.bind(this));
 
+  }
+
+  /**
+   * @return {Object}
+   * @public
+   */
+  getValues() {
+    const values = {};
+
+    if (this._inputMin.value && this._inputMin.value < this.options.price.min) {
+      this._inputMin.value = this.options.price.min;
+      values[this.options.minKey] = this._inputMin.value;
+    }
+    if (this._inputMax.value && this._inputMax.value > this.options.price.max) {
+      this._inputMax.value = this.options.price.max;
+      values[this.options.maxKey] = this._inputMax.value;
+    }
+
+    return values;
+  }
+
+  /**
+   * @param params
+   * @public
+   * @return {boolean}
+   */
+  setValuesFromUrl(params) {
+    let stateChanged = false;
+    Object.keys(params).forEach(key => {
+      if (key === this.options.minKey) {
+        this._inputMin.value = params[key];
+        if (this._inputMin.value < this.options.price.min) {
+          this._inputMin.value = this.options.price.min;
+        }
+        stateChanged = true;
+      }
+      if (key === this.options.maxKey) {
+        this._inputMax.value = params[key];
+        if (this._inputMax.value > this.options.price.max) {
+          this._inputMax.value = this.options.price.max;
+        }
+        stateChanged = true;
+      }
+    });
+
+    return stateChanged;
   }
 
   onUpdateValues(values) {
