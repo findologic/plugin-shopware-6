@@ -56,7 +56,12 @@ class CmsController extends StorefrontController
      * Route for cms data (used in XmlHttpRequest)
      *
      * @HttpCache()
-     * @Route("/widgets/cms/{id}", name="frontend.cms.page", methods={"GET", "POST"}, defaults={"id"=null, "XmlHttpRequest"=true})
+     * @Route(
+     *     "/widgets/cms/{id}",
+     *     name="frontend.cms.page",
+     *     methods={"GET", "POST"},
+     *     defaults={"id"=null, "XmlHttpRequest"=true}
+     * )
      *
      * @throws InconsistentCriteriaIdsException
      * @throws MissingRequestParameterException
