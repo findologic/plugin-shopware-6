@@ -217,6 +217,7 @@ class Xml21ResponseParserTest extends TestCase
         $expectedPriceFilter->addValue(new FilterValue('26 - 40.3', '26 - 40.3', $price));
         $expectedPriceFilter->setMin(0.39);
         $expectedPriceFilter->setMax(40.3);
+        $expectedPriceFilter->setStep(0.1);
 
         $expectedRatingFilter = new RatingFilter('rating', 'Rating');
         $expectedRatingFilter->setMaxPoints(5.0);
