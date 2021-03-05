@@ -93,6 +93,7 @@ abstract class Filter extends BaseFilter
         $customFilter = new RangeSliderFilter($filter->getName(), $filter->getDisplay());
         $unit = $filter->getAttributes()->getUnit();
         $step = $filter->getAttributes()->getStepSize();
+        $attributes = $filter->getAttributes();
 
         if ($unit !== null) {
             $customFilter->setUnit($unit);
@@ -107,17 +108,22 @@ abstract class Filter extends BaseFilter
             $customFilter->addValue(new FilterValue($item->getName(), $item->getName(), $filter->getName()));
         }
 
-        /** @var RangeSliderItem[] $filterItems */
-        $filterItems = array_values($filter->getItems());
+        if ($attributes !== null) {
+            $customFilter->setMin($attributes->getTotalRange()->getMin());
+            $customFilter->setMax($attributes->getTotalRange()->getMax());
+        } else {
+            /** @var RangeSliderItem[] $filterItems */
+            $filterItems = array_values($filter->getItems());
 
-        $firstFilterItem = $filterItems[0] ?? null;
-        if ($firstFilterItem && $filterItems[0]->getParameters()) {
-            $customFilter->setMin($filterItems[0]->getParameters()->getMin());
-        }
+            $firstFilterItem = current($filterItems);
+            if ($firstFilterItem && $firstFilterItem->getParameters()) {
+                $customFilter->setMin($firstFilterItem->getParameters()->getMin());
+            }
 
-        $lastFilterItem = end($filterItems) ?? null;
-        if ($lastFilterItem && $lastFilterItem->getParameters()) {
-            $customFilter->setMax($lastFilterItem->getParameters()->getMax());
+            $lastFilterItem = end($filterItems);
+            if ($lastFilterItem && $lastFilterItem->getParameters()) {
+                $customFilter->setMax($lastFilterItem->getParameters()->getMax());
+            }
         }
 
         return $customFilter;

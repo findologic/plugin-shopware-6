@@ -28,7 +28,7 @@
      <input class="form-control min-input"
             type="number"
             step="{{ price.step }}"
-            name="min-price"
+            name="{{ minKey }}"
             min="{{ price.min }}"
             max="{{ price.max }}">
  {% endblock %}
@@ -37,7 +37,7 @@
     <input class="form-control max-input"
            type="number"
            step="{{ price.step }}"
-           name="max-price"
+           name="{{ maxKey }}"
            min="{{ price.min }}"
            max="{{ price.max }}">
 {% endblock %}
