@@ -11,17 +11,14 @@ export default class FlFilterRangePlugin extends FilterRangePlugin {
     sliderContainer: '.fl--range-slider',
   });
 
-  _init() {
-    super._init();
-    this._inputMin = DomAccess.querySelector(this.el, this.options.inputMinSelector);
-    this._inputMax = DomAccess.querySelector(this.el, this.options.inputMaxSelector);
-
+  init() {
+    super.init();
     this.slider = document.createElement('div');
     this._sliderContainer = DomAccess.querySelector(this.el, this.options.sliderContainer);
     this._sliderContainer.prepend(this.slider);
 
-    let start = this._inputMin.value ? this._inputMin.value : this.options.price.min;
-    let end = this._inputMax.value ? this._inputMax.value : this.options.price.max;
+    let start = this._inputMin.value.length ? this._inputMin.value : this.options.price.min;
+    let end = this._inputMax.value.length ? this._inputMax.value : this.options.price.max;
 
     noUiSlider.create(this.slider, {
       start: [start, end],
@@ -33,7 +30,7 @@ export default class FlFilterRangePlugin extends FilterRangePlugin {
       },
     });
 
-    // Register events
+    // Register slider events
     this.slider.noUiSlider.on('update', this.onUpdateValues.bind(this));
     this.slider.noUiSlider.on('set', this._onChangeInput.bind(this));
   }
@@ -48,10 +45,57 @@ export default class FlFilterRangePlugin extends FilterRangePlugin {
     this.validateMinInput();
     this.validateMaxInput();
 
-    values[this.options.minKey] = this._inputMin.value;
-    values[this.options.maxKey] = this._inputMax.value;
+    if (this.hasMinValueSet()) {
+      values[this.options.minKey] = this._inputMin.value;
+    }
+
+    if (this.hasMaxValueSet()) {
+      values[this.options.maxKey] = this._inputMax.value;
+    }
 
     return values;
+  }
+
+  _onChangeInput() {
+    if (this.hasMinValueSet() || this.hasMaxValueSet()) {
+      super._onChangeInput();
+    }
+  }
+
+  /**
+   * @private
+   */
+  _registerEvents() {
+    this._inputMin.addEventListener('blur', this._onChangeMin.bind(this));
+    this._inputMax.addEventListener('blur', this._onChangeMax.bind(this));
+  }
+
+  /**
+   * @return {Array}
+   * @public
+   */
+  getLabels() {
+    let labels = [];
+
+    if (this._inputMin.value.length || this._inputMax.value.length) {
+      if (this.hasMinValueSet()) {
+        labels.push({
+          label: `${this.options.snippets.filterRangeActiveMinLabel} ${this._inputMin.value} ${this.options.currencySymbol}`,
+          id: this.options.minKey,
+        });
+      }
+
+      if (this.hasMaxValueSet()) {
+        labels.push({
+          label: `${this.options.snippets.filterRangeActiveMaxLabel} ${this._inputMax.value} ${this.options.currencySymbol}`,
+          id: this.options.maxKey,
+        });
+      }
+    } else {
+      labels = [];
+    }
+
+    return labels;
   }
 
   /**
@@ -115,26 +159,54 @@ export default class FlFilterRangePlugin extends FilterRangePlugin {
   }
 
   validateMinInput() {
-    if (!this._inputMin.value || this._inputMin.value < this.options.price.min) {
+    if (!this._inputMin.value || this._inputMin.value < this.options.price.min || this._inputMin.value > this.options.price.max) {
       this.resetMin();
     }
   }
 
   validateMaxInput() {
-    if (!this._inputMax.value || this._inputMax.value > this.options.price.max) {
+    if (!this._inputMax.value || this._inputMax.value > this.options.price.max || this._inputMax.value < this.options.price.min) {
       this.resetMax();
     }
   }
 
   resetMin() {
     this._inputMin.value = this.options.price.min;
-    if(this.slider) {
-      this.slider.noUiSlider.set([this._inputMin.value, null]);
-    }
+    this.setMinKnobValue();
   }
 
   resetMax() {
     this._inputMax.value = this.options.price.max;
-    this.slider.noUiSlider.set([null, this._inputMax.value]);
+    this.setMaxKnobValue();
+  }
+
+  _onChangeMin() {
+    this.setMinKnobValue(this.value);
+  }
+
+  _onChangeMax() {
+    this.setMaxKnobValue(this.value);
+  }
+
+  hasMinValueSet() {
+    this.validateMinInput();
+    return this._inputMin.value.length && parseFloat(this._inputMin.value) !== this.options.price.min;
+  }
+
+  hasMaxValueSet() {
+    this.validateMaxInput();
+    return this._inputMax.value.length && parseFloat(this._inputMax.value) !== this.options.price.max;
+  }
+
+  setMinKnobValue() {
+    if (this.slider && this.hasMinValueSet()) {
+      this.slider.noUiSlider.set([this._inputMin.value, null]);
+    }
+  }
+
+  setMaxKnobValue() {
+    if (this.slider && this.hasMaxValueSet()) {
+      this.slider.noUiSlider.set([null, this._inputMax.value]);
+    }
   }
 }
