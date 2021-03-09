@@ -52,7 +52,8 @@ jobs:
         run: |
           cp plugin-shopware-6/.github/.psh.yaml.override development
           cd development
-          ./psh.phar install
+          ./psh.phar init
+          ./psh.phar administration:init
 
       - name: Install Plugin dependencies
         run: |
