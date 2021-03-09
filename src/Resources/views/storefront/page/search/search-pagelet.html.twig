@@ -39,11 +39,15 @@
                     url('widgets.search.pagelet', { search: page.searchTerm ? page.searchTerm : ' ' })
             %}
 
+            {% set filterUrl =
+                context.context.extensions.flSystemAware.supportsFilterDisabling ? url('widgets.search.filter') : ''
+            %}
+
             {% if isInSidebar %}<div class="{{ productColumns }}">{% endif %}
             {% sw_include '@Storefront/storefront/component/product/listing.html.twig' with {
                 searchResult: page.listing,
                 dataUrl: dataUrl,
-                filterUrl: url('widgets.search.filter'),
+                filterUrl: filterUrl,
                 params: { search: page.searchTerm },
                 sidebar: isInSidebar ? 1 : 0,
                 boxLayout: 'minimal',
