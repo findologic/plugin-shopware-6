@@ -13,6 +13,35 @@ jobs:
     strategy:
       matrix:
         php-versions: [ '7.3' ]
+
+    name: Code linting (PHP ${{ matrix.php-versions }})
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP with Composer 2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, dom
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Validate dependencies
+        run: composer validate
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Run Lint
+        run: composer lint
+
+  eslint:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.3' ]
         shopware-versions: [ 'v6.3.5.2' ]
 
     name: ESLint
@@ -53,7 +82,7 @@ jobs:
           cp plugin-shopware-6/.github/.psh.yaml.override development
           cd development
           ./psh.phar init
-          ./psh.phar administration:init
+          ./psh.phar administration:init --APP_ENV="dev"
 
       - name: Install Plugin dependencies
         run: |
@@ -66,8 +95,12 @@ jobs:
           cd development
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
+          ./psh.phar storefront:install-dependencies
+          ./psh.phar administration:build
+          ./psh.phar storefront:build
 
       - name: Run ESLint
         run: |
           cd development/custom/plugins/plugin-shopware-6
-          composer eslint
+          make administration-lint
+          make storefront-lint
