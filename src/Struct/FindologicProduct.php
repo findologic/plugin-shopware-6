@@ -499,13 +499,15 @@ class FindologicProduct extends Struct
 
     protected function setSalesFrequency(): void
     {
-        $criteria = new Criteria();
         $lastMonthDate = new DateTimeImmutable();
-        $lastMonthDate->modify('-1 month');
+        $lastMonthDate = $lastMonthDate->modify('-1 month');
+
+        $criteria = new Criteria();
+        $criteria->addAssociation('order');
         $criteria->addFilter(new AndFilter([
             new EqualsFilter('payload.productNumber', $this->product->getProductNumber()),
             new RangeFilter(
-                'createdAt',
+                'order.orderDateTime',
                 [RangeFilter::GTE => $lastMonthDate->format(Defaults::STORAGE_DATE_TIME_FORMAT)]
             )
         ]));
