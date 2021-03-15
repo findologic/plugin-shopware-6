@@ -104,11 +104,6 @@
                     on-invalid="null"
             />
             <argument type="service" id="event_dispatcher"/>
-            <argument
-                    type="service"
-                    id="FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader"
-                    on-invalid="null"
-            />
         </service>
 
     </services>
