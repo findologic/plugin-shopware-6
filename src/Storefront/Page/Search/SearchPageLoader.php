@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Page\Search;
 
-use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader as
-    LegacySearchPageLoader;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -31,9 +29,6 @@ class SearchPageLoader extends ShopwareSearchPageLoader
      */
     private $productSearchRoute;
 
-    /** @var LegacySearchPageLoader|null */
-    private $legacyPageLoader;
-
     /**
      * @var EventDispatcherInterface
      */
@@ -42,13 +37,11 @@ class SearchPageLoader extends ShopwareSearchPageLoader
     public function __construct(
         GenericPageLoader $genericLoader,
         ?AbstractProductSearchRoute $productSearchRoute,
-        EventDispatcherInterface $eventDispatcher,
-        ?LegacySearchPageLoader $legacyPageLoader
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->genericLoader = $genericLoader;
         $this->productSearchRoute = $productSearchRoute;
         $this->eventDispatcher = $eventDispatcher;
-        $this->legacyPageLoader = $legacyPageLoader;
     }
 
     /**
@@ -57,10 +50,6 @@ class SearchPageLoader extends ShopwareSearchPageLoader
      */
     public function load(Request $request, SalesChannelContext $salesChannelContext): SearchPage
     {
-        if ($this->legacyPageLoader) {
-            return $this->legacyPageLoader->load($request, $salesChannelContext);
-        }
-
         if (method_exists(SearchPage::class, 'setSearchResult')) {
             return $this->legacyLoad($request, $salesChannelContext);
         }
