@@ -1,6 +1,6 @@
 # Upgrade from 1.x to 2.x
 
-Changes: [v1.4.0...v2.0.0](https://github.com/findologic/plugin-shopware-6/compare/v1.4.0...v2.0.0)  
+Changes: [v1.5.3...v2.0.0](https://github.com/findologic/plugin-shopware-6/compare/v1.5.3...v2.0.0)  
 Changelog: [v2.0.0 Release](https://github.com/findologic/plugin-shopware-6/releases/tag/v2.0.0)
 
 This file is **irrelevant** for you in case you do **not have an extension plugin**.
