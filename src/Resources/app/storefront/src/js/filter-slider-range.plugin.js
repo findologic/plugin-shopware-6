@@ -93,7 +93,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
   }
 
   /**
-   * @param {Object} e
+   * @param {KeyboardEvent} e
    * @private
    */
   _onInput(e) {
