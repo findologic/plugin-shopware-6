@@ -92,6 +92,10 @@ export default class FilterSliderRange extends FilterBasePlugin {
     return values;
   }
 
+  /**
+   * @param {Object} e
+   * @private
+   */
   _onInput(e) {
     if (e.keyCode === 13) {
       e.target.blur();
@@ -189,7 +193,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
   }
 
   /**
-   * @param params
+   * @param {Array} params
    * @public
    * @return {boolean}
    */
@@ -303,19 +307,13 @@ export default class FilterSliderRange extends FilterBasePlugin {
     return this._inputMax.value.length && parseFloat(this._inputMax.value) !== this.options.price.max;
   }
 
-  /**
-   * @param {boolean} force
-   */
-  setMinKnobValue(force = false) {
+  setMinKnobValue() {
     if (this.slider) {
       this.slider.noUiSlider.set([this._inputMin.value, null]);
     }
   }
 
-  /**
-   * @param {boolean} force
-   */
-  setMaxKnobValue(force = false) {
+  setMaxKnobValue() {
     if (this.slider) {
       this.slider.noUiSlider.set([null, this._inputMax.value]);
     }
