@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d911b2f0f6692e68c2d15b8fae41063",
+    "content-hash": "2e6b7bf4110d96055c9dfea8faf917d1",
     "packages": [
         {
             "name": "findologic/findologic-api",
@@ -79,12 +79,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/guzzle.git",
-                "reference": "df63a667063dc692a577550d82f456d75529bccd"
+                "reference": "135d0f664e03a5026d4887983eca01a5bf33d463"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/guzzle/zipball/df63a667063dc692a577550d82f456d75529bccd",
-                "reference": "df63a667063dc692a577550d82f456d75529bccd",
+                "url": "https://api.github.com/repos/findologic/guzzle/zipball/135d0f664e03a5026d4887983eca01a5bf33d463",
+                "reference": "135d0f664e03a5026d4887983eca01a5bf33d463",
                 "shasum": ""
             },
             "require": {
@@ -215,16 +215,16 @@
         },
         {
             "name": "findologic/xml-export-schema",
-            "version": "v1.5.0",
+            "version": "v1.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/xml-export.git",
-                "reference": "c10e5ce392192d348c9da0f6337c02073b180634"
+                "reference": "db32026a8d2deac3084af2ddf8b984623f315325"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/xml-export/zipball/c10e5ce392192d348c9da0f6337c02073b180634",
-                "reference": "c10e5ce392192d348c9da0f6337c02073b180634",
+                "url": "https://api.github.com/repos/findologic/xml-export/zipball/db32026a8d2deac3084af2ddf8b984623f315325",
+                "reference": "db32026a8d2deac3084af2ddf8b984623f315325",
                 "shasum": ""
             },
             "type": "library",
@@ -246,9 +246,9 @@
             "description": "XML schema for the FINDOLOGIC XML export format.",
             "support": {
                 "issues": "https://github.com/findologic/xml-export/issues",
-                "source": "https://github.com/findologic/xml-export/tree/v1.5.0"
+                "source": "https://github.com/findologic/xml-export/tree/master"
             },
-            "time": "2020-02-14T11:03:27+00:00"
+            "time": "2020-07-02T08:38:19+00:00"
         },
         {
             "name": "findologic/xml-response-schema",

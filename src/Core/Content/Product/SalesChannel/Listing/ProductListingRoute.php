@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
@@ -22,7 +23,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -72,7 +72,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         ProductDefinition $definition,
         RequestCriteriaBuilder $criteriaBuilder,
         ServiceConfigResource $serviceConfigResource,
-        SystemConfigService $systemConfigService,
+        FindologicConfigService $findologicConfigService,
         ?Config $config = null
     ) {
         $this->eventDispatcher = $eventDispatcher;
@@ -81,7 +81,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         $this->decorated = $decorated;
         $this->productRepository = $productRepository;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
+        $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 
     public function getDecorated(): AbstractProductListingRoute
@@ -94,7 +94,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         Request $request,
         SalesChannelContext $salesChannelContext
     ): ProductListingRouteResponse {
-        $this->config->initializeBySalesChannel($salesChannelContext->getSalesChannel()->getId());
+        $this->config->initializeBySalesChannel($salesChannelContext);
         $shouldHandleRequest = Utils::shouldHandleRequest(
             $request,
             $salesChannelContext->getContext(),

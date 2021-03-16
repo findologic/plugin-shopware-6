@@ -13,14 +13,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class HeaderHandler
 {
-    private const SHOPWARE_HEADER = 'x-findologic-platform';
-    private const PLUGIN_HEADER = 'x-findologic-plugin';
-    private const EXTENSION_HEADER = 'x-findologic-extension-plugin';
-    private const CONTENT_TYPE_HEADER = 'content-type';
+    public const HEADER_SHOPWARE = 'x-findologic-platform';
+    public const HEADER_PLUGIN = 'x-findologic-plugin';
+    public const HEADER_EXTENSION = 'x-findologic-extension-plugin';
+    public const HEADER_CONTENT_TYPE = 'content-type';
+
+    public const CONTENT_TYPE_XML = 'text/xml';
+    public const CONTENT_TYPE_JSON = 'application/json';
+
     private const SHOPWARE_VERSION = 'Shopware/%s';
     private const PLUGIN_VERSION = 'Plugin-Shopware-6/%s';
     private const EXTENSION_PLUGIN_VERSION = 'Plugin-Shopware-6-Extension/%s';
-    private const CONTENT_TYPE = 'text/xml';
 
     /**
      * @var ContainerInterface
@@ -66,31 +69,22 @@ class HeaderHandler
         $this->shopwareVersion = $this->fetchShopwareVersion();
         $this->pluginVersion = $this->fetchPluginVersion();
         $this->extensionPluginVersion = $this->fetchExtensionPluginVersion();
-        $this->contentType = self::CONTENT_TYPE;
+        $this->contentType = self::CONTENT_TYPE_XML;
     }
 
     /**
-     * @return string[]
+     * @param array<string, string> $overrides
+     * @return array<string, string>
      */
-    public function getHeaders(): array
+    public function getHeaders(array $overrides = []): array
     {
         $headers = [];
-        $headers[self::CONTENT_TYPE_HEADER] = $this->contentType;
-        $headers[self::SHOPWARE_HEADER] = $this->shopwareVersion;
-        $headers[self::PLUGIN_HEADER] = $this->pluginVersion;
-        $headers[self::EXTENSION_HEADER] = $this->extensionPluginVersion;
+        $headers[self::HEADER_CONTENT_TYPE] = $this->contentType;
+        $headers[self::HEADER_SHOPWARE] = $this->shopwareVersion;
+        $headers[self::HEADER_PLUGIN] = $this->pluginVersion;
+        $headers[self::HEADER_EXTENSION] = $this->extensionPluginVersion;
 
-        return $headers;
-    }
-
-    public function getHeader(string $key): ?string
-    {
-        $headers = $this->getHeaders();
-        if (array_key_exists($key, $headers)) {
-            return $headers[$key];
-        }
-
-        return null;
+        return array_merge($headers, $overrides);
     }
 
     private function fetchShopwareVersion(): string

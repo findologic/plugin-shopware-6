@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Api;
 
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
@@ -32,9 +34,11 @@ class SortingService
         $this->translator = $translator;
     }
 
-    public function handleRequest(ProductListingCriteriaEvent $event): void
-    {
-        if (!Utils::versionLowerThan('6.3.3.0')) {
+    public function handleRequest(
+        ProductListingCriteriaEvent $event,
+        SearchNavigationRequestHandler $requestHandler
+    ): void {
+        if ($requestHandler instanceof NavigationRequestHandler && !Utils::versionLowerThan('6.3.3.0')) {
             $this->addTopResultSorting($event);
         }
     }

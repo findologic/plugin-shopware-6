@@ -12,10 +12,10 @@ use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
 use FINDOLOGIC\Export\XML\XMLItem;
-use FINDOLOGIC\FinSearch\Exceptions\AccessEmptyPropertyException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoCategoriesException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoNameException;
-use FINDOLOGIC\FinSearch\Exceptions\ProductHasNoPricesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
@@ -24,11 +24,14 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
+use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
+use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -44,6 +47,13 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouterInterface;
+
+use function array_map;
+use function current;
+use function explode;
+use function getenv;
+use function implode;
+use function parse_url;
 
 class FindologicProductTest extends TestCase
 {
@@ -102,7 +112,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -133,7 +142,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -154,7 +162,7 @@ class FindologicProductTest extends TestCase
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'Storefront'));
 
-        $result = $repos->search($criteria, Context::createDefaultContext());
+        $result = $repos->search($criteria, $salesChannelContext->getContext());
         /** @var SalesChannelEntity $additionalSalesChannel */
         $additionalSalesChannel = $result->first();
         $additionalSalesChannelId = $additionalSalesChannel->getId();
@@ -226,7 +234,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -254,7 +261,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -302,7 +308,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -328,7 +333,7 @@ class FindologicProductTest extends TestCase
         $productEntity = $this->createTestProduct();
 
         $productTag = new Keyword('FINDOLOGIC Tag');
-        $images = $this->getImages();
+        $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
         $customerGroupEntities = $this->getContainer()
@@ -345,7 +350,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -385,7 +389,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -399,11 +402,13 @@ class FindologicProductTest extends TestCase
 
     public function testProductWithMultiSelectCustomFields(): void
     {
-        $data['customFields'] = ['multi' => [
-            'one value',
-            'another value',
-            'even a third one!'
-        ]];
+        $data['customFields'] = [
+            'multi' => [
+                'one value',
+                'another value',
+                'even a third one!'
+            ]
+        ];
         $productEntity = $this->createTestProduct($data, true);
 
         $productFields = $productEntity->getCustomFields();
@@ -417,7 +422,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -444,7 +448,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -502,7 +505,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -578,7 +580,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -643,7 +644,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -758,6 +758,30 @@ class FindologicProductTest extends TestCase
         if ($productEntity->getManufacturer() && $productEntity->getManufacturer()->getMedia()) {
             $property = new Property('vendorlogo');
             $property->addValue($productEntity->getManufacturer()->getMedia()->getUrl());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getPrice()) {
+            $price = $productEntity->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
+            if ($price) {
+                $listPrice = $price->getListPrice();
+                if ($listPrice) {
+                    $property = new Property('old_price');
+                    $property->addValue((string)$listPrice->getGross());
+                    $properties[] = $property;
+
+                    $property = new Property('old_price_net');
+                    $property->addValue((string)$listPrice->getNet());
+                    $properties[] = $property;
+                }
+            }
+        }
+
+        if (method_exists($productEntity, 'getMarkAsTopseller')) {
+            $isMarkedAsTopseller = $productEntity->getMarkAsTopseller() ?? false;
+            $promotionValue = $this->translateBooleanValue($isMarkedAsTopseller);
+            $property = new Property('product_promotion');
+            $property->addValue($promotionValue);
             $properties[] = $property;
         }
 
@@ -891,27 +915,55 @@ class FindologicProductTest extends TestCase
     /**
      * @return Image[]
      */
-    private function getImages(): array
+    private function getImages(ProductEntity $productEntity): array
     {
         $images = [];
-        $requestContext = $this->router->getContext();
-        $schemaAuthority = $requestContext->getScheme() . '://' . $requestContext->getHost();
-        if ($requestContext->getHttpPort() !== 80) {
-            $schemaAuthority .= ':' . $requestContext->getHttpPort();
-        } elseif ($requestContext->getHttpsPort() !== 443) {
-            $schemaAuthority .= ':' . $requestContext->getHttpsPort();
+        if (!$productEntity->getMedia() || !$productEntity->getMedia()->count()) {
+            $fallbackImage = sprintf(
+                '%s/%s',
+                getenv('APP_URL'),
+                'bundles/storefront/assets/icon/default/placeholder.svg'
+            );
+
+            $images[] = new Image($fallbackImage);
+            $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
+
+            return $images;
         }
 
-        $fallbackImage = sprintf(
-            '%s/%s',
-            $schemaAuthority,
-            'bundles/storefront/assets/icon/default/placeholder.svg'
-        );
+        $mediaCollection = $productEntity->getMedia();
+        $media = $mediaCollection->getMedia();
+        $thumbnails = $media->first()->getThumbnails();
 
-        $images[] = new Image($fallbackImage);
-        $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
+        $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
+        $firstThumbnail = $filteredThumbnails->first();
+
+        $image = $firstThumbnail ?? $media->first();
+        $url = $this->getEncodedUrl($image->getUrl());
+        $images[] = new Image($url);
+
+        $imageIds = [];
+        foreach ($thumbnails as $thumbnail) {
+            if (in_array($thumbnail->getMediaId(), $imageIds)) {
+                continue;
+            }
+
+            $url = $this->getEncodedUrl($thumbnail->getUrl());
+            $images[] = new Image($url, Image::TYPE_THUMBNAIL);
+            $imageIds[] = $thumbnail->getMediaId();
+        }
 
         return $images;
+    }
+
+    protected function getEncodedUrl(string $url): string
+    {
+        $parsedUrl = parse_url($url);
+        $urlPath = explode('/', $parsedUrl['path']);
+        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
+        $parsedUrl['path'] = implode('/', $encodedPath);
+
+        return Utils::buildUrl($parsedUrl);
     }
 
     public function emptyValuesProvider(): array
@@ -945,7 +997,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -987,7 +1038,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->salesChannelContext->getContext(),
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123')
@@ -1017,26 +1067,29 @@ class FindologicProductTest extends TestCase
         $firstSeoUrlId = Uuid::randomHex();
         $lastSeoUrlId = Uuid::randomHex();
 
-        $seoUrlRepo->upsert([
+        $seoUrlRepo->upsert(
             [
-                'id' => $firstSeoUrlId,
-                'pathInfo' => '/detail/' . Uuid::randomHex(),
-                'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
-                'isCanonical' => true,
-                'routeName' => 'frontend.detail.page',
-                'languageId' => $language->getId(),
-                'salesChannelId' => $salesChannel->getId()
+                [
+                    'id' => $firstSeoUrlId,
+                    'pathInfo' => '/detail/' . Uuid::randomHex(),
+                    'seoPathInfo' => 'I-Should-Be-Used/Because/Used/Language',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page',
+                    'languageId' => $language->getId(),
+                    'salesChannelId' => $salesChannel->getId()
+                ],
+                [
+                    'id' => $lastSeoUrlId,
+                    'pathInfo' => '/detail/' . Uuid::randomHex(),
+                    'seoPathInfo' => 'I-Should-Not-Be-Used/Because/Wrong/Language',
+                    'isCanonical' => true,
+                    'routeName' => 'frontend.detail.page',
+                    'languageId' => $defaultLanguageId,
+                    'salesChannelId' => $salesChannel->getId()
+                ]
             ],
-            [
-                'id' => $lastSeoUrlId,
-                'pathInfo' => '/detail/' . Uuid::randomHex(),
-                'seoPathInfo' => 'I-Should-Not-Be-Used/Because/Wrong/Language',
-                'isCanonical' => true,
-                'routeName' => 'frontend.detail.page',
-                'languageId' => $defaultLanguageId,
-                'salesChannelId' => $salesChannel->getId()
-            ]
-        ], $defaultContext);
+            $defaultContext
+        );
 
         $productEntity = $this->createTestProduct();
 
@@ -1045,21 +1098,29 @@ class FindologicProductTest extends TestCase
         // is asynchronous and runs in another thread.
         // See https://issues.shopware.com/issues/NEXT-11429.
         sleep(5);
-        $seoUrls = array_values(array_map(function ($id) {
-            return ['id' => $id];
-        }, $productEntity->getSeoUrls()->getIds()));
+        $seoUrls = array_values(
+            array_map(
+                function ($id) {
+                    return ['id' => $id];
+                },
+                $productEntity->getSeoUrls()->getIds()
+            )
+        );
         $seoUrlRepo->delete($seoUrls, $defaultContext);
 
         $productRepo = $this->getContainer()->get('product.repository');
-        $productRepo->update([
+        $productRepo->update(
             [
-                'id' => $productEntity->getId(),
-                'seoUrls' => [
-                    ['id' => $firstSeoUrlId],
-                    ['id' => $lastSeoUrlId]
+                [
+                    'id' => $productEntity->getId(),
+                    'seoUrls' => [
+                        ['id' => $firstSeoUrlId],
+                        ['id' => $lastSeoUrlId]
+                    ]
                 ]
-            ]
-        ], $defaultContext);
+            ],
+            $defaultContext
+        );
 
         $salesChannelRepo = $this->getContainer()->get('sales_channel.repository');
         $storeFrontSalesChannel = $salesChannelRepo->search(new Criteria(), Context::createDefaultContext())->last();
@@ -1069,9 +1130,11 @@ class FindologicProductTest extends TestCase
 
         // Manually sort the correct SEO URL below all other SEO URLs, to ensure the SEO URL is not correct, because
         // it is the first one in the database, but that the proper translation matches instead.
-        $productEntity->getSeoUrls()->sort(function (SeoUrlEntity $seoUrlEntity) {
-            return $seoUrlEntity->getSeoPathInfo() === 'I-Should-Be-Used/Because/Used/Language' ? -1 : 1;
-        });
+        $productEntity->getSeoUrls()->sort(
+            function (SeoUrlEntity $seoUrlEntity) {
+                return $seoUrlEntity->getSeoPathInfo() === 'I-Should-Be-Used/Because/Used/Language' ? -1 : 1;
+            }
+        );
 
         /** @var SalesChannelDomainEntity $domainEntity */
         $domainEntity = $salesChannel->getDomains()->filter(
@@ -1081,9 +1144,11 @@ class FindologicProductTest extends TestCase
         )->first();
         $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
         /** @var SeoUrlEntity $seoUrlEntity */
-        $seoUrlEntity = $seoUrls->filter(function (SeoUrlEntity $seoUrl) use ($salesChannel) {
-            return $seoUrl->getLanguageId() === $salesChannel->getLanguageId();
-        })->first();
+        $seoUrlEntity = $seoUrls->filter(
+            function (SeoUrlEntity $seoUrl) use ($salesChannel) {
+                return $seoUrl->getLanguageId() === $salesChannel->getLanguageId();
+            }
+        )->first();
 
         $expectedUrl = sprintf('%s/%s', $domainEntity->getUrl(), $seoUrlEntity->getSeoPathInfo());
 
@@ -1092,7 +1157,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $salesChannelContext->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -1101,7 +1165,7 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
     }
 
-    public function testEmptyCategoryNameShouldStillExportCategory()
+    public function testEmptyCategoryNameShouldStillExportCategory(): void
     {
         $mainCatId = $this->getContainer()->get('category.repository')
             ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
@@ -1113,30 +1177,31 @@ class FindologicProductTest extends TestCase
         $expectedFirstCatUrl = '/' . $seoPathInfo;
         $expectedSecondCatUrl = '/' . $pathInfo;
 
-        $productEntity = $this->createTestProduct([
-            'categories' => [
-                [
-                    'parentId' => $mainCatId,
-                    'id' => $categoryId,
-                    'name' => ' ',
-                    'seoUrls' => [
-                        [
-                            'pathInfo' => $pathInfo,
-                            'seoPathInfo' => $seoPathInfo,
-                            'isCanonical' => true,
-                            'routeName' => 'frontend.navigation.page',
-                        ]
+        $productEntity = $this->createTestProduct(
+            [
+                'categories' => [
+                    [
+                        'parentId' => $mainCatId,
+                        'id' => $categoryId,
+                        'name' => ' ',
+                        'seoUrls' => [
+                            [
+                                'pathInfo' => $pathInfo,
+                                'seoPathInfo' => $seoPathInfo,
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page',
+                            ]
+                        ],
                     ],
                 ],
-            ],
-        ]);
+            ]
+        );
 
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -1157,30 +1222,35 @@ class FindologicProductTest extends TestCase
         $context = Context::createDefaultContext();
 
         $customerGroupRepo = $this->getContainer()->get('customer_group.repository');
-        $customerGroupRepo->upsert([
+        $customerGroupRepo->upsert(
             [
-                'name' => 'Net customer group',
-                'displayGross' => false
+                [
+                    'name' => 'Net customer group',
+                    'displayGross' => false
+                ],
+                [
+                    'name' => 'Gross customer group',
+                    'displayGross' => true
+                ]
             ],
-            [
-                'name' => 'Gross customer group',
-                'displayGross' => true
-            ]
-        ], $context);
+            $context
+        );
 
         $customerGroups = $customerGroupRepo->search(new Criteria(), $context);
         // Manually sort customer group entities for asserting, since otherwise they would be sorted randomly.
-        $customerGroups->sort(function (CustomerGroupEntity $a, CustomerGroupEntity $b) {
-            if ($a->getDisplayGross() && !$b->getDisplayGross()) {
-                return 1;
-            }
+        $customerGroups->sort(
+            function (CustomerGroupEntity $a, CustomerGroupEntity $b) {
+                if ($a->getDisplayGross() && !$b->getDisplayGross()) {
+                    return 1;
+                }
 
-            if ($b->getDisplayGross() && !$a->getDisplayGross()) {
-                return -1;
-            }
+                if ($b->getDisplayGross() && !$a->getDisplayGross()) {
+                    return -1;
+                }
 
-            return 0;
-        });
+                return 0;
+            }
+        );
 
         $productEntity = $this->createTestProduct();
 
@@ -1189,7 +1259,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $this->getContainer(),
-            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
             $this->shopkey,
             $customerGroups->getElements(),
             new XMLItem('123')
@@ -1254,7 +1323,6 @@ class FindologicProductTest extends TestCase
             $productEntity,
             $this->router,
             $containerMock,
-            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.at')->getContext(),
             $this->shopkey,
             [],
             new XMLItem('123')
@@ -1276,5 +1344,471 @@ class FindologicProductTest extends TestCase
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
 
         return $this->getContainer()->get('translator')->trans($translationKey);
+    }
+
+    public function listPriceProvider(): array
+    {
+        return [
+            'List price is available for the sales channel currency' => [
+                'currencyId' => Defaults::CURRENCY,
+                'isPriceAvailable' => true
+            ],
+            'List price is available for a different currency' => [
+                'currencyId' => null,
+                'isPriceAvailable' => false
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider listPriceProvider
+     */
+    public function testProductListPrice(?string $currencyId, bool $isPriceAvailable): void
+    {
+        if ($currencyId === null) {
+            $currencyId = $this->createCurrency();
+        }
+
+        $productEntity = $this->createTestProduct(
+            [
+                'price' => [
+                    [
+                        'currencyId' => $currencyId,
+                        'gross' => 50,
+                        'net' => 40,
+                        'linked' => false,
+                        'listPrice' => [
+                            'net' => 20,
+                            'gross' => 25,
+                            'linked' => false
+                        ]
+                    ]
+                ],
+            ]
+        );
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $hasListPrice = false;
+        $hasListPriceNet = false;
+
+        foreach ($findologicProduct->getProperties() as $property) {
+            if ($property->getKey() === 'old_price') {
+                $hasListPrice = true;
+                $this->assertEquals(25, current($property->getAllValues()));
+            }
+            if ($property->getKey() === 'old_price_net') {
+                $hasListPriceNet = true;
+                $this->assertEquals(20, current($property->getAllValues()));
+            }
+        }
+
+        $this->assertSame($isPriceAvailable, $hasListPrice);
+        $this->assertSame($isPriceAvailable, $hasListPriceNet);
+    }
+
+    private function createCurrency(): string
+    {
+        $currencyId = Uuid::randomHex();
+        /** @var EntityRepositoryInterface $currencyRepo */
+        $currencyRepo = $this->getContainer()->get('currency.repository');
+        $currencyRepo->upsert(
+            [
+                [
+                    'id' => $currencyId,
+                    'isoCode' => 'FDL',
+                    'factor' => 1,
+                    'symbol' => 'F',
+                    'decimalPrecision' => 2,
+                    'name' => 'Findologic Currency',
+                    'shortName' => 'FL'
+                ]
+            ],
+            $this->salesChannelContext->getContext()
+        );
+
+        return $currencyId;
+    }
+
+    public function testCatUrlsContainDomainPathAsPrefix(): void
+    {
+        $expectedPath = '/staging/public';
+        $fullDomain = 'http://test.de' . $expectedPath;
+        $domainRepo = $this->getContainer()->get('sales_channel_domain.repository');
+        $catUrlWithoutSeoUrlPrefix = '/navigation';
+
+        $domainRepo->create([
+            [
+                'url' => $fullDomain,
+                'salesChannelId' => Defaults::SALES_CHANNEL,
+                'currencyId' => Defaults::CURRENCY,
+                'snippetSet' => [
+                    'name' => 'oof',
+                    'baseFile' => 'de.json',
+                    'iso' => 'de_AT'
+                ]
+            ]
+        ], Context::createDefaultContext());
+
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('url', $fullDomain));
+
+        // Wait until the domain entity has been created, since DAL works with events and these events
+        // run asynchronously on a different thread.
+        do {
+            $result = $domainRepo->search($criteria, Context::createDefaultContext());
+        } while ($result->getTotal() <= 0);
+
+        // The sales channel should use the newly generated URL instead of the default domain.
+        $this->salesChannelContext->getSalesChannel()->setLanguageId($result->getEntities()->first()->getLanguageId());
+        $this->salesChannelContext->getSalesChannel()->setDomains($result->getEntities());
+
+        $productEntity = $this->createTestProduct();
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getAttributes();
+        $hasSeoCatUrls = false;
+        foreach ($attributes as $attribute) {
+            if ($attribute->getKey() === 'cat_url') {
+                foreach ($attribute->getValues() as $value) {
+                    // We only care about SEO URLs of categories. Non-SEO categories are automatically generated
+                    // by the Shopware router.
+                    if (!(strpos($value, $catUrlWithoutSeoUrlPrefix) === 0)) {
+                        $hasSeoCatUrls = true;
+                        $this->assertStringStartsWith($expectedPath, $value);
+                    }
+                }
+            }
+        }
+
+        $this->assertTrue($hasSeoCatUrls);
+    }
+
+    public function thumbnailProvider(): array
+    {
+        return [
+            '3 thumbnails 400x400, 600x600 and 1000x100, the image of width 600 is taken' => [
+                'thumbnails' => [
+                    [
+                        'width' => 400,
+                        'height' => 400,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/400'
+                    ],
+                    [
+                        'width' => 600,
+                        'height' => 600,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/600'
+                    ],
+                    [
+                        'width' => 1000,
+                        'height' => 100,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/100'
+                    ]
+                ],
+                'expectedImages' => [
+                    [
+                        'url' => '600x600',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
+                    [
+                        'url' => '600x600',
+                        'type' => Image::TYPE_THUMBNAIL
+                    ],
+                ]
+            ],
+            '2 thumbnails 800x800 and 2000x200, the image of width 800 is taken' => [
+                'thumbnails' => [
+                    [
+                        'width' => 800,
+                        'height' => 800,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/800'
+                    ],
+                    [
+                        'width' => 2000,
+                        'height' => 200,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/200'
+                    ]
+                ],
+                'expectedImages' => [
+                    [
+                        'url' => '800x800',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
+                    [
+                        'url' => '800x800',
+                        'type' => Image::TYPE_THUMBNAIL
+                    ],
+                ]
+            ],
+            '3 thumbnails 100x100, 200x200 and 400x400, the image directly assigned to the product is taken' => [
+                'thumbnails' => [
+                    [
+                        'width' => 100,
+                        'height' => 100,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/100'
+                    ],
+                    [
+                        'width' => 200,
+                        'height' => 200,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/200'
+                    ],
+                    [
+                        'width' => 400,
+                        'height' => 400,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/400'
+                    ]
+                ],
+                'expectedImages' => [
+                    [
+                        'url' => 'findologic.png',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
+                ]
+            ],
+            '0 thumbnails, the automatically generated thumbnail is taken' => [
+                'thumbnails' => [],
+                'expectedImages' => [
+                    [
+                        'url' => '600x600',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
+                    [
+                        'url' => '600x600',
+                        'type' => Image::TYPE_THUMBNAIL
+                    ],
+                ]
+            ],
+            'Same thumbnail exists in various sizes will only export one size' => [
+                'thumbnails' => [
+                    [
+                        'width' => 800,
+                        'height' => 800,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/800'
+                    ],
+                    [
+                        'width' => 1000,
+                        'height' => 1000,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1000'
+                    ],
+                    [
+                        'width' => 1200,
+                        'height' => 1200,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1200'
+                    ],
+                    [
+                        'width' => 1400,
+                        'height' => 1400,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1400'
+                    ],
+                    [
+                        'width' => 1600,
+                        'height' => 1600,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1600'
+                    ],
+                    [
+                        'width' => 1800,
+                        'height' => 1800,
+                        'highDpi' => false,
+                        'url' => 'https://via.placeholder.com/1800'
+                    ],
+                ],
+                'expectedImages' => [
+                    [
+                        'url' => '800x800',
+                        'type' => Image::TYPE_DEFAULT
+                    ],
+                    [
+                        'url' => '800x800',
+                        'type' => Image::TYPE_THUMBNAIL
+                    ],
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider thumbnailProvider
+     */
+    public function testCorrectThumbnailImageIsExported(array $thumbnails, array $expectedImages): void
+    {
+        $productData = ['cover' => ['media' => ['thumbnails' => $thumbnails]]];
+        $productEntity = $this->createTestProduct(
+            $productData,
+            false,
+            true
+        );
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $actualImages = $this->urlDecodeImages($findologicProduct->getImages());
+        $this->assertCount(count($expectedImages), $actualImages);
+
+        foreach ($expectedImages as $key => $expectedImage) {
+            $this->assertStringContainsString($expectedImage['url'], $actualImages[$key]->getUrl());
+            $this->assertSame($expectedImage['type'], $actualImages[$key]->getType());
+        }
+    }
+
+    private function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
+    {
+        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
+            return $thumbnail->getWidth() >= 600;
+        });
+
+        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
+            return $a->getWidth() <=> $b->getWidth();
+        });
+
+        return $filteredThumbnails;
+    }
+
+    /**
+     * URL decodes images. This avoids having to debug the difference between URL encoded characters.
+     *
+     * @param Image[] $images
+     * @return Image[]
+     */
+    private function urlDecodeImages(array $images): array
+    {
+        return array_map(function (Image $image) {
+            return new Image(urldecode($image->getUrl()), $image->getType(), $image->getUsergroup());
+        }, $images);
+    }
+
+    public function widthSizesProvider(): array
+    {
+        return [
+            'Max 600 width is provided' => [
+                'widthSizes' => [100, 200, 300, 400, 500, 600],
+                'expected' => [600]
+            ],
+            'Min 600 width is provided' => [
+                'widthSizes' => [600, 800, 200, 500],
+                'expected' => [600, 800]
+            ],
+            'Random width are provided' => [
+                'widthSizes' => [800, 100, 650, 120, 2000, 1000],
+                'expected' => [650, 800, 1000, 2000]
+            ],
+            'Less than 600 width is provided' => [
+                'widthSizes' => [100, 200, 300, 500],
+                'expected' => []
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider widthSizesProvider
+     */
+    public function testImageThumbnailsAreFilteredAndSortedByWidth(array $widthSizes, array $expected): void
+    {
+        $thumbnails = $this->generateThumbnailData($widthSizes);
+        $productEntity = $this->createTestProduct(['cover' => ['media' => ['thumbnails' => $thumbnails]]], false, true);
+        $mediaCollection = $productEntity->getMedia();
+        $media = $mediaCollection->getMedia();
+        $thumbnailCollection = $media->first()->getThumbnails();
+
+        $width = [];
+        $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnailCollection);
+        foreach ($filteredThumbnails as $filteredThumbnail) {
+            $width[] = $filteredThumbnail->getWidth();
+        }
+
+        $this->assertSame($expected, $width);
+    }
+
+    private function generateThumbnailData(array $sizes): array
+    {
+        $thumbnails = [];
+        foreach ($sizes as $width) {
+            $thumbnails[] = [
+                'width' => $width,
+                'height' => 100,
+                'highDpi' => false,
+                'url' => 'https://via.placeholder.com/100'
+            ];
+        }
+
+        return $thumbnails;
+    }
+
+    public function productPromotionProvider(): array
+    {
+        return [
+            'Product has promotion set to false' => [false, 'finSearch.general.no'],
+            'Product has promotion set to true' => [true, 'finSearch.general.yes'],
+            'Product promotion is set to null' => [null, 'finSearch.general.no']
+        ];
+    }
+    /**
+     * @dataProvider productPromotionProvider
+     */
+    public function testProductPromotionIsExported(?bool $markAsTopSeller, string $expected): void
+    {
+        $productEntity = $this->createTestProduct(['markAsTopseller' => $markAsTopSeller], true);
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $properties = $findologicProduct->getProperties();
+        $promotion = end($properties);
+        $this->assertNotNull($promotion);
+        $this->assertSame('product_promotion', $promotion->getKey());
+        $values = $promotion->getAllValues();
+        $this->assertNotEmpty($values);
+        $this->assertSame($expected, current($values));
     }
 }

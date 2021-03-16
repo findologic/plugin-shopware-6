@@ -8,7 +8,6 @@ use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Page\StorefrontSearchResult;
 use Shopware\Storefront\Page\GenericPageLoader;
@@ -26,7 +25,7 @@ class SearchPageLoader extends ShopwareSearchPageLoader
     private $genericLoader;
 
     /**
-     * @var AbstractProductSearchRoute
+     * @var AbstractProductSearchRoute|null
      */
     private $productSearchRoute;
 
@@ -37,10 +36,9 @@ class SearchPageLoader extends ShopwareSearchPageLoader
 
     public function __construct(
         GenericPageLoader $genericLoader,
-        AbstractProductSearchRoute $productSearchRoute,
+        ?AbstractProductSearchRoute $productSearchRoute,
         EventDispatcherInterface $eventDispatcher
     ) {
-        parent::__construct($genericLoader, $productSearchRoute, $eventDispatcher);
         $this->genericLoader = $genericLoader;
         $this->productSearchRoute = $productSearchRoute;
         $this->eventDispatcher = $eventDispatcher;

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
 
 jobs:
@@ -12,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ['7.2', '7.3']
-        shopware-versions: ['6.1', '6.2', 'master']
+        php-versions: ['7.2', '7.3', '7.4']
+        shopware-versions: ['6.2', 'v6.3.5.1']
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
     steps:
@@ -31,7 +32,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, dom
+          extensions: dom, gd, mbstring, pdo_mysql, zip
           coverage: xdebug
           tools: composer:v2
         if: matrix.shopware-versions != 6.1
@@ -40,7 +41,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, dom
+          extensions: dom, gd, mbstring, pdo_mysql, zip
           coverage: xdebug
           tools: composer:v1
         if: matrix.shopware-versions == 6.1

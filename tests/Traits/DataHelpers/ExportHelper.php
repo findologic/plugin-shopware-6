@@ -24,6 +24,9 @@ use Shopware\Core\System\SystemConfig\SystemConfigEntity;
 
 trait ExportHelper
 {
+    /**
+     * @return SalesChannelContext|MockObject
+     */
     public function getDefaultSalesChannelContextMock(): SalesChannelContext
     {
         $salesChannelId = Defaults::SALES_CHANNEL;

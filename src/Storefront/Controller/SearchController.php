@@ -4,48 +4,60 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
+use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
-use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
+use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
+use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Storefront\Framework\Cache\Annotation\HttpCache;
 use Shopware\Storefront\Page\Search\SearchPageLoader;
-use Shopware\Storefront\Page\Suggest\SuggestPageLoader;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class SearchController extends ShopwareSearchController
+class SearchController extends StorefrontController
 {
-    /**
-     * @var SearchPageLoader
-     */
+    /** @var ShopwareSearchController */
+    private $decorated;
+
+    /** @var SearchPageLoader */
     private $searchPageLoader;
 
-    /**
-     * @var SuggestPageLoader
-     */
-    private $suggestPageLoader;
-
-    /**
-     * @var FilterHandler
-     */
+    /** @var FilterHandler */
     private $filterHandler;
 
-    public function __construct(
-        SearchPageLoader $searchPageLoader,
-        SuggestPageLoader $suggestPageLoader,
-        AbstractProductSearchRoute $abstractProductSearchRoute,
-        ?FilterHandler $filterHandler = null
-    ) {
-        parent::__construct($searchPageLoader, $suggestPageLoader, $abstractProductSearchRoute);
+    /** @var FindologicSearchService */
+    private $findologicSearchService;
 
-        $this->searchPageLoader = $searchPageLoader;
-        $this->suggestPageLoader = $suggestPageLoader;
-        $this->filterHandler = $filterHandler ?? new FilterHandler();
+    public function __construct(
+        ShopwareSearchController $decorated,
+        ?SearchPageLoader $searchPageLoader,
+        FilterHandler $filterHandler,
+        ContainerInterface $container,
+        FindologicSearchService $findologicSearchService
+    ) {
+        $this->container = $container;
+        $this->decorated = $decorated;
+        $this->searchPageLoader = $this->buildSearchPageLoader($searchPageLoader);
+        $this->filterHandler = $filterHandler;
+        $this->findologicSearchService = $findologicSearchService;
+    }
+
+    private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
+    {
+        if (!$searchPageLoader) {
+            return $this->container->get(FindologicSearchPageLoader::class);
+        }
+
+        return $searchPageLoader;
     }
 
     /**
@@ -55,8 +67,8 @@ class SearchController extends ShopwareSearchController
      */
     public function search(SalesChannelContext $context, Request $request): Response
     {
-        if ($response = $this->handleFindologicSearchParams($request)) {
-            return $response;
+        if ($redirectResponse = $this->handleFindologicSearchParams($request)) {
+            return $redirectResponse;
         }
 
         $page = $this->searchPageLoader->load($request, $context);
@@ -69,6 +81,15 @@ class SearchController extends ShopwareSearchController
         return $this->renderStorefront('@Storefront/storefront/page/search/index.html.twig', ['page' => $page]);
     }
 
+    private function handleFindologicSearchParams(Request $request): ?Response
+    {
+        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
+            return $this->redirect($uri);
+        }
+
+        return null;
+    }
+
     /**
      * @HttpCache()
      * @RouteScope(scopes={"storefront"})
@@ -76,19 +97,12 @@ class SearchController extends ShopwareSearchController
      */
     public function suggest(SalesChannelContext $context, Request $request): Response
     {
-        $page = $this->suggestPageLoader->load($request, $context);
-
-        return $this->renderStorefront(
-            '@Storefront/storefront/layout/header/search-suggest.html.twig',
-            ['page' => $page]
-        );
+        return $this->decorated->suggest($context, $request);
     }
 
     /**
      * @HttpCache()
-     *
      * Route to load the listing filters
-     *
      * @RouteScope(scopes={"storefront"})
      * @Route("/widgets/search/{search}", name="widgets.search.pagelet", methods={"GET", "POST"},
      *     defaults={"XmlHttpRequest"=true})
@@ -97,21 +111,12 @@ class SearchController extends ShopwareSearchController
      */
     public function pagelet(Request $request, SalesChannelContext $context): Response
     {
-        $request->request->set('no-aggregations', true);
-
-        $page = $this->searchPageLoader->load($request, $context);
-
-        return $this->renderStorefront(
-            '@Storefront/storefront/page/search/search-pagelet.html.twig',
-            ['page' => $page]
-        );
+        return $this->decorated->pagelet($request, $context);
     }
 
     /**
      * @HttpCache()
-     *
      * Route to load the listing filters
-     *
      * @RouteScope(scopes={"storefront"})
      * @Route(
      *      "/widgets/search",
@@ -124,22 +129,26 @@ class SearchController extends ShopwareSearchController
      */
     public function ajax(Request $request, SalesChannelContext $context): Response
     {
-        $request->request->set('no-aggregations', true);
-
-        $page = $this->searchPageLoader->load($request, $context);
-
-        return $this->renderStorefront(
-            '@Storefront/storefront/page/search/search-pagelet.html.twig',
-            ['page' => $page]
-        );
+        return $this->decorated->ajax($request, $context);
     }
 
-    private function handleFindologicSearchParams(Request $request): ?Response
+    /**
+     * @HttpCache()
+     * Route to load the available listing filters
+     * @RouteScope(scopes={"storefront"})
+     * @Route("/widgets/search/filter", name="widgets.search.filter", methods={"GET", "POST"},
+     *     defaults={"XmlHttpRequest"=true})
+     */
+    public function filter(Request $request, SalesChannelContext $context): Response
     {
-        if ($uri = $this->filterHandler->handleFindologicSearchParams($request)) {
-            return $this->redirect($uri);
+        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $context);
+        $this->findologicSearchService->doFilter($event);
+        $result = $this->filterHandler->handleAvailableFilters($event);
+
+        if (!$event->getCriteria()->hasExtension('flAvailableFilters')) {
+            return $this->decorated->filter($request, $context);
         }
 
-        return null;
+        return new JsonResponse($result);
     }
 }

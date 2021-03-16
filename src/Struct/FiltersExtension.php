@@ -19,7 +19,7 @@ class FiltersExtension extends Struct
 
     public function addFilter(BaseFilter $filter): self
     {
-        $this->filters[] = $filter;
+        $this->filters[$filter->getId()] = $filter;
 
         return $this;
     }
@@ -30,5 +30,14 @@ class FiltersExtension extends Struct
     public function getFilters(): array
     {
         return $this->filters;
+    }
+
+    public function getFilter(string $id): ?BaseFilter
+    {
+        if (!isset($this->filters[$id])) {
+            return null;
+        }
+
+        return $this->filters[$id];
     }
 }

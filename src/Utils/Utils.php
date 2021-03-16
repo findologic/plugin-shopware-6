@@ -46,7 +46,7 @@ class Utils
 
         $result = preg_replace('/[\x{0000}-\x{001F}]|[\x{007F}]|[\x{0080}-\x{009F}]/u', '', $string);
 
-        return $result ?? $string;
+        return trim($result) ?? trim($string);
     }
 
     public static function removeSpecialChars(?string $string): string
@@ -63,35 +63,31 @@ class Utils
      */
     public static function addProductAssociations(Criteria $criteria): Criteria
     {
-        $associations = [
-            'seoUrls',
-            'categories',
-            'categories.seoUrls',
-            'translations',
-            'tags',
-            'media',
-            'manufacturer',
-            'manufacturer.translations',
-            'properties',
-            'properties.group',
-            'properties.productConfiguratorSettings',
-            'properties.productConfiguratorSettings.option',
-            'properties.productConfiguratorSettings.option.group',
-            'properties.productConfiguratorSettings.option.group.translations',
-            'children',
-            'children.properties',
-            'children.properties.group',
-            'children.properties.productConfiguratorSettings',
-            'children.properties.productConfiguratorSettings.option',
-            'children.properties.productConfiguratorSettings.option.group',
-            'children.properties.productConfiguratorSettings.option.group.translations',
-        ];
-
-        foreach ($associations as $association) {
-            $criteria->addAssociation($association);
-        }
-
-        return $criteria;
+        return $criteria->addAssociations(
+            [
+                'seoUrls',
+                'categories',
+                'categories.seoUrls',
+                'translations',
+                'tags',
+                'media',
+                'manufacturer',
+                'manufacturer.translations',
+                'properties',
+                'properties.group',
+                'properties.productConfiguratorSettings',
+                'properties.productConfiguratorSettings.option',
+                'properties.productConfiguratorSettings.option.group',
+                'properties.productConfiguratorSettings.option.group.translations',
+                'children',
+                'children.properties',
+                'children.properties.group',
+                'children.properties.productConfiguratorSettings',
+                'children.properties.productConfiguratorSettings.option',
+                'children.properties.productConfiguratorSettings.option.group',
+                'children.properties.productConfiguratorSettings.option.group.translations',
+            ]
+        );
     }
 
     public static function multiByteRawUrlEncode(string $string): string
@@ -107,16 +103,19 @@ class Utils
 
     public static function buildUrl(array $parsedUrl): string
     {
-        return (isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '')
-            . ((isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '')
-            . (isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '')
-            . (isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '')
-            . (isset($parsedUrl['user']) ? '@' : '')
-            . (isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '')
-            . (isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '')
-            . (isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '')
-            . (isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '')
-            . (isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : '');
+        return sprintf(
+            '%s%s%s%s%s%s%s%s%s%s',
+            isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '',
+            (isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '',
+            isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '',
+            isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '',
+            isset($parsedUrl['user']) ? '@' : '',
+            isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '',
+            isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '',
+            isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '',
+            isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '',
+            isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : ''
+        );
     }
 
     public static function versionLowerThan(string $version): bool
@@ -161,6 +160,10 @@ class Utils
         $context->addExtension('findologicService', $findologicService);
 
         $shopkey = $config->getShopkey();
+        if (!$shopkey || trim($shopkey) === '') {
+            return $findologicService->disable();
+        }
+
         $isDirectIntegration = $serviceConfigResource->isDirectIntegration($shopkey);
         $isStagingShop = $serviceConfigResource->isStaging($shopkey);
         $isStagingSession = static::isStagingSession($request);
@@ -183,14 +186,6 @@ class Utils
         return $findologicService->enable();
     }
 
-    public static function isFindologicEnabled(SalesChannelContext $context): bool
-    {
-        /** @var FindologicService $findologicService */
-        $findologicService = $context->getContext()->getExtension('findologicService');
-
-        return $findologicService ? $findologicService->getEnabled() : false;
-    }
-
     public static function isStagingSession(Request $request): bool
     {
         $findologic = $request->get('findologic');
@@ -211,6 +206,14 @@ class Utils
         }
 
         return false;
+    }
+
+    public static function isFindologicEnabled(SalesChannelContext $context): bool
+    {
+        /** @var FindologicService $findologicService */
+        $findologicService = $context->getContext()->getExtension('findologicService');
+
+        return $findologicService ? $findologicService->getEnabled() : false;
     }
 
     public static function isEmpty($value): bool
@@ -242,6 +245,22 @@ class Utils
         return implode('_', array_map('trim', $breadcrumb));
     }
 
+    /**
+     * Builds the category path by removing the path of the parent (root) category of the sales channel.
+     * Since Findologic does not care about any root categories, we need to get the difference between the
+     * normal category path and the root category.
+     *
+     * @return string[]
+     */
+    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $rootCategory): array
+    {
+        $rootCategoryBreadcrumbs = $rootCategory->getBreadcrumb();
+
+        $path = array_splice($categoryBreadcrumb, count($rootCategoryBreadcrumbs));
+
+        return array_values($path);
+    }
+
     public static function fetchNavigationCategoryFromSalesChannel(
         EntityRepository $categoryRepository,
         SalesChannelEntity $salesChannel
@@ -257,21 +276,5 @@ class Utils
         }
 
         return $navigationCategory;
-    }
-
-    /**
-     * Builds the category path by removing the path of the parent (root) category of the sales channel.
-     * Since Findologic does not care about any root categories, we need to get the difference between the
-     * normal category path and the root category.
-     *
-     * @return string[]
-     */
-    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $rootCategory): array
-    {
-        $rootCategoryBreadcrumbs = $rootCategory->getBreadcrumb();
-
-        $path = array_splice($categoryBreadcrumb, count($rootCategoryBreadcrumbs));
-
-        return array_values($path);
     }
 }
