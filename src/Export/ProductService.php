@@ -99,7 +99,7 @@ class ProductService
         $visibleProductsCollection = $result->getEntities();
         if ($visibleProductsCollection->count() !== $limit) {
             $inactiveProductIds = $this->getInactiveProductIds($limit, $offset, $productId, $visibleProductsCollection);
-            $variants = $this->searchActiveVariants($inactiveProductIds, $limit, $offset, $productId);
+            $variants = $this->searchActiveVariants($inactiveProductIds, $productId);
             foreach ($variants as $variant) {
                 $result->add($variant);
             }
@@ -166,19 +166,12 @@ class ProductService
         return $criteria;
     }
 
-    private function buildActiveVariantCriteria(?int $limit = null, ?int $offset = null): Criteria
+    private function buildActiveVariantCriteria(): Criteria
     {
         $criteria = new Criteria();
         $criteria->addFilter(new NotFilter(NotFilter::CONNECTION_AND, [new EqualsFilter('parentId', null)]));
 
         $this->addProductAssociations($criteria);
-
-        if ($offset !== null) {
-            $criteria->setOffset($offset);
-        }
-        if ($limit !== null) {
-            $criteria->setLimit($limit);
-        }
 
         $criteria->addFilter(
             new ProductAvailableFilter(
@@ -214,11 +207,9 @@ class ProductService
 
     private function searchActiveVariants(
         array $inactiveProductIds,
-        ?int $limit,
-        ?int $offset,
         ?string $productId
     ): array {
-        $criteria = $this->buildActiveVariantCriteria($limit, $offset);
+        $criteria = $this->buildActiveVariantCriteria();
         $criteria->addFilter(new EqualsAnyFilter('parentId', $inactiveProductIds));
 
         if ($productId) {
