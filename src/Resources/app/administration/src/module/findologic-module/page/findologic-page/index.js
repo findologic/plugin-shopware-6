@@ -56,7 +56,13 @@ Component.register('findologic-page', {
             this.shopkeyErrorState = null;
             if (this.isValidShopkey) {
                 this._isStagingRequest();
+            } else {
+                if(this.actualConfigData) {
+                    this.actualConfigData['FinSearch.config.active'] = false;
+                    this.actualConfigData['FinSearch.config.activeOnCategoryPages'] = false;
+                }
             }
+
             this._setErrorStates();
         },
     },
@@ -98,7 +104,7 @@ Component.register('findologic-page', {
         },
 
         shopkeyAvailable() {
-            return !!this.shopkey
+            return !!this.shopkey;
         },
 
         salesChannelRepository() {
@@ -237,6 +243,8 @@ Component.register('findologic-page', {
                     detail: this.$tc('findologic.shopkeyExists')
                 };
             } else {
+                this.shopkeyExists = false;
+                this.isRegisteredShopkey = true;
                 this.shopkeyErrorState = null;
             }
 
