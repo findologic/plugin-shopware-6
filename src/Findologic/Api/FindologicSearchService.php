@@ -222,6 +222,11 @@ class FindologicSearchService
         }
 
         $handler = $this->buildNavigationRequestHandler();
+        if (!$event instanceof ProductSearchCriteriaEvent && !$this->isCategoryPage($handler, $event)) {
+            $this->disableFindologicService($event);
+            return;
+        }
+
         if (!$this->isCategoryPage($handler, $event)) {
             $handler = $this->buildSearchRequestHandler();
         }

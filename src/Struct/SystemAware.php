@@ -18,16 +18,21 @@ class SystemAware extends Struct
     /** @var bool */
     private $supportsNewSearchWidget;
 
+    /** @var bool */
+    private $supportsFilterDisabling;
+
     public function __construct(RouterInterface $router)
     {
         $this->router = $router;
         $this->supportsNewSearchWidget = $this->isNewSearchWidgetSupported();
+        $this->supportsFilterDisabling = $this->isDynamicFilterDisablingSupported();
     }
 
     public function __sleep(): array
     {
         return [
-            'supportsNewSearchWidget'
+            'supportsNewSearchWidget',
+            'supportsFilterDisabling'
         ];
     }
 
@@ -36,10 +41,26 @@ class SystemAware extends Struct
         return $this->supportsNewSearchWidget;
     }
 
+    public function supportsFilterDisabling(): bool
+    {
+        return $this->supportsFilterDisabling;
+    }
+
     private function isNewSearchWidgetSupported(): bool
     {
         try {
             $this->router->generate('widgets.search.pagelet.v2', []);
+        } catch (RouteNotFoundException $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function isDynamicFilterDisablingSupported(): bool
+    {
+        try {
+            $this->router->generate('widgets.search.filter', []);
         } catch (RouteNotFoundException $e) {
             return false;
         }
