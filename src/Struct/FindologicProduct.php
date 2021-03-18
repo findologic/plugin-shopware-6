@@ -155,6 +155,10 @@ class FindologicProduct extends Struct
         );
         $this->productImageService = $this->container->get(ProductImageService::class);
 
+        if (!$this->productImageService->productHasImages($product) && $product->getChildCount() > 0) {
+            $item->setId($this->productImageService->getFirstVariantWithImages($product)->getId());
+        }
+
         $this->setName();
         $this->setAttributes();
         $this->setPrices();

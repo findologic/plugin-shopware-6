@@ -30,7 +30,7 @@ class ProductImageService
      */
     public function getProductImages(ProductEntity $product): array
     {
-        $productHasImages = $this->hasImages($product);
+        $productHasImages = $this->productHasImages($product);
         $childrenHaveImages = $this->hasChildrenWithImages($product);
         if (!$productHasImages && !$childrenHaveImages) {
             return $this->getFallbackImages();
@@ -44,6 +44,18 @@ class ProductImageService
         }
 
         return $this->getImagesFromMediaCollection($images);
+    }
+
+    public function productHasImages(ProductEntity $product): bool
+    {
+        return $product->getMedia() && $product->getMedia()->count() > 0;
+    }
+
+    public function getFirstVariantWithImages(ProductEntity $product): ?ProductEntity
+    {
+        return $product->getChildren()->filter(function (ProductEntity $variant) {
+            return $this->productHasImages($variant);
+        })->first();
     }
 
     protected function buildFallbackImage(RequestContext $requestContext): string
@@ -80,12 +92,9 @@ class ProductImageService
 
     protected function getSortedChildrenImages(ProductEntity $product): ProductMediaCollection
     {
-        $children = $product->getChildren();
-        $variantsWithImages = $children->filter(function (ProductEntity $variant) {
-            return $this->hasImages($variant);
-        });
+        $variantWithImages = $this->getFirstVariantWithImages($product);
 
-        return $this->getSortedProductImages($variantsWithImages->first());
+        return $this->getSortedProductImages($variantWithImages);
     }
 
     /**
@@ -171,17 +180,12 @@ class ProductImageService
         return $images;
     }
 
-    protected function hasImages(ProductEntity $product): bool
-    {
-        return $product->getMedia() && $product->getMedia()->count() > 0;
-    }
-
     protected function hasChildrenWithImages(ProductEntity $product): bool
     {
         $children = $product->getChildren();
 
         foreach ($children as $variant) {
-            if ($this->hasImages($variant)) {
+            if ($this->productHasImages($variant)) {
                 return true;
             }
         }

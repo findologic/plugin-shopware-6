@@ -16,6 +16,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
@@ -134,7 +135,12 @@ class ProductService
 
     protected function addProductAssociations(Criteria $criteria): void
     {
+        $criteria->addSorting(new FieldSorting('product.name'));
+
         Utils::addProductAssociations($criteria);
+
+        $assoc = $criteria->getAssociation('product.children');
+        $assoc->addSorting(new FieldSorting('name'));
     }
 
     private function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria
