@@ -85,4 +85,24 @@ trait OrderHelper
         $data = array_merge($data, $overrideData);
         $this->getContainer()->get('order.repository')->create([$data], Context::createDefaultContext());
     }
+
+    public function buildOrderLineItem(array $overrides = []): array
+    {
+        return array_merge([
+            'id' => Uuid::randomHex(),
+            'identifier' => 'test',
+            'quantity' => 1,
+            'type' => 'test',
+            'label' => 'test',
+            'price' => new CalculatedPrice(
+                10,
+                10,
+                new CalculatedTaxCollection(),
+                new TaxRuleCollection()
+            ),
+            'priceDefinition' => new QuantityPriceDefinition(10, new TaxRuleCollection(), 2),
+            'good' => true,
+            'payload' => ['productNumber' => 'test']
+        ], $overrides);
+    }
 }

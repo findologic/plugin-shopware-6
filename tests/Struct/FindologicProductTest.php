@@ -1831,12 +1831,12 @@ class FindologicProductTest extends TestCase
     {
         return [
             'Product with order in the last 30 days' => [
-                'orderDate' => (new DateTimeImmutable())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
+                'orderDateTime' => (new DateTimeImmutable())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
                 'expectedSalesFrequency' => 1
             ],
             'Product with no orders' => ['orderDate' => null, 'expectedSalesFrequency' => 0],
             'Product with order older than 30 days' => [
-                'orderDate' => (new DateTimeImmutable('2020-01-01'))->format(Defaults::STORAGE_DATE_TIME_FORMAT),
+                'orderDateTime' => (new DateTimeImmutable('2020-01-01'))->format(Defaults::STORAGE_DATE_TIME_FORMAT),
                 'expectedSalesFrequency' => 0
             ],
         ];
@@ -1855,7 +1855,15 @@ class FindologicProductTest extends TestCase
         $customerId = Uuid::randomHex();
         if ($orderDateTime !== null) {
             $this->createCustomer($customerId);
-            $this->createOrder($customerId, ['orderDateTime' => $orderDateTime]);
+            $this->createOrder(
+                $customerId,
+                [
+                    'orderDateTime' => $orderDateTime,
+                    'lineItems' => [
+                        $this->buildOrderLineItem(['productId' => $productEntity->getId()])
+                    ],
+                ]
+            );
         }
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
