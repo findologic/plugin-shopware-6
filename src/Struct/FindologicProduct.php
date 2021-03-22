@@ -503,7 +503,7 @@ class FindologicProduct extends Struct
         $criteria = new Criteria();
         $criteria->addAssociation('order');
         $criteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_AND, [
-            new EqualsFilter('payload.productNumber', $this->product->getProductNumber()),
+            new EqualsFilter('productId', $this->product->getId()),
             new RangeFilter(
                 'order.orderDateTime',
                 [RangeFilter::GTE => $lastMonthDate->format(Defaults::STORAGE_DATE_TIME_FORMAT)]
