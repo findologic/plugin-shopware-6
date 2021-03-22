@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
-use Doctrine\DBAL\Connection;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceDefinition;
@@ -85,12 +84,5 @@ trait OrderHelper
 
         $data = array_merge($data, $overrideData);
         $this->getContainer()->get('order.repository')->create([$data], Context::createDefaultContext());
-    }
-
-    private function fetchFirstIdFromTable(string $table): string
-    {
-        $connection = $this->getContainer()->get(Connection::class);
-
-        return Uuid::fromBytesToHex((string)$connection->fetchColumn("SELECT id FROM {$table} LIMIT 1"));
     }
 }

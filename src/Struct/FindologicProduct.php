@@ -499,9 +499,7 @@ class FindologicProduct extends Struct
 
     protected function setSalesFrequency(): void
     {
-        $lastMonthDate = new DateTimeImmutable();
-        $lastMonthDate = $lastMonthDate->modify('-1 month');
-
+        $lastMonthDate = new DateTimeImmutable('-1 month');
         $criteria = new Criteria();
         $criteria->addAssociation('order');
         $criteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_AND, [

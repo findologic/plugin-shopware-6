@@ -21,6 +21,7 @@ use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
@@ -61,6 +62,7 @@ use function parse_url;
 class FindologicProductTest extends TestCase
 {
     use IntegrationTestBehaviour;
+    use RandomIdHelper;
     use ProductHelper;
     use ConfigHelper;
     use SalesChannelHelper;
@@ -75,14 +77,10 @@ class FindologicProductTest extends TestCase
     /** @var RouterInterface */
     private $router;
 
-    /**
-     * @var TestDataCollection
-     */
+    /** @var TestDataCollection */
     private $ids;
 
-    /**
-     * @var EntityRepositoryInterface
-     */
+    /** @var EntityRepositoryInterface */
     private $customerRepository;
 
     protected function setUp(): void
@@ -1829,7 +1827,7 @@ class FindologicProductTest extends TestCase
         $this->assertSame($expected, current($values));
     }
 
-    public function salesFrequencyProvider()
+    public function salesFrequencyProvider(): array
     {
         return [
             'Product with order in the last 30 days' => [
