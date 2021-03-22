@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
-use FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader
-    as LegacySearchPageLoader;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
@@ -57,10 +54,6 @@ class SearchController extends StorefrontController
     private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
     {
         if (!$searchPageLoader) {
-            if (Utils::versionLowerThan('6.2.0')) {
-                return $this->container->get(LegacySearchPageLoader::class);
-            }
-
             return $this->container->get(FindologicSearchPageLoader::class);
         }
 

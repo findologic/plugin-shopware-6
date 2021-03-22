@@ -1,6 +1,6 @@
 # Upgrade from 1.x to 2.x
 
-Changes: [v1.4.0...v2.0.0](https://github.com/findologic/plugin-shopware-6/compare/v1.4.0...v2.0.0)  
+Changes: [v1.5.3...v2.0.0](https://github.com/findologic/plugin-shopware-6/compare/v1.5.3...v2.0.0)  
 Changelog: [v2.0.0 Release](https://github.com/findologic/plugin-shopware-6/releases/tag/v2.0.0)
 
 This file is **irrelevant** for you in case you do **not have an extension plugin**.
@@ -39,15 +39,14 @@ of all changes necessary for the extension plugin, please see changes below, or 
 
 ### CompatibilityLayer
 
-TLDR; All classes (except 6.1) in the `CompatibilityLayer` directory have been removed.
+TLDR; All classes in the `CompatibilityLayer` directory have been removed.
 
 We removed all classes/services/controllers in the `CompatibilityLayer` directory. Reason for that is that maintaining
 these separate classes for each and every version is very error prone and also hard to extend for plugin extensions.
 At the same time they were also hard to debug, as you always needed to know which Shopware version is being used, in
 order to begin debugging. In case you're wondering where all this code now is, the answer is in the proper classes.
 As an example code that was in `src/CompatibilityLayer/Shopware631/Core` can now be found in `src/Core`. This results
-in less duplication and overall easier readable code. Some classes for Shopware 6.1 still are there, since they're not
-relevant for any other Shopware version, except this only version.
+in less duplication and overall easier readable code.
 
 #### Shopware631
 
@@ -126,8 +125,7 @@ Some also have been removed as they're no longer needed.
 * `Resources/app/administration/src/module/findologic-module/page/findologic-page/findologic-page.html.twig`
   * Similar to `findologic-config.html.twig`, this page has been updated entirely (including JS).
 * `Resources/config/compatibility/latest/services.xml` logic has been moved to `Resources/config/services/services.xml`
-* `Resources/config/compatibility/shopware61/services.xml`
-  * Services `ProductListingFeaturesSubscriber` and `SearchController` have been moved to `Resources/config/services/decorators.xml`
+* `Resources/config/compatibility/shopware61/services.xml` has been removed without replacement.
 * `Resources/config/compatibility/shopware631/services.xml` has been removed without replacement.
 * `Resources/config/compatibility/shopware632/services.xml` has been removed without replacement.
 * `Resources/config/config.xml` has been removed without replacement. With 2.0.0 we provide our own configuration page.
