@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
+use Doctrine\DBAL\Connection;
 use FINDOLOGIC\FinSearch\Exceptions\Config\ShopkeyAlreadyExistsException;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
@@ -25,9 +26,15 @@ class FindologicConfigController extends AbstractController
      */
     private $findologicConfigService;
 
-    public function __construct(FindologicConfigService $findologicConfigService)
+    /**
+     * @var Connection
+     */
+    private $connection;
+
+    public function __construct(FindologicConfigService $findologicConfigService, Connection $connection)
     {
         $this->findologicConfigService = $findologicConfigService;
+        $this->connection = $connection;
     }
 
     /**
@@ -68,20 +75,28 @@ class FindologicConfigController extends AbstractController
     public function batchSaveConfiguration(Request $request): Response
     {
         $allShopkeys = [];
-        foreach ($request->request->all() as $key => $config) {
-            [$salesChannelId, $languageId] = explode('-', $key);
+        $this->connection->beginTransaction();
+        try {
+            foreach ($request->request->all() as $key => $config) {
+                [$salesChannelId, $languageId] = explode('-', $key);
 
-            if (isset($config['FinSearch.config.shopkey'])) {
-                $shopkey = $config['FinSearch.config.shopkey'];
-                if (!in_array($shopkey, $allShopkeys, false)) {
-                    $allShopkeys[] = $shopkey;
-                } else {
-                    throw new ShopkeyAlreadyExistsException();
+                if (isset($config['FinSearch.config.shopkey']) && $config['FinSearch.config.shopkey']) {
+                    $shopkey = $config['FinSearch.config.shopkey'];
+                    if (!in_array($shopkey, $allShopkeys, false)) {
+                        $allShopkeys[] = $shopkey;
+                    } else {
+                        throw new ShopkeyAlreadyExistsException();
+                    }
                 }
-            }
 
-            $this->saveKeyValues($salesChannelId, $languageId, $config);
+                $this->saveKeyValues($salesChannelId, $languageId, $config);
+            }
+        } catch (ShopkeyAlreadyExistsException $e) {
+            $this->connection->rollBack();
+            throw $e;
         }
+
+        $this->connection->commit();
 
         return new Response('', Response::HTTP_NO_CONTENT);
     }
