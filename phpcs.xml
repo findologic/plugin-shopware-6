@@ -9,6 +9,7 @@
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>tests/TestBootstrap.php</exclude-pattern>
     <exclude-pattern>*/Resources/app/*</exclude-pattern>
+    <exclude-pattern>*/Resources/snippet/*</exclude-pattern>
     <exclude-pattern>*/Resources/public/administration/*</exclude-pattern>
 
     <arg name="colors"/>

@@ -96,8 +96,11 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         return $this->decorated;
     }
 
-    public function load(Request $request, SalesChannelContext $context, ?Criteria $criteria = null): ProductSearchRouteResponse
-    {
+    public function load(
+        Request $request,
+        SalesChannelContext $context,
+        ?Criteria $criteria = null
+    ): ProductSearchRouteResponse {
         $criteria = $criteria ?? new Criteria();
 
         $this->config->initializeBySalesChannel($context);
