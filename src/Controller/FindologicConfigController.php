@@ -38,7 +38,7 @@ class FindologicConfigController extends AbstractController
     }
 
     /**
-     * @Route("/api/v{version}/_action/finsearch", name="api.action.finsearch", methods={"GET"})
+     * @Route("/api/_action/finsearch", name="api.action.finsearch", methods={"GET"})
      */
     public function getConfigurationValues(Request $request): JsonResponse
     {
@@ -57,7 +57,7 @@ class FindologicConfigController extends AbstractController
     }
 
     /**
-     * @Route("/api/v{version}/_action/finsearch", name="api.action.finsearch.save", methods={"POST"})
+     * @Route("/api/_action/finsearch", name="api.action.finsearch.save", methods={"POST"})
      */
     public function saveConfiguration(Request $request): Response
     {
@@ -70,7 +70,7 @@ class FindologicConfigController extends AbstractController
     }
 
     /**
-     * @Route("/api/v{version}/_action/finsearch/batch", name="api.action.finsearch.save.batch", methods={"POST"})
+     * @Route("/api/_action/finsearch/batch", name="api.action.finsearch.save.batch", methods={"POST"})
      */
     public function batchSaveConfiguration(Request $request): Response
     {

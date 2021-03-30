@@ -92,8 +92,11 @@ class ProductListingRoute extends AbstractProductListingRoute
     public function load(
         string $categoryId,
         Request $request,
-        SalesChannelContext $salesChannelContext
+        SalesChannelContext $salesChannelContext,
+        ?Criteria $criteria = null
     ): ProductListingRouteResponse {
+        $criteria = $criteria ?? new Criteria();
+
         $this->config->initializeBySalesChannel($salesChannelContext);
         $shouldHandleRequest = Utils::shouldHandleRequest(
             $request,
@@ -105,10 +108,9 @@ class ProductListingRoute extends AbstractProductListingRoute
 
         $isDefaultCategory = $categoryId === $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
         if (!$shouldHandleRequest || $isDefaultCategory) {
-            return $this->decorated->load($categoryId, $request, $salesChannelContext);
+            return $this->decorated->load($categoryId, $request, $salesChannelContext, $criteria);
         }
 
-        $criteria = new Criteria();
         $criteria->addFilter(
             new ProductAvailableFilter(
                 $salesChannelContext->getSalesChannel()->getId(),

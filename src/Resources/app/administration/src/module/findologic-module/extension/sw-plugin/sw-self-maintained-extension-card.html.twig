@@ -1,0 +1,8 @@
+{% block sw_extension_card_base_context_menu_settings %}
+    <sw-context-menu-item
+            v-if="isInstalled && extension.configurable"
+            :routerLink="{ name: extension.name === 'FinSearch' ? 'findologic.module.index' : 'sw.extension.config', params: { namespace: extension.name } }">
+
+        {{ $tc('sw-extension-store.component.sw-extension-card-base.contextMenu.config') }}
+    </sw-context-menu-item>
+{% endblock %}

@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\en_GB;
+namespace FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\de_DE;
 
 use Shopware\Core\System\Snippet\Files\SnippetFileInterface;
 
-class SnippetFile_en_GB implements SnippetFileInterface
+class SnippetFile_de_DE implements SnippetFileInterface
 {
     public function getName(): string
     {
-        return 'finsearch.en_GB';
+        return 'storefront.de-DE';
     }
 
     public function getPath(): string
     {
-        return __DIR__ . '/finsearch.en_GB.json';
+        return __DIR__ . '/storefront.de-DE.json';
     }
 
     public function getIso(): string
     {
-        return 'en-GB';
+        return 'de-DE';
     }
 
     public function getAuthor(): string

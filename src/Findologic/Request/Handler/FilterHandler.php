@@ -217,9 +217,11 @@ class FilterHandler
 
     public function handleAvailableFilters(ShopwareEvent $event): array
     {
+        $criteria = $event->getCriteria();
+
         /** @var FiltersExtension $availableFilters */
-        $availableFilters = $event->getCriteria()->getExtension('flAvailableFilters');
-        $allFilters = $event->getCriteria()->getExtension('flFilters');
+        $availableFilters = $criteria->getExtension('flAvailableFilters');
+        $allFilters = $criteria->getExtension('flFilters');
 
         return $this->parseFindologicFiltersForShopware($availableFilters, $allFilters);
     }
