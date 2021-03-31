@@ -132,7 +132,11 @@ class Utils
         // Development versions may add the versions with an "@" sign, which refers to the current commit.
         $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '@'));
 
-        return version_compare($versionWithoutCommitHash, $version, '<');
+        // Development versions may add the versions with an "-" sign, which refers to the stability of the release.
+        // E.g. 6.4.0.0-RC1.
+        $versionWithoutReleaseInformation = substr($shopwareVersion, 0, strpos($versionWithoutCommitHash, '-'));
+
+        return version_compare($versionWithoutReleaseInformation, $version, '<');
     }
 
     /**

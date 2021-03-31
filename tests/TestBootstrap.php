@@ -38,5 +38,5 @@ if (!class_exists(Dotenv::class)) {
         . 'configuration or add "symfony/dotenv" as a Composer dependency to load variables from a .env file.'
     );
 }
-(new Dotenv(true))->load(TEST_PROJECT_DIR . '/.env');
+(new Dotenv())->load(TEST_PROJECT_DIR . '/.env');
 putenv('DATABASE_URL=' . getenv('DATABASE_URL') . '_test');

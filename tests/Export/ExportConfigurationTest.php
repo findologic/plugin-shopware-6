@@ -107,7 +107,10 @@ class ExportConfigurationTest extends TestCase
         $request = new Request($queryParams);
         $config = ExportConfiguration::getInstance($request);
 
-        $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
+        $validator = Validation::createValidatorBuilder()
+            ->enableAnnotationMapping(true)
+            ->addDefaultDoctrineAnnotationReader()
+            ->getValidator();
         $violations = $validator->validate($config);
 
         $this->assertGreaterThan(0, $violations->count());

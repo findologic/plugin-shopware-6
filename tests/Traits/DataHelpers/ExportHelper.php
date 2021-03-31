@@ -119,6 +119,7 @@ trait ExportHelper
 
         /** @var EntitySearchResult $systemConfigEntitySearchResult */
         $systemConfigEntitySearchResult = new EntitySearchResult(
+            SystemConfigEntity::class,
             1,
             $systemConfigCollection,
             null,
