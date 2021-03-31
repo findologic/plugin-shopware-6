@@ -1,9 +1,9 @@
 import template from './sw-self-maintained-extension-card.html.twig';
+import legacyTemplate from './sw-plugin-list.html.twig';
 
 const { Component } = Shopware;
 
-// TODO: Find a fallback for versions lower than 6.4.
-// TODO: Check if we manually need to override sw-extension-card-bought as well.
+// Shopware >= 6.4
 Component.override('sw-self-maintained-extension-card', {
   template,
   mounted() {
@@ -19,4 +19,9 @@ Component.override('sw-self-maintained-extension-card', {
       };
     },
   }
-})
+});
+
+// Shopware < 6.4
+Component.override('sw-plugin-list', {
+  legacyTemplate
+});

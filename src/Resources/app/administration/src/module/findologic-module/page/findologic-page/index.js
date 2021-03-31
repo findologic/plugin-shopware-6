@@ -31,6 +31,7 @@ Component.register('findologic-page', {
             httpClient: Application.getContainer('init').httpClient
         };
     },
+
     metaInfo() {
         return {
             title: this.$createTitle()
@@ -39,6 +40,10 @@ Component.register('findologic-page', {
 
     created() {
         this.createdComponent();
+    },
+
+    beforeMount() {
+        this.updateHeaderBarBackLink();
     },
 
     watch: {
@@ -142,6 +147,30 @@ Component.register('findologic-page', {
                     this.isLoading = false;
                     this.salesChannel = res;
                 });
+            }
+        },
+
+        /**
+         * Updates the header bar link, based on the used Shopware version.
+         *
+         * * Shopware >= 6.4 => Extension list.
+         * * Shopware < 6.4 => Settings page.
+         */
+        updateHeaderBarBackLink() {
+            let foundModule = null;
+            Shopware.Module.getModuleRegistry().forEach((module) => {
+                if (foundModule) {
+                    return;
+                }
+
+                if (module.manifest.title === 'sw-extension-store.title') {
+                    foundModule = module;
+                }
+            });
+
+            if (foundModule) {
+                this.$route.meta.parentPath = 'sw.extension.my-extensions.listing.app';
+                this.$route.meta.$module = foundModule.manifest;
             }
         },
 
