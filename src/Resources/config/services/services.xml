@@ -152,8 +152,7 @@
         <service
                 id="Symfony\Component\DependencyInjection\ContainerInterface"
                 alias="service_container"
-        >
-        </service>
+        />
 
     </services>
 </container>

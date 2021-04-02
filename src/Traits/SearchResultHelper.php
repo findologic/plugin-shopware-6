@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Traits;
 
 use FINDOLOGIC\FinSearch\Struct\Pagination;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
@@ -19,7 +20,7 @@ trait SearchResultHelper
     {
         // Return an empty response, as Shopware would search for all products if no explicit
         // product ids are submitted.
-        return new EntitySearchResult(
+        return Utils::buildEntitySearchResult(
             ProductEntity::class,
             0,
             new EntityCollection(),

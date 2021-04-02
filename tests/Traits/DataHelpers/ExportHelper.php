@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -118,7 +119,7 @@ trait ExportHelper
         $systemConfigCollection = new SystemConfigCollection([$systemConfigEntity]);
 
         /** @var EntitySearchResult $systemConfigEntitySearchResult */
-        $systemConfigEntitySearchResult = new EntitySearchResult(
+        $systemConfigEntitySearchResult = Utils::buildEntitySearchResult(
             SystemConfigEntity::class,
             1,
             $systemConfigCollection,

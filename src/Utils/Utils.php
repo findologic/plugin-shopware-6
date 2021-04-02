@@ -11,12 +11,16 @@ use InvalidArgumentException;
 use PackageVersions\Versions;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
+use Throwable;
 
 class Utils
 {
@@ -126,15 +130,19 @@ class Utils
         } else {
             $shopwareVersion = Versions::getVersion('shopware/platform');
         }
+
         // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
         $shopwareVersion = ltrim($shopwareVersion, 'v');
 
         // Development versions may add the versions with an "@" sign, which refers to the current commit.
         $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '@'));
 
-        // Development versions may add the versions with an "-" sign, which refers to the stability of the release.
-        // E.g. 6.4.0.0-RC1.
-        $versionWithoutReleaseInformation = substr($shopwareVersion, 0, strpos($versionWithoutCommitHash, '-'));
+        // Release Candidate versions may add the versions with an "-" sign, which refers to the
+        // stability of the release. E.g. 6.4.0.0-RC1.
+        $versionWithoutReleaseInformation = $versionWithoutCommitHash;
+        if (strpos($versionWithoutCommitHash, '-RC')) {
+            $versionWithoutReleaseInformation = substr($shopwareVersion, 0, strpos($versionWithoutCommitHash, '-RC'));
+        }
 
         return version_compare($versionWithoutReleaseInformation, $version, '<');
     }
@@ -280,5 +288,44 @@ class Utils
         }
 
         return $navigationCategory;
+    }
+
+    /**
+     * Builds an entity search result, which is backwards-compatible for older Shopware versions.
+     */
+    public static function buildEntitySearchResult(
+        string $entity,
+        int $total,
+        EntityCollection $entities,
+        ?AggregationResultCollection $aggregations,
+        Criteria $criteria,
+        Context $context,
+        int $page = 1,
+        ?int $limit = null
+    ): EntitySearchResult {
+        try {
+            // Shopware >= 6.4
+            return new EntitySearchResult(
+                $entity,
+                $total,
+                $entities,
+                $aggregations,
+                $criteria,
+                $context,
+                $page,
+                $limit
+            );
+        } catch (Throwable $e) {
+            // Shopware < 6.4
+            return new EntitySearchResult(
+                $total,
+                $entities,
+                $aggregations,
+                $criteria,
+                $context,
+                $page,
+                $limit
+            );
+        }
     }
 }

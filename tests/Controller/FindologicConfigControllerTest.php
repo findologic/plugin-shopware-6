@@ -53,8 +53,13 @@ class FindologicConfigControllerTest extends TestCase
      */
     public function testOnlyUniqueShopkeysCanBeSaved(array $params, int $statusCode): void
     {
+        /** @var Connection $connection */
         $connection = $this->getContainer()->get(Connection::class);
-        $connection->executeStatement('DELETE FROM finsearch_config');
+        if (method_exists($connection, 'executeStatement')) {
+            $connection->executeStatement('DELETE FROM finsearch_config');
+        } else {
+            $connection->exec('DELETE FROM finsearch_config');
+        }
 
         $url = '/api/_action/finsearch/batch';
         $client = $this->getBrowser();

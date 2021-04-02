@@ -589,7 +589,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             }
 
             $this->entityRepositoryMock->expects($this->any())->method('search')->willReturn(
-                new EntitySearchResult(
+                Utils::buildEntitySearchResult(
                     ProductSortingEntity::class,
                     $this->sortingCollection->count(),
                     $this->sortingCollection,
@@ -1111,7 +1111,7 @@ XML;
             $criteria->addExtension('sortings', $this->sortingCollection);
         }
 
-        $result = new ProductListingResult(
+        $rawResult = Utils::buildEntitySearchResult(
             ProductEntity::class,
             0,
             new EntityCollection(),
@@ -1119,6 +1119,8 @@ XML;
             $criteria,
             Context::createDefaultContext()
         );
+
+        $result = ProductListingResult::createFrom($rawResult);
 
         $orderParam = Utils::versionLowerThan('6.2') ? 'sort' : 'order';
 

@@ -23,5 +23,5 @@ Component.override('sw-self-maintained-extension-card', {
 
 // Shopware < 6.4
 Component.override('sw-plugin-list', {
-  legacyTemplate
+  template: legacyTemplate
 });
