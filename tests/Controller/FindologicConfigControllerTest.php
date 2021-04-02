@@ -64,6 +64,11 @@ class FindologicConfigControllerTest extends TestCase
         }
 
         $url = '/api/_action/finsearch/batch';
+        if (defined('\Shopware\Core\PlatformRequest::API_VERSION')) {
+            // Shopware < 6.4 requires an API version. This has been dropped with 6.4.
+            $url = sprintf('/api/v%s/_action/finsearch/batch', PlatformRequest::API_VERSION);
+        }
+
         $client = $this->getBrowser();
         $client->request('POST', $url, $params);
 
