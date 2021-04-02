@@ -147,5 +147,13 @@
             <argument type="service" id="Doctrine\DBAL\Connection" />
         </service>
 
+        <!-- Symfony -->
+
+        <service
+                id="Symfony\Component\DependencyInjection\ContainerInterface"
+                alias="service_container"
+        >
+        </service>
+
     </services>
 </container>

@@ -83,7 +83,8 @@ jobs:
           ./psh.phar init-test-databases
           ./psh.phar cache
 
+      # Deprecation Helper disabled until https://github.com/shopware/platform/pull/1759 is merged.
       - name: Run test suite
         run: |
           cd development/custom/plugins/plugin-shopware-6
-          composer test
+          SYMFONY_DEPRECATIONS_HELPER=disabled composer test
