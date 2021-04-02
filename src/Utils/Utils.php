@@ -137,7 +137,7 @@ class Utils
         // Development versions may add the versions with an "@" sign, which refers to the current commit.
         $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '@'));
 
-        // Release Candidate versions may add the versions with an "-" sign, which refers to the
+        // Release Candidate versions may add the versions with an "-RC" sign, which refers to the
         // stability of the release. E.g. 6.4.0.0-RC1.
         $versionWithoutReleaseInformation = $versionWithoutCommitHash;
         if (strpos($versionWithoutCommitHash, '-RC')) {
@@ -226,6 +226,21 @@ class Utils
         $findologicService = $context->getContext()->getExtension('findologicService');
 
         return $findologicService ? $findologicService->getEnabled() : false;
+    }
+
+    public static function disableFindologicWhenEnabled(SalesChannelContext $context): void
+    {
+        if (!static::isFindologicEnabled($context)) {
+            return;
+        }
+
+        if (!$context->getContext()->hasExtension('findologicService')) {
+            return;
+        }
+
+        /** @var FindologicService $findologicService */
+        $findologicService = $context->getContext()->getExtension('findologicService');
+        $findologicService->disable();
     }
 
     public static function isEmpty($value): bool

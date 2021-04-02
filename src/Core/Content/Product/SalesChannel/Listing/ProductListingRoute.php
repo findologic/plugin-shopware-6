@@ -108,6 +108,8 @@ class ProductListingRoute extends AbstractProductListingRoute
 
         $isDefaultCategory = $categoryId === $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
         if (!$shouldHandleRequest || $isDefaultCategory) {
+            Utils::disableFindologicWhenEnabled($salesChannelContext);
+
             return $this->decorated->load($categoryId, $request, $salesChannelContext, $criteria);
         }
 

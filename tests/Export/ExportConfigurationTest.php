@@ -109,13 +109,13 @@ class ExportConfigurationTest extends TestCase
         $config = ExportConfiguration::getInstance($request);
 
         try {
-            // Shopware >= 6.4 / Symfony >= 5
+            // Symfony >= 5
             $validator = Validation::createValidatorBuilder()
                 ->enableAnnotationMapping(true)
                 ->addDefaultDoctrineAnnotationReader()
                 ->getValidator();
         } catch (Throwable $e) {
-            // Shopware < 6.4 / Symfony 4
+            // Symfony 4
             $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
         }
 
