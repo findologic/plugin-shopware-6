@@ -56,14 +56,18 @@ Component.register('findologic-page', {
             this.shopkeyErrorState = null;
             if (this.isValidShopkey) {
                 this._isStagingRequest();
+            } else if (this.actualConfigData) {
+                this.actualConfigData['FinSearch.config.active'] = false;
+                this.actualConfigData['FinSearch.config.activeOnCategoryPages'] = false;
             }
+
             this._setErrorStates();
         },
     },
 
     computed: {
         configKey() {
-            if(!this.selectedSalesChannelId || !this.selectedLanguageId) {
+            if (!this.selectedSalesChannelId || !this.selectedLanguageId) {
                 return null;
             }
 
@@ -98,7 +102,7 @@ Component.register('findologic-page', {
         },
 
         shopkeyAvailable() {
-            return !!this.shopkey
+            return !!this.shopkey;
         },
 
         salesChannelRepository() {
@@ -119,7 +123,7 @@ Component.register('findologic-page', {
             if ((this.selectedSalesChannelId && this.selectedLanguageId)) {
                 this.isLoading = true;
                 this.readAll().then((values) => {
-                    if(!values['FinSearch.config.filterPosition']) {
+                    if (!values['FinSearch.config.filterPosition']) {
                         values['FinSearch.config.filterPosition'] = 'top';
                     }
 
@@ -237,6 +241,8 @@ Component.register('findologic-page', {
                     detail: this.$tc('findologic.shopkeyExists')
                 };
             } else {
+                this.shopkeyExists = false;
+                this.isRegisteredShopkey = true;
                 this.shopkeyErrorState = null;
             }
 
