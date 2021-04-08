@@ -10,6 +10,7 @@ use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollectio
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Media\MediaEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
+use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Symfony\Component\Routing\RequestContext;
@@ -43,7 +44,7 @@ class ProductImageService
             $images = $this->getSortedChildrenImages($product);
         }
 
-        return $this->getImagesFromMediaCollection($images);
+        return $this->buildImageUrls($images);
     }
 
     public function productHasImages(ProductEntity $product): bool
@@ -151,23 +152,23 @@ class ProductImageService
         }
     }
 
-    protected function getImagesFromMediaCollection(ProductMediaCollection $collection): array
+    protected function buildImageUrls(ProductMediaCollection $collection): array
     {
         $images = [];
-        foreach ($collection as $mediaEntity) {
-            $media = $mediaEntity->getMedia();
-            if (!$media || !$media->getUrl()) {
+        foreach ($collection as $productMedia) {
+            $media = $productMedia->getMedia();
+
+            if (!$this->hasMediaUrl($media)) {
                 continue;
             }
 
-            $thumbnails = $media->getThumbnails();
-            if (!$thumbnails) {
+            if (!$this->hasThumbnails($media)) {
                 $images[] = $this->buildImage($media);
 
                 continue;
             }
 
-            $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
+            $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($media->getThumbnails());
             // Use the thumbnail as the main image if available, otherwise fallback to the directly assigned image.
             $image = $filteredThumbnails->first() ?? $media;
             if ($image) {
@@ -204,5 +205,15 @@ class ProductImageService
             new Image($fallbackImage),
             new Image($fallbackImage, Image::TYPE_THUMBNAIL)
         ];
+    }
+
+    protected function hasMediaUrl(MediaEntity $media): bool
+    {
+        return $media && $media->getUrl();
+    }
+
+    protected function hasThumbnails(MediaEntity $media): bool
+    {
+        return $media->getThumbnails() && $media->getThumbnails()->count() > 0;
     }
 }
