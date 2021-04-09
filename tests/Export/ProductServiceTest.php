@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -112,5 +113,63 @@ class ProductServiceTest extends TestCase
         $product = $products->first();
 
         $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
+    }
+
+    public function testIfMoreThanOneVariantExistsItWillUseVariantInformationInsteadOfMainProductInformation(): void
+    {
+        $expectedParentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+        $expectedSecondVariantId = Uuid::randomHex();
+
+        $this->createVisibleTestProduct([
+            'id' => $expectedParentId,
+            'active' => false
+        ]);
+
+        $variantDetails = [
+            'stock' => 10,
+            'active' => true,
+            'parentId' => $expectedParentId,
+            'tax' => ['name' => '9%', 'taxRate' => 9],
+            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
+        ];
+
+        $this->createVisibleTestProduct(array_merge([
+            'id' => $expectedFirstVariantId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+        ], $variantDetails));
+
+        $this->createVisibleTestProduct(array_merge([
+            'id' => $expectedSecondVariantId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+        ], $variantDetails));
+
+        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+        /** @var ProductEntity $product */
+        $product = $products->first();
+
+        // In the real world variants are created after another. When working with Shopware DAL manually,
+        // sometimes the second statement may be executed before the first one, which causes a different result.
+        // To prevent this test from failing if Shopware decides to create the second variant before the first one,
+        // we ensure that the second variant is used instead.
+        $expectedChildVariantId = $expectedSecondVariantId;
+        try {
+            $this->assertSame($expectedFirstVariantId, $product->getId());
+        } catch (AssertionFailedError $e) {
+            $this->assertSame($expectedSecondVariantId, $product->getId());
+            $expectedChildVariantId = $expectedFirstVariantId;
+        }
+
+        $this->assertCount(2, $product->getChildren());
+
+        foreach ($product->getChildren() as $child) {
+            if (!$child->getParentId()) {
+                $this->assertSame($expectedParentId, $child->getId());
+            } else {
+                $this->assertSame($expectedChildVariantId, $child->getId());
+            }
+        }
     }
 }
