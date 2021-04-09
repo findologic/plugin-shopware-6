@@ -152,6 +152,7 @@
             </call>
             <tag name="controller.service_arguments" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
+            <argument type="service" id="Doctrine\DBAL\Connection" />
         </service>
 
     </services>

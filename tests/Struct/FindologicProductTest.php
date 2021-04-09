@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
+use DateTimeImmutable;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\Image;
 use FINDOLOGIC\Export\Data\Keyword;
@@ -18,7 +19,9 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
@@ -38,6 +41,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Test\TestDataCollection;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
@@ -58,9 +62,11 @@ use function parse_url;
 class FindologicProductTest extends TestCase
 {
     use IntegrationTestBehaviour;
+    use RandomIdHelper;
     use ProductHelper;
     use ConfigHelper;
     use SalesChannelHelper;
+    use OrderHelper;
 
     /** @var SalesChannelContext */
     private $salesChannelContext;
@@ -71,13 +77,20 @@ class FindologicProductTest extends TestCase
     /** @var RouterInterface */
     private $router;
 
+    /** @var TestDataCollection */
+    private $ids;
+
+    /** @var EntityRepositoryInterface */
+    private $customerRepository;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->router = $this->getContainer()->get('router');
         $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->shopkey = $this->getShopkey();
-
+        $this->ids = new TestDataCollection(Context::createDefaultContext());
+        $this->customerRepository = $this->getContainer()->get('customer.repository');
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
@@ -1708,6 +1721,7 @@ class FindologicProductTest extends TestCase
      * URL decodes images. This avoids having to debug the difference between URL encoded characters.
      *
      * @param Image[] $images
+     *
      * @return Image[]
      */
     private function urlDecodeImages(array $images): array
@@ -1782,6 +1796,7 @@ class FindologicProductTest extends TestCase
             'Product promotion is set to null' => [null, 'finSearch.general.no']
         ];
     }
+
     /**
      * @dataProvider productPromotionProvider
      */
@@ -1810,5 +1825,56 @@ class FindologicProductTest extends TestCase
         $values = $promotion->getAllValues();
         $this->assertNotEmpty($values);
         $this->assertSame($expected, current($values));
+    }
+
+    public function salesFrequencyProvider(): array
+    {
+        return [
+            'Product with order in the last 30 days' => [
+                'orderDateTime' => (new DateTimeImmutable())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
+                'expectedSalesFrequency' => 1
+            ],
+            'Product with no orders' => ['orderDate' => null, 'expectedSalesFrequency' => 0],
+            'Product with order older than 30 days' => [
+                'orderDateTime' => (new DateTimeImmutable('2020-01-01'))->format(Defaults::STORAGE_DATE_TIME_FORMAT),
+                'expectedSalesFrequency' => 0
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider salesFrequencyProvider
+     */
+    public function testSalesFrequencyIsBasedOnPreviousMonthsOrder(
+        ?string $orderDateTime,
+        int $expectedSalesFrequency
+    ): void {
+        $productEntity = $this->createTestProduct([
+            'productNumber' => 'test'
+        ]);
+        $customerId = Uuid::randomHex();
+        if ($orderDateTime !== null) {
+            $this->createCustomer($customerId);
+            $this->createOrder(
+                $customerId,
+                [
+                    'orderDateTime' => $orderDateTime,
+                    'lineItems' => [
+                        $this->buildOrderLineItem(['productId' => $productEntity->getId()])
+                    ],
+                ]
+            );
+        }
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
     }
 }
