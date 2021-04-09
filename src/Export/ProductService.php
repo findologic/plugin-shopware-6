@@ -99,7 +99,7 @@ class ProductService
         /** @var ProductCollection $products */
         $products = $result->getEntities();
         foreach ($products as $product) {
-            $children = $this->getChildren($product);
+            $children = $this->getChildrenOrSiblings($product);
 
             $product->setChildren($children);
         }
@@ -137,11 +137,11 @@ class ProductService
     }
 
     /**
-     * Gets all children of the given product.
+     * If the given product is a parent product, returns all children of the product.
      * In case the given product already is a child, all siblings and the parent are returned. The siblings
-     * do not include the given product.
+     * do not include the given product itself.
      */
-    protected function getChildren(ProductEntity $product): ?ProductCollection
+    protected function getChildrenOrSiblings(ProductEntity $product): ?ProductCollection
     {
         if (!$product->getParentId()) {
             return $product->getChildren();

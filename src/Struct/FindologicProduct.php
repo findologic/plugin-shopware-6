@@ -159,14 +159,6 @@ class FindologicProduct extends Struct
         );
         $this->productImageService = $this->container->get(ProductImageService::class);
 
-        if (!$this->productImageService->productHasImages($product) && $product->getChildCount() > 0) {
-            $variant = $this->productImageService->getFirstVariantWithImages($product);
-
-            if ($variant) {
-                $item->setId($variant->getId());
-            }
-        }
-
         $this->setName();
         $this->setAttributes();
         $this->setPrices();
@@ -274,7 +266,7 @@ class FindologicProduct extends Struct
     public function getDescription(): string
     {
         if (!$this->hasDescription()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->description;
@@ -299,7 +291,7 @@ class FindologicProduct extends Struct
     public function getDateAdded(): DateAdded
     {
         if (!$this->hasDateAdded()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->dateAdded;
@@ -326,7 +318,7 @@ class FindologicProduct extends Struct
     public function getUrl(): string
     {
         if (!$this->hasUrl()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->url;
@@ -626,7 +618,7 @@ class FindologicProduct extends Struct
         }
 
         if ($this->product->getReleaseDate()) {
-            $value = (string)$this->product->getReleaseDate()->format(DATE_ATOM);
+            $value = $this->product->getReleaseDate()->format(DATE_ATOM);
             $this->addProperty('releasedate', $value);
         }
 
