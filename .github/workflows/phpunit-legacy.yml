@@ -67,13 +67,7 @@ jobs:
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
 
-      - name: Create test database
-        run: |
-          cd development
-          ./psh.phar init-test-databases
-          ./psh.phar cache
-
-      # Deprecation Helper disabled until https://github.com/shopware/platform/pull/1759 is merged.
+      # Deprecation Helper disabled until the final release of 6.4.
       - name: Run test suite
         run: |
           cd development/custom/plugins/plugin-shopware-6
