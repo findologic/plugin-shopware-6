@@ -8,7 +8,6 @@ use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\AssertionFailedError;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
@@ -126,25 +125,19 @@ class ProductServiceTest extends TestCase
             'active' => false
         ]);
 
-        $variantDetails = [
-            'stock' => 10,
-            'active' => true,
-            'parentId' => $expectedParentId,
-            'tax' => ['name' => '9%', 'taxRate' => 9],
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
-        ];
-
-        $this->createVisibleTestProduct(array_merge([
+        $this->createVisibleTestProduct($this->getBasicVariantData([
             'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
             'productNumber' => 'FINDOLOGIC001.1',
             'name' => 'FINDOLOGIC VARIANT 1',
-        ], $variantDetails));
+        ]));
 
-        $this->createVisibleTestProduct(array_merge([
+        $this->createVisibleTestProduct($this->getBasicVariantData([
             'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
             'productNumber' => 'FINDOLOGIC001.2',
             'name' => 'FINDOLOGIC VARIANT 2',
-        ], $variantDetails));
+        ]));
 
         $products = $this->defaultProductService->searchVisibleProducts(20, 0);
         /** @var ProductEntity $product */
@@ -171,5 +164,77 @@ class ProductServiceTest extends TestCase
                 $this->assertSame($expectedChildVariantId, $child->getId());
             }
         }
+    }
+
+    public function testVariantsWithSameParentButDifferentDisplayGroupAreExportedAsSeparateProducts(): void
+    {
+        $expectedParentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+        $expectedSecondVariantId = Uuid::randomHex();
+
+        $firstOptionId = Uuid::randomHex();
+        $secondOptionId = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+
+        $this->createVisibleTestProduct([
+            'id' => $expectedParentId,
+            'active' => false,
+            'configuratorSettings' => [
+                [
+                    'option' => [
+                        'id' => $firstOptionId,
+                        'name' => 'Red',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $secondOptionId,
+                        'name' => 'Orange',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+            ],
+            'configuratorGroupConfig' => [
+                [
+                    'id' => $optionGroupId,
+                    'expressionForListings' => true,
+                    'representation' => 'box'
+                ]
+            ]
+        ]);
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ]
+        ]));
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ]
+        ]));
+
+        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $this->assertCount(2, $result->getElements());
+
+        $products = array_values($result->getElements());
+        $this->assertSame($expectedFirstVariantId, $products[0]->getId());
+        $this->assertSame($expectedSecondVariantId, $products[1]->getId());
     }
 }

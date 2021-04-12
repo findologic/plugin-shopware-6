@@ -149,6 +149,13 @@ class ProductService
 
         $productRepository = $this->container->get('product.repository');
         $criteria = new Criteria([$product->getParentId()]);
+
+        // Only get children of the same display group.
+        $childrenCriteria = $criteria->getAssociation('children');
+        $childrenCriteria->addFilter(
+            new EqualsFilter('displayGroup', $product->getDisplayGroup())
+        );
+
         $this->addProductAssociations($criteria);
 
         /** @var ProductCollection $result */
