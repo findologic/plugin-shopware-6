@@ -41,7 +41,7 @@ class ProductImageService
         if ($productHasImages) {
             $images = $this->getSortedProductImages($product);
         } elseif ($childrenHaveImages) {
-            $images = $this->getSortedChildrenImages($product);
+            $images = $this->getSortedVariantImages($product);
         }
 
         return $this->buildImageUrls($images);
@@ -91,7 +91,7 @@ class ProductImageService
         return $images;
     }
 
-    protected function getSortedChildrenImages(ProductEntity $product): ProductMediaCollection
+    protected function getSortedVariantImages(ProductEntity $product): ProductMediaCollection
     {
         $variantWithImages = $this->getFirstVariantWithImages($product);
 
