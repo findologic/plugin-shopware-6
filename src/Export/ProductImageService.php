@@ -32,15 +32,15 @@ class ProductImageService
     public function getProductImages(ProductEntity $product): array
     {
         $productHasImages = $this->productHasImages($product);
-        $childrenHaveImages = $this->hasChildrenWithImages($product);
-        if (!$productHasImages && !$childrenHaveImages) {
+        $hasVariantWithImages = $this->hasVariantWithImages($product);
+        if (!$productHasImages && !$hasVariantWithImages) {
             return $this->getFallbackImages();
         }
 
-        $images = [];
+        $images = new ProductMediaCollection();
         if ($productHasImages) {
             $images = $this->getSortedProductImages($product);
-        } elseif ($childrenHaveImages) {
+        } elseif ($hasVariantWithImages) {
             $images = $this->getSortedVariantImages($product);
         }
 
@@ -181,11 +181,11 @@ class ProductImageService
         return $images;
     }
 
-    protected function hasChildrenWithImages(ProductEntity $product): bool
+    protected function hasVariantWithImages(ProductEntity $product): bool
     {
-        $children = $product->getChildren();
+        $variants = $product->getChildren();
 
-        foreach ($children as $variant) {
+        foreach ($variants as $variant) {
             if ($this->productHasImages($variant)) {
                 return true;
             }
