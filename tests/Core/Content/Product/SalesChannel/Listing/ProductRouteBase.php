@@ -17,6 +17,7 @@ use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
+use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
@@ -27,20 +28,22 @@ use Symfony\Component\HttpFoundation\Session\Session;
 
 abstract class ProductRouteBase extends TestCase
 {
+    use IntegrationTestBehaviour;
+
     /**
      * @var EventDispatcherInterface|MockObject
      */
     protected $eventDispatcherMock;
 
     /**
-     * @var ProductDefinition|MockObject
+     * @var ProductDefinition
      */
-    protected $productDefinitionMock;
+    protected $productDefinition;
 
     /**
-     * @var RequestCriteriaBuilder|MockObject
+     * @var RequestCriteriaBuilder
      */
-    protected $criteriaBuilderMock;
+    protected $criteriaBuilder;
 
     /**
      * @var SalesChannelRepositoryInterface|MockObject
@@ -78,13 +81,9 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->productDefinitionMock = $this->getMockBuilder(ProductDefinition::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->productDefinition = $this->getContainer()->get(ProductDefinition::class);
 
-        $this->criteriaBuilderMock = $this->getMockBuilder(RequestCriteriaBuilder::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->criteriaBuilder = $this->getContainer()->get(RequestCriteriaBuilder::class);
 
         $this->productRepositoryMock = $this->getMockBuilder(SalesChannelRepositoryInterface::class)
             ->disableOriginalConstructor()
