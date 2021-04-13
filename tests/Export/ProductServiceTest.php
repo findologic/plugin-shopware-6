@@ -7,7 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
@@ -112,5 +112,129 @@ class ProductServiceTest extends TestCase
         $product = $products->first();
 
         $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
+    }
+
+    public function testIfMoreThanOneVariantExistsItWillUseVariantInformationInsteadOfMainProductInformation(): void
+    {
+        $expectedParentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+        $expectedSecondVariantId = Uuid::randomHex();
+
+        $this->createVisibleTestProduct([
+            'id' => $expectedParentId,
+            'active' => false
+        ]);
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+        ]));
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+        ]));
+
+        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+        /** @var ProductEntity $product */
+        $product = $products->first();
+
+        // In the real world variants are created after another. When working with Shopware DAL manually,
+        // sometimes the second statement may be executed before the first one, which causes a different result.
+        // To prevent this test from failing if Shopware decides to create the second variant before the first one,
+        // we ensure that the second variant is used instead.
+        $expectedChildVariantId = $expectedSecondVariantId;
+        try {
+            $this->assertSame($expectedFirstVariantId, $product->getId());
+        } catch (AssertionFailedError $e) {
+            $this->assertSame($expectedSecondVariantId, $product->getId());
+            $expectedChildVariantId = $expectedFirstVariantId;
+        }
+
+        $this->assertCount(2, $product->getChildren());
+
+        foreach ($product->getChildren() as $child) {
+            if (!$child->getParentId()) {
+                $this->assertSame($expectedParentId, $child->getId());
+            } else {
+                $this->assertSame($expectedChildVariantId, $child->getId());
+            }
+        }
+    }
+
+    public function testVariantsWithSameParentButDifferentDisplayGroupAreExportedAsSeparateProducts(): void
+    {
+        $expectedParentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+        $expectedSecondVariantId = Uuid::randomHex();
+
+        $firstOptionId = Uuid::randomHex();
+        $secondOptionId = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+
+        $this->createVisibleTestProduct([
+            'id' => $expectedParentId,
+            'active' => false,
+            'configuratorSettings' => [
+                [
+                    'option' => [
+                        'id' => $firstOptionId,
+                        'name' => 'Red',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $secondOptionId,
+                        'name' => 'Orange',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+            ],
+            'configuratorGroupConfig' => [
+                [
+                    'id' => $optionGroupId,
+                    'expressionForListings' => true,
+                    'representation' => 'box'
+                ]
+            ]
+        ]);
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ]
+        ]));
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ]
+        ]));
+
+        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $this->assertCount(2, $result->getElements());
+
+        $products = array_values($result->getElements());
+        $this->assertSame($expectedFirstVariantId, $products[0]->getId());
+        $this->assertSame($expectedSecondVariantId, $products[1]->getId());
     }
 }

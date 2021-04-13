@@ -8,18 +8,19 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductCollection;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Grouping\FieldGrouping;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-
-use function array_diff;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ProductService
 {
@@ -95,14 +96,12 @@ class ProductService
             $this->salesChannelContext->getContext()
         );
 
-        /** @var ProductCollection $visibleProductsCollection */
-        $visibleProductsCollection = $result->getEntities();
-        if ($visibleProductsCollection->count() !== $limit) {
-            $inactiveProductIds = $this->getInactiveProductIds($limit, $offset, $productId, $visibleProductsCollection);
-            $variants = $this->searchActiveVariants($inactiveProductIds, $limit, $offset, $productId);
-            foreach ($variants as $variant) {
-                $result->add($variant);
-            }
+        /** @var ProductCollection $products */
+        $products = $result->getEntities();
+        foreach ($products as $product) {
+            $children = $this->getChildrenOrSiblings($product);
+
+            $product->setChildren($children);
         }
 
         return $result;
@@ -137,7 +136,41 @@ class ProductService
         Utils::addProductAssociations($criteria);
     }
 
-    private function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria
+    /**
+     * If the given product is a parent product, returns all children of the product.
+     * In case the given product already is a child, all siblings and the parent are returned. The siblings
+     * do not include the given product itself.
+     */
+    protected function getChildrenOrSiblings(ProductEntity $product): ?ProductCollection
+    {
+        if (!$product->getParentId()) {
+            return $product->getChildren();
+        }
+
+        $productRepository = $this->container->get('product.repository');
+        $criteria = new Criteria([$product->getParentId()]);
+
+        // Only get children of the same display group.
+        $childrenCriteria = $criteria->getAssociation('children');
+        $childrenCriteria->addFilter(
+            new EqualsFilter('displayGroup', $product->getDisplayGroup())
+        );
+
+        $this->addProductAssociations($criteria);
+
+        /** @var ProductCollection $result */
+        $result = $productRepository->search($criteria, $this->salesChannelContext->getContext());
+
+        // Remove the given children, as the child product is considered as the product, which is shown
+        // in the storefront. As we also want to get the data from the parent, we also manually add it here.
+        $children = $result->first()->getChildren();
+        $children->remove($product->getId());
+        $children->add($result->first());
+
+        return $children;
+    }
+
+    protected function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria
     {
         $criteria = $this->buildProductCriteria($limit, $offset);
 
@@ -149,11 +182,13 @@ class ProductService
         );
     }
 
-    private function buildProductCriteria(?int $limit = null, ?int $offset = null): Criteria
+    protected function buildProductCriteria(?int $limit = null, ?int $offset = null): Criteria
     {
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('parent.id', null));
+        $criteria->addSorting(new FieldSorting('createdAt'));
 
+        $this->addGrouping($criteria);
+        $this->handleAvailableStock($criteria);
         $this->addProductAssociations($criteria);
 
         if ($offset !== null) {
@@ -166,31 +201,46 @@ class ProductService
         return $criteria;
     }
 
-    private function buildActiveVariantCriteria(?int $limit = null, ?int $offset = null): Criteria
+    /**
+     * @see \Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingLoader::addGrouping()
+     */
+    protected function addGrouping(Criteria $criteria): void
     {
-        $criteria = new Criteria();
-        $criteria->addFilter(new NotFilter(NotFilter::CONNECTION_AND, [new EqualsFilter('parentId', null)]));
+        $criteria->addGroupField(new FieldGrouping('displayGroup'));
 
-        $this->addProductAssociations($criteria);
+        $criteria->addFilter(
+            new NotFilter(
+                NotFilter::CONNECTION_AND,
+                [new EqualsFilter('displayGroup', null)]
+            )
+        );
+    }
 
-        if ($offset !== null) {
-            $criteria->setOffset($offset);
-        }
-        if ($limit !== null) {
-            $criteria->setLimit($limit);
+    /**
+     * @see \Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingLoader::handleAvailableStock()
+     */
+    protected function handleAvailableStock(Criteria $criteria): void
+    {
+        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
+        $systemConfigService = $this->container->get(SystemConfigService::class);
+
+        $hide = $systemConfigService->get('core.listing.hideCloseoutProductsWhenOutOfStock', $salesChannelId);
+        if (!$hide) {
+            return;
         }
 
         $criteria->addFilter(
-            new ProductAvailableFilter(
-                $this->salesChannelContext->getSalesChannel()->getId(),
-                ProductVisibilityDefinition::VISIBILITY_SEARCH
+            new NotFilter(
+                NotFilter::CONNECTION_AND,
+                [
+                    new EqualsFilter('product.isCloseout', true),
+                    new EqualsFilter('product.available', false),
+                ]
             )
         );
-
-        return $criteria;
     }
 
-    private function addProductIdFilters(Criteria $criteria, string $productId): void
+    protected function addProductIdFilters(Criteria $criteria, string $productId): void
     {
         $productFilter = [
             new EqualsFilter('ean', $productId),
@@ -210,48 +260,5 @@ class ProductService
                 $productFilter
             )
         );
-    }
-
-    private function searchActiveVariants(
-        array $inactiveProductIds,
-        ?int $limit,
-        ?int $offset,
-        ?string $productId
-    ): array {
-        $criteria = $this->buildActiveVariantCriteria($limit, $offset);
-        $criteria->addFilter(new EqualsAnyFilter('parentId', $inactiveProductIds));
-
-        if ($productId) {
-            $this->addProductIdFilters($criteria, $productId);
-        }
-
-        $variants = $this->container->get('product.repository')
-            ->search($criteria, $this->salesChannelContext->getContext())
-            ->getEntities();
-
-        $activeVariant = [];
-        foreach ($variants as $variant) {
-            // We only need to get the first active variant, so if we already have the the first variant we do not
-            // check the rest of the variants.
-            if (!isset($activeVariant[$variant->getParentId()])) {
-                $activeVariant[$variant->getParentId()] = $variant;
-            }
-        }
-
-        return $activeVariant;
-    }
-
-    private function getInactiveProductIds(
-        ?int $limit,
-        ?int $offset,
-        ?string $productId,
-        ProductCollection $visibleProductsCollection
-    ): array {
-        $allProductsResult = $this->searchAllProducts($limit, $offset, $productId);
-        $allProductCollection = $allProductsResult->getEntities();
-        $allProductIds = $allProductCollection->getIds();
-        $foundIds = $visibleProductsCollection->getIds();
-
-        return array_diff($allProductIds, $foundIds);
     }
 }
