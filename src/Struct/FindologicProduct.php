@@ -20,21 +20,16 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesExcepti
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
+use FINDOLOGIC\FinSearch\Export\ProductImageService;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
-use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
-use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
-use Shopware\Core\Content\Media\MediaEntity;
-use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
-use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
-use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
@@ -45,7 +40,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\RangeFilter;
 use Shopware\Core\Framework\Struct\Collection;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -126,6 +120,9 @@ class FindologicProduct extends Struct
     /** @var CategoryEntity */
     protected $navigationCategory;
 
+    /** @var ProductImageService */
+    protected $productImageService;
+
     /**
      * @param CustomerGroupEntity[] $customerGroups
      *
@@ -160,6 +157,7 @@ class FindologicProduct extends Struct
             $this->container->get('category.repository'),
             $this->salesChannelContext->getSalesChannel()
         );
+        $this->productImageService = $this->container->get(ProductImageService::class);
 
         $this->setName();
         $this->setAttributes();
@@ -268,7 +266,7 @@ class FindologicProduct extends Struct
     public function getDescription(): string
     {
         if (!$this->hasDescription()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->description;
@@ -293,7 +291,7 @@ class FindologicProduct extends Struct
     public function getDateAdded(): DateAdded
     {
         if (!$this->hasDateAdded()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->dateAdded;
@@ -320,7 +318,7 @@ class FindologicProduct extends Struct
     public function getUrl(): string
     {
         if (!$this->hasUrl()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->url;
@@ -452,39 +450,7 @@ class FindologicProduct extends Struct
 
     protected function setImages(): void
     {
-        if (!$this->product->getMedia() || !$this->product->getMedia()->count()) {
-            $fallbackImage = $this->buildFallbackImage($this->router->getContext());
-
-            if (!Utils::isEmpty($fallbackImage)) {
-                $this->images[] = new Image($fallbackImage);
-                $this->images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
-            }
-
-            return;
-        }
-
-        /** @var ProductMediaEntity $mediaEntity */
-        foreach ($this->getSortedImages() as $mediaEntity) {
-            $media = $mediaEntity->getMedia();
-            if (!$media || !$media->getUrl()) {
-                continue;
-            }
-
-            $thumbnails = $media->getThumbnails();
-            if (!$thumbnails) {
-                $this->setImageUrl($media);
-                continue;
-            }
-
-            $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
-            // Use the thumbnail as the main image if available, otherwise fallback to the directly assigned image.
-            $image = $filteredThumbnails->first() ?? $media;
-            if ($image) {
-                $this->setImageUrl($image);
-            }
-
-            $this->addThumbnailImages($filteredThumbnails);
-        }
+        $this->images = $this->productImageService->getProductImages($this->product);
     }
 
     public function hasImages(): bool
@@ -652,7 +618,7 @@ class FindologicProduct extends Struct
         }
 
         if ($this->product->getReleaseDate()) {
-            $value = (string)$this->product->getReleaseDate()->format(DATE_ATOM);
+            $value = $this->product->getReleaseDate()->format(DATE_ATOM);
             $this->addProperty('releasedate', $value);
         }
 
@@ -947,22 +913,6 @@ class FindologicProduct extends Struct
         return Utils::buildUrl($parsedUrl);
     }
 
-    protected function buildFallbackImage(RequestContext $requestContext): string
-    {
-        $schemaAuthority = $requestContext->getScheme() . '://' . $requestContext->getHost();
-        if ($requestContext->getHttpPort() !== 80) {
-            $schemaAuthority .= ':' . $requestContext->getHttpPort();
-        } elseif ($requestContext->getHttpsPort() !== 443) {
-            $schemaAuthority .= ':' . $requestContext->getHttpsPort();
-        }
-
-        return sprintf(
-            '%s/%s',
-            $schemaAuthority,
-            'bundles/storefront/assets/icon/default/placeholder.svg'
-        );
-    }
-
     protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
     {
         $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
@@ -975,22 +925,6 @@ class FindologicProduct extends Struct
         }
 
         return $seoUrls;
-    }
-
-    protected function getSortedImages(): ProductMediaCollection
-    {
-        $images = $this->product->getMedia();
-        $coverImageId = $this->product->getCoverId();
-        $coverImage = $images->get($coverImageId);
-
-        if (!$coverImage || $images->count() === 1) {
-            return $images;
-        }
-
-        $images->remove($coverImageId);
-        $images->insert(0, $coverImage);
-
-        return $images;
     }
 
     protected function setCustomFieldAttributes(): void
@@ -1152,54 +1086,5 @@ class FindologicProduct extends Struct
         }
 
         return rtrim($path, '/');
-    }
-
-    protected function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
-    {
-        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
-            return $thumbnail->getWidth() >= 600;
-        });
-
-        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
-            return $a->getWidth() <=> $b->getWidth();
-        });
-
-        return $filteredThumbnails;
-    }
-
-    /**
-     * @param MediaThumbnailEntity|MediaEntity $media
-     */
-    protected function setImageUrl(Entity $media): void
-    {
-        $encodedUrl = $this->getEncodedUrl($media->getUrl());
-        if (!Utils::isEmpty($encodedUrl)) {
-            $this->images[] = new Image($encodedUrl);
-        }
-    }
-
-    protected function addThumbnailUrl(MediaThumbnailEntity $media): void
-    {
-        $encodedUrl = $this->getEncodedUrl($media->getUrl());
-        if (!Utils::isEmpty($encodedUrl)) {
-            $this->images[] = new Image($encodedUrl, Image::TYPE_THUMBNAIL);
-        }
-    }
-
-    /**
-     * Go through all given thumbnails and only add one thumbnail image. This avoids exporting thumbnails in
-     * all various sizes.
-     */
-    protected function addThumbnailImages(MediaThumbnailCollection $thumbnails): void
-    {
-        $imageIds = [];
-        foreach ($thumbnails as $thumbnailEntity) {
-            if (in_array($thumbnailEntity->getMediaId(), $imageIds)) {
-                continue;
-            }
-
-            $this->addThumbnailUrl($thumbnailEntity);
-            $imageIds[] = $thumbnailEntity->getMediaId();
-        }
     }
 }

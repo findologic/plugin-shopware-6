@@ -264,4 +264,14 @@ trait ProductHelper
             Context::createDefaultContext()
         );
     }
+
+    public function getBasicVariantData(array $overrides = []): array
+    {
+        return array_merge([
+            'stock' => 10,
+            'active' => true,
+            'tax' => ['name' => '9%', 'taxRate' => 9],
+            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
+        ], $overrides);
+    }
 }

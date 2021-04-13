@@ -84,6 +84,8 @@ class Utils
                 'properties.productConfiguratorSettings.option.group',
                 'properties.productConfiguratorSettings.option.group.translations',
                 'children',
+                'children.media',
+                'children.cover',
                 'children.properties',
                 'children.properties.group',
                 'children.properties.productConfiguratorSettings',
