@@ -113,6 +113,13 @@ class ProductListingRoute extends AbstractProductListingRoute
             return $this->decorated->load($categoryId, $request, $salesChannelContext, $criteria);
         }
 
+        $criteria = $this->criteriaBuilder->handleRequest(
+            $request,
+            $criteria,
+            $this->definition,
+            $salesChannelContext->getContext()
+        );
+
         $criteria->addFilter(
             new ProductAvailableFilter(
                 $salesChannelContext->getSalesChannel()->getId(),
@@ -122,13 +129,6 @@ class ProductListingRoute extends AbstractProductListingRoute
 
         $criteria->addFilter(
             new EqualsFilter('product.categoriesRo.id', $categoryId)
-        );
-
-        $this->criteriaBuilder->handleRequest(
-            $request,
-            $criteria,
-            $this->definition,
-            $salesChannelContext->getContext()
         );
 
         $this->eventDispatcher->dispatch(

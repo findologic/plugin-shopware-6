@@ -111,6 +111,13 @@ class ProductSearchRoute extends AbstractProductSearchRoute
             $this->config
         );
 
+        $criteria = $this->criteriaBuilder->handleRequest(
+            $request,
+            $criteria,
+            $this->definition,
+            $context->getContext()
+        );
+
         $criteria->addFilter(
             new ProductAvailableFilter(
                 $context->getSalesChannel()->getId(),
@@ -119,12 +126,6 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         );
 
         $this->searchBuilder->build($request, $criteria, $context);
-        $this->criteriaBuilder->handleRequest(
-            $request,
-            $criteria,
-            $this->definition,
-            $context->getContext()
-        );
 
         $this->eventDispatcher->dispatch(
             new ProductSearchCriteriaEvent($request, $criteria, $context)
