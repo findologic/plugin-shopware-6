@@ -124,27 +124,54 @@ class Utils
 
     public static function versionLowerThan(string $version): bool
     {
-        $versions = Versions::VERSIONS;
-        if (isset($versions['shopware/core'])) {
-            $shopwareVersion = Versions::getVersion('shopware/core');
-        } else {
-            $shopwareVersion = Versions::getVersion('shopware/platform');
+        return version_compare(static::getCleanShopwareVersion(), $version, '<');
+    }
+
+    public static function getCleanShopwareVersion(): string
+    {
+        $version = static::getShopwareVersion();
+        $versionWithoutPrefix = ltrim($version, 'v');
+
+        return static::cleanVersionCommitHashAndReleaseInformation($versionWithoutPrefix);
+    }
+
+    /**
+     * Fetches the raw installed Shopware version. The returned version string may contain a version prefix
+     * and/or a commit hash and/or release information such as "-RC1". E.g.
+     *
+     * * 6.3.5.3@940439ea951dfcf7b34584485cf6251c49640cdf
+     * * v6.2.3
+     * * v6.4.0-RC1@34abab343847384934334781abababababcdddddd
+     */
+    protected static function getShopwareVersion(): string
+    {
+        $packageVersions = Versions::VERSIONS;
+        $coreIsInstalled = isset($packageVersions['shopware/core']);
+
+        $shopwareVersion = $coreIsInstalled ?
+            Versions::getVersion('shopware/core') :
+            Versions::getVersion('shopware/platform');
+
+        if (!trim($shopwareVersion, 'v@')) {
+            return $coreIsInstalled ? $packageVersions['shopware/core'] : $packageVersions['shopware/platform'];
         }
 
-        // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
-        $shopwareVersion = ltrim($shopwareVersion, 'v');
+        return $shopwareVersion;
+    }
 
-        // Development versions may add the versions with an "@" sign, which refers to the current commit.
-        $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '@'));
-
-        // Release Candidate versions may add the versions with an "-RC" sign, which refers to the
-        // stability of the release. E.g. 6.4.0.0-RC1.
-        $versionWithoutReleaseInformation = $versionWithoutCommitHash;
-        if (strpos($versionWithoutCommitHash, '-RC')) {
-            $versionWithoutReleaseInformation = substr($shopwareVersion, 0, strpos($versionWithoutCommitHash, '-RC'));
+    protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string
+    {
+        $hasCommitHash = !!strpos($version, '@');
+        if ($hasCommitHash) {
+            $version = substr($version, 0, strpos($version, '@'));
         }
 
-        return version_compare($versionWithoutReleaseInformation, $version, '<');
+        $hasReleaseInformation = !!strpos($version, '-RC');
+        if ($hasReleaseInformation) {
+            $version = substr($version, 0, strpos($version, '-RC'));
+        }
+
+        return $version;
     }
 
     /**
