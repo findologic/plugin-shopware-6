@@ -18,6 +18,7 @@ use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
+use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
@@ -43,7 +44,7 @@ class ExportController extends AbstractController
     /** @var HeaderHandler */
     private $headerHandler;
 
-    /** @var SalesChannelContextFactory */
+    /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
     private $salesChannelContextFactory;
 
     /** @var SalesChannelContext */
@@ -67,11 +68,14 @@ class ExportController extends AbstractController
     /** @var SalesChannelService|null */
     private $salesChannelService;
 
+    /**
+     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
+     */
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
         HeaderHandler $headerHandler,
-        SalesChannelContextFactory $salesChannelContextFactory,
+        $salesChannelContextFactory,
         CacheItemPoolInterface $cache
     ) {
         $this->logger = $logger;

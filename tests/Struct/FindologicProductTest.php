@@ -1393,8 +1393,8 @@ class FindologicProductTest extends TestCase
                         'listPrice' => [
                             'net' => 20,
                             'gross' => 25,
-                            'linked' => false
-                        ]
+                            'linked' => false,
+                        ],
                     ]
                 ],
             ]
@@ -1431,6 +1431,13 @@ class FindologicProductTest extends TestCase
     private function createCurrency(): string
     {
         $currencyId = Uuid::randomHex();
+
+        $cashRoundingConfig = [
+            'decimals' => 2,
+            'interval' => 1,
+            'roundForNet' => false
+        ];
+
         /** @var EntityRepositoryInterface $currencyRepo */
         $currencyRepo = $this->getContainer()->get('currency.repository');
         $currencyRepo->upsert(
@@ -1442,7 +1449,9 @@ class FindologicProductTest extends TestCase
                     'symbol' => 'F',
                     'decimalPrecision' => 2,
                     'name' => 'Findologic Currency',
-                    'shortName' => 'FL'
+                    'shortName' => 'FL',
+                    'itemRounding' => $cashRoundingConfig,
+                    'totalRounding' => $cashRoundingConfig,
                 ]
             ],
             $this->salesChannelContext->getContext()

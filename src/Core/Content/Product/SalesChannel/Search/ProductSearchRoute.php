@@ -96,8 +96,13 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         return $this->decorated;
     }
 
-    public function load(Request $request, SalesChannelContext $context): ProductSearchRouteResponse
-    {
+    public function load(
+        Request $request,
+        SalesChannelContext $context,
+        ?Criteria $criteria = null
+    ): ProductSearchRouteResponse {
+        $criteria = $criteria ?? new Criteria();
+
         $this->config->initializeBySalesChannel($context);
         $shouldHandleRequest = Utils::shouldHandleRequest(
             $request,
@@ -106,11 +111,13 @@ class ProductSearchRoute extends AbstractProductSearchRoute
             $this->config
         );
 
-        if (!$shouldHandleRequest) {
-            return $this->decorated->load($request, $context);
-        }
+        $criteria = $this->criteriaBuilder->handleRequest(
+            $request,
+            $criteria,
+            $this->definition,
+            $context->getContext()
+        );
 
-        $criteria = new Criteria();
         $criteria->addFilter(
             new ProductAvailableFilter(
                 $context->getSalesChannel()->getId(),
@@ -119,16 +126,14 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         );
 
         $this->searchBuilder->build($request, $criteria, $context);
-        $this->criteriaBuilder->handleRequest(
-            $request,
-            $criteria,
-            $this->definition,
-            $context->getContext()
-        );
 
         $this->eventDispatcher->dispatch(
             new ProductSearchCriteriaEvent($request, $criteria, $context)
         );
+
+        if (!$shouldHandleRequest) {
+            return $this->decorated->load($request, $context, $criteria);
+        }
 
         $result = $this->doSearch($criteria, $context);
         $result = ProductListingResult::createFrom($result);

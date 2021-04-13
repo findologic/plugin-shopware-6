@@ -38,6 +38,7 @@ use Shopware\Core\Content\Category\Tree\Tree;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as
     ShopwareProductListingFeaturesSubscriber;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
@@ -123,6 +124,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /** @var SalesChannelContext */
     private $salesChannelContext;
 
+    /** @var ProductSortingCollection */
+    private $sortingCollection;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -176,16 +180,18 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             'totalCountMode' => 0,
             'associations' => [],
             'ids' => $expectedProducts,
-            'states' => [],
             'inherited' => false,
             'term' => null,
             'extensions' => [
                 'flPagination' => new Pagination(24, 0, 1808)
             ],
-            'includes' => null
+            'includes' => null,
         ];
         if (Utils::versionLowerThan('6.3')) {
             $expectedAssign['source'] = null;
+        }
+        if (Utils::versionLowerThan('6.4')) {
+            $expectedAssign['states'] = [];
         }
         $expectedAssign['title'] = null;
 
@@ -574,15 +580,19 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             $sorting->setKey('score');
             $sorting->setFields(['score' => ['field' => '_score', 'order' => 'asc']]);
             $sorting->setUniqueIdentifier('score');
-            $productSorting = new ProductSortingCollection([$sorting]);
-            $this->productListingSortingRegistry->expects($this->any())
-                ->method('getProductSortingEntities')
-                ->willReturn($productSorting);
+            $this->sortingCollection = new ProductSortingCollection([$sorting]);
+
+            if (method_exists($this->productListingSortingRegistry, 'getProductSortingEntities')) {
+                $this->productListingSortingRegistry->expects($this->any())
+                    ->method('getProductSortingEntities')
+                    ->willReturn($this->sortingCollection);
+            }
 
             $this->entityRepositoryMock->expects($this->any())->method('search')->willReturn(
-                new EntitySearchResult(
-                    $productSorting->count(),
-                    $productSorting,
+                Utils::buildEntitySearchResult(
+                    ProductSortingEntity::class,
+                    $this->sortingCollection->count(),
+                    $this->sortingCollection,
                     new AggregationResultCollection(),
                     new Criteria(),
                     Context::createDefaultContext()
@@ -649,13 +659,21 @@ class ProductListingFeaturesSubscriberTest extends TestCase
                 $this->entityRepositoryMock,
                 $this->productListingSortingRegistry
             );
-        } else {
+        } elseif (Utils::versionLowerThan('6.4')) {
             $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
                 $this->connectionMock,
                 $this->entityRepositoryMock,
                 $this->entityRepositoryMock,
                 $this->systemConfigServiceMock,
                 $this->productListingSortingRegistry,
+                $this->eventDispatcherMock
+            );
+        } else {
+            $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
+                $this->connectionMock,
+                $this->entityRepositoryMock,
+                $this->entityRepositoryMock,
+                $this->systemConfigServiceMock,
                 $this->eventDispatcherMock
             );
         }
@@ -706,12 +724,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $requestMock->expects($this->any())->method('getSession')->willReturn($sessionMock);
 
         $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
-        $queryMock->expects($this->at(0))
+        $queryMock->expects($this->any())
             ->method('getInt')
-            ->willReturn(24);
-        $queryMock->expects($this->at(1))
-            ->method('getInt')
-            ->willReturn(1);
+            ->willReturnOnConsecutiveCalls(24, 1);
         $queryMock->expects($this->any())->method('get')->willReturn('');
         $queryMock->expects($this->any())->method('all')->willReturn([]);
 
@@ -994,7 +1009,6 @@ XML;
                 '019111105-37900' => '019111105-37900',
                 '029214085-37860' => '029214085-37860'
             ],
-            'states' => [],
             'inherited' => false,
             'term' => null,
             'extensions' => [
@@ -1004,6 +1018,9 @@ XML;
         ];
         if (Utils::versionLowerThan('6.3')) {
             $expectedAssign['source'] = null;
+        }
+        if (Utils::versionLowerThan('6.4')) {
+            $expectedAssign['states'] = [];
         }
         $expectedAssign['title'] = null;
         $expectedAssign['limit'] = $expectedLimit;
@@ -1091,16 +1108,19 @@ XML;
 
         $criteria = new Criteria();
         if (!Utils::versionLowerThan('6.3.2')) {
-            $criteria->addExtension('sortings', $this->productListingSortingRegistry->getProductSortingEntities());
+            $criteria->addExtension('sortings', $this->sortingCollection);
         }
 
-        $result = new ProductListingResult(
+        $rawResult = Utils::buildEntitySearchResult(
+            ProductEntity::class,
             0,
             new EntityCollection(),
             new AggregationResultCollection(),
             $criteria,
             Context::createDefaultContext()
         );
+
+        $result = ProductListingResult::createFrom($rawResult);
 
         $orderParam = Utils::versionLowerThan('6.2') ? 'sort' : 'order';
 

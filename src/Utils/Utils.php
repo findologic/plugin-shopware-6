@@ -11,12 +11,16 @@ use InvalidArgumentException;
 use PackageVersions\Versions;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
+use Throwable;
 
 class Utils
 {
@@ -253,6 +257,21 @@ class Utils
         return $findologicService ? $findologicService->getEnabled() : false;
     }
 
+    public static function disableFindologicWhenEnabled(SalesChannelContext $context): void
+    {
+        if (!static::isFindologicEnabled($context)) {
+            return;
+        }
+
+        if (!$context->getContext()->hasExtension('findologicService')) {
+            return;
+        }
+
+        /** @var FindologicService $findologicService */
+        $findologicService = $context->getContext()->getExtension('findologicService');
+        $findologicService->disable();
+    }
+
     public static function isEmpty($value): bool
     {
         if (is_numeric($value) || is_object($value) || is_bool($value)) {
@@ -313,5 +332,44 @@ class Utils
         }
 
         return $navigationCategory;
+    }
+
+    /**
+     * Builds an entity search result, which is backwards-compatible for older Shopware versions.
+     */
+    public static function buildEntitySearchResult(
+        string $entity,
+        int $total,
+        EntityCollection $entities,
+        ?AggregationResultCollection $aggregations,
+        Criteria $criteria,
+        Context $context,
+        int $page = 1,
+        ?int $limit = null
+    ): EntitySearchResult {
+        try {
+            // Shopware >= 6.4
+            return new EntitySearchResult(
+                $entity,
+                $total,
+                $entities,
+                $aggregations,
+                $criteria,
+                $context,
+                $page,
+                $limit
+            );
+        } catch (Throwable $e) {
+            // Shopware < 6.4
+            return new EntitySearchResult(
+                $total,
+                $entities,
+                $aggregations,
+                $criteria,
+                $context,
+                $page,
+                $limit
+            );
+        }
     }
 }

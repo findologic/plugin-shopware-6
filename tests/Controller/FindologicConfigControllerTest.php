@@ -53,10 +53,22 @@ class FindologicConfigControllerTest extends TestCase
      */
     public function testOnlyUniqueShopkeysCanBeSaved(array $params, int $statusCode): void
     {
+        /** @var Connection $connection */
         $connection = $this->getContainer()->get(Connection::class);
-        $connection->exec('DELETE FROM finsearch_config');
+        if (method_exists($connection, 'executeStatement')) {
+            // Symfony >= 5
+            $connection->executeStatement('DELETE FROM finsearch_config');
+        } else {
+            // Symfony 4
+            $connection->exec('DELETE FROM finsearch_config');
+        }
 
-        $url = sprintf('/api/v%s/_action/finsearch/batch', PlatformRequest::API_VERSION);
+        $url = '/api/_action/finsearch/batch';
+        if (defined('\Shopware\Core\PlatformRequest::API_VERSION')) {
+            // Shopware < 6.4 requires an API version. This has been dropped with 6.4.
+            $url = sprintf('/api/v%s/_action/finsearch/batch', PlatformRequest::API_VERSION);
+        }
+
         $client = $this->getBrowser();
         $client->request('POST', $url, $params);
 

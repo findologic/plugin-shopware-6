@@ -53,9 +53,10 @@ class FrontendSubscriberTest extends TestCase
         $headerPageletMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $headerPageletMock->expects($this->at(0))
+
+        $headerPageletMock->expects($this->any())
             ->method('addExtension')
-            ->with(
+            ->withConsecutive([
                 $this->callback(
                     function (string $name) {
                         $this->assertEquals('flConfig', $name);
@@ -70,10 +71,7 @@ class FrontendSubscriberTest extends TestCase
                         return true;
                     }
                 )
-            );
-        $headerPageletMock->expects($this->at(1))
-            ->method('addExtension')
-            ->with(
+            ], [
                 $this->callback(
                     function (string $name) {
                         $this->assertEquals('flSnippet', $name);
@@ -88,7 +86,7 @@ class FrontendSubscriberTest extends TestCase
                         return true;
                     }
                 )
-            );
+            ]);
 
         $salesChannelContext = $this->buildSalesChannelContext();
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')

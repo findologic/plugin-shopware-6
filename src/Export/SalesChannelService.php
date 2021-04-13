@@ -10,6 +10,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Routing\RequestTransformerInterface;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
+use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -20,15 +21,18 @@ class SalesChannelService
     /** @var EntityRepository */
     private $systemConfigRepository;
 
-    /** @var SalesChannelContextFactory */
+    /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
     private $salesChannelContextFactory;
 
     /** @var RequestTransformerInterface */
     private $requestTransformer;
 
+    /**
+     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
+     */
     public function __construct(
         EntityRepository $systemConfigRepository,
-        SalesChannelContextFactory $salesChannelContextFactory,
+        $salesChannelContextFactory,
         RequestTransformerInterface $requestTransformer
     ) {
         $this->systemConfigRepository = $systemConfigRepository;

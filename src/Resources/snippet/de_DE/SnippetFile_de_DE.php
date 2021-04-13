@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\de_DE;
+namespace FINDOLOGIC\FinSearch\Resources\snippet\de_DE;
 
 use Shopware\Core\System\Snippet\Files\SnippetFileInterface;
 
@@ -10,12 +10,12 @@ class SnippetFile_de_DE implements SnippetFileInterface
 {
     public function getName(): string
     {
-        return 'finsearch.de_DE';
+        return 'storefront.de-DE';
     }
 
     public function getPath(): string
     {
-        return __DIR__ . '/finsearch.de_DE.json';
+        return __DIR__ . '/storefront.de-DE.json';
     }
 
     public function getIso(): string

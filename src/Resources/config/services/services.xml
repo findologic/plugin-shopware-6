@@ -108,11 +108,11 @@
             <argument id="service_container" type="service" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\en_GB\SnippetFile_en_GB" public="true">
+        <service id="FINDOLOGIC\FinSearch\Resources\snippet\en_GB\SnippetFile_en_GB" public="true">
             <tag name="shopware.snippet.file" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Resources\app\storefront\src\snippets\de_DE\SnippetFile_de_DE" public="true">
+        <service id="FINDOLOGIC\FinSearch\Resources\snippet\de_DE\SnippetFile_de_DE" public="true">
             <tag name="shopware.snippet.file" />
         </service>
 
@@ -154,6 +154,13 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
             <argument type="service" id="Doctrine\DBAL\Connection" />
         </service>
+
+        <!-- Symfony -->
+
+        <service
+                id="Symfony\Component\DependencyInjection\ContainerInterface"
+                alias="service_container"
+        />
 
     </services>
 </container>

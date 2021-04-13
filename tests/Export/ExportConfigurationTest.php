@@ -8,6 +8,7 @@ use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Validation;
+use Throwable;
 
 class ExportConfigurationTest extends TestCase
 {
@@ -107,7 +108,17 @@ class ExportConfigurationTest extends TestCase
         $request = new Request($queryParams);
         $config = ExportConfiguration::getInstance($request);
 
-        $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
+        try {
+            // Symfony >= 5
+            $validator = Validation::createValidatorBuilder()
+                ->enableAnnotationMapping(true)
+                ->addDefaultDoctrineAnnotationReader()
+                ->getValidator();
+        } catch (Throwable $e) {
+            // Symfony 4
+            $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
+        }
+
         $violations = $validator->validate($config);
 
         $this->assertGreaterThan(0, $violations->count());

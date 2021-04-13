@@ -3,7 +3,7 @@
         {% block findologic_header %}
             <template slot="smart-bar-header">
                 <h2>
-                    {{ $tc('sw-settings.index.title') }}
+                    {{ $tc($route.meta.$module.title) }}
                     <sw-icon name="small-arrow-medium-right" small></sw-icon>
                     {{ $tc('findologic.header') }}
                 </h2>
@@ -29,7 +29,7 @@
 
                 {% block findologic_actions_cancel %}
                     <sw-button
-                            :routerLink="{ name: 'sw.settings.index' }"
+                            :routerLink="{ name: $route.meta.parentPath }"
                             :title="$tc('global.default.cancel')"
                             :aria-label="$tc('global.default.cancel')">
                         {{ $tc('global.default.cancel') }}

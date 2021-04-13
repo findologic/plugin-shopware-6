@@ -15,7 +15,7 @@ class InstanceOfTest extends TestExpression
             ->raw('(')
             ->subcompile($this->getNode('node'))
             ->raw(' instanceof ')
-            ->raw($this->getNode('arguments')->getNode(0)->getAttribute('value'))
+            ->raw($this->getNode('arguments')->getNode('0')->getAttribute('value'))
             ->raw(')')
         ;
     }

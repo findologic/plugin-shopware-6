@@ -9,9 +9,14 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 
 class PriceSortingHandler implements SortingHandlerInterface
 {
+    private const FIELDS = [
+        'product.cheapestPrice', // Shopware >= 6.4
+        'product.listingPrices', // Shopware < 6.4
+    ];
+
     public function supportsSorting(FieldSorting $fieldSorting): bool
     {
-        return $fieldSorting->getField() === 'product.listingPrices';
+        return in_array($fieldSorting->getField(), self::FIELDS);
     }
 
     public function generateSorting(FieldSorting $fieldSorting, SearchNavigationRequest $searchNavigationRequest): void

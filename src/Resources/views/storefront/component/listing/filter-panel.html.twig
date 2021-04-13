@@ -84,7 +84,20 @@
                 {% endif %}
 
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RatingFilter") %}
-                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating.html.twig' with {
+                    {# New rating filter. Shopware >= 6.4 #}
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating-select.html.twig' ignore missing with {
+                        elements: filter.values,
+                        maxPoints: filter.maxPoints,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        hidden: filter.hidden,
+                        displayName: filter.name,
+                        pluginSelector: 'filter-rating-select',
+                        propertyName: filter.name
+                    } %}
+
+                    {# Old rating filter. Shopware < 6.4 #}
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating.html.twig' ignore missing with {
                         elements: filter.values,
                         maxPoints: filter.maxPoints,
                         sidebar: sidebar,
