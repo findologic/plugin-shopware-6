@@ -11,6 +11,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -42,8 +43,17 @@ trait SearchResultHelper
         }
     }
 
-    protected function fetchProducts(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
-    {
+    protected function fetchProducts(
+        Criteria $criteria,
+        SalesChannelContext $context,
+        ?string $query = null
+    ): EntitySearchResult {
+        // If a specific variant is searched by its product number, we want to modify the criteria,
+        // to show that variant instead of the main product.
+        if ($query !== null && count($criteria->getIds()) === 1) {
+            $this->modifyCriteriaFromSearchParameter($query, $criteria, $context);
+        }
+
         $result = $this->productRepository->search($criteria, $context);
 
         return $this->fixResultOrder($result, $criteria);
@@ -103,5 +113,18 @@ trait SearchResultHelper
         $page = $this->getPage($request);
 
         return ($page - 1) * $limit;
+    }
+
+    private function modifyCriteriaFromSearchParameter(
+        string $query,
+        Criteria $criteria,
+        SalesChannelContext $context
+    ): void {
+        $productCriteria = new Criteria();
+        $productCriteria->addFilter(new EqualsFilter('productNumber', $query));
+        $product = $this->productRepository->search($productCriteria, $context)->first();
+        if ($product) {
+            $criteria->setIds([$product->getId()]);
+        }
     }
 }
