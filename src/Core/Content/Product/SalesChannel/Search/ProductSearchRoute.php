@@ -135,10 +135,10 @@ class ProductSearchRoute extends AbstractProductSearchRoute
             return $this->decorated->load($request, $context, $criteria);
         }
 
-        $searchParam = $request->query->get('search');
-        $result = $this->doSearch($criteria, $context, $searchParam);
+        $query = $request->query->get('search');
+        $result = $this->doSearch($criteria, $context, $query);
         $result = ProductListingResult::createFrom($result);
-        $result->addCurrentFilter('search', $searchParam);
+        $result->addCurrentFilter('search', $query);
 
         $this->eventDispatcher->dispatch(
             new ProductSearchResultEvent($request, $result, $context)
