@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionObject;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -83,25 +84,29 @@ class ProductSearchRouteTest extends ProductRouteBase
     {
         $this->salesChannelContext = $this->getMockedSalesChannelContext(true);
         $product = $this->createTestProduct([], true);
+        $variantId = md5($query);
+        $variant = $product->getChildren()->get($variantId);
         $context = $this->salesChannelContext->getContext();
         $originalCriteria = (new Criteria())->setIds([$product->getId()]);
         $newCriteria = clone $originalCriteria;
+        $total = $variant ? '1' : '0';
+        if (Utils::versionLowerThan('6.4')) {
+            $total = $variant ? 1 : 0;
+        }
+
         $searchResult = new EntitySearchResult(
-            1,
+            $total,
             new EntityCollection([$product]),
             null,
             $originalCriteria,
             $context
         );
 
-        $variantId = md5($query);
         $variantCriteria = new Criteria();
         $variantCriteria->addFilter(new EqualsFilter('productNumber', $query));
-
-        $variant = $product->getChildren()->get($variantId);
         if ($variant) {
             $variantSearchResult = new EntitySearchResult(
-                1,
+                $total,
                 new EntityCollection([$variant]),
                 null,
                 $variantCriteria,
@@ -111,7 +116,7 @@ class ProductSearchRouteTest extends ProductRouteBase
             $newCriteria->setIds([$variantId]);
         } else {
             $variantSearchResult = new EntitySearchResult(
-                0,
+                $total,
                 new EntityCollection(),
                 null,
                 $variantCriteria,
