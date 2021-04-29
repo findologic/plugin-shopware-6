@@ -64,7 +64,7 @@ class ExportControllerTest extends TestCase
     {
         // Create two products.
         $product = $this->createVisibleTestProduct();
-        $this->createVisibleTestProduct(['productNumber' => 'FINDO002']);
+        $this->createVisibleTestProduct(['id' => md5('FINDO002'), 'productNumber' => 'FINDO002']);
 
         $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
 

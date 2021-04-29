@@ -15,7 +15,7 @@ use Shopware\Core\Framework\Uuid\Uuid;
 
 trait ProductHelper
 {
-    public function createVisibleTestProduct(array $overrides = []): ?ProductEntity
+    public function createVisibleTestProduct(array $overrides = [], bool $withVariant = false): ?ProductEntity
     {
         return $this->createTestProduct(array_merge([
             'visibilities' => [
@@ -25,7 +25,7 @@ trait ProductHelper
                     'visibility' => 20
                 ]
             ]
-        ], $overrides));
+        ], $overrides), $withVariant);
     }
 
     public function createTestProduct(
@@ -34,7 +34,7 @@ trait ProductHelper
         bool $overrideRecursively = false
     ): ?ProductEntity {
         $context = Context::createDefaultContext();
-        $id = Uuid::randomHex();
+        $id = md5('FINDOLOGIC001');
         $categoryId = Uuid::randomHex();
         $newCategoryId = Uuid::randomHex();
         $redId = Uuid::randomHex();
@@ -108,10 +108,10 @@ trait ProductHelper
             'manufacturerNumber' => Uuid::randomHex(),
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
             'manufacturer' => ['name' => 'FINDOLOGIC'],
-            'tax' => ['name' => '9%', 'taxRate' => 9],
+            'tax' => ['id' => Uuid::randomHex(),  'name' => '9%', 'taxRate' => 9],
             'categories' => [
                 [
-                    'parentId' => $navigationCategoryId,
+                    'parentId' => $navigationCategoryId ?: null,
                     'id' => $categoryId,
                     'name' => 'FINDOLOGIC Category',
                     'seoUrls' => [
@@ -176,9 +176,9 @@ trait ProductHelper
         if ($withVariant) {
             // Standard variant data
             $variantData = [
-                'id' => Uuid::randomHex(),
+                'id' => md5('FINDOLOGIC001.1'),
                 'productNumber' => 'FINDOLOGIC001.1',
-                'name' => 'FINDOLOGIC VARIANT',
+                'name' => 'FINDOLOGIC VARIANT 1',
                 'stock' => 10,
                 'active' => true,
                 'parentId' => $id,
@@ -187,6 +187,19 @@ trait ProductHelper
             ];
 
             $productInfo[] = array_merge($variantData, $overrideData);
+
+            $variantData2 = [
+                'id' => md5('FINDOLOGIC001.2'),
+                'productNumber' => 'FINDOLOGIC001.2',
+                'name' => 'FINDOLOGIC VARIANT 2',
+                'stock' => 7,
+                'active' => true,
+                'parentId' => $id,
+                'tax' => ['name' => '9%', 'taxRate' => 9],
+                'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 80, 'net' => 66, 'linked' => false]]
+            ];
+
+            $productInfo[] = array_merge($variantData2, $overrideData);
         }
 
         $container->get('product.repository')->upsert($productInfo, $context);

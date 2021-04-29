@@ -175,7 +175,7 @@ class FindologicProductTest extends TestCase
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'Storefront'));
 
-        $result = $repos->search($criteria, $salesChannelContext->getContext());
+        $result = $repos->search($criteria, $salesChannelContext);
         /** @var SalesChannelEntity $additionalSalesChannel */
         $additionalSalesChannel = $result->first();
         $additionalSalesChannelId = $additionalSalesChannel->getId();

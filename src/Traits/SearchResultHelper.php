@@ -67,8 +67,11 @@ trait SearchResultHelper
     private function fixResultOrder(EntitySearchResult $result, Criteria $criteria): EntitySearchResult
     {
         $sortedElements = $this->sortElementsByIdArray($result->getElements(), $criteria->getIds());
-        $result->clear();
+        if (!$sortedElements) {
+            return $result;
+        }
 
+        $result->clear();
         foreach ($sortedElements as $element) {
             $result->add($element);
         }
