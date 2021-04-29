@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use OpenApi\Util;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionObject;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -89,12 +90,9 @@ class ProductSearchRouteTest extends ProductRouteBase
         $context = $this->salesChannelContext->getContext();
         $originalCriteria = (new Criteria())->setIds([$product->getId()]);
         $newCriteria = clone $originalCriteria;
-        $total = $variant ? '1' : '0';
-        if (Utils::versionLowerThan('6.4')) {
-            $total = $variant ? 1 : 0;
-        }
-
-        $searchResult = new EntitySearchResult(
+        $total = $variant ? 1 : 0;
+        $searchResult = Utils::buildEntitySearchResult(
+            ProductEntity::class,
             $total,
             new EntityCollection([$product]),
             null,
@@ -105,7 +103,8 @@ class ProductSearchRouteTest extends ProductRouteBase
         $variantCriteria = new Criteria();
         $variantCriteria->addFilter(new EqualsFilter('productNumber', $query));
         if ($variant) {
-            $variantSearchResult = new EntitySearchResult(
+            $variantSearchResult = Utils::buildEntitySearchResult(
+                ProductEntity::class,
                 $total,
                 new EntityCollection([$variant]),
                 null,
@@ -115,7 +114,8 @@ class ProductSearchRouteTest extends ProductRouteBase
 
             $newCriteria->setIds([$variantId]);
         } else {
-            $variantSearchResult = new EntitySearchResult(
+            $variantSearchResult = Utils::buildEntitySearchResult(
+                ProductEntity::class,
                 $total,
                 new EntityCollection(),
                 null,
