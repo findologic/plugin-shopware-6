@@ -1,7 +1,7 @@
 {
   "name": "findologic/plugin-shopware-6",
   "description": "FINDOLOGIC plugin for Shopware 6 e-commerce system",
-  "version": "v2.0.2",
+  "version": "2.0.2",
   "license": "GPL-3.0-or-later",
   "type": "shopware-platform-plugin",
   "authors": [
@@ -22,8 +22,8 @@
       "en-GB": "FINDOLOGIC Search & Navigation"
     },
     "description": {
-      "de-DE": "FINDOLOGIC Plugin für das Shopware 6 E-Commerce System",
-      "en-GB": "FINDOLOGIC plugin for Shopware 6 e-commerce system"
+      "de-DE": "FINDOLOGIC Plugin für das Shopware 6 E-Commerce System. Features: Personalisierung, Suche, Navigation, User Interface, Merchandising. This description should be longer.",
+      "en-GB": "FINDOLOGIC plugin for Shopware 6 e-commerce system. Features: Personalization, Search, Navigation, User Interface, Merchandising. This description should be longer."
     },
     "supportLink": {
       "de-DE": "https://support.findologic.com/hc/de/requests/new",
@@ -53,6 +53,6 @@
     "fix": "./vendor/bin/phpcbf --standard=phpcs.xml .",
     "test": "../../../vendor/bin/phpunit -c phpunit.xml.dist --colors=always",
     "test-legacy": "../../../vendor/bin/phpunit -c phpunit.legacy.xml.dist --colors=always",
-    "release": "bin/release"
+    "build-release": "bin/build-release"
   }
 }

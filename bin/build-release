@@ -65,7 +65,7 @@ file_put_contents(
 
 chdir(SYS_TMP_DIR);
 
-$zipFileDest = sprintf('%s/FinSearch-%s.zip', __DIR__ . '/..', $version);
+$zipFileDest = sprintf('%s/FinSearch.zip', __DIR__ . '/..');
 exec(sprintf('zip -r9 %s FinSearch -x %s', $zipFileDest, implode(' ', IGNORED)));
 
 exec('rm -rf "/tmp/FinSearch"');
