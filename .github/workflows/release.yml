@@ -40,7 +40,7 @@ jobs:
         run: composer build-release
 
       - name: Validate Plugin Release-Zipfile
-        run: php frosh-plugin-upload.phar ext:validate $(pwd)/${PLUGIN_NAME}*.zip
+        run: php frosh-plugin-upload.phar ext:validate $(pwd)/${PLUGIN_NAME}.zip
 
   storeRelease:
     if: startsWith(github.ref, 'refs/tags/')
@@ -74,7 +74,7 @@ jobs:
         run: composer build-release
 
       - name: Upload Plugin to Shopware Store
-        run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}*.zip
+        run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}.zip
 
       - name: Create GitHub Release
         id: create_release
