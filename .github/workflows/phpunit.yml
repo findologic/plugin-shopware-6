@@ -67,7 +67,6 @@ jobs:
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
 
-      # Deprecation Helper disabled until the final release of 6.4.
       - name: Run test suite
         run: |
           cd development/custom/plugins/plugin-shopware-6
