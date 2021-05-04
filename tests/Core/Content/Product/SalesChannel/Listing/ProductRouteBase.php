@@ -15,12 +15,14 @@ use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
+use Shopware\Core\System\SalesChannel\StoreApiResponse;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -138,14 +140,15 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $salesChannelMock->expects($this->any())->method('getNavigationCategoryId')->willReturn($categoryId);
+        $salesChannelMock->expects($this->any())->method('getId')->willReturn(Defaults::SALES_CHANNEL);
 
-        $salesChannelContextMock->expects($this->any())->method('getSalesChannel')
-            ->willReturn($salesChannelMock);
+        $salesChannelContextMock->expects($this->any())->method('getSalesChannel')->willReturn($salesChannelMock);
 
         /** @var Context|MockObject $context */
         $context = $this->getMockBuilder(Context::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $context->method('getVersionId')->willReturn(Defaults::LIVE_VERSION);
 
         $findologicService = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -199,14 +202,14 @@ abstract class ProductRouteBase extends TestCase
         Request $request,
         SalesChannelContext $salesChannelContext,
         string $categoryId = '69'
-    ): void {
-        if ($productRoute instanceof AbstractProductListingRoute) {
-            $productRoute->load($categoryId, $request, $salesChannelContext);
-        } elseif ($productRoute instanceof AbstractProductSearchRoute) {
-            /** @var $productRoute AbstractProductSearchRoute */
-            $productRoute->load($request, $salesChannelContext);
-        } else {
-            throw new InvalidArgumentException('Unknown productRoute of class %s', get_class($productRoute));
+    ): StoreApiResponse {
+        switch (true) {
+            case $productRoute instanceof AbstractProductListingRoute:
+                return $productRoute->load($categoryId, $request, $salesChannelContext);
+            case $productRoute instanceof AbstractProductSearchRoute:
+                return $productRoute->load($request, $salesChannelContext);
+            default:
+                throw new InvalidArgumentException('Unknown productRoute of class %s', get_class($productRoute));
         }
     }
 }
