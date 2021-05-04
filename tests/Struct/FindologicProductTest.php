@@ -170,14 +170,14 @@ class FindologicProductTest extends TestCase
         $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
         $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
-        /** @var SalesChannelRepository $repos */
         $repos = $this->getContainer()->get('sales_channel.repository');
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('name', 'Storefront'));
+        $criteria->addFilter(new EqualsFilter('typeId', Defaults::SALES_CHANNEL_TYPE_STOREFRONT));
 
         $result = $repos->search($criteria, $salesChannelContext->getContext());
         /** @var SalesChannelEntity $additionalSalesChannel */
         $additionalSalesChannel = $result->first();
+
         $additionalSalesChannelId = $additionalSalesChannel->getId();
 
         return [
