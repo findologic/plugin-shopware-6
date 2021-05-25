@@ -23,6 +23,7 @@ class FilterHandler
     protected const FILTER_DELIMITER = '|';
     protected const MIN_PREFIX = 'min-';
     protected const MAX_PREFIX = 'max-';
+    protected static $ignoreList = ['pushAttrib'];
 
     /**
      * Sets all requested filters to the FINDOLOGIC API request.
@@ -37,6 +38,9 @@ class FilterHandler
 
         if ($selectedFilters) {
             foreach ($selectedFilters as $filterName => $filterValues) {
+                if (\in_array($filterName, self::$ignoreList, false)) {
+                    continue;
+                }
                 foreach ($this->getFilterValues($filterValues) as $filterValue) {
                     $this->handleFilter(
                         $filterName,
@@ -125,8 +129,6 @@ class FilterHandler
             } else {
                 $searchNavigationRequest->addAttribute($filterName, $filterValue);
             }
-
-            return;
         }
     }
 
