@@ -23,12 +23,17 @@ use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
+
+use function filter_var;
+
+use const FILTER_VALIDATE_BOOLEAN;
 
 /**
  * @RouteScope(scopes={"storefront"})
@@ -68,6 +73,9 @@ class ExportController extends AbstractController
     /** @var SalesChannelService|null */
     private $salesChannelService;
 
+    /** @var int */
+    private $total = 0;
+
     /**
      * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
      */
@@ -95,7 +103,43 @@ class ExportController extends AbstractController
             return $errorResponse;
         }
 
+        $excludeProductGroups = filter_var($request->get('excludeProductGroups'), FILTER_VALIDATE_BOOLEAN);
+        $dynamicProductGroupService = $this->getDynamicProductGroupService();
+        if (!$excludeProductGroups && !$dynamicProductGroupService->isDynamicProductGroupWarmedUp()) {
+            return new JsonResponse(
+                [
+                    'error' => 'Dynamic Product Groups have not been warmed up yet. ' .
+                        'This may cause missing categories! Warm them up by calling the route ' .
+                        "'/findologic/dynamic-product-groups', or disable fetching of Dynamic " .
+                        "Product Groups by adding the query parameter 'excludeProductGroups=true'."
+                ],
+                Response::HTTP_PRECONDITION_REQUIRED
+            );
+        }
+
         return $this->doExport();
+    }
+
+    /**
+     * @Route("/findologic/dynamic-product-groups", name="frontend.findologic.export.productgroup",
+     *     options={"seo"="false"}, methods={"GET"})
+     */
+    public function exportProductGroup(Request $request, ?SalesChannelContext $context): Response
+    {
+        $this->initialize($request, $context);
+        if ($errorResponse = $this->validate()) {
+            return $errorResponse;
+        }
+
+        $this->warmUpDynamicProductGroups();
+
+        return new JsonResponse([
+            'meta' => [
+                'start' => $this->exportConfig->getStart(),
+                'count' => $this->exportConfig->getCount(),
+                'total' => $this->total
+            ]
+        ]);
     }
 
     /**
@@ -130,6 +174,7 @@ class ExportController extends AbstractController
         if (count($messages) > 0) {
             $errorHandler = new ProductErrorHandler();
             $errorHandler->getExportErrors()->addGeneralErrors($messages);
+
             return $this->export->buildErrorResponse($errorHandler, $this->headerHandler->getHeaders());
         }
 
@@ -138,8 +183,6 @@ class ExportController extends AbstractController
 
     protected function doExport(): Response
     {
-        $this->warmUpDynamicProductGroups();
-
         $products = $this->productService->searchVisibleProducts(
             $this->exportConfig->getCount(),
             $this->exportConfig->getStart(),
@@ -183,18 +226,13 @@ class ExportController extends AbstractController
             return;
         }
 
-        $dynamicProductGroupService = DynamicProductGroupService::getInstance(
-            $this->container,
-            $this->cache,
-            $this->salesChannelContext->getContext(),
-            $this->exportConfig->getShopkey(),
-            $this->exportConfig->getStart()
-        );
-
-        $dynamicProductGroupService->setSalesChannel($this->salesChannelContext->getSalesChannel());
+        $dynamicProductGroupService = $this->getDynamicProductGroupService();
         if (!$dynamicProductGroupService->isWarmedUp()) {
             $dynamicProductGroupService->warmUp();
         }
+
+        $this->total = $dynamicProductGroupService->getDynamicProductGroupTotalFromCache();
+        $dynamicProductGroupService->setDynamicProductGroupWarmedUpFlag($this->total);
     }
 
     private function validateExportConfiguration(ExportConfiguration $config): array
@@ -204,7 +242,7 @@ class ExportController extends AbstractController
 
         $messages = [];
         if ($violations->count() > 0) {
-            $messages = array_map(function (ConstraintViolation $violation) {
+            $messages = array_map(static function (ConstraintViolation $violation) {
                 return sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage());
             }, current((array_values((array)$violations))));
         }
@@ -234,5 +272,21 @@ class ExportController extends AbstractController
         $attributes = $request->attributes->all();
 
         $originalRequest->attributes->replace($attributes);
+    }
+
+    protected function getDynamicProductGroupService(): DynamicProductGroupService
+    {
+        $dynamicProductGroupService = DynamicProductGroupService::getInstance(
+            $this->container,
+            $this->cache,
+            $this->salesChannelContext->getContext(),
+            $this->exportConfig->getShopkey(),
+            $this->exportConfig->getStart(),
+            $this->exportConfig->getCount()
+        );
+
+        $dynamicProductGroupService->setSalesChannel($this->salesChannelContext->getSalesChannel());
+
+        return $dynamicProductGroupService;
     }
 }
