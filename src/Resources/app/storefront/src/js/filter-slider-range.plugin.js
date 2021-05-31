@@ -46,7 +46,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
       step: this.options.price.step,
       range: {
         'min': this.options.price.min,
-        'max': this.options.price.max === this.options.price.min ? this.options.price.min + 1 : this.options.price.max
+        'max': this.getMax()
       },
     });
 
@@ -66,6 +66,13 @@ export default class FilterSliderRange extends FilterBasePlugin {
 
     this._inputMin.addEventListener('keyup', this._onInput.bind(this));
     this._inputMax.addEventListener('keyup', this._onInput.bind(this));
+  }
+
+  /**
+   * @returns {float}
+   */
+  getMax() {
+    return this.options.price.max === this.options.price.min ? this.options.price.min + 1 : this.options.price.max;
   }
 
   /**
@@ -317,7 +324,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
   }
 
   refreshDisabledState(filter) {
-    const properties = filter['price'];
+    const properties = filter[this.options.name];
     const entities = properties.entities;
     if(entities.length > 0) {
       const options = entities[0].options;
