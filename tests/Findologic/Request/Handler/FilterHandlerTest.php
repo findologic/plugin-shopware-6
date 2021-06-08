@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
@@ -75,7 +76,7 @@ class FilterHandlerTest extends TestCase
         $this->assertSame($expectedValue, current($result['attrib'][$filterName]));
     }
 
-    public function testHandleFindologicSearchParams()
+    public function testHandleFindologicSearchParams(): void
     {
         $filterHandler = new FilterHandler();
         $request = new Request([
@@ -90,5 +91,32 @@ class FilterHandlerTest extends TestCase
         $expectedUrl = '?search=&vendor=shopware&cat=Test_Test%20Sub';
 
         $this->assertEquals($expectedUrl, $actualUrl);
+    }
+
+    public function testPushAttribIsNotAddedAsRegularFilter(): void
+    {
+        $searchNavigationRequest = new SearchRequest();
+        $filterHandler = new FilterHandler();
+        $filterExtension = new FiltersExtension();
+
+        $request = new Request([
+            'search' => 'artikel',
+            'pushAttrib' => [
+                'size' => ['xl' => 30],
+            ]
+        ]);
+
+        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $criteria = new Criteria();
+        $criteria->setExtensions(['flFilters' => $filterExtension]);
+        $eventMock->method('getRequest')->willReturn($request);
+        $eventMock->method('getCriteria')->willReturn($criteria);
+
+        $filterHandler->handleFilters($eventMock, $searchNavigationRequest);
+        $result = $searchNavigationRequest->getParams();
+        $this->assertEmpty($result);
     }
 }

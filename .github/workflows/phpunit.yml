@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         php-versions: [ '7.4' ]
-        shopware-versions: [ 'v6.4.0.0-RC1' ]
+        shopware-versions: [ 'v6.4.0.0' ]
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
     steps:
@@ -67,8 +67,7 @@ jobs:
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
 
-      # Deprecation Helper disabled until the final release of 6.4.
       - name: Run test suite
         run: |
           cd development/custom/plugins/plugin-shopware-6
-          SYMFONY_DEPRECATIONS_HELPER=disabled composer test
+          composer test
