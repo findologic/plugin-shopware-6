@@ -8,6 +8,7 @@ use FINDOLOGIC\Api\Definitions\OutputAdapter;
 use FINDOLOGIC\Api\Exceptions\InvalidParamException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Context;
@@ -81,6 +82,9 @@ abstract class FindologicRequestFactory
         if ($request->headers->get('referer')) {
             $searchNavigationRequest->setReferer($request->headers->get('referer'));
         }
+
+        $this->setPushAttribValues($request, $searchNavigationRequest);
+
         try {
             // setShopUrl() requires a valid host. If we do not have a valid host (e.g. local development)
             // this would cause an exception.
@@ -121,5 +125,23 @@ abstract class FindologicRequestFactory
         $ipAddress = implode(',', array_unique(array_map('trim', explode(',', $ipAddress))));
 
         return $ipAddress;
+    }
+
+    /**
+     * Findologic provides an interface to boost certain products based on their attributes, so they are ranked
+     * higher in the search results.
+     * The format of the parameter is:
+     * `pushAttrib[key][value] = factor`
+     */
+    private function setPushAttribValues(Request $request, SearchNavigationRequest $searchNavigationRequest): void
+    {
+        $pushAttrib = $request->get('pushAttrib', []);
+        if (!Utils::isEmpty($pushAttrib)) {
+            foreach ($pushAttrib as $key => $attrib) {
+                foreach ($attrib as $value => $factor) {
+                    $searchNavigationRequest->addPushAttrib($key, $value, $factor);
+                }
+            }
+        }
     }
 }
