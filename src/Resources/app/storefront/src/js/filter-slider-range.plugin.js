@@ -1,9 +1,6 @@
-import '../../node_modules/nouislider/distribute/nouislider.css';
 import deepmerge from 'deepmerge';
 import DomAccess from 'src/helper/dom-access.helper';
 import FilterBasePlugin from 'src/plugin/listing/filter-base.plugin';
-
-const noUiSlider = require('@nouislider');
 
 export default class FilterSliderRange extends FilterBasePlugin {
 
@@ -49,7 +46,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
       step: this.options.price.step,
       range: {
         'min': this.options.price.min,
-        'max': this.options.price.max,
+        'max': this.getMax()
       },
     });
 
@@ -69,6 +66,13 @@ export default class FilterSliderRange extends FilterBasePlugin {
 
     this._inputMin.addEventListener('keyup', this._onInput.bind(this));
     this._inputMax.addEventListener('keyup', this._onInput.bind(this));
+  }
+
+  /**
+   * @returns {float}
+   */
+  getMax() {
+    return this.options.price.max === this.options.price.min ? this.options.price.min + 1 : this.options.price.max;
   }
 
   /**
@@ -316,6 +320,20 @@ export default class FilterSliderRange extends FilterBasePlugin {
   setMaxKnobValue() {
     if (this.slider) {
       this.slider.noUiSlider.set([null, this._inputMax.value]);
+    }
+  }
+
+  refreshDisabledState(filter) {
+    const properties = filter[this.options.name];
+    const entities = properties.entities;
+    if(entities.length > 0) {
+      const options = entities[0].options;
+      if(options.length >= 4) {
+        this._inputMin.value = parseFloat((options[1].id).split('-')[0]);
+        this._inputMax.value = parseFloat((options[3].id).split('-')[0]);
+        this.setMinKnobValue();
+        this.setMaxKnobValue();
+      }
     }
   }
 }

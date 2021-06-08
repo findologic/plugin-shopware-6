@@ -50,10 +50,6 @@ guide you on how you can customize certain entities, like attributes or properti
 
 ## Development
 
-### Install dependencies
-- Run `npm install` inside `src/Resources/app/storefront` to install dependencies for the [noUiSlider](https://refreshless.com/nouislider/) package.
-- Ensure to build storefront after installing dependencies.
-
 ### Developing custom JavaScript plugins
 - Check out the 
 [offical guide](https://docs.shopware.com/en/shopware-platform-dev-en/how-to/extend-core-js-storefront-plugin)
