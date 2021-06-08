@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         php-versions: [ '7.4' ]
-        shopware-versions: [ 'v6.4.1.0' ]
+        shopware-versions: [ 'v6.4.0.0' ]
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
     steps:
@@ -70,4 +70,4 @@ jobs:
       - name: Run test suite
         run: |
           cd development/custom/plugins/plugin-shopware-6
-          composer test
+          SYMFONY_DEPRECATIONS_HELPER=disabled composer test
