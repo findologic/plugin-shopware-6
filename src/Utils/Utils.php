@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Utils;
 
+use FINDOLOGIC\FinSearch\Definitions\Defaults;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
@@ -17,6 +18,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
@@ -371,5 +374,17 @@ class Utils
                 $limit
             );
         }
+    }
+
+    /**
+     * Takes a given domain collection and only returns domains which are not associated to a headless sales
+     * channel, as these do not have real URLs, but only contain placeholder information.
+     */
+    public static function filterSalesChannelDomainsWithoutHeadlessDomain(
+        SalesChannelDomainCollection $original
+    ): SalesChannelDomainCollection {
+        return $original->filter(function (SalesChannelDomainEntity $domainEntity) {
+            return !str_starts_with($domainEntity->getUrl(), Defaults::HEADLESS_SALES_CHANNEL_PREFIX);
+        });
     }
 }

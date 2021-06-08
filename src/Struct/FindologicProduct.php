@@ -42,7 +42,6 @@ use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-
 use function method_exists;
 
 class FindologicProduct extends Struct
@@ -370,7 +369,7 @@ class FindologicProduct extends Struct
     protected function getTranslatedDomainBaseUrl(): ?string
     {
         $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domainCollection = $salesChannel->getDomains();
+        $domainCollection = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($salesChannel->getDomains());
 
         $domainEntities = $this->getTranslatedEntities($domainCollection);
 
