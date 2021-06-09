@@ -46,7 +46,6 @@ use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -369,9 +368,13 @@ class FindologicProductTest extends TestCase
         );
 
         $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domain = $salesChannel->getDomains()->first()->getUrl();
+        $domains = $salesChannel->getDomains();
+        $domain = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($domains)
+            ->first()
+            ->getUrl();
 
-        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        $seoUrls = $productEntity->getSeoUrls()
+            ->filterBySalesChannelId($salesChannel->getId());
         $seoPath = $seoUrls->first()->getSeoPathInfo();
         $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
 

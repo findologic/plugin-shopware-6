@@ -370,7 +370,7 @@ class FindologicProduct extends Struct
     protected function getTranslatedDomainBaseUrl(): ?string
     {
         $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domainCollection = $salesChannel->getDomains();
+        $domainCollection = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($salesChannel->getDomains());
 
         $domainEntities = $this->getTranslatedEntities($domainCollection);
 

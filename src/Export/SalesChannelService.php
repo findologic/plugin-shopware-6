@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigEntity;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Routing\RequestTransformerInterface;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
@@ -73,11 +75,7 @@ class SalesChannelService
      */
     public function getRequest(Request $originalRequest, SalesChannelContext $salesChannelContext): Request
     {
-        $languageId = $salesChannelContext->getSalesChannel()->getLanguageId();
-        $domain = $salesChannelContext->getSalesChannel()->getDomains()->filterByProperty(
-            'languageId',
-            $languageId
-        )->first();
+        $domain = $this->getSalesChannelDomain($salesChannelContext);
 
         $parsedUrl = parse_url($domain->getUrl());
 
@@ -96,5 +94,19 @@ class SalesChannelService
         );
 
         return $this->requestTransformer->transform($request);
+    }
+
+    private function getSalesChannelDomain(SalesChannelContext $salesChannelContext): ?SalesChannelDomainEntity
+    {
+        $languageId = $salesChannelContext->getSalesChannel()->getLanguageId();
+
+        /** @var SalesChannelDomainCollection $domains */
+        $domains = $salesChannelContext->getSalesChannel()->getDomains()->filterByProperty(
+            'languageId',
+            $languageId
+        );
+
+        return Utils::filterSalesChannelDomainsWithoutHeadlessDomain($domains)
+            ->first();
     }
 }
