@@ -1,3 +1,4 @@
 /vendor/
 /.idea/
 *.zip
+/src/Resources/app/storefront/node_modules/
