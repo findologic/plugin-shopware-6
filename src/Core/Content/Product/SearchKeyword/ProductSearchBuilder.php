@@ -29,6 +29,11 @@ class ProductSearchBuilder extends ShopwareProductSearchBuilder
 
     public function build(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
+        if ($request->getPathInfo() === '/suggest') {
+            parent::build($request, $criteria, $context);
+            return;
+        }
+
         $search = $request->query->get('search');
 
         if (is_array($search)) {
