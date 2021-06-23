@@ -106,15 +106,13 @@ class ExportController extends AbstractController
         $excludeProductGroups = filter_var($request->get('excludeProductGroups'), FILTER_VALIDATE_BOOLEAN);
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
         if (!$excludeProductGroups && !$dynamicProductGroupService->isDynamicProductGroupWarmedUp()) {
-            return new JsonResponse(
-                [
-                    'error' => 'Dynamic Product Groups have not been warmed up yet. ' .
-                        'This may cause missing categories! Warm them up by calling the route ' .
-                        "'/findologic/dynamic-product-groups', or disable fetching of Dynamic " .
-                        "Product Groups by adding the query parameter 'excludeProductGroups=true'."
-                ],
-                Response::HTTP_PRECONDITION_REQUIRED
-            );
+            $errorMessage = 'Dynamic Product Groups have not been warmed up yet. ';
+            $errorMessage .= 'This may cause missing categories! ';
+            $errorMessage .= "Warm them up by calling the route '/findologic/dynamic-product-groups', ";
+            $errorMessage .= 'or disable fetching of Dynamic Product Groups by adding the query parameter ';
+            $errorMessage .= "'excludeProductGroups=true'";
+
+            return new JsonResponse(['error' => $errorMessage], Response::HTTP_PRECONDITION_REQUIRED);
         }
 
         return $this->doExport();
