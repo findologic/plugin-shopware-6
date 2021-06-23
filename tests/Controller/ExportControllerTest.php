@@ -95,6 +95,22 @@ class ExportControllerTest extends TestCase
         );
     }
 
+    public function testDynamicProductGroupExportWithUnknownShopkey(): void
+    {
+        $unknownShopkey = '12341234123412341234123412341234';
+        $response = $this->sendDynamicProductGroupRequest(['shopkey' => $unknownShopkey]);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertSame('application/json', $response->headers->get('content-type'));
+        $parsedResponse = json_decode($response->getContent(), true);
+
+        $this->assertCount(1, $parsedResponse['general']);
+        $this->assertSame(
+            sprintf('Shopkey %s is not assigned to any sales channel.', $unknownShopkey),
+            $parsedResponse['general'][0]
+        );
+    }
+
     public function wrongArgumentsProvider(): array
     {
         return [
@@ -175,12 +191,26 @@ class ExportControllerTest extends TestCase
     protected function sendExportRequest(array $overrides = []): Response
     {
         $defaults = [
-            'shopkey' => self::VALID_SHOPKEY
+            'shopkey' => self::VALID_SHOPKEY,
+            'excludeProductGroups' => 1
         ];
 
         $params = array_merge($defaults, $overrides);
         $client = $this->getTestClient($this->salesChannelContext);
         $client->request('GET', '/findologic?' . http_build_query($params));
+
+        return $client->getResponse();
+    }
+
+    protected function sendDynamicProductGroupRequest(array $overrides = []): Response
+    {
+        $defaults = [
+            'shopkey' => self::VALID_SHOPKEY
+        ];
+
+        $params = array_merge($defaults, $overrides);
+        $client = $this->getTestClient($this->salesChannelContext);
+        $client->request('GET', '/findologic/dynamic-product-groups?' . http_build_query($params));
 
         return $client->getResponse();
     }
@@ -391,7 +421,6 @@ class ExportControllerTest extends TestCase
                     'name' => 'Cool URL Sales Channel'
                 ]
             ],
-
         ];
 
         return $this->buildSalesChannelContext(
@@ -400,6 +429,26 @@ class ExportControllerTest extends TestCase
             null,
             $languages->first()->getId(),
             $overrides
+        );
+    }
+
+    /**
+     * @dataProvider wrongArgumentsProvider
+     */
+    public function testDynamicProductGroupExportWithWrongArguments(array $params, array $errorMessages): void
+    {
+        if (!isset($params['shopkey'])) {
+            $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
+        }
+
+        $response = $this->sendDynamicProductGroupRequest($params);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $parsedResponse = json_decode($response->getContent(), true);
+
+        $this->assertSame(
+            $errorMessages,
+            $parsedResponse['general']
         );
     }
 }
