@@ -14,7 +14,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
-use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
@@ -22,8 +21,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
-
-use function serialize;
 
 class DynamicProductGroupServiceTest extends TestCase
 {
@@ -122,22 +119,13 @@ class DynamicProductGroupServiceTest extends TestCase
     {
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cacheItemMock->expects($invokeCount)
-            ->method('get')
-            ->willReturn([]);
-        $cacheItemMock->expects($invokeCount)
-            ->method('expiresAfter')
-            ->with(60 * 11);
-
-        $cacheItemMock->expects($this->once())
-            ->method('isHit')
-            ->willReturn($isWarmup);
-
+        $cacheItemMock->expects($invokeCount)->method('get')->willReturn([]);
+        $cacheItemMock->expects($invokeCount)->method('expiresAfter')->with(60 * 11);
+        $cacheItemMock->expects($this->once())->method('isHit')->willReturn($isWarmup);
         $this->cache->expects($this->once())
             ->method('getItem')
             ->with($this->cacheWarmupKey)
             ->willReturn($cacheItemMock);
-
         $this->cache->expects($invokeCount)->method('save')->with($cacheItemMock);
 
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
@@ -222,7 +210,7 @@ class DynamicProductGroupServiceTest extends TestCase
         $cacheItemMock->expects($this->exactly(3))->method('isHit')->willReturnOnConsecutiveCalls(false, false, true);
         $cacheItemMock->expects($this->exactly(2))->method('expiresAfter')->with(60 * 11);
         $this->cache->expects($this->exactly(2))->method('save')->with($cacheItemMock);
-        $this->cache->expects($this->any())
+        $this->cache->expects($this->exactly(4))
             ->method('getItem')
             ->withConsecutive([$this->cacheWarmupKey], [$this->cacheTotalKey], [$this->cacheKey], [$this->cacheKey])
             ->willReturn($cacheItemMock);
