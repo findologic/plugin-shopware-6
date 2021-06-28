@@ -387,4 +387,21 @@ class Utils
             return !str_starts_with($domainEntity->getUrl(), Defaults::HEADLESS_SALES_CHANNEL_PREFIX);
         });
     }
+
+    /**
+     * Flattens a given array. This method is similar to the JavaScript method "Array.prototype.flat()".
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
+     *
+     * @param array $array
+     * @return array
+     */
+    public static function flat(array $array): array
+    {
+        $flattened = [];
+        array_walk_recursive($array, static function ($a) use (&$flattened) {
+            $flattened[] = $a;
+        });
+
+        return $flattened;
+    }
 }
