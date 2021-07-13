@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Psr\Cache\CacheItemPoolInterface;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
@@ -16,6 +15,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Struct\Collection;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
+
+use const PHP_URL_PATH;
 
 class UrlBuilderService
 {
@@ -122,7 +123,6 @@ class UrlBuilderService
      * E.g.
      * * Lightweight-Paper-Prior-IT/7562a1140f7f4abd8c6a4a4b6d050b77
      * * Sony-Alpha-7-III-Sigma-AF-24-70mm-1-2-8-DG-DN-ART/145055000510
-     *
      */
     protected function getProductSeoPath(ProductEntity $product): ?string
     {
@@ -200,26 +200,45 @@ class UrlBuilderService
      *
      * @return CategoryEntity[]
      */
-    protected function getCategoriesFromHierarchy(CategoryEntity $category): array
+    public function getCategoriesFromHierarchy(CategoryEntity $category): array
     {
         $parent = $this->getParentCategory($category);
 
         $categories = [];
-        $categories[] = $category;
         if ($parent && $parent->getId() !== $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId()) {
-            $categories[] = $this->getCategoriesFromHierarchy($parent);
+            $tree = $this->getCategoriesFromHierarchy($parent);
+            if ($tree) {
+                $categories[] = $tree;
+            }
         }
 
         return $categories;
     }
 
+    protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
+    {
+        $seoUrls = new SeoUrlCollection();
+        if ($categoryEntity->getSeoUrls() && $categoryEntity->getSeoUrls()->count() > 0) {
+            $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
+            foreach ($categoryEntity->getSeoUrls()->getElements() as $seoUrlEntity) {
+                $seoUrlSalesChannelId = $seoUrlEntity->getSalesChannelId();
+                if ($seoUrlSalesChannelId === $salesChannelId || $seoUrlSalesChannelId === null) {
+                    $seoUrls->add($seoUrlEntity);
+                }
+            }
+        }
+
+        return $seoUrls;
+    }
+
     protected function getParentCategory(CategoryEntity $category): ?CategoryEntity
     {
-        if (!$category->getParentId()) {
+        $parentId = $category->getParentId();
+        if (!$parentId) {
             return null;
         }
 
-        $criteria = new Criteria([$category->getParentId()]);
+        $criteria = new Criteria([$parentId]);
         $criteria->addAssociation('seoUrls');
 
         $result = $this->categoryRepository->search($criteria, $this->salesChannelContext->getContext());
@@ -234,11 +253,7 @@ class UrlBuilderService
      */
     protected function buildSingleCategoryCatUrls(CategoryEntity $categoryEntity): array
     {
-        $allSeoUrls = $categoryEntity->getSeoUrls();
-        if (!$allSeoUrls) {
-            return [];
-        }
-
+        $allSeoUrls = $this->fetchCategorySeoUrls($categoryEntity);
         $salesChannelSeoUrls = $allSeoUrls->filterBySalesChannelId($this->salesChannelContext->getSalesChannelId());
         if ($salesChannelSeoUrls->count() === 0) {
             return [];
@@ -257,9 +272,16 @@ class UrlBuilderService
         return $seoUrls;
     }
 
+    protected function filterDeletedSeoUrls(SeoUrlCollection $collection): SeoUrlCollection
+    {
+        return $collection->filter(function (SeoUrlEntity $entity) {
+            return !$entity->getIsDeleted();
+        });
+    }
+
     protected function getCatUrlPrefix(): string
     {
-        $url = $this->getSalesChannelDomain();
+        $url = $this->getTranslatedDomainBaseUrl();
         if (!$url) {
             return '';
         }
@@ -270,6 +292,15 @@ class UrlBuilderService
         }
 
         return rtrim($path, '/');
+    }
+
+    protected function getTranslatedDomainBaseUrl(): ?string
+    {
+        $salesChannel = $this->salesChannelContext->getSalesChannel();
+        $domainCollection = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($salesChannel->getDomains());
+        $domainEntities = $this->getTranslatedEntities($domainCollection);
+
+        return $domainEntities && $domainEntities->first() ? rtrim($domainEntities->first()->getUrl(), '/') : null;
     }
 
     protected function buildNonSeoCatUrl(CategoryEntity $category): string

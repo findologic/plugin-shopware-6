@@ -143,7 +143,6 @@ class Utils
     /**
      * Fetches the raw installed Shopware version. The returned version string may contain a version prefix
      * and/or a commit hash and/or release information such as "-RC1". E.g.
-     *
      * * 6.3.5.3@940439ea951dfcf7b34584485cf6251c49640cdf
      * * v6.2.3
      * * v6.4.0-RC1@34abab343847384934334781abababababcdddddd
@@ -393,6 +392,7 @@ class Utils
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
      *
      * @param array $array
+     *
      * @return array
      */
     public static function flat(array $array): array
