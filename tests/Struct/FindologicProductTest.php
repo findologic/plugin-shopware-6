@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Struct;
 use DateTimeImmutable;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\Image;
+use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Data\Keyword;
 use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
@@ -18,12 +19,17 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesExcepti
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
+use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
@@ -42,7 +48,9 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Test\TestDataCollection;
+use Shopware\Core\Framework\Util\Random;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\Kernel;
 use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
@@ -85,12 +93,19 @@ class FindologicProductTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Kernel::getConnection()->beginTransaction();
         $this->router = $this->getContainer()->get('router');
         $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->shopkey = $this->getShopkey();
         $this->ids = new TestDataCollection(Context::createDefaultContext());
         $this->customerRepository = $this->getContainer()->get('customer.repository');
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        Kernel::getConnection()->rollBack();
     }
 
     public function productNameProvider(): array
@@ -241,6 +256,7 @@ class FindologicProductTest extends TestCase
         $categoryData['categories'] = $data;
         $productEntity = $this->createTestProduct($categoryData);
 
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -248,7 +264,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -267,7 +284,7 @@ class FindologicProductTest extends TestCase
     public function testProductCategoriesSeoUrl(): void
     {
         $productEntity = $this->createTestProduct();
-
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -275,7 +292,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -315,7 +333,6 @@ class FindologicProductTest extends TestCase
         }
 
         $findologicProductFactory = new FindologicProductFactory();
-
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
@@ -1540,6 +1557,8 @@ class FindologicProductTest extends TestCase
         $this->salesChannelContext->getSalesChannel()->setDomains($result->getEntities());
 
         $productEntity = $this->createTestProduct();
+
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1547,7 +1566,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $attributes = $findologicProduct->getAttributes();
@@ -1747,7 +1767,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
         );
 
         $actualImages = $this->urlDecodeImages($findologicProduct->getImages());
@@ -1931,5 +1951,21 @@ class FindologicProductTest extends TestCase
         );
 
         $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
+    }
+
+    private function getMockedConfig(bool $isDirectIntegration = true): Config
+    {
+        /** @var FindologicConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
+
+        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
+        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serviceConfigResource->expects($this->once())
+            ->method('isDirectIntegration')
+            ->willReturn($isDirectIntegration);
+
+        return new Config($configServiceMock, $serviceConfigResource);
     }
 }

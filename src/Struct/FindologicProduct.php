@@ -140,7 +140,8 @@ class FindologicProduct extends Struct
         ContainerInterface $container,
         string $shopkey,
         array $customerGroups,
-        Item $item
+        Item $item,
+        ?Config $config = null
     ) {
         $this->product = $product;
         $this->router = $router;
@@ -152,8 +153,11 @@ class FindologicProduct extends Struct
         $this->attributes = [];
         $this->properties = [];
         $this->translator = $container->get('translator');
-        $this->config = $container->get(Config::class);
+        if ($config === null) {
+            $config = $container->get(Config::class);
+        }
 
+        $this->config = $config;
         $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
         $this->config->initializeBySalesChannel($this->salesChannelContext);
 
@@ -345,64 +349,6 @@ class FindologicProduct extends Struct
     public function hasUrl(): bool
     {
         return $this->url && !Utils::isEmpty($this->url);
-    }
-
-    protected function getTranslatedSeoPath(): ?string
-    {
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
-        $collectionWithoutDeletedEntities = $this->filterDeletedSeoUrls($seoUrlCollection);
-
-        $seoUrlEntities = $this->getTranslatedEntities($collectionWithoutDeletedEntities);
-        if (!$seoUrlEntities) {
-            return null;
-        }
-
-        $canonicalSeoUrl = $seoUrlEntities->filter(function (SeoUrlEntity $entity) {
-            return $entity->getIsCanonical();
-        })->first();
-
-        $seoUrlEntity = $canonicalSeoUrl ?? $seoUrlEntities->first();
-
-        return $seoUrlEntity ? ltrim($seoUrlEntity->getSeoPathInfo(), '/') : null;
-    }
-
-    protected function getTranslatedDomainBaseUrl(): ?string
-    {
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domainCollection = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($salesChannel->getDomains());
-
-        $domainEntities = $this->getTranslatedEntities($domainCollection);
-
-        return $domainEntities->first() ? rtrim($domainEntities->first()->getUrl(), '/') : null;
-    }
-
-    /**
-     * Filters the given collection to only return entities for the current language.
-     */
-    protected function getTranslatedEntities(?EntityCollection $collection): ?Collection
-    {
-        if (!$collection) {
-            return null;
-        }
-
-        $translatedEntities = $collection->filterByProperty(
-            'languageId',
-            $this->salesChannelContext->getSalesChannel()->getLanguageId()
-        );
-
-        if ($translatedEntities->count() === 0) {
-            return null;
-        }
-
-        return $translatedEntities;
-    }
-
-    protected function filterDeletedSeoUrls(SeoUrlCollection $collection): SeoUrlCollection
-    {
-        return $collection->filter(function (SeoUrlEntity $entity) {
-            return !$entity->getIsDeleted();
-        });
     }
 
     /**
@@ -919,26 +865,12 @@ class FindologicProduct extends Struct
      */
     protected function getEncodedUrl(string $url): string
     {
-        $parsedUrl = parse_url($url);
+        $parsedUrl = (array)parse_url($url);
         $urlPath = explode('/', $parsedUrl['path']);
         $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
         $parsedUrl['path'] = implode('/', $encodedPath);
 
         return Utils::buildUrl($parsedUrl);
-    }
-
-    protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
-    {
-        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
-        $seoUrls = new SeoUrlCollection();
-
-        foreach ($categoryEntity->getSeoUrls()->getElements() as $seoUrlEntity) {
-            if ($seoUrlEntity->getSalesChannelId() === $salesChannelId || $seoUrlEntity->getSalesChannelId() === null) {
-                $seoUrls->add($seoUrlEntity);
-            }
-        }
-
-        return $seoUrls;
     }
 
     protected function setCustomFieldAttributes(): void
@@ -1060,35 +992,23 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            // Only export cat_urls if there is Direct Integration
-            if (!$this->isDirectIntegration()) {
-                $catUrls = array_merge($catUrls, $this->urlBuilderService->buildCatUrls($categoryEntity));
-            }
-
             $categoryPath = Utils::buildCategoryPath(
                 $categoryEntity->getBreadcrumb(),
                 $this->navigationCategory
             );
 
             if (!Utils::isEmpty($categoryPath)) {
-                $categories[] = $categoryPath;
+                $categories = array_merge($categories, [$categoryPath]);
+            }
+
+            // We only export "cat_urls", and "cat" recursively if there is Direct Integration, otherwise we only
+            // export "cat" without recursion.
+            if ($this->isDirectIntegration()) {
+                $catUrls = array_merge($catUrls, $this->urlBuilderService->buildCatUrls($categoryEntity));
+                $parentCategory = explode('_', $categoryPath);
+                $categories = array_merge($categories, $parentCategory);
             }
         }
-    }
-
-    protected function getCatUrlPrefix(): string
-    {
-        $url = $this->getTranslatedDomainBaseUrl();
-        if (!$url) {
-            return '';
-        }
-
-        $path = parse_url($url, PHP_URL_PATH);
-        if (!$path) {
-            return '';
-        }
-
-        return rtrim($path, '/');
     }
 
     private function isDirectIntegration(): bool
