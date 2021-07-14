@@ -170,17 +170,37 @@ class ProductListingRoute extends AbstractProductListingRoute
     protected function isRouteSupported(Request $request): bool
     {
         // Findologic should never trigger on home page, even if there are categories that would allow it.
-        if ($request->getPathInfo() === '/') {
+        if ($this->isHomePage($request)) {
             return false;
         }
 
         // In case requests come from the home page, Findologic should not trigger on those.
-        $refererPath = parse_url($request->headers->get('referer'), PHP_URL_PATH);
-        $path = ltrim($refererPath, $request->getBasePath());
-        if ($path === '' || $path === '/') {
+        if ($this->isRequestFromHomePage($request)) {
             return false;
         }
 
         return true;
+    }
+
+    protected function isHomePage(Request $request): bool
+    {
+        return $request->getPathInfo() === '/';
+    }
+
+    protected function isRequestFromHomePage(Request $request): bool
+    {
+        if (!$request->isXmlHttpRequest()) {
+            return false;
+        }
+
+        $referer = $request->headers->get('referer');
+        if (!$referer || !is_string($referer)) {
+            return false;
+        }
+
+        $refererPath = parse_url($request->headers->get('referer'), PHP_URL_PATH);
+        $path = ltrim($refererPath, $request->getBasePath());
+
+        return $path === '' || $path === '/';
     }
 }

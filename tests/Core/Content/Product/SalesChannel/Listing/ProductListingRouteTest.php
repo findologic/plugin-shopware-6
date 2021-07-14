@@ -55,4 +55,16 @@ class ProductListingRouteTest extends ProductRouteBase
         $this->getOriginal()->expects($this->once())->method('load');
         $this->call($productRoute, $request, $salesChannelContextMock, $expectedMainCategoryId);
     }
+
+    public function testWillUseOriginalInCaseRequestComesFromHomepage(): void
+    {
+        $salesChannelContextMock = $this->getMockedSalesChannelContext(true, '1');
+        $request = Request::create('http://your-shop.de/');
+        $request->setSession($this->getSessionMock());
+
+        $productRoute = $this->getRoute();
+
+        $this->getOriginal()->expects($this->once())->method('load');
+        $this->call($productRoute, $request, $salesChannelContextMock, '2');
+    }
 }
