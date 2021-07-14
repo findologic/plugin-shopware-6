@@ -30,7 +30,7 @@ class ProductSearchBuilder extends ShopwareProductSearchBuilder
     public function build(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
         if ($request->getPathInfo() === '/suggest') {
-            parent::build($request, $criteria, $context);
+            $this->buildParent($request, $criteria, $context);
             return;
         }
 
@@ -69,5 +69,10 @@ class ProductSearchBuilder extends ShopwareProductSearchBuilder
         $criteria->addFilter(
             new EqualsFilter('product.searchKeywords.languageId', $context->getContext()->getLanguageId())
         );
+    }
+
+    public function buildParent(Request $request, Criteria $criteria, SalesChannelContext $context): void
+    {
+        parent::build($request, $criteria, $context);
     }
 }
