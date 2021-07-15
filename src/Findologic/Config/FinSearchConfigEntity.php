@@ -92,4 +92,14 @@ class FinSearchConfigEntity extends Entity
     {
         $this->languageId = $languageId;
     }
+
+    public function getLanguage(): ?LanguageEntity
+    {
+        return $this->language;
+    }
+
+    public function setLanguage(?LanguageEntity $language): void
+    {
+        $this->language = $language;
+    }
 }
