@@ -41,16 +41,22 @@ class FinSearchConfigDefinition extends EntityDefinition
             (new IdField('id', 'id'))->addFlags(new PrimaryKey(), new Required()),
             (new StringField('configuration_key', 'configurationKey'))->addFlags(new Required()),
             (new ConfigJsonField('configuration_value', 'configurationValue'))->addFlags(new Required()),
-            new FkField('sales_channel_id', 'salesChannelId', SalesChannelDefinition::class),
-            new FkField('language_id', 'languageId', LanguageDefinition::class),
+            (new FkField('sales_channel_id', 'salesChannelId', SalesChannelDefinition::class))
+                ->addFlags(new Required()),
+            (new FkField('language_id', 'languageId', LanguageDefinition::class))
+                ->addFlags(new Required()),
             new ManyToOneAssociationField(
                 'salesChannel',
                 'sales_channel_id',
                 SalesChannelDefinition::class,
-                'id',
-                false
+                'id'
             ),
-            new ManyToOneAssociationField('language', 'language_id', LanguageDefinition::class, 'id', false),
+            new ManyToOneAssociationField(
+                'language',
+                'language_id',
+                LanguageDefinition::class,
+                'id'
+            ),
         ]);
     }
 }
