@@ -107,7 +107,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         );
 
         $isDefaultCategory = $categoryId === $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-        if (!$shouldHandleRequest || $isDefaultCategory) {
+        if (!$shouldHandleRequest || $isDefaultCategory || !$this->isRouteSupported($request)) {
             Utils::disableFindologicWhenEnabled($salesChannelContext);
 
             return $this->decorated->load($categoryId, $request, $salesChannelContext, $criteria);
@@ -165,5 +165,42 @@ class ProductListingRoute extends AbstractProductListingRoute
         }
 
         return $result;
+    }
+
+    protected function isRouteSupported(Request $request): bool
+    {
+        // Findologic should never trigger on home page, even if there are categories that would allow it.
+        if ($this->isHomePage($request)) {
+            return false;
+        }
+
+        // In case request came from the home page, Findologic should not trigger on those.
+        if ($this->isRequestFromHomePage($request)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function isHomePage(Request $request): bool
+    {
+        return $request->getPathInfo() === '/';
+    }
+
+    protected function isRequestFromHomePage(Request $request): bool
+    {
+        if (!$request->isXmlHttpRequest()) {
+            return false;
+        }
+
+        $referer = $request->headers->get('referer');
+        if (!$referer || !is_string($referer)) {
+            return false;
+        }
+
+        $refererPath = parse_url($request->headers->get('referer'), PHP_URL_PATH);
+        $path = ltrim($refererPath, $request->getBasePath());
+
+        return $path === '' || $path === '/';
     }
 }
