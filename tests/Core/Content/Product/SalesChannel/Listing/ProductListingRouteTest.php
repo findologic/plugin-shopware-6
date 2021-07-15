@@ -56,12 +56,33 @@ class ProductListingRouteTest extends ProductRouteBase
         $this->call($productRoute, $request, $salesChannelContextMock, $expectedMainCategoryId);
     }
 
-    public function testWillUseOriginalInCaseRequestComesFromHomepage(): void
+    public function requestFromHomePageProvider(): array
+    {
+        $sessionMock = $this->getSessionMock();
+        $homePageRequest = Request::create('http://your-shop.de/');
+        $homePageRequest->setSession($sessionMock);
+
+        $requestWithReferer = Request::create('http://your-shop.de/filters');
+        $requestWithReferer->headers->set('X-Requested-With', 'XMLHttpRequest');
+        $requestWithReferer->headers->set('referer', 'http://your-shop.de/');
+        $requestWithReferer->setSession($sessionMock);
+
+        return [
+            'Request to homepage' => [
+                'request' => $homePageRequest
+            ],
+            'Filter request from homepage' => [
+                'request' => $requestWithReferer
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider requestFromHomePageProvider
+     */
+    public function testWillUseOriginalInCaseRequestComesFromHomepage(Request $request): void
     {
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true, '1');
-        $request = Request::create('http://your-shop.de/');
-        $request->setSession($this->getSessionMock());
-
         $productRoute = $this->getRoute();
 
         $this->getOriginal()->expects($this->once())->method('load');

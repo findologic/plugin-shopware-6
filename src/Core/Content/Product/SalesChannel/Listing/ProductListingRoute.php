@@ -174,7 +174,7 @@ class ProductListingRoute extends AbstractProductListingRoute
             return false;
         }
 
-        // In case requests come from the home page, Findologic should not trigger on those.
+        // In case request came from the home page, Findologic should not trigger on those.
         if ($this->isRequestFromHomePage($request)) {
             return false;
         }
