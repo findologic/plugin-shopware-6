@@ -79,7 +79,7 @@ class SortingService
     {
         $currentSorting = $this->getCurrentLegacySorting(
             $event->getRequest(),
-            ProductListingFeaturesSubscriber::DEFAULT_SORT
+            $this->getDefaultSort()
         );
 
         $event->getResult()->setSorting($currentSorting);
@@ -111,5 +111,17 @@ class SortingService
         }
 
         return $default;
+    }
+
+    protected function getDefaultSort(): string
+    {
+        $legacyDefaultSortConstName =
+            '\Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber::DEFAULT_SORT';
+
+        if (defined($legacyDefaultSortConstName)) {
+            return ProductListingFeaturesSubscriber::DEFAULT_SORT;
+        }
+
+        return 'name-asc';
     }
 }
