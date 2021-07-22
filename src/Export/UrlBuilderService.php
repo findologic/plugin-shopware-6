@@ -109,6 +109,7 @@ class UrlBuilderService
     protected function getSalesChannelDomain(): ?string
     {
         $allDomains = $this->salesChannelContext->getSalesChannel()->getDomains();
+        $allDomains = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($allDomains);
         $domains = $this->getTranslatedEntities($allDomains);
 
         if (!$domains || !$domains->first()) {

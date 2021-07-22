@@ -29,17 +29,13 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\RangeFilter;
-use Shopware\Core\Framework\Struct\Collection;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
@@ -157,9 +153,11 @@ class FindologicProduct extends Struct
             $config = $container->get(Config::class);
         }
 
-        $this->config = $config;
         $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
-        $this->config->initializeBySalesChannel($this->salesChannelContext);
+        $this->config = $config;
+        if (!$this->config->isInitialized()) {
+            $this->config->initializeBySalesChannel($this->salesChannelContext);
+        }
 
         if ($this->container->has('fin_search.dynamic_product_group')) {
             $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
@@ -857,20 +855,6 @@ class FindologicProduct extends Struct
         }
 
         $this->prices = array_merge($this->prices, $prices);
-    }
-
-    /**
-     * Takes invalid URLs that contain special characters such as umlauts, or special UTF-8 characters and
-     * encodes them.
-     */
-    protected function getEncodedUrl(string $url): string
-    {
-        $parsedUrl = (array)parse_url($url);
-        $urlPath = explode('/', $parsedUrl['path']);
-        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
-        $parsedUrl['path'] = implode('/', $encodedPath);
-
-        return Utils::buildUrl($parsedUrl);
     }
 
     protected function setCustomFieldAttributes(): void

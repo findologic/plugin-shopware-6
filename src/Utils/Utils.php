@@ -388,6 +388,24 @@ class Utils
     }
 
     /**
+     * Takes invalid URLs that contain special characters such as umlauts, or special UTF-8 characters and
+     * encodes them.
+     */
+    public static function getEncodedUrl(string $url): string
+    {
+        $parsedUrl = (array)parse_url($url);
+        $urlPath = explode('/', $parsedUrl['path']);
+        $encodedPath = [];
+        foreach ($urlPath as $path) {
+            $encodedPath[] = self::multiByteRawUrlEncode($path);
+        }
+
+        $parsedUrl['path'] = implode('/', $encodedPath);
+
+        return self::buildUrl($parsedUrl);
+    }
+
+    /**
      * Flattens a given array. This method is similar to the JavaScript method "Array.prototype.flat()".
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
      *

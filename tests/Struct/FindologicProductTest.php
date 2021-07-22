@@ -7,7 +7,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Struct;
 use DateTimeImmutable;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\Image;
-use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Data\Keyword;
 use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\Data\Price;
@@ -19,8 +18,8 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesExcepti
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
-use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
@@ -48,7 +47,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Test\TestDataCollection;
-use Shopware\Core\Framework\Util\Random;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\Language\LanguageEntity;
@@ -299,7 +297,7 @@ class FindologicProductTest extends TestCase
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-        $this->assertContains('/Findologic-Category', $attribute->getValues());
+        $this->assertContains('/FINDOLOGIC-Category/', $attribute->getValues());
     }
 
     public function priceProvider(): array
@@ -350,20 +348,29 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    public function directIntegrationProvider()
+    {
+        return [
+            'Direct Integration' => [true],
+            'API' => [false],
+        ];
+    }
     /**
+     * @dataProvider directIntegrationProvider
+     *
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
      * @throws ProductHasNoNameException
      * @throws ProductHasNoPricesException
      * @throws InconsistentCriteriaIdsException
      */
-    public function testProduct(): void
+    public function testProduct(bool $isDirectIntegration): void
     {
         $productEntity = $this->createTestProduct();
 
         $productTag = new Keyword('FINDOLOGIC Tag');
         $images = $this->getImages($productEntity);
-        $attributes = $this->getAttributes($productEntity);
+        $attributes = $this->getAttributes($productEntity, $isDirectIntegration);
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
@@ -375,26 +382,24 @@ class FindologicProductTest extends TestCase
         $properties = $this->getProperties($productEntity);
 
         $findologicProductFactory = new FindologicProductFactory();
+        $config = $this->getMockedConfig($isDirectIntegration);
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domains = $salesChannel->getDomains();
-        $domain = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($domains)
-            ->first()
-            ->getUrl();
-
-        $seoUrls = $productEntity->getSeoUrls()
-            ->filterBySalesChannelId($salesChannel->getId());
-        $seoPath = $seoUrls->first()->getSeoPathInfo();
-        $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
-
+        $urlBuilderService = new UrlBuilderService();
+        $urlBuilderService->initialize(
+            $this->salesChannelContext,
+            $this->router,
+            $this->getContainer()->get('category.repository')
+        );
+        $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
         $this->assertEquals([$productTag], $findologicProduct->getKeywords());
@@ -900,10 +905,9 @@ class FindologicProductTest extends TestCase
     /**
      * @return Attribute[]
      */
-    private function getAttributes(ProductEntity $productEntity): array
+    private function getAttributes(ProductEntity $productEntity, bool $isDirectIntegration = true): array
     {
         $catUrl1 = '/FINDOLOGIC-Category/';
-        $catUrl2 = '/Findologic-Category';
         $defaultCatUrl = '';
 
         foreach ($productEntity->getCategories() as $category) {
@@ -913,14 +917,16 @@ class FindologicProductTest extends TestCase
         }
 
         $attributes = [];
-        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $catUrl2, $defaultCatUrl]);
+        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $defaultCatUrl]);
         $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
         $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
 
-        $attributes[] = $catUrlAttribute;
+        if ($isDirectIntegration) {
+            $attributes[] = $catUrlAttribute;
+        }
+
         $attributes[] = $catAttribute;
         $attributes[] = $vendorAttribute;
-
         $attributes[] = new Attribute(
             $productEntity->getProperties()
                 ->first()
@@ -1242,10 +1248,8 @@ class FindologicProductTest extends TestCase
 
         $categoryId = Uuid::randomHex();
         $pathInfo = 'navigation/' . $categoryId;
-        $seoPathInfo = 'Findologic-Category';
-
-        $expectedFirstCatUrl = '/' . $seoPathInfo;
-        $expectedSecondCatUrl = '/' . $pathInfo;
+        $seoPathInfo = '/FINDOLOGIC-Category/';
+        $expectedCatUrl = '/' . $pathInfo;
 
         $productEntity = $this->createTestProduct(
             [
@@ -1267,6 +1271,7 @@ class FindologicProductTest extends TestCase
             ]
         );
 
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1274,17 +1279,16 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertCount(6, $findologicProduct->getAttributes());
         $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
 
         $catUrls = $findologicProduct->getAttributes()[0]->getValues();
-        $this->assertCount(2, $catUrls);
-
-        $this->assertSame($expectedFirstCatUrl, $catUrls[0]);
-        $this->assertSame($expectedSecondCatUrl, $catUrls[1]);
+        $this->assertCount(1, $catUrls);
+        $this->assertSame([$expectedCatUrl], $catUrls);
     }
 
     public function testCustomerGroupsAreExportedAsUserGroups(): void
@@ -1767,7 +1771,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
+            new XMLItem('123')
         );
 
         $actualImages = $this->urlDecodeImages($findologicProduct->getImages());
