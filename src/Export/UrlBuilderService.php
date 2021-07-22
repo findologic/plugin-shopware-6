@@ -254,8 +254,9 @@ class UrlBuilderService
      */
     protected function buildSingleCategoryCatUrls(CategoryEntity $categoryEntity): array
     {
+        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
         $allSeoUrls = $this->fetchCategorySeoUrls($categoryEntity);
-        $salesChannelSeoUrls = $allSeoUrls->filterBySalesChannelId($this->salesChannelContext->getSalesChannelId());
+        $salesChannelSeoUrls = $allSeoUrls->filterBySalesChannelId($salesChannelId);
         if ($salesChannelSeoUrls->count() === 0) {
             return [];
         }
