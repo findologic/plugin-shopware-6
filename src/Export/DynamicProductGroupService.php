@@ -67,11 +67,6 @@ class DynamicProductGroupService
     protected $count;
 
     /**
-     * @var int
-     */
-    protected $total;
-
-    /**
      * @var SalesChannelEntity
      */
     private $salesChannel;
@@ -139,14 +134,9 @@ class DynamicProductGroupService
             return;
         }
 
-        // Set the total dynamic groups in cache once during warm up
-        $totalCacheItem = $this->getDynamicGroupsTotalCacheItem();
-        if ($totalCacheItem && !$totalCacheItem->isHit()) {
-            $total = $this->getTotalDynamicProductGroupsCount();
-            $this->setTotalInCache($totalCacheItem, $total);
-        }
+        $this->setDynamicGroupTotalInCache();
 
-        $cacheItem = $this->getExportPaginationCacheItem();
+        $cacheItem = $this->getDynamicProductGroupOffsetCacheItem();
         $cacheItem->set($products);
         $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
         $this->cache->save($cacheItem);
@@ -196,6 +186,7 @@ class DynamicProductGroupService
 
             $criteria = new Criteria();
             $criteria->addFilter(...$filters);
+
             /** @var string[] $productIds */
             $productIds = $this->productRepository->searchIds($criteria, $this->context)->getIds();
             foreach ($productIds as $productId) {
@@ -212,7 +203,7 @@ class DynamicProductGroupService
     public function getCategories(string $productId): array
     {
         $categories = [];
-        $cacheItem = $this->getExportPaginationCacheItem();
+        $cacheItem = $this->getDynamicProductGroupOffsetCacheItem();
         if ($cacheItem->isHit()) {
             $categories = $cacheItem->get();
         }
@@ -246,7 +237,7 @@ class DynamicProductGroupService
         return $criteria;
     }
 
-    private function getExportPaginationCacheItem(): CacheItemInterface
+    private function getDynamicProductGroupOffsetCacheItem(): CacheItemInterface
     {
         $id = sprintf('%s_%s_%s', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey, $this->start);
 
@@ -268,7 +259,7 @@ class DynamicProductGroupService
     }
 
     /**
-     * Gets the total count of dynamic product groups from cache
+     * Gets the total count of dynamic product groups from cache.
      */
     public function getDynamicProductGroupTotalFromCache(): int
     {
@@ -285,7 +276,7 @@ class DynamicProductGroupService
 
     /**
      * If we have reached the last page of the dynamic product group export, we set a flag in cache to
-     * know that the dynamic product groups are warmed up
+     * know that the dynamic product groups are warmed up.
      */
     public function setDynamicProductGroupWarmedUpFlag(int $total = 0): void
     {
@@ -300,13 +291,13 @@ class DynamicProductGroupService
     }
 
     /**
-     * Gets the total count of available dynamic product groups to be exported
+     * Gets the total count of available dynamic product groups to be exported.
      */
     private function getTotalDynamicProductGroupsCount(): int
     {
         $total = 0;
         $criteria = $this->buildCriteria();
-        $categories = $this->getCategoriesWithProductGroups($criteria);
+        $categories = $this->getCategoriesFromCriteria($criteria);
         foreach ($categories as $categoryEntity) {
             $productStream = $categoryEntity->getProductStream();
             if (!$productStream) {
@@ -319,12 +310,12 @@ class DynamicProductGroupService
         return $total;
     }
 
-    private function getCategoriesWithProductGroups(Criteria $criteria): ?CategoryCollection
+    private function getCategoriesFromCriteria(Criteria $criteria): ?CategoryCollection
     {
         /** @var CategoryCollection $categories */
         $categories = $this->categoryRepository->search($criteria, $this->context)->getEntities();
 
-        if ($categories === null || !$categories->count()) {
+        if ($categories === null || $categories->count() === 0) {
             return null;
         }
 
@@ -333,7 +324,7 @@ class DynamicProductGroupService
 
     public function getDynamicProductGroupWarmedUpCacheItem(): CacheItemInterface
     {
-        $id = sprintf('%s_%s_dpg_warmup', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
+        $id = sprintf('%s_%s_dynamic_product_warmup', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
 
         return $this->cache->getItem($id);
     }
@@ -350,5 +341,18 @@ class DynamicProductGroupService
         }
 
         return false;
+    }
+
+    /**
+     * Sets the dynamic product groups total count in cache if it is not already set. This is important
+     * as otherwise we wouldn't know when we're done fetching all dynamic product groups during the export.
+     */
+    private function setDynamicGroupTotalInCache(): void
+    {
+        $totalCacheItem = $this->getDynamicGroupsTotalCacheItem();
+        if ($totalCacheItem && !$totalCacheItem->isHit()) {
+            $total = $this->getTotalDynamicProductGroupsCount();
+            $this->setTotalInCache($totalCacheItem, $total);
+        }
     }
 }

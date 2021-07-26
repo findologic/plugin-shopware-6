@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\ProductService;
+use FINDOLOGIC\FinSearch\Export\Responses\PreconditionFailedResponse;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
@@ -73,9 +74,6 @@ class ExportController extends AbstractController
     /** @var SalesChannelService|null */
     private $salesChannelService;
 
-    /** @var int */
-    private $total = 0;
-
     /**
      * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
      */
@@ -102,17 +100,8 @@ class ExportController extends AbstractController
         if ($errorResponse = $this->validate()) {
             return $errorResponse;
         }
-
-        $excludeProductGroups = filter_var($request->get('excludeProductGroups'), FILTER_VALIDATE_BOOLEAN);
-        $dynamicProductGroupService = $this->getDynamicProductGroupService();
-        if (!$excludeProductGroups && !$dynamicProductGroupService->isDynamicProductGroupWarmedUp()) {
-            $errorMessage = 'Dynamic Product Groups have not been warmed up yet. ';
-            $errorMessage .= 'This may cause missing categories! ';
-            $errorMessage .= "Warm them up by calling the route '/findologic/dynamic-product-groups', ";
-            $errorMessage .= 'or disable fetching of Dynamic Product Groups by adding the query parameter ';
-            $errorMessage .= "'excludeProductGroups=true'";
-
-            return new JsonResponse(['error' => $errorMessage], Response::HTTP_PRECONDITION_REQUIRED);
+        if ($errorResponse = $this->validateDynamicGroupPrecondition($request)) {
+            return $errorResponse;
         }
 
         return $this->doExport();
@@ -129,13 +118,13 @@ class ExportController extends AbstractController
             return $errorResponse;
         }
 
-        $this->warmUpDynamicProductGroups();
+        $total = $this->warmUpDynamicProductGroupsAndGetTotal();
 
         return new JsonResponse([
             'meta' => [
                 'start' => $this->exportConfig->getStart(),
                 'count' => $this->exportConfig->getCount(),
-                'total' => $this->total
+                'total' => $total
             ]
         ]);
     }
@@ -174,6 +163,17 @@ class ExportController extends AbstractController
             $errorHandler->getExportErrors()->addGeneralErrors($messages);
 
             return $this->export->buildErrorResponse($errorHandler, $this->headerHandler->getHeaders());
+        }
+
+        return null;
+    }
+
+    protected function validateDynamicGroupPrecondition(Request $request): ?Response
+    {
+        $excludeProductGroups = filter_var($request->get('excludeProductGroups'), FILTER_VALIDATE_BOOLEAN);
+        $dynamicProductGroupService = $this->getDynamicProductGroupService();
+        if (!$excludeProductGroups && !$dynamicProductGroupService->isDynamicProductGroupWarmedUp()) {
+            return new PreconditionFailedResponse();
         }
 
         return null;
@@ -218,10 +218,10 @@ class ExportController extends AbstractController
         return $messages;
     }
 
-    protected function warmUpDynamicProductGroups(): void
+    protected function warmUpDynamicProductGroupsAndGetTotal(): int
     {
         if (Utils::versionLowerThan('6.3.1.0')) {
-            return;
+            return 0;
         }
 
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
@@ -229,8 +229,10 @@ class ExportController extends AbstractController
             $dynamicProductGroupService->warmUp();
         }
 
-        $this->total = $dynamicProductGroupService->getDynamicProductGroupTotalFromCache();
-        $dynamicProductGroupService->setDynamicProductGroupWarmedUpFlag($this->total);
+        $total = $dynamicProductGroupService->getDynamicProductGroupTotalFromCache();
+        $dynamicProductGroupService->setDynamicProductGroupWarmedUpFlag($total);
+
+        return $total;
     }
 
     private function validateExportConfiguration(ExportConfiguration $config): array
