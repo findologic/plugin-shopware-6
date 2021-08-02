@@ -245,8 +245,8 @@ class XmlProduct
             $this->xmlItem = null;
         } catch (EmptyValueNotAllowedException $e) {
             $message = sprintf(
-                'Product "%s" with id "%s" could not be exported. It appears to have empty values assigned to it. 
-                If you see this message in your logs, please report this as a bug.',
+                'Product "%s" with id "%s" could not be exported. It appears to have empty values assigned ' .
+                'to it.  If you see this message in your logs, please report this as a bug.',
                 $this->product->getTranslation('name'),
                 $this->product->getId()
             );
@@ -254,8 +254,8 @@ class XmlProduct
             $this->xmlItem = null;
         } catch (Throwable $e) {
             $message = sprintf(
-                'Error while exporting the product "%s" with id "%s". If you see this message in your logs, 
-                please report this as a bug. Error message: %s',
+                'Error while exporting the product "%s" with id "%s". If you see this message in your logs, ' .
+                'please report this as a bug. Error message: %s',
                 $this->product->getTranslation('name'),
                 $this->product->getId(),
                 $e->getMessage()
