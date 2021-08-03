@@ -1381,6 +1381,12 @@ class FindologicProductTest extends TestCase
      */
     public function testProductListPrice(?string $currencyId, bool $isPriceAvailable): void
     {
+        if ($currencyId === null && !Utils::versionLowerThan('6.4.3.0')) {
+            $this->markTestSkipped(
+                'SW >= 6.4.3.0 requires a price to be set for the default currency. Therefore not testable.'
+            );
+        }
+
         if ($currencyId === null) {
             $currencyId = $this->createCurrency();
         }
