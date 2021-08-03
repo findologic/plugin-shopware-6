@@ -59,6 +59,11 @@
             <argument id="service_container" type="service" />
         </service>
 
+        <service id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" public="true">
+            <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
+            <argument type="service" id="category.repository" />
+        </service>
+
         <service
                 id="FINDOLOGIC\FinSearch\Export\SalesChannelService"
                 class="FINDOLOGIC\FinSearch\Export\SalesChannelService"

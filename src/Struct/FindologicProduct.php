@@ -121,7 +121,7 @@ class FindologicProduct extends Struct
     protected $config;
 
     /** @var UrlBuilderService */
-    private $urlBuilderService;
+    protected $urlBuilderService;
 
     /**
      * @param CustomerGroupEntity[] $customerGroups
@@ -149,16 +149,12 @@ class FindologicProduct extends Struct
         $this->attributes = [];
         $this->properties = [];
         $this->translator = $container->get('translator');
-        if ($config === null) {
-            $config = $container->get(Config::class);
-        }
-
         $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
-        $this->config = $config;
+        $this->config = $config ?? $container->get(Config::class);
+
         if (!$this->config->isInitialized()) {
             $this->config->initializeBySalesChannel($this->salesChannelContext);
         }
-
         if ($this->container->has('fin_search.dynamic_product_group')) {
             $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
         }
@@ -166,12 +162,8 @@ class FindologicProduct extends Struct
             $this->container->get('category.repository'),
             $this->salesChannelContext->getSalesChannel()
         );
-        $this->urlBuilderService = new UrlBuilderService();
-        $this->urlBuilderService->initialize(
-            $this->salesChannelContext,
-            $this->router,
-            $this->container->get('category.repository')
-        );
+        $this->urlBuilderService = $this->container->get(UrlBuilderService::class);
+        $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
         $this->productImageService = $this->container->get(ProductImageService::class);
 
         $this->setName();
@@ -644,7 +636,7 @@ class FindologicProduct extends Struct
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
             $groupName = $group->getTranslation('name');
-            if (!$this->isDirectIntegration()) {
+            if ($this->isApiIntegration()) {
                 $groupName = Utils::removeSpecialChars($groupName);
             }
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
@@ -669,7 +661,7 @@ class FindologicProduct extends Struct
             $groupName = $group->getTranslation('name');
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                if (!$this->isDirectIntegration()) {
+                if ($this->isApiIntegration()) {
                     $groupName = Utils::removeSpecialChars($groupName);
                 }
                 $configProperty = new Property($groupName);
@@ -692,12 +684,12 @@ class FindologicProduct extends Struct
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
             $groupName = $group->getTranslation('name');
-            if (!$this->isDirectIntegration()) {
+            if ($this->isApiIntegration()) {
                 $groupName = Utils::removeSpecialChars($groupName);
             }
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
-                if (!$this->isDirectIntegration()) {
+                if ($this->isApiIntegration()) {
                     $groupName = Utils::removeSpecialChars($groupName);
                 }
                 $properyGroupAttrib = new Attribute($groupName);
@@ -720,7 +712,7 @@ class FindologicProduct extends Struct
             $groupName = $group->getTranslation('name');
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                if (!$this->isDirectIntegration()) {
+                if ($this->isApiIntegration()) {
                     $groupName = Utils::removeSpecialChars($groupName);
                 }
                 $configAttrib = new Attribute($groupName);
@@ -878,7 +870,7 @@ class FindologicProduct extends Struct
         }
 
         foreach ($productFields as $key => $value) {
-            if (!$this->isDirectIntegration()) {
+            if ($this->isApiIntegration()) {
                 $key = Utils::removeSpecialChars($key);
             }
             $cleanedValue = $this->getCleanedAttributeValue($value);
@@ -972,6 +964,7 @@ class FindologicProduct extends Struct
                 continue;
             }
 
+            // If the category is not in the current sales channel's root category, we do not need to export it.
             if (!$categoryEntity->getPath() || !strpos($categoryEntity->getPath(), $navigationCategoryId)) {
                 continue;
             }
@@ -985,18 +978,27 @@ class FindologicProduct extends Struct
                 $categories = array_merge($categories, [$categoryPath]);
             }
 
-            // We only export "cat_urls", and "cat" recursively if there is Direct Integration, otherwise we only
-            // export "cat" without recursion.
+            // Only export `cat_url`s recursively if integration type is Direct Integration.
+            // Note that this also applies for the `cat` attribute.
             if ($this->isDirectIntegration()) {
-                $catUrls = array_merge($catUrls, $this->urlBuilderService->buildCatUrls($categoryEntity));
+                $catUrls = array_merge(
+                    $catUrls,
+                    $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
+                );
+
                 $parentCategory = explode('_', $categoryPath);
                 $categories = array_merge($categories, $parentCategory);
             }
         }
     }
 
-    private function isDirectIntegration(): bool
+    protected function isDirectIntegration(): bool
     {
         return $this->config->getIntegrationType() === IntegrationType::DI;
+    }
+
+    protected function isApiIntegration(): bool
+    {
+        return $this->config->getIntegrationType() === IntegrationType::API;
     }
 }

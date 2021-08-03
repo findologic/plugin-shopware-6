@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -29,23 +31,20 @@ class UrlBuilderService
     /** @var EntityRepository */
     private $categoryRepository;
 
-    public function __construct()
+    public function __construct(RouterInterface $router, EntityRepository $categoryRepository)
     {
-    }
-
-    public function initialize(
-        SalesChannelContext $salesChannelContext,
-        RouterInterface $router,
-        EntityRepository $categoryRepository
-    ): void {
-        $this->salesChannelContext = $salesChannelContext;
         $this->router = $router;
         $this->categoryRepository = $categoryRepository;
     }
 
+    public function setSalesChannelContext(SalesChannelContext $salesChannelContext): void
+    {
+        $this->salesChannelContext = $salesChannelContext;
+    }
+
     /**
-     * Builds the URL of the given product for the currently used language. Automatically fallbacks to the
-     * normal URL in case the product does not have a SEO URL configured.
+     * Builds the URL of the given product for the currently used language. Automatically fallbacks to
+     * generating a URL via the router in case the product does not have a SEO URL configured.
      * E.g.
      * * http://localhost:8000/Lightweight-Paper-Prior-IT/7562a1140f7f4abd8c6a4a4b6d050b77
      * * https://your-shop.com/detail/032c79962b3f4fb4bd1e9117005b42c1
@@ -55,12 +54,12 @@ class UrlBuilderService
     {
         $seoPath = $this->getProductSeoPath($product);
         if (!$seoPath) {
-            return $this->buildNonSeoUrl($product);
+            return $this->getFallbackUrl($product);
         }
 
         $domain = $this->getSalesChannelDomain();
         if (!$domain) {
-            return $this->buildNonSeoUrl($product);
+            return $this->getFallbackUrl($product);
         }
 
         return $this->buildSeoUrl($domain, $seoPath);
@@ -81,20 +80,16 @@ class UrlBuilderService
      *
      * @return string[]
      */
-    public function buildCatUrls(CategoryEntity $category): array
+    public function getCategoryUrls(CategoryEntity $category, Context $context): array
     {
-        $tree = $this->getCategoriesFromHierarchy($category);
-        $categories = array_merge(Utils::flat($tree), [$category]);
+        $categories = $this->getParentCategories($category, $context);
+        $categoryUrls = [];
 
-        $catUrls = array_map(function (CategoryEntity $category) {
-            return $this->buildNonSeoCatUrl($category);
-        }, $categories);
+        foreach ($categories as $categoryEntity) {
+            $categoryUrls[] = $this->buildCategoryUrls($categoryEntity);
+        }
 
-        $seoCatUrls = array_map(function (CategoryEntity $category) {
-            return $this->buildSingleCategoryCatUrls($category);
-        }, $categories);
-
-        return array_merge($catUrls, Utils::flat($seoCatUrls));
+        return $categoryUrls;
     }
 
     /**
@@ -179,7 +174,7 @@ class UrlBuilderService
         });
     }
 
-    protected function buildNonSeoUrl(ProductEntity $product): string
+    protected function getFallbackUrl(ProductEntity $product): string
     {
         return $this->router->generate(
             'frontend.detail.page',
@@ -194,23 +189,23 @@ class UrlBuilderService
     }
 
     /**
-     * Returns all parent categories in a recursive array. The recursive array will not include the given category.
-     * The main navigation category (aka. root category) won't be added to the recursive array.
-     *
-     * @param CategoryEntity $category
+     * Returns all parent categories of the given category.
+     * The main navigation category (aka. root category) won't be added to the array.
      *
      * @return CategoryEntity[]
      */
-    public function getCategoriesFromHierarchy(CategoryEntity $category): array
+    public function getParentCategories(CategoryEntity $category, Context $context): array
     {
-        $parent = $this->getParentCategory($category);
-
+        $parentCategories = $this->fetchParentsFromCategoryPath($category, $context);
         $categories = [];
-        if ($parent && $parent->getId() !== $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId()) {
-            $tree = $this->getCategoriesFromHierarchy($parent);
-            if ($tree) {
-                $categories[] = $tree;
+
+        /** @var CategoryEntity $categoryInPath */
+        foreach ($parentCategories as $categoryInPath) {
+            if ($categoryInPath->getId() === $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId()) {
+                continue;
             }
+
+            $categories[] = $categoryInPath;
         }
 
         return $categories;
@@ -232,27 +227,12 @@ class UrlBuilderService
         return $seoUrls;
     }
 
-    protected function getParentCategory(CategoryEntity $category): ?CategoryEntity
-    {
-        $parentId = $category->getParentId();
-        if (!$parentId) {
-            return null;
-        }
-
-        $criteria = new Criteria([$parentId]);
-        $criteria->addAssociation('seoUrls');
-
-        $result = $this->categoryRepository->search($criteria, $this->salesChannelContext->getContext());
-
-        return $result->first();
-    }
-
     /**
      * Returns all SEO paths for the given category.
      *
      * @return string[]
      */
-    protected function buildSingleCategoryCatUrls(CategoryEntity $categoryEntity): array
+    protected function buildCategorySeoUrl(CategoryEntity $categoryEntity): array
     {
         $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
         $allSeoUrls = $this->fetchCategorySeoUrls($categoryEntity);
@@ -305,9 +285,10 @@ class UrlBuilderService
         return $domainEntities && $domainEntities->first() ? rtrim($domainEntities->first()->getUrl(), '/') : null;
     }
 
-    protected function buildNonSeoCatUrl(CategoryEntity $category): string
+    protected function buildCategoryUrls(CategoryEntity $category): array
     {
-        return sprintf(
+        $categoryUrls = $this->buildCategorySeoUrl($category);
+        $categoryUrls[] = sprintf(
             '/%s',
             ltrim(
                 $this->router->generate(
@@ -318,5 +299,21 @@ class UrlBuilderService
                 '/'
             )
         );
+
+        return $categoryUrls;
+    }
+
+    protected function fetchParentsFromCategoryPath(CategoryEntity $category, Context $context): ?CategoryCollection
+    {
+        $path = $category->getPath();
+        if (!$path) {
+            return null;
+        }
+
+        $parentIds = \explode('|', $path);
+        $criteria = new Criteria($parentIds);
+        $criteria->addAssociation('seoUrls');
+
+        return $this->categoryRepository->search($criteria, $context)->getEntities();
     }
 }

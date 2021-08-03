@@ -348,29 +348,13 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    public function directIntegrationProvider()
-    {
-        return [
-            'Direct Integration' => [true],
-            'API' => [false],
-        ];
-    }
-    /**
-     * @dataProvider directIntegrationProvider
-     *
-     * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoNameException
-     * @throws ProductHasNoPricesException
-     * @throws InconsistentCriteriaIdsException
-     */
-    public function testProduct(bool $isDirectIntegration): void
+    public function testProduct(): void
     {
         $productEntity = $this->createTestProduct();
 
         $productTag = new Keyword('FINDOLOGIC Tag');
         $images = $this->getImages($productEntity);
-        $attributes = $this->getAttributes($productEntity, $isDirectIntegration);
+        $attributes = $this->getAttributes($productEntity);
 
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
@@ -382,23 +366,18 @@ class FindologicProductTest extends TestCase
         $properties = $this->getProperties($productEntity);
 
         $findologicProductFactory = new FindologicProductFactory();
-        $config = $this->getMockedConfig($isDirectIntegration);
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $config
+            new XMLItem('123')
         );
 
-        $urlBuilderService = new UrlBuilderService();
-        $urlBuilderService->initialize(
-            $this->salesChannelContext,
-            $this->router,
-            $this->getContainer()->get('category.repository')
-        );
+        $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
+        $urlBuilderService->setSalesChannelContext($this->salesChannelContext);
+
         $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
@@ -905,7 +884,7 @@ class FindologicProductTest extends TestCase
     /**
      * @return Attribute[]
      */
-    private function getAttributes(ProductEntity $productEntity, bool $isDirectIntegration = true): array
+    private function getAttributes(ProductEntity $productEntity, string $integrationType = 'Direct Integration'): array
     {
         $catUrl1 = '/FINDOLOGIC-Category/';
         $defaultCatUrl = '';
@@ -921,7 +900,7 @@ class FindologicProductTest extends TestCase
         $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
         $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
 
-        if ($isDirectIntegration) {
+        if ($integrationType === 'Direct Integration') {
             $attributes[] = $catUrlAttribute;
         }
 
@@ -1957,7 +1936,7 @@ class FindologicProductTest extends TestCase
         $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
     }
 
-    private function getMockedConfig(bool $isDirectIntegration = true): Config
+    private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
     {
         /** @var FindologicConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
@@ -1968,8 +1947,123 @@ class FindologicProductTest extends TestCase
             ->getMock();
         $serviceConfigResource->expects($this->once())
             ->method('isDirectIntegration')
-            ->willReturn($isDirectIntegration);
+            ->willReturn($integrationType === 'Direct Integration');
 
         return new Config($configServiceMock, $serviceConfigResource);
+    }
+
+    public function categoryAndCatUrlWithIntegrationTypeProvider(): array
+    {
+        return [
+            'Integration type is API and category is at first level' => [
+                'integrationType' => 'API',
+                'categories' => [
+                    'id-of-assigned-category'
+                ],
+                'expectedCategories' => [
+                    'SomeCategoryName'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is API with nested categories' => [
+                'integrationType' => 'API',
+                'categories' => [
+                    'id-of-assigned-category'
+                ],
+                'expectedCategories' => [
+                    'Some_Category_Path' // Not recursive
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is DI and category is at first level' => [
+                'integrationType' => 'Direct Integration',
+                'categories' => [
+                    'id-of-assigned-category'
+                ],
+                'expectedCategories' => [
+                    'SomeCategoryName'
+                ],
+                'expectedCatUrls' => [
+                    'SomeCategoryPath'
+                ],
+            ],
+            'Integration type is DI with nested categories' => [
+                'integrationType' => 'Direct Integration',
+                'categories' => [
+                    'id-of-assigned-category'
+                ],
+                'expectedCategories' => [
+                    'Some_Category_Path',
+                    'Some_Category',
+                    'Some',
+                ],
+                'expectedCatUrls' => [
+                    'Some/Category/Path',
+                    'Some/Category',
+                    'Some',
+                ],
+            ],
+            'Integration type is unknown and category is at first level' => [
+                'integrationType' => null,
+                'categories' => [
+                    'id-of-assigned-category'
+                ],
+                'expectedCategories' => [
+                    'SomeCategoryName'
+                ],
+                'expectedCatUrls' => [
+                    'SomeCategoryPath'
+                ],
+            ],
+            'Integration type is unknown with nested categories' => [
+                'integrationType' => null,
+                'categories' => [
+                    'id-of-assigned-category'
+                ],
+                'expectedCategories' => [
+                    'Some_Category_Path',
+                    'Some_Category',
+                    'Some',
+                ],
+                'expectedCatUrls' => [
+                    'Some/Category/Path',
+                    'Some/Category',
+                    'Some',
+                ],
+            ],
+        ];
+    }
+
+    public function integrationTypeSpecialCharacterProvider(): array
+    {
+        return [
+            'Integration type is API' => [
+                'integrationType' => 'API',
+                'attributeValue' => '<><<<##test',
+                'expectedAttributeValue' => 'test',
+            ],
+            'Integration type is DI' => [
+                'integrationType' => 'Direct Integration',
+                'attributeValue' => '<><<<##test',
+                'expectedAttributeValue' => '<><<<##test',
+            ],
+            'Integration type is unknown' => [
+                'integrationType' => 'Direct Integration',
+                'attributeValue' => '<><<<##test',
+                'expectedAttributeValue' => 'test',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider categoryAndCatUrlWithIntegrationTypeProvider
+     */
+    public function testCategoryAndCatUrlExportBasedOnIntegrationType(
+        string $integrationType,
+        array $categories,
+        array $expectedCategories,
+        array $expectedCatUrls
+    ) {
+        $this->markTestIncomplete('To be implemented');
     }
 }

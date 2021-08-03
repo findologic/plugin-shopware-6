@@ -404,22 +404,4 @@ class Utils
 
         return self::buildUrl($parsedUrl);
     }
-
-    /**
-     * Flattens a given array. This method is similar to the JavaScript method "Array.prototype.flat()".
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
-     *
-     * @param array $array
-     *
-     * @return array
-     */
-    public static function flat(array $array): array
-    {
-        $flattened = [];
-        array_walk_recursive($array, static function ($a) use (&$flattened) {
-            $flattened[] = $a;
-        });
-
-        return $flattened;
-    }
 }
