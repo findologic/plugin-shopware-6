@@ -952,6 +952,12 @@ class FindologicProduct extends Struct
             $cleanedValue = $this->getCleanedAttributeValue($value);
 
             if (!Utils::isEmpty($cleanedKey) && !Utils::isEmpty($cleanedValue)) {
+                // Third-Party plugins may allow setting multidimensional custom-fields. As those can not really
+                // be properly sanitized, they need to be skipped.
+                if (is_array($cleanedValue) && is_array(array_values($cleanedValue)[0])) {
+                    continue;
+                }
+
                 $customFieldAttribute = new Attribute($cleanedKey, (array)$cleanedValue);
                 $attributes[] = $customFieldAttribute;
             }
