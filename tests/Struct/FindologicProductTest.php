@@ -391,7 +391,12 @@ class FindologicProductTest extends TestCase
 
     public function testProductWithCustomFields(): void
     {
-        $data['customFields'] = ['findologic_size' => 100, 'findologic_color' => 'yellow'];
+        $data = [
+            'customFields' => [
+                'findologic_size' => 100,
+                'findologic_color' => 'yellow'
+            ]
+        ];
         $productEntity = $this->createTestProduct($data, true);
 
         $productFields = $productEntity->getCustomFields();
@@ -411,9 +416,41 @@ class FindologicProductTest extends TestCase
         );
 
         $attributes = $findologicProduct->getCustomFields();
+
+        $this->assertCount(2, $attributes);
         foreach ($attributes as $attribute) {
             $this->assertEquals($productFields[$attribute->getKey()], current($attribute->getValues()));
         }
+    }
+
+    public function testMultiDimensionalCustomFieldsAreIgnored(): void
+    {
+        $data = [
+            'customFields' => [
+                'multidimensional' => [
+                    ['interesting' => 'this is some multidimensional data wow!']
+                ]
+            ]
+        ];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+        $this->assertEmpty($attributes);
     }
 
     public function testProductWithMultiSelectCustomFields(): void
