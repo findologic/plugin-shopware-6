@@ -365,6 +365,7 @@ class FindologicProductTest extends TestCase
         $ordernumbers = $this->getOrdernumber($productEntity);
         $properties = $this->getProperties($productEntity);
 
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -372,7 +373,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
@@ -629,6 +631,7 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -636,7 +639,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $foundAttributes = array_filter(
@@ -2059,7 +2063,7 @@ class FindologicProductTest extends TestCase
      * @dataProvider categoryAndCatUrlWithIntegrationTypeProvider
      */
     public function testCategoryAndCatUrlExportBasedOnIntegrationType(
-        string $integrationType,
+        ?string $integrationType,
         array $categories,
         array $expectedCategories,
         array $expectedCatUrls

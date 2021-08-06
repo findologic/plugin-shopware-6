@@ -778,7 +778,7 @@ class FindologicProduct extends Struct
 
         if (!Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
-            $catUrlAttribute->setValues(array_unique($catUrls));
+            $catUrlAttribute->setValues(Utils::flat($catUrls));
             $this->attributes[] = $catUrlAttribute;
         }
 
@@ -994,7 +994,7 @@ class FindologicProduct extends Struct
 
     protected function isDirectIntegration(): bool
     {
-        return $this->config->getIntegrationType() === IntegrationType::DI;
+        return $this->config->getIntegrationType() !== IntegrationType::DI;
     }
 
     protected function isApiIntegration(): bool

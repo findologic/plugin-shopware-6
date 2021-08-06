@@ -85,6 +85,7 @@ class UrlBuilderService
         $categories = $this->getParentCategories($category, $context);
         $categoryUrls = [];
 
+        $categoryUrls[] = $this->buildCategoryUrls($category);
         foreach ($categories as $categoryEntity) {
             $categoryUrls[] = $this->buildCategoryUrls($categoryEntity);
         }
@@ -310,7 +311,7 @@ class UrlBuilderService
             return null;
         }
 
-        $parentIds = \explode('|', $path);
+        $parentIds = array_filter(explode('|', $path));
         $criteria = new Criteria($parentIds);
         $criteria->addAssociation('seoUrls');
 
