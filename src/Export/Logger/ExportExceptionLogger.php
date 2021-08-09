@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Logger;
 
-use BadMethodCallException;
 use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoAttributesException;
@@ -21,10 +20,13 @@ class ExportExceptionLogger
     /** @var LoggerInterface|null */
     private $logger;
 
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     public function log(ProductEntity $product, Throwable $e): void
     {
-        $this->ensureLoggerInstanceIsSet();
-
         switch (true) {
             case $e instanceof ProductInvalidException:
                 $this->logProductInvalidException($product, $e);
@@ -123,14 +125,5 @@ class ExportExceptionLogger
         $errorDetails = sprintf('Error message: %s', $e->getMessage());
 
         $this->logger->warning(implode(' ', [$error, $help, $errorDetails]), ['exception' => $e]);
-    }
-
-    private function ensureLoggerInstanceIsSet(): void
-    {
-        if (!$this->logger) {
-            throw new BadMethodCallException(
-                'No logger is set! Ensure to set it with ExportExceptionLogger::setLogger()'
-            );
-        }
     }
 }

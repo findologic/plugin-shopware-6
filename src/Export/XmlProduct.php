@@ -239,8 +239,7 @@ class XmlProduct
         try {
             $this->build();
         } catch (Throwable $e) {
-            $exceptionLogger = new ExportExceptionLogger();
-            $exceptionLogger->setLogger($logger);
+            $exceptionLogger = new ExportExceptionLogger($logger);
 
             $exceptionLogger->log($this->product, $e);
             $this->xmlItem = null;
