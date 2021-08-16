@@ -62,7 +62,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
    * @private
    */
   resetState() {
-    document.querySelector(this.options.sliderContainer).innerHTML = '';
+    DomAccess.querySelector(this.el, this.options.sliderContainer).innerHTML = '';
   }
 
   /**
