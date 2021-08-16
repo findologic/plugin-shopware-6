@@ -4,41 +4,42 @@
 
 Official Findologic plugin for Shopware 6.
 
-## Development
+## Installation
 
-### Installation
+### Production
 
-These steps are only relevant for development.  
-For an installation in production, please see [our Shopware 6 documentation](https://docs.findologic.com/doku.php?id=integration_documentation:plugin:en:integration:shopware_6).
+Please see [our Shopware 6 documentation](https://docs.findologic.com/doku.php?id=integration_documentation:plugin:en:integration:shopware_6).
+
+### Development
 
 1. Set up the [Shopware 6 development template](https://developer.shopware.com/docs/guides/installation/docker)
 2. Navigate to the plugins folder
    ```bash
-   > cd custom/plugins
+   cd custom/plugins
    ```
 3. Clone this repository
    ```bash
-   > git clone git@github.com:findologic/plugin-shopware-6.git
+   git clone git@github.com:findologic/plugin-shopware-6.git
    ```
 4. Install dependencies
    ```bash
-   > cd plugin-shopware-6 && composer install
+   cd plugin-shopware-6 && composer install
    ```
 5. Navigate back to the development template root
    ```bash
-   > cd ../../..
+   cd ../../..
    ```
 6. Run Shopware if not already done
    ```bash
-   > ./psh.phar docker:start
+   ./psh.phar docker:start
    ```
 7. SSH into the Shopware docker container
    ```bash
-   > ./psh.phar docker:ssh
+   ./psh.phar docker:ssh
    ```
 8. Install and activate the plugin
    ```bash
-   > bin/console plugin:install FinSearch --activate --clearCache
+   bin/console plugin:install FinSearch --activate --clearCache
    ```
 
 ### Run PHPUnit tests
@@ -48,17 +49,17 @@ For an installation in production, please see [our Shopware 6 documentation](htt
 * MySQL >= 8.0
 * PHP >= 7.3
 
-#### Set up
+#### Setup
 
 1. Create a database user `app` with the password `app`, which should have permissions to create,
    update and delete all databases.
-2. In the development template's root initialize the test setup (this must be run locally, outside the app container)
+2. In the development templates root, initialize the test setup (run locally, outside the app container)
    ```bash
-   > ./psh.phar init
+   ./psh.phar init
    ```
 3. Navigate to the plugin and run tests
    ```bash
-   > cd custom/plugins/plugin-shopware-6 && composer test
+   cd custom/plugins/plugin-shopware-6 && composer test
    ```
 
 Tests can also be run separately within the IDE. Simply ensure to set `phpunit.xml.dist` as configuration file.
@@ -73,14 +74,14 @@ Tests can also be run separately within the IDE. Simply ensure to set `phpunit.x
 - Create your plugin files inside
   `src/Resources/app/storefront/src/js/[your-plugin-name].plugin.js`
 - [Register your extended plugin](https://docs.shopware.com/en/shopware-platform-dev-en/how-to/extend-core-js-storefront-plugin#register-your-extended-plugin)
-- For a development build, use `./psh.phar storefront:dev`
-- For a production build, use `./psh.phar storefront:build`
+- For a development build: `./psh.phar storefront:dev`
+- For a production build: `./psh.phar storefront:build`
 
 **Please note:**
 
-The build commands will create a minified JS file in `src/Resources/app/storefront/dist/storefront/js/[plugin-name].js`.
-Before committing ensure that all files were built and added to your commit. Make sure to also commit the minified
-JavaScript files.
+* The build commands will create a minified JS file in `src/Resources/app/storefront/dist/storefront/js/[plugin-name].js`.
+* Before committing ensure that all files were built and added to your commit.
+* Make sure to also commit the minified JavaScript files.
 
 ## Libraries
 
@@ -124,17 +125,17 @@ Before starting the deployment make sure that a release is already created.
 
 1. Access the application container
   ```bash
-  > ./psh.phar docker:ssh
+  ./psh.phar docker:ssh
   ```
 2. Use the branch for the next release
   ```bash
-  > composer require shopware/platform:6.x.x.x-dev
+  composer require shopware/platform:6.x.x.x-dev
   ```
 3. Clear cache
   ```bash
-  > ./psh.phar cache
+  ./psh.phar cache
   ```
 4. Execute install script
   ```bash
-  > ./psh.phar install
+  ./psh.phar install
   ```
