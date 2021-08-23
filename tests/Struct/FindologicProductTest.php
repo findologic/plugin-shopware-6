@@ -1942,8 +1942,13 @@ class FindologicProductTest extends TestCase
 
     private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
     {
+        $override = [
+            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
+            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
+        ];
+
         /** @var FindologicConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $override);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
         $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)

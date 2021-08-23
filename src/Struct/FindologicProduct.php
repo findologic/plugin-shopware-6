@@ -873,17 +873,16 @@ class FindologicProduct extends Struct
             if ($this->isApiIntegration()) {
                 $key = Utils::removeSpecialChars($key);
             }
+
             $cleanedValue = $this->getCleanedAttributeValue($value);
 
-            if (!Utils::isEmpty($cleanedKey) && !Utils::isEmpty($cleanedValue)) {
+            if (!Utils::isEmpty($key) && !Utils::isEmpty($cleanedValue)) {
                 // Third-Party plugins may allow setting multidimensional custom-fields. As those can not really
                 // be properly sanitized, they need to be skipped.
                 if (is_array($cleanedValue) && is_array(array_values($cleanedValue)[0])) {
                     continue;
                 }
 
-                $customFieldAttribute = new Attribute($cleanedKey, (array)$cleanedValue);
-            if (!Utils::isEmpty($key) && !Utils::isEmpty($cleanedValue)) {
                 $customFieldAttribute = new Attribute($key, (array)$cleanedValue);
                 $attributes[] = $customFieldAttribute;
             }
@@ -994,7 +993,7 @@ class FindologicProduct extends Struct
 
     protected function isDirectIntegration(): bool
     {
-        return $this->config->getIntegrationType() !== IntegrationType::DI;
+        return $this->config->getIntegrationType() === IntegrationType::DI;
     }
 
     protected function isApiIntegration(): bool
