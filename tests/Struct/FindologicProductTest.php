@@ -1092,6 +1092,7 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
+        $config = $this->getMockedConfig('API');
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1099,7 +1100,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertEmpty($findologicProduct->getCustomFields());
