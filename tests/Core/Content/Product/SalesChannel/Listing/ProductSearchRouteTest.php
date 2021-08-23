@@ -16,16 +16,14 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
-use Shopware\Core\Framework\Test\TestCaseBase\SalesChannelApiTestBehaviour;
 use Shopware\Core\Framework\Test\TestCaseBase\SalesChannelFunctionalTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class ProductSearchRouteTest extends ProductRouteBase
 {
-    use SalesChannelApiTestBehaviour;
     use SalesChannelFunctionalTestBehaviour;
     use ProductHelper {
-        ProductHelper::createCustomer insteadof SalesChannelApiTestBehaviour;
+        ProductHelper::createCustomer insteadof SalesChannelFunctionalTestBehaviour;
     }
 
     /** @var AbstractProductSearchRoute|MockObject */
