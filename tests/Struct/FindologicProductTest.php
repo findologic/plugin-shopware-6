@@ -575,25 +575,55 @@ class FindologicProductTest extends TestCase
     public function attributeProvider(): array
     {
         return [
-            'filter with some special characters' => [
+            'API Integration filter with some special characters' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|',
                 'expectedName' => 'SpecialCharacters'
             ],
-            'filter with brackets' => [
+            'API Integration filter with brackets' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Farbwiedergabe (Ra/CRI)',
                 'expectedName' => 'FarbwiedergabeRaCRI'
             ],
-            'filter with special UTF-8 characters' => [
+            'API Integration filter with special UTF-8 characters' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Ausschnitt D ø (mm)',
                 'expectedName' => 'AusschnittDmm'
             ],
-            'filter dots and dashes' => [
+            'API Integration filter dots and dashes' => [
+                'integrationType' => 'API',
                 'attributeName' => 'free_shipping.. Really Cool--__',
                 'expectedName' => 'free_shippingReallyCool--__'
             ],
-            'filter with umlauts' => [
+            'API Integration filter with umlauts' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Umläüts äre cööl',
                 'expectedName' => 'Umläütsärecööl'
+            ],
+            'Direct Integration filter with some special characters' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|',
+                'expectedName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|'
+            ],
+            'Direct Integration filter with brackets' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Farbwiedergabe (Ra/CRI)',
+                'expectedName' => 'Farbwiedergabe (Ra/CRI)'
+            ],
+            'Direct Integration filter with special UTF-8 characters' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Ausschnitt D ø (mm)',
+                'expectedName' => 'Ausschnitt D ø (mm)'
+            ],
+            'Direct Integration filter dots and dashes' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'free_shipping.. Really Cool--__',
+                'expectedName' => 'free_shipping.. Really Cool--__'
+            ],
+            'Direct Integration filter with umlauts' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Umläüts äre cööl',
+                'expectedName' => 'Umläüts äre cööl'
             ],
         ];
     }
@@ -601,8 +631,11 @@ class FindologicProductTest extends TestCase
     /**
      * @dataProvider attributeProvider
      */
-    public function testAttributesAreProperlyEscaped(string $attributeName, string $expectedName): void
-    {
+    public function testAttributesAreProperlyEscaped(
+        string $integrationType,
+        string $attributeName,
+        string $expectedName
+    ): void {
         $productEntity = $this->createTestProduct(
             [
                 'properties' => [
@@ -631,7 +664,7 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
-        $config = $this->getMockedConfig('API');
+        $config = $this->getMockedConfig($integrationType);
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -2041,27 +2074,6 @@ class FindologicProductTest extends TestCase
                     'Some/Category',
                     'Some',
                 ],
-            ],
-        ];
-    }
-
-    public function integrationTypeSpecialCharacterProvider(): array
-    {
-        return [
-            'Integration type is API' => [
-                'integrationType' => 'API',
-                'attributeValue' => '<><<<##test',
-                'expectedAttributeValue' => 'test',
-            ],
-            'Integration type is DI' => [
-                'integrationType' => 'Direct Integration',
-                'attributeValue' => '<><<<##test',
-                'expectedAttributeValue' => '<><<<##test',
-            ],
-            'Integration type is unknown' => [
-                'integrationType' => 'Direct Integration',
-                'attributeValue' => '<><<<##test',
-                'expectedAttributeValue' => 'test',
             ],
         ];
     }
