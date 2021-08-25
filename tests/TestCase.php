@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Tests;
 
 use PHPUnit\Framework\TestCase as PhpUnitTestCase;
