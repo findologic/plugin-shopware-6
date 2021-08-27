@@ -2108,12 +2108,11 @@ class FindologicProductTest extends TestCase
         array $categories,
         array $expectedCategories,
         array $expectedCatUrls
-    ) {
-        foreach ($categories as &$category) {
+    ): void {
+        foreach ($categories as $key => $category) {
             $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-            $category['parentId'] = $navigationCategoryId;
+            $categories[$key]['parentId'] = $navigationCategoryId;
         }
-        unset($category);
 
         $productEntity = $this->createTestProduct(['categories' => $categories]);
         $config = $this->getMockedConfig($integrationType);
@@ -2130,7 +2129,7 @@ class FindologicProductTest extends TestCase
 
         $this->assertTrue($findologicProduct->hasAttributes());
         $attributes = $findologicProduct->getAttributes();
-        if ($integrationType === 'Direct Integration') {
+        if (count($expectedCatUrls) > 0) {
             $this->assertSame('cat_url', $attributes[0]->getKey());
             $this->assertSameSize($expectedCatUrls, $attributes[0]->getValues());
             $this->assertSame($expectedCatUrls, $attributes[0]->getValues());

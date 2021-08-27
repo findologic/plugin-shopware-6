@@ -67,7 +67,7 @@ class UrlBuilderService
 
     /**
      * Builds `cat_url`s for Direct Integrations. Based on the given category, all
-     * paths until the root category are generated.
+     * paths excluding the root category are generated.
      * E.g. Category Structure "Something > Root Category > Men > Shirts > T-Shirts" exports
      * * /Men/Shirts/T-Shirts/
      * * /Men/Shirts/

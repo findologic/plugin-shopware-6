@@ -635,10 +635,7 @@ class FindologicProduct extends Struct
 
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $groupName = $group->getTranslation('name');
-            if ($this->isApiIntegration()) {
-                $groupName = Utils::removeSpecialChars($groupName);
-            }
+            $groupName = $this->processAttributeKey($group->getTranslation('name'));
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
                 $propertyGroupProperty = new Property($groupName);
@@ -658,12 +655,9 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            $groupName = $group->getTranslation('name');
+            $groupName = $this->processAttributeKey($group->getTranslation('name'));
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                if ($this->isApiIntegration()) {
-                    $groupName = Utils::removeSpecialChars($groupName);
-                }
                 $configProperty = new Property($groupName);
                 $configProperty->addValue(Utils::removeControlCharacters($optionName));
 
@@ -683,15 +677,9 @@ class FindologicProduct extends Struct
 
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $groupName = $group->getTranslation('name');
-            if ($this->isApiIntegration()) {
-                $groupName = Utils::removeSpecialChars($groupName);
-            }
+            $groupName = $this->processAttributeKey($group->getTranslation('name'));
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
-                if ($this->isApiIntegration()) {
-                    $groupName = Utils::removeSpecialChars($groupName);
-                }
                 $properyGroupAttrib = new Attribute($groupName);
                 $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionName));
 
@@ -709,12 +697,9 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            $groupName = $group->getTranslation('name');
+            $groupName = $this->processAttributeKey($group->getTranslation('name'));
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                if ($this->isApiIntegration()) {
-                    $groupName = Utils::removeSpecialChars($groupName);
-                }
                 $configAttrib = new Attribute($groupName);
                 $configAttrib->addValue(Utils::removeControlCharacters($optionName));
 
@@ -776,7 +761,7 @@ class FindologicProduct extends Struct
             $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
         }
 
-        if (!Utils::isEmpty($catUrls)) {
+        if ($this->isDirectIntegration() && !Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
             $catUrlAttribute->setValues(Utils::flat($catUrls));
             $this->attributes[] = $catUrlAttribute;
@@ -870,10 +855,7 @@ class FindologicProduct extends Struct
         }
 
         foreach ($productFields as $key => $value) {
-            if ($this->isApiIntegration()) {
-                $key = Utils::removeSpecialChars($key);
-            }
-
+            $key = $this->processAttributeKey($key);
             $cleanedValue = $this->getCleanedAttributeValue($value);
 
             if (!Utils::isEmpty($key) && !Utils::isEmpty($cleanedValue)) {
@@ -985,8 +967,7 @@ class FindologicProduct extends Struct
                     $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
                 );
 
-                $parentCategory = explode('_', $categoryPath);
-                $categories = array_merge($categories, $parentCategory);
+                $categories = $this->addCategoryNamesRecursively($categoryPath, $categories);
             }
         }
     }
@@ -999,5 +980,25 @@ class FindologicProduct extends Struct
     protected function isApiIntegration(): bool
     {
         return $this->config->getIntegrationType() === IntegrationType::API;
+    }
+
+    protected function addCategoryNamesRecursively(string $categoryPath, array $categories): array
+    {
+        $parentCategory = explode('_', $categoryPath);
+
+        return array_merge($categories, $parentCategory);
+    }
+
+    /**
+     * For API Integrations, we have to remove special characters from the attribute key as a requirement for
+     * sending data via API.
+     */
+    private function processAttributeKey(?string $key): ?string
+    {
+        if ($this->isApiIntegration()) {
+            return Utils::removeSpecialChars($key);
+        }
+
+        return $key;
     }
 }
