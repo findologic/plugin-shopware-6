@@ -635,7 +635,7 @@ class FindologicProduct extends Struct
 
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $groupName = $this->processAttributeKey($group->getTranslation('name'));
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
                 $propertyGroupProperty = new Property($groupName);
@@ -655,7 +655,7 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            $groupName = $this->processAttributeKey($group->getTranslation('name'));
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
                 $configProperty = new Property($groupName);
@@ -677,7 +677,7 @@ class FindologicProduct extends Struct
 
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $groupName = $this->processAttributeKey($group->getTranslation('name'));
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
                 $properyGroupAttrib = new Attribute($groupName);
@@ -697,7 +697,7 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            $groupName = $this->processAttributeKey($group->getTranslation('name'));
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
                 $configAttrib = new Attribute($groupName);
@@ -855,7 +855,7 @@ class FindologicProduct extends Struct
         }
 
         foreach ($productFields as $key => $value) {
-            $key = $this->processAttributeKey($key);
+            $key = $this->getAttributeKey($key);
             $cleanedValue = $this->getCleanedAttributeValue($value);
 
             if (!Utils::isEmpty($key) && !Utils::isEmpty($cleanedValue)) {
@@ -993,7 +993,7 @@ class FindologicProduct extends Struct
      * For API Integrations, we have to remove special characters from the attribute key as a requirement for
      * sending data via API.
      */
-    private function processAttributeKey(?string $key): ?string
+    protected function getAttributeKey(?string $key): ?string
     {
         if ($this->isApiIntegration()) {
             return Utils::removeSpecialChars($key);
