@@ -1,6 +1,7 @@
 {% sw_extends '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' %}
 
 {% block component_filter_multi_select %}
+    
     <div class="{% if hidden %}d-none {% endif %}filter-multi-select filter-multi-select-{{ name }} filter-panel-item{% if not sidebar %} dropdown{% endif %}"
          data-{{ pluginSelector }}="true"
          data-{{ pluginSelector }}-options='{{ dataPluginSelectorOptions|json_encode }}'>
@@ -28,4 +29,5 @@
 
         {% endfor %}
     </ul>
+
 {% endblock %}

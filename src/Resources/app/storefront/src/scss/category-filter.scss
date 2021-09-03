@@ -1,7 +1,8 @@
 .filter-category-select-list {
-  width: 310px;
+  max-width: 500rem ;
   line-height: 2;
   padding-top: 0.3em;
+  transition: max-width 0.5s;
 
   .filter-category-select-list-item {
     padding-bottom: 0;
@@ -9,14 +10,11 @@
   }
 
   .custom-checkbox {
-    max-width: 290px;
+
 
     .custom-control-label span {
       display: block;
       white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      max-width: 290px;
       margin-top: -3px;
     }
 
