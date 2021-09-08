@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "findologic/libflexport": "^2.8",
+    "findologic/libflexport": "^2.9",
     "findologic/findologic-api": "^1.6"
   },
   "extra": {
