@@ -425,32 +425,7 @@ class FindologicProductTest extends TestCase
 
     public function testMultiDimensionalCustomFieldsAreIgnored(): void
     {
-        $data = [
-            'customFields' => [
-                'multidimensional' => [
-                    ['interesting' => 'this is some multidimensional data wow!']
-                ]
-            ]
-        ];
-        $productEntity = $this->createTestProduct($data, true);
 
-        $customerGroupEntities = $this->getContainer()
-            ->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext->getContext())
-            ->getElements();
-
-        $findologicProductFactory = new FindologicProductFactory();
-        $findologicProduct = $findologicProductFactory->buildInstance(
-            $productEntity,
-            $this->router,
-            $this->getContainer(),
-            $this->shopkey,
-            $customerGroupEntities,
-            new XMLItem('123')
-        );
-
-        $attributes = $findologicProduct->getCustomFields();
-        $this->assertEmpty($attributes);
     }
 
     public function testProductWithMultiSelectCustomFields(): void
