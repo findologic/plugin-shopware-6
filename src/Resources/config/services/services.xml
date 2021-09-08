@@ -12,6 +12,14 @@
             <tag name="shopware.entity.definition" entity="finsearch_config" />
         </service>
 
+        <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchSalesChannelExtension">
+            <tag name="shopware.entity.extension"/>
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchLanguageExtension">
+            <tag name="shopware.entity.extension"/>
+        </service>
+
         <service id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService">
             <argument id="finsearch_config.repository" type="service" />
             <argument type="service" id="Doctrine\DBAL\Connection" />

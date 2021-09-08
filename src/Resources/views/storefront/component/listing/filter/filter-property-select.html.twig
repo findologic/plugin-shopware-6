@@ -11,24 +11,26 @@
 {% endif %}
 
 {% block component_filter_property_select_preview %}
-    {% set displayType = element.displayType %}
+    {% if not context.context.extensions.findologicService.enabled %}
+        {{ parent() }}
+    {% else %}
+        {% set displayType = element.displayType %}
 
-    <span class="filter-property-select-preview"
-          title="{{ name }}"
-          {% if displayType == 'media' and media %}
-          style="background-color: {{ color }};background-image: url('{{ media }}')"
-          {% elseif displayType == 'color' and color %}
-          style="background-color: {{ color }};background-image:none"
-          {% endif %}
-    >
+        <span class="filter-property-select-preview"
+              title="{{ name }}"
+              {% if displayType == 'media' and media %}
+              style="background-color: {{ color }};background-image: url('{{ media }}')"
+              {% elseif displayType == 'color' and color %}
+              style="background-color: {{ color }};background-image:none"
+              {% endif %}
+        >
+            {% block component_filter_property_select_checkox_input %}
+                {{ parent() }}
+            {% endblock %}
 
-        {% block component_filter_property_select_checkox_input %}
-            {{ parent() }}
-        {% endblock %}
-
-        {% block component_filter_property_select_preview_checkmark %}
-            {{ parent() }}
-        {% endblock %}
-
-    </span>
+            {% block component_filter_property_select_preview_checkmark %}
+                {{ parent() }}
+            {% endblock %}
+        </span>
+    {% endif %}
 {% endblock %}

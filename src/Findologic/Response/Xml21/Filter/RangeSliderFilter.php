@@ -18,6 +18,9 @@ class RangeSliderFilter extends Filter
     /** @var float|null */
     private $max = null;
 
+    /** @var float|null */
+    private $step = null;
+
     /** @var string */
     private $unit = '€';
 
@@ -72,5 +75,15 @@ class RangeSliderFilter extends Filter
     public function getMax(): ?float
     {
         return $this->max;
+    }
+
+    public function getStep(): ?float
+    {
+        return $this->step;
+    }
+
+    public function setStep(?float $step): void
+    {
+        $this->step = $step;
     }
 }

@@ -22,7 +22,9 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 class ProductSearchRouteTest extends ProductRouteBase
 {
     use SalesChannelFunctionalTestBehaviour;
-    use ProductHelper;
+    use ProductHelper {
+        ProductHelper::createCustomer insteadof SalesChannelFunctionalTestBehaviour;
+    }
 
     /** @var AbstractProductSearchRoute|MockObject */
     private $original;

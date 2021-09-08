@@ -77,6 +77,18 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
         </service>
 
+        <service
+                id="FINDOLOGIC\FinSearch\Core\Content\Category\SalesChannel\CachedCategoryRoute"
+                decorates="Shopware\Core\Content\Category\SalesChannel\CachedCategoryRoute"
+                decoration-on-invalid="ignore"
+        >
+            <argument type="service"
+                      id="Shopware\Core\Content\Category\SalesChannel\CachedCategoryRoute.inner"
+            />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
+        </service>
+
         <service id="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder"
                  decorates="Shopware\Elasticsearch\Product\ProductSearchBuilder">
             <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter" />

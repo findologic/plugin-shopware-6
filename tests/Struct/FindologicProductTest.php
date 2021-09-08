@@ -46,7 +46,6 @@ use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -369,9 +368,13 @@ class FindologicProductTest extends TestCase
         );
 
         $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domain = $salesChannel->getDomains()->first()->getUrl();
+        $domains = $salesChannel->getDomains();
+        $domain = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($domains)
+            ->first()
+            ->getUrl();
 
-        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
+        $seoUrls = $productEntity->getSeoUrls()
+            ->filterBySalesChannelId($salesChannel->getId());
         $seoPath = $seoUrls->first()->getSeoPathInfo();
         $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
 
@@ -388,7 +391,12 @@ class FindologicProductTest extends TestCase
 
     public function testProductWithCustomFields(): void
     {
-        $data['customFields'] = ['findologic_size' => 100, 'findologic_color' => 'yellow'];
+        $data = [
+            'customFields' => [
+                'findologic_size' => 100,
+                'findologic_color' => 'yellow'
+            ]
+        ];
         $productEntity = $this->createTestProduct($data, true);
 
         $productFields = $productEntity->getCustomFields();
@@ -408,9 +416,41 @@ class FindologicProductTest extends TestCase
         );
 
         $attributes = $findologicProduct->getCustomFields();
+
+        $this->assertCount(2, $attributes);
         foreach ($attributes as $attribute) {
             $this->assertEquals($productFields[$attribute->getKey()], current($attribute->getValues()));
         }
+    }
+
+    public function testMultiDimensionalCustomFieldsAreIgnored(): void
+    {
+        $data = [
+            'customFields' => [
+                'multidimensional' => [
+                    ['interesting' => 'this is some multidimensional data wow!']
+                ]
+            ]
+        ];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+        $this->assertEmpty($attributes);
     }
 
     public function testProductWithMultiSelectCustomFields(): void
@@ -1378,6 +1418,12 @@ class FindologicProductTest extends TestCase
      */
     public function testProductListPrice(?string $currencyId, bool $isPriceAvailable): void
     {
+        if ($currencyId === null && !Utils::versionLowerThan('6.4.2.0')) {
+            $this->markTestSkipped(
+                'SW >= 6.4.2.0 requires a price to be set for the default currency. Therefore not testable.'
+            );
+        }
+
         if ($currencyId === null) {
             $currencyId = $this->createCurrency();
         }

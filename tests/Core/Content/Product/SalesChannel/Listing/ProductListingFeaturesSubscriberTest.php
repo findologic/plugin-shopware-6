@@ -1104,6 +1104,10 @@ XML;
 
     public function testHandleResultDoesNotThrowExceptionWhenCalledManually(): void
     {
+        if (Utils::versionLowerThan('6.3.3') && !Utils::versionLowerThan('6.3.1')) {
+            $this->markTestSkipped('Shopware sorting bug prevents this from properly working.');
+        }
+
         $this->initMocks();
 
         $criteria = new Criteria();
