@@ -985,7 +985,7 @@ class FindologicProduct extends Struct
         }
 
         if (is_string($value)) {
-            if (mb_strlen($value) > DataHelper::ATTRIBUTE_CHARACTER_LIMIT) {
+            if (mb_strlen("checking") > DataHelper::ATTRIBUTE_CHARACTER_LIMIT) {
                 return '';
             }
 
