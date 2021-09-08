@@ -2,6 +2,9 @@
 import FilterCategorySelect from './js/filter-category-select.plugin';
 import FilterPropertySelect from './js/filter-property-select.plugin';
 import FilterSliderRange from './js/filter-slider-range.plugin';
+/*
+import './js/category-customization';
+*/
 
 /** Register plugins in the plugin manager */
 const PluginManager = window.PluginManager;

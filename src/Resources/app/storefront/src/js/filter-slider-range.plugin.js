@@ -27,8 +27,6 @@ export default class FilterSliderRange extends FilterBasePlugin {
   });
 
   init() {
-    this.resetState();
-
     this._container = DomAccess.querySelector(this.el, this.options.containerSelector);
     this._inputMin = DomAccess.querySelector(this.el, this.options.inputMinSelector);
     this._inputMax = DomAccess.querySelector(this.el, this.options.inputMaxSelector);
@@ -53,16 +51,6 @@ export default class FilterSliderRange extends FilterBasePlugin {
     });
 
     this._registerEvents();
-  }
-
-  /**
-   * Reset state in case the filter was already loaded once e.g. when opening the off-canvas filter panel
-   * multiple times.
-   *
-   * @private
-   */
-  resetState() {
-    DomAccess.querySelector(this.el, this.options.sliderContainer).innerHTML = '';
   }
 
   /**
