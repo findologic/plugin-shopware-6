@@ -83,7 +83,7 @@ jobs:
           release_name: ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
-          body: 'Find more information here: [Changelog](https://github.com/findologic/plugin-shopware-6/blob/develop/CHANGELOG.md) [Changelog DE](https://github.com/findologic/plugin-shopware-6/blob/develop/CHANGELOG_de-DE.md)'
+          bodyFile: 'docs/release/body.md'
 
       - name: Upload Release Asset
         id: upload_release_asset
@@ -96,5 +96,5 @@ jobs:
           asset_name: ${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
 
-      - name: Upload Plugin to Shopware Store
-        run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}.zip
+#      - name: Upload Plugin to Shopware Store
+#        run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}.zip
