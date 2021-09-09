@@ -116,7 +116,7 @@ guide you on how you can customize certain entities, like attributes or properti
    ```
 4. Start the release process and follow the instructions.
    ```bash
-   bin/release
+   composer release
    ```
 5. Ensure that the [GitHub Actions release](https://github.com/findologic/plugin-shopware-6/actions/workflows/release.yml)
 is successful.
