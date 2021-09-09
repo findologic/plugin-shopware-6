@@ -1,0 +1,92 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Bramus\Monolog\Formatter\ColoredLineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+const COMPOSER_JSON_DEST = __DIR__ . '/../composer.json';
+
+$logger = new Logger('release');
+$formatter = new ColoredLineFormatter(null, null, null, false, true);
+$logger->pushHandler((new StreamHandler('php://stdout'))->setFormatter($formatter));
+
+$logger->info('This command creates a new tag, which triggers a GitHub workflow that creates and uploads the release into the Shopware Store.');
+$logger->info('Please enter the version that should be released:');
+
+$version = askReleaseVersion();
+makeSureEnteredVersionIsCorrect($logger, $version);
+
+$logger->info(sprintf('Creating release for version %s...', $version));
+
+updateComposerJson($logger, $version);
+updateComposerLock($logger);
+pushVersionChange($logger, $version);
+
+$logger->info('Successfully released!');
+
+function askReleaseVersion(): string
+{
+    $version = readline('Version number (e.g. 1.2.3 or 1.2.3-RC3): ');
+    if (!is_string($version)) {
+        return '';
+    }
+
+    return $version;
+}
+
+function makeSureEnteredVersionIsCorrect(LoggerInterface $logger, string $version): void
+{
+    $value = mb_strtolower(readline(sprintf(
+        'Entered version is "%s", is this correct? Proceed? (y/N): ',
+        $version
+    )));
+
+    if ($value !== 'y') {
+        $logger->error('Release creation aborted by user.');
+        exit(1);
+    }
+}
+
+function updateComposerJson(LoggerInterface $logger, string $version): void
+{
+    $logger->info('Updating composer.json...');
+
+    $data = json_decode(file_get_contents(COMPOSER_JSON_DEST), true);
+    $data['version'] = $version;
+
+    $rawJson = json_encode($data, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+    $jsonWithTwoSpaces = preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $rawJson);
+
+    file_put_contents(
+        COMPOSER_JSON_DEST,
+        $jsonWithTwoSpaces . "\n"
+    );
+}
+
+function updateComposerLock(LoggerInterface $logger): void
+{
+    $logger->info('Updating composer.lock...');
+
+    exec('composer update --lock');
+}
+
+function pushVersionChange(LoggerInterface $logger, string $version): void
+{
+    $logger->info('Committing and pushing the version change...');
+
+    exec('git reset HEAD -- .');
+    exec('git add composer.json composer.lock');
+    exec('git commit -m "Bump version"');
+    exec('git push');
+
+    $logger->info('Creating and committing tag...');
+
+    exec(sprintf('git tag %s', $version));
+    exec(sprintf('git push origin %s', $version));
+}
