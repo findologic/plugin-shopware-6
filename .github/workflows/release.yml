@@ -96,5 +96,5 @@ jobs:
           asset_name: ${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
 
-#      - name: Upload Plugin to Shopware Store
-#        run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}.zip
+      - name: Upload Plugin to Shopware Store
+        run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}.zip
