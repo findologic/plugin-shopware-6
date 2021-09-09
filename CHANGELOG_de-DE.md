@@ -1,5 +1,4 @@
-# 2.2.0-RC1
-- Hinweis: Dies ist ein Release Candidate und sollte unter keinen Umständen in deinem Produktivsystem installiert werden!
+# 2.2.0
 - [SW-595] Kategorien und cat_urls werden nun rekursiv generiert, und Filternamen werden nicht länger von speziellen Zeichen bereinigt, wenn die Integrationsart Direct Integration ist.
 - Hinweis: Nach dem Update sollte überprüft werden, dass die Filter noch korrekt in der Filterkonfiguration konfiguriert sind.
 - [SW-645] Shopware 6.4.4.0 wurde zur Test-Matrix hinzugefügt.
