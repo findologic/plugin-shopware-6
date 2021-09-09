@@ -75,15 +75,15 @@ jobs:
 
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1.0.0
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.get_version.outputs.VERSION }}
           release_name: ${{ steps.get_version.outputs.VERSION }}
+          body_path: 'docs/release/body.md'
           draft: false
           prerelease: false
-          bodyFile: 'docs/release/body.md'
 
       - name: Upload Release Asset
         id: upload_release_asset
