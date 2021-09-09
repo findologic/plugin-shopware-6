@@ -1,3 +1,9 @@
+# 2.2.0-RC1
+- Note: This is a Release Candidate and should therefore not be installed in a production environment!
+- [SW-595] Categories and cat_urls are now generated recursively, and filter names will no longer get their filter name sanitized for Direct Integration.
+- Please ensure that filter names containing special characters are properly configured in the filter-configuration after updating.
+- [SW-645] Added Shopware 6.4.4.0 to the test matrix.
+
 # 2.1.2
 - [SW-634] Fixed a bug that caused range-slider filters to appear multiple times on mobile.
 - [SW-635] Fixed a bug that caused products to be skipped, when a third-party plugin added a custom-field, which holds data in a multidimensional array format.

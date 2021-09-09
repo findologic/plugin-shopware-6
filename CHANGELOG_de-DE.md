@@ -1,3 +1,9 @@
+# 2.2.0-RC1
+- Hinweis: Dies ist ein Release Candidate und sollte unter keinen Umständen in deinem Produktivsystem installiert werden!
+- [SW-595] Kategorien und cat_urls werden nun rekursiv generiert, und Filternamen werden nicht länger von speziellen Zeichen bereinigt, wenn die Integrationsart Direct Integration ist.
+- Hinweis: Nach dem Update sollte überprüft werden, dass die Filter noch korrekt in der Filterkonfiguration konfiguriert sind.
+- [SW-645] Shopware 6.4.4.0 wurde zur Test-Matrix hinzugefügt.
+
 # 2.1.2
 - [SW-634] Ein Fehler wurde behoben, wodurch die Slider bei Bereichsslider Filtern mehrmals auf Mobilgeräten ausgegeben wurden.
 - [SW-635] Ein Fehler wurde behoben, wodurch Produkte im Export übersprungen wurden, wenn ein Drittanbieter Plugin ein Zusatzfeld hinzugefügt hat, welches Daten in einem multidimensionalen array-format beinhaltete.
