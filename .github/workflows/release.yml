@@ -73,9 +73,6 @@ jobs:
       - name: Build Plugin Relase-Zipfile
         run: composer build-release
 
-      - name: Upload Plugin to Shopware Store
-        run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}.zip
-
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1.0.0
@@ -86,6 +83,7 @@ jobs:
           release_name: ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
+          body: 'Find more information here: [Changelog](https://github.com/findologic/plugin-shopware-6/blob/develop/CHANGELOG.md) [Changelog DE](https://github.com/findologic/plugin-shopware-6/blob/develop/CHANGELOG_de-DE.md)'
 
       - name: Upload Release Asset
         id: upload_release_asset
@@ -94,6 +92,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.VERSION }}.zip
-          asset_name: ${{ env.PLUGIN_NAME }}.zip
+          asset_path: ${{ github.workspace }}/${{ env.PLUGIN_NAME }}.zip
+          asset_name: ${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
+
+      - name: Upload Plugin to Shopware Store
+        run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}.zip
