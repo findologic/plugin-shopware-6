@@ -34,6 +34,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
 
         if(arrowIcon !== false)
         {
+<<<<<<< Updated upstream
                 Iterator.iterate(arrowIcon,(arrow)=>
                 {
                     arrow.addEventListener('click',function()
@@ -41,6 +42,15 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
                         current._onArrowClick(arrow)
                     });
                 });
+=======
+            Iterator.iterate(arrowIcon,(arrow)=>
+            {
+                arrow.addEventListener('click',function()
+                {
+                    current._onArrowClick(arrow)
+                });
+            });
+>>>>>>> Stashed changes
         }
         Iterator.iterate(checkboxes, (checkbox) => {
             checkbox.addEventListener('change',function()
@@ -130,6 +140,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
 
+<<<<<<< Updated upstream
      showHide(checkbox)
     {
             let inner_sub_cats = checkbox.parentNode.getElementsByClassName('sub-item');
@@ -161,6 +172,39 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
 
                 })
             }
+=======
+    showHide(checkbox)
+    {
+        let inner_sub_cats = checkbox.parentNode.getElementsByClassName('sub-item');
+        let span = checkbox.parentNode.querySelector('#arrow');
+
+        if(checkbox.checked)
+        {
+            let split_cats = checkbox.value.split('_');
+
+            if(split_cats.length > 0)
+            {
+                Iterator.iterate(split_cats,(id) =>
+                {
+                    document.getElementById(id).checked = true;
+                })
+            }
+
+
+            this.toggleArrows(span,'down-arrow','up-arrow');
+            this.toggleShowHide(inner_sub_cats,'subcats-hide','subcats-show')
+
+        }
+        else
+        {
+
+            Iterator.iterate(inner_sub_cats,(sub_cat)=>
+            {
+                sub_cat.querySelector('.filter-category-select-checkbox').checked = false;
+
+            })
+        }
+>>>>>>> Stashed changes
 
 
     }
@@ -171,7 +215,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
 
     toggleArrows(elem,removeClass,addClass)
     {
+<<<<<<< Updated upstream
        let span = elem;
+=======
+        let span = elem;
+>>>>>>> Stashed changes
         if(span !== undefined && span !== null)
         {
             span.classList.remove(removeClass);
@@ -233,6 +281,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     hideUnchecked()
     {
 
+<<<<<<< Updated upstream
       let checkboxes = DomAccess.querySelectorAll(this.el,this.options.checkboxSelector);
       Iterator.iterate(checkboxes , (checkbox) => {
           let sub_items = checkbox.parentNode.querySelectorAll('.sub-item')
@@ -244,6 +293,19 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
           }
 
       })
+=======
+        let checkboxes = DomAccess.querySelectorAll(this.el,this.options.checkboxSelector);
+        Iterator.iterate(checkboxes , (checkbox) => {
+            let sub_items = checkbox.parentNode.querySelectorAll('.sub-item')
+            let span = checkbox.parentNode.getElementsByTagName('div')[0];
+            if(checkbox.checked)
+            {
+                this.toggleArrows(span,'down-arrow','up-arrow')
+                this.toggleShowHide(sub_items,'subcats-hide','subcats-show');
+            }
+
+        })
+>>>>>>> Stashed changes
 
     }
 
