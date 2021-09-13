@@ -21,23 +21,21 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\ProductImageService;
+use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
+use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\RangeFilter;
-use Shopware\Core\Framework\Struct\Collection;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
@@ -107,14 +105,10 @@ class FindologicProduct extends Struct
     /** @var Item */
     protected $item;
 
-    /**
-     * @var TranslatorInterface
-     */
+    /** @var TranslatorInterface */
     protected $translator;
 
-    /**
-     * @var DynamicProductGroupService|null
-     */
+    /** @var DynamicProductGroupService|null */
     protected $dynamicProductGroupService;
 
     /** @var CategoryEntity */
@@ -122,6 +116,12 @@ class FindologicProduct extends Struct
 
     /** @var ProductImageService */
     protected $productImageService;
+
+    /** @var Config */
+    protected $config;
+
+    /** @var UrlBuilderService */
+    protected $urlBuilderService;
 
     /**
      * @param CustomerGroupEntity[] $customerGroups
@@ -136,7 +136,8 @@ class FindologicProduct extends Struct
         ContainerInterface $container,
         string $shopkey,
         array $customerGroups,
-        Item $item
+        Item $item,
+        ?Config $config = null
     ) {
         $this->product = $product;
         $this->router = $router;
@@ -148,8 +149,12 @@ class FindologicProduct extends Struct
         $this->attributes = [];
         $this->properties = [];
         $this->translator = $container->get('translator');
-
         $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
+        $this->config = $config ?? $container->get(Config::class);
+
+        if (!$this->config->isInitialized()) {
+            $this->config->initializeBySalesChannel($this->salesChannelContext);
+        }
         if ($this->container->has('fin_search.dynamic_product_group')) {
             $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
         }
@@ -157,6 +162,8 @@ class FindologicProduct extends Struct
             $this->container->get('category.repository'),
             $this->salesChannelContext->getSalesChannel()
         );
+        $this->urlBuilderService = $this->container->get(UrlBuilderService::class);
+        $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
         $this->productImageService = $this->container->get(ProductImageService::class);
 
         $this->setName();
@@ -326,83 +333,12 @@ class FindologicProduct extends Struct
 
     protected function setUrl(): void
     {
-        $baseUrl = $this->getTranslatedDomainBaseUrl();
-        $seoPath = $this->getTranslatedSeoPath();
-
-        if ($baseUrl && $seoPath) {
-            $productUrl = sprintf('%s/%s', $baseUrl, $seoPath);
-        } else {
-            $productUrl = $this->router->generate(
-                'frontend.detail.page',
-                ['productId' => $this->product->getId()],
-                RouterInterface::ABSOLUTE_URL
-            );
-        }
-
-        $this->url = $productUrl;
+        $this->url = $this->urlBuilderService->buildProductUrl($this->product);
     }
 
     public function hasUrl(): bool
     {
         return $this->url && !Utils::isEmpty($this->url);
-    }
-
-    protected function getTranslatedSeoPath(): ?string
-    {
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
-        $collectionWithoutDeletedEntities = $this->filterDeletedSeoUrls($seoUrlCollection);
-
-        $seoUrlEntities = $this->getTranslatedEntities($collectionWithoutDeletedEntities);
-        if (!$seoUrlEntities) {
-            return null;
-        }
-
-        $canonicalSeoUrl = $seoUrlEntities->filter(function (SeoUrlEntity $entity) {
-            return $entity->getIsCanonical();
-        })->first();
-
-        $seoUrlEntity = $canonicalSeoUrl ?? $seoUrlEntities->first();
-
-        return $seoUrlEntity ? ltrim($seoUrlEntity->getSeoPathInfo(), '/') : null;
-    }
-
-    protected function getTranslatedDomainBaseUrl(): ?string
-    {
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domainCollection = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($salesChannel->getDomains());
-
-        $domainEntities = $this->getTranslatedEntities($domainCollection);
-
-        return $domainEntities->first() ? rtrim($domainEntities->first()->getUrl(), '/') : null;
-    }
-
-    /**
-     * Filters the given collection to only return entities for the current language.
-     */
-    protected function getTranslatedEntities(?EntityCollection $collection): ?Collection
-    {
-        if (!$collection) {
-            return null;
-        }
-
-        $translatedEntities = $collection->filterByProperty(
-            'languageId',
-            $this->salesChannelContext->getSalesChannel()->getLanguageId()
-        );
-
-        if ($translatedEntities->count() === 0) {
-            return null;
-        }
-
-        return $translatedEntities;
-    }
-
-    protected function filterDeletedSeoUrls(SeoUrlCollection $collection): SeoUrlCollection
-    {
-        return $collection->filter(function (SeoUrlEntity $entity) {
-            return !$entity->getIsDeleted();
-        });
     }
 
     /**
@@ -699,7 +635,7 @@ class FindologicProduct extends Struct
 
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $groupName = Utils::removeSpecialChars($group->getTranslation('name'));
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
                 $propertyGroupProperty = new Property($groupName);
@@ -719,10 +655,10 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            $groupName = $group->getTranslation('name');
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                $configProperty = new Property(Utils::removeSpecialChars($groupName));
+                $configProperty = new Property($groupName);
                 $configProperty->addValue(Utils::removeControlCharacters($optionName));
 
                 $properties[] = $configProperty;
@@ -741,10 +677,10 @@ class FindologicProduct extends Struct
 
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $groupName = Utils::removeSpecialChars($group->getTranslation('name'));
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
-                $properyGroupAttrib = new Attribute(Utils::removeSpecialChars($groupName));
+                $properyGroupAttrib = new Attribute($groupName);
                 $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionName));
 
                 $attributes[] = $properyGroupAttrib;
@@ -761,10 +697,10 @@ class FindologicProduct extends Struct
                 continue;
             }
 
-            $groupName = $group->getTranslation('name');
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                $configAttrib = new Attribute(Utils::removeSpecialChars($groupName));
+                $configAttrib = new Attribute($groupName);
                 $configAttrib->addValue(Utils::removeControlCharacters($optionName));
 
                 $attributes[] = $configAttrib;
@@ -816,9 +752,6 @@ class FindologicProduct extends Struct
             throw new ProductHasNoCategoriesException($this->product);
         }
 
-        $categoryAttribute = new Attribute('cat');
-        $catUrlAttribute = new Attribute('cat_url');
-
         $catUrls = [];
         $categories = [];
 
@@ -828,12 +761,14 @@ class FindologicProduct extends Struct
             $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
         }
 
-        if (!Utils::isEmpty($catUrls)) {
-            $catUrlAttribute->setValues(array_unique($catUrls));
+        if ($this->isDirectIntegration() && !Utils::isEmpty($catUrls)) {
+            $catUrlAttribute = new Attribute('cat_url');
+            $catUrlAttribute->setValues(Utils::flat($catUrls));
             $this->attributes[] = $catUrlAttribute;
         }
 
         if (!Utils::isEmpty($categories)) {
+            $categoryAttribute = new Attribute('cat');
             $categoryAttribute->setValues(array_unique($categories));
             $this->attributes[] = $categoryAttribute;
         }
@@ -899,34 +834,6 @@ class FindologicProduct extends Struct
         $this->prices = array_merge($this->prices, $prices);
     }
 
-    /**
-     * Takes invalid URLs that contain special characters such as umlauts, or special UTF-8 characters and
-     * encodes them.
-     */
-    protected function getEncodedUrl(string $url): string
-    {
-        $parsedUrl = parse_url($url);
-        $urlPath = explode('/', $parsedUrl['path']);
-        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
-        $parsedUrl['path'] = implode('/', $encodedPath);
-
-        return Utils::buildUrl($parsedUrl);
-    }
-
-    protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
-    {
-        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
-        $seoUrls = new SeoUrlCollection();
-
-        foreach ($categoryEntity->getSeoUrls()->getElements() as $seoUrlEntity) {
-            if ($seoUrlEntity->getSalesChannelId() === $salesChannelId || $seoUrlEntity->getSalesChannelId() === null) {
-                $seoUrls->add($seoUrlEntity);
-            }
-        }
-
-        return $seoUrls;
-    }
-
     protected function setCustomFieldAttributes(): void
     {
         $this->customFields = array_merge($this->customFields, $this->getCustomFieldProperties($this->product));
@@ -948,11 +855,17 @@ class FindologicProduct extends Struct
         }
 
         foreach ($productFields as $key => $value) {
-            $cleanedKey = Utils::removeSpecialChars($key);
+            $key = $this->getAttributeKey($key);
             $cleanedValue = $this->getCleanedAttributeValue($value);
 
             if (!Utils::isEmpty($cleanedKey) && !Utils::isEmpty($cleanedValue)) {
-                $customFieldAttribute = new Attribute($cleanedKey, (array)$cleanedValue);
+                // Third-Party plugins may allow setting multidimensional custom-fields. As those can not really
+                // be properly sanitized, they need to be skipped.
+                if (is_array($cleanedValue) && is_array(array_values($cleanedValue)[0])) {
+                    continue;
+                }
+
+                $customFieldAttribute = new Attribute($key, (array)$cleanedValue);
                 $attributes[] = $customFieldAttribute;
             }
         }
@@ -1032,34 +945,9 @@ class FindologicProduct extends Struct
                 continue;
             }
 
+            // If the category is not in the current sales channel's root category, we do not need to export it.
             if (!$categoryEntity->getPath() || !strpos($categoryEntity->getPath(), $navigationCategoryId)) {
                 continue;
-            }
-
-            $seoUrls = $this->fetchCategorySeoUrls($categoryEntity);
-            if ($seoUrls->count() > 0) {
-                foreach ($seoUrls->getElements() as $seoUrlEntity) {
-                    $catUrl = $seoUrlEntity->getSeoPathInfo();
-                    if (!Utils::isEmpty($catUrl)) {
-                        $catUrls[] = $this->getCatUrlPrefix() . sprintf('/%s', ltrim($catUrl, '/'));
-                    }
-                }
-            }
-
-            $catUrl = sprintf(
-                '/%s',
-                ltrim(
-                    $this->router->generate(
-                        'frontend.navigation.page',
-                        ['navigationId' => $categoryEntity->getId()],
-                        RouterInterface::ABSOLUTE_PATH
-                    ),
-                    '/'
-                )
-            );
-
-            if (!Utils::isEmpty($catUrl)) {
-                $catUrls[] = $catUrl;
             }
 
             $categoryPath = Utils::buildCategoryPath(
@@ -1068,23 +956,49 @@ class FindologicProduct extends Struct
             );
 
             if (!Utils::isEmpty($categoryPath)) {
-                $categories[] = $categoryPath;
+                $categories = array_merge($categories, [$categoryPath]);
+            }
+
+            // Only export `cat_url`s recursively if integration type is Direct Integration.
+            // Note that this also applies for the `cat` attribute.
+            if ($this->isDirectIntegration()) {
+                $catUrls = array_merge(
+                    $catUrls,
+                    $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
+                );
+
+                $categories = $this->addCategoryNamesRecursively($categoryPath, $categories);
             }
         }
     }
 
-    protected function getCatUrlPrefix(): string
+    protected function isDirectIntegration(): bool
     {
-        $url = $this->getTranslatedDomainBaseUrl();
-        if (!$url) {
-            return '';
+        return $this->config->getIntegrationType() === IntegrationType::DI;
+    }
+
+    protected function isApiIntegration(): bool
+    {
+        return $this->config->getIntegrationType() === IntegrationType::API;
+    }
+
+    protected function addCategoryNamesRecursively(string $categoryPath, array $categories): array
+    {
+        $parentCategory = explode('_', $categoryPath);
+
+        return array_merge($categories, $parentCategory);
+    }
+
+    /**
+     * For API Integrations, we have to remove special characters from the attribute key as a requirement for
+     * sending data via API.
+     */
+    protected function getAttributeKey(?string $key): ?string
+    {
+        if ($this->isApiIntegration()) {
+            return Utils::removeSpecialChars($key);
         }
 
-        $path = parse_url($url, PHP_URL_PATH);
-        if (!$path) {
-            return '';
-        }
-
-        return rtrim($path, '/');
+        return $key;
     }
 }

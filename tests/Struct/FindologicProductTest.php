@@ -18,13 +18,18 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesExcepti
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
@@ -241,6 +246,7 @@ class FindologicProductTest extends TestCase
         $categoryData['categories'] = $data;
         $productEntity = $this->createTestProduct($categoryData);
 
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -248,7 +254,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -267,7 +274,7 @@ class FindologicProductTest extends TestCase
     public function testProductCategoriesSeoUrl(): void
     {
         $productEntity = $this->createTestProduct();
-
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -275,13 +282,14 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-        $this->assertContains('/Findologic-Category', $attribute->getValues());
+        $this->assertContains('/FINDOLOGIC-Category/', $attribute->getValues());
     }
 
     public function priceProvider(): array
@@ -315,7 +323,6 @@ class FindologicProductTest extends TestCase
         }
 
         $findologicProductFactory = new FindologicProductFactory();
-
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
@@ -333,13 +340,6 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    /**
-     * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoNameException
-     * @throws ProductHasNoPricesException
-     * @throws InconsistentCriteriaIdsException
-     */
     public function testProduct(): void
     {
         $productEntity = $this->createTestProduct();
@@ -357,6 +357,7 @@ class FindologicProductTest extends TestCase
         $ordernumbers = $this->getOrdernumber($productEntity);
         $properties = $this->getProperties($productEntity);
 
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -364,20 +365,14 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domains = $salesChannel->getDomains();
-        $domain = Utils::filterSalesChannelDomainsWithoutHeadlessDomain($domains)
-            ->first()
-            ->getUrl();
+        $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
+        $urlBuilderService->setSalesChannelContext($this->salesChannelContext);
 
-        $seoUrls = $productEntity->getSeoUrls()
-            ->filterBySalesChannelId($salesChannel->getId());
-        $seoPath = $seoUrls->first()->getSeoPathInfo();
-        $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
-
+        $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
         $this->assertEquals([$productTag], $findologicProduct->getKeywords());
@@ -547,25 +542,55 @@ class FindologicProductTest extends TestCase
     public function attributeProvider(): array
     {
         return [
-            'filter with some special characters' => [
+            'API Integration filter with some special characters' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|',
                 'expectedName' => 'SpecialCharacters'
             ],
-            'filter with brackets' => [
+            'API Integration filter with brackets' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Farbwiedergabe (Ra/CRI)',
                 'expectedName' => 'FarbwiedergabeRaCRI'
             ],
-            'filter with special UTF-8 characters' => [
+            'API Integration filter with special UTF-8 characters' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Ausschnitt D ø (mm)',
                 'expectedName' => 'AusschnittDmm'
             ],
-            'filter dots and dashes' => [
+            'API Integration filter dots and dashes' => [
+                'integrationType' => 'API',
                 'attributeName' => 'free_shipping.. Really Cool--__',
                 'expectedName' => 'free_shippingReallyCool--__'
             ],
-            'filter with umlauts' => [
+            'API Integration filter with umlauts' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Umläüts äre cööl',
                 'expectedName' => 'Umläütsärecööl'
+            ],
+            'Direct Integration filter with some special characters' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|',
+                'expectedName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|'
+            ],
+            'Direct Integration filter with brackets' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Farbwiedergabe (Ra/CRI)',
+                'expectedName' => 'Farbwiedergabe (Ra/CRI)'
+            ],
+            'Direct Integration filter with special UTF-8 characters' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Ausschnitt D ø (mm)',
+                'expectedName' => 'Ausschnitt D ø (mm)'
+            ],
+            'Direct Integration filter dots and dashes' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'free_shipping.. Really Cool--__',
+                'expectedName' => 'free_shipping.. Really Cool--__'
+            ],
+            'Direct Integration filter with umlauts' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Umläüts äre cööl',
+                'expectedName' => 'Umläüts äre cööl'
             ],
         ];
     }
@@ -573,8 +598,11 @@ class FindologicProductTest extends TestCase
     /**
      * @dataProvider attributeProvider
      */
-    public function testAttributesAreProperlyEscaped(string $attributeName, string $expectedName): void
-    {
+    public function testAttributesAreProperlyEscaped(
+        string $integrationType,
+        string $attributeName,
+        string $expectedName
+    ): void {
         $productEntity = $this->createTestProduct(
             [
                 'properties' => [
@@ -603,6 +631,7 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
+        $config = $this->getMockedConfig($integrationType);
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -610,7 +639,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $foundAttributes = array_filter(
@@ -858,10 +888,9 @@ class FindologicProductTest extends TestCase
     /**
      * @return Attribute[]
      */
-    private function getAttributes(ProductEntity $productEntity): array
+    private function getAttributes(ProductEntity $productEntity, string $integrationType = 'Direct Integration'): array
     {
         $catUrl1 = '/FINDOLOGIC-Category/';
-        $catUrl2 = '/Findologic-Category';
         $defaultCatUrl = '';
 
         foreach ($productEntity->getCategories() as $category) {
@@ -871,14 +900,16 @@ class FindologicProductTest extends TestCase
         }
 
         $attributes = [];
-        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $catUrl2, $defaultCatUrl]);
+        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $defaultCatUrl]);
         $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
         $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
 
-        $attributes[] = $catUrlAttribute;
+        if ($integrationType === 'Direct Integration') {
+            $attributes[] = $catUrlAttribute;
+        }
+
         $attributes[] = $catAttribute;
         $attributes[] = $vendorAttribute;
-
         $attributes[] = new Attribute(
             $productEntity->getProperties()
                 ->first()
@@ -1061,6 +1092,7 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
+        $config = $this->getMockedConfig('API');
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1068,7 +1100,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertEmpty($findologicProduct->getCustomFields());
@@ -1200,10 +1233,8 @@ class FindologicProductTest extends TestCase
 
         $categoryId = Uuid::randomHex();
         $pathInfo = 'navigation/' . $categoryId;
-        $seoPathInfo = 'Findologic-Category';
-
-        $expectedFirstCatUrl = '/' . $seoPathInfo;
-        $expectedSecondCatUrl = '/' . $pathInfo;
+        $seoPathInfo = '/FINDOLOGIC-Category/';
+        $expectedCatUrl = '/' . $pathInfo;
 
         $productEntity = $this->createTestProduct(
             [
@@ -1225,6 +1256,7 @@ class FindologicProductTest extends TestCase
             ]
         );
 
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1232,17 +1264,16 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertCount(6, $findologicProduct->getAttributes());
         $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
 
         $catUrls = $findologicProduct->getAttributes()[0]->getValues();
-        $this->assertCount(2, $catUrls);
-
-        $this->assertSame($expectedFirstCatUrl, $catUrls[0]);
-        $this->assertSame($expectedSecondCatUrl, $catUrls[1]);
+        $this->assertCount(1, $catUrls);
+        $this->assertSame([$expectedCatUrl], $catUrls);
     }
 
     public function testCustomerGroupsAreExportedAsUserGroups(): void
@@ -1515,6 +1546,8 @@ class FindologicProductTest extends TestCase
         $this->salesChannelContext->getSalesChannel()->setDomains($result->getEntities());
 
         $productEntity = $this->createTestProduct();
+
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1522,7 +1555,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $attributes = $findologicProduct->getAttributes();
@@ -1906,5 +1940,182 @@ class FindologicProductTest extends TestCase
         );
 
         $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
+    }
+
+    private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
+    {
+        $override = [
+            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
+            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
+        ];
+
+        /** @var FindologicConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $override);
+
+        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
+        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serviceConfigResource->expects($this->once())
+            ->method('isDirectIntegration')
+            ->willReturn($integrationType === 'Direct Integration');
+
+        return new Config($configServiceMock, $serviceConfigResource);
+    }
+
+    public function categoryAndCatUrlWithIntegrationTypeProvider(): array
+    {
+        return [
+            'Integration type is API and category is at first level' => [
+                'integrationType' => 'API',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1'
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is API with nested categories' => [
+                'integrationType' => 'API',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1',
+                        'children' => [
+                            [
+                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                                'name' => 'Category2'
+                            ]
+                        ]
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1_Category2'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is DI and category is at first level' => [
+                'integrationType' => 'Direct Integration',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1'
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1'
+                ],
+                'expectedCatUrls' => [
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
+            ],
+            'Integration type is DI with nested categories' => [
+                'integrationType' => 'Direct Integration',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1',
+                        'children' => [
+                            [
+                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                                'name' => 'Category2'
+                            ]
+                        ]
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1_Category2',
+                    'Category1',
+                    'Category2',
+                ],
+                'expectedCatUrls' => [
+                    '/Category1/Category2/',
+                    '/navigation/f03d845e0abf31e72409cf7c5c704a2e',
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
+            ],
+            'Integration type is unknown and category is at first level' => [
+                'integrationType' => 'Unknown',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1'
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is unknown with nested categories' => [
+                'integrationType' => 'Unknown',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1',
+                        'children' => [
+                            [
+                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                                'name' => 'Category2'
+                            ]
+                        ]
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1_Category2'
+                ],
+                'expectedCatUrls' => [],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider categoryAndCatUrlWithIntegrationTypeProvider
+     */
+    public function testCategoryAndCatUrlExportBasedOnIntegrationType(
+        ?string $integrationType,
+        array $categories,
+        array $expectedCategories,
+        array $expectedCatUrls
+    ): void {
+        foreach ($categories as $key => $category) {
+            $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+            $categories[$key]['parentId'] = $navigationCategoryId;
+        }
+
+        $productEntity = $this->createTestProduct(['categories' => $categories]);
+        $config = $this->getMockedConfig($integrationType);
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123'),
+            $config
+        );
+
+        $this->assertTrue($findologicProduct->hasAttributes());
+        $attributes = $findologicProduct->getAttributes();
+        if (count($expectedCatUrls) > 0) {
+            $this->assertSame('cat_url', $attributes[0]->getKey());
+            $this->assertSameSize($expectedCatUrls, $attributes[0]->getValues());
+            $this->assertSame($expectedCatUrls, $attributes[0]->getValues());
+
+            $this->assertSame('cat', $attributes[1]->getKey());
+            $this->assertSameSize($expectedCategories, $attributes[1]->getValues());
+            $this->assertSame($expectedCategories, $attributes[1]->getValues());
+        } else {
+            $this->assertSame('cat', $attributes[0]->getKey());
+            $this->assertSameSize($expectedCategories, $attributes[0]->getValues());
+            $this->assertSame($expectedCategories, $attributes[0]->getValues());
+        }
     }
 }
