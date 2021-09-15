@@ -51,10 +51,10 @@ class ShopwarePluginRelease
      */
     public function updateVersionAndTriggerReleaseJob(): void
     {
-        $this->logger->info(
-            'This command creates a new tag, which triggers a GitHub workflow that creates and uploads ' .
-            'the release into the Shopware Store.'
-        );
+        $message = 'This command creates a new tag, which triggers a GitHub workflow that creates and uploads ';
+        $message .= 'the release into the Shopware Store.';
+        $this->logger->info($message);
+
         $version = $this->releaseTagger->askReleaseVersion();
 
         $this->logger->info(sprintf('Creating release for version %s...', $version));

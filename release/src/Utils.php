@@ -22,7 +22,7 @@ class Utils
 
     public static function toJsonString(
         array $data,
-        int $flags = JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE
+        int $flags = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
     ): string {
         $rawJson = json_encode($data, $flags) . "\n";
 
