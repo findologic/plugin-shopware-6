@@ -1,32 +1,23 @@
-  /*1.3125rem*/
-.category_div_adjust
-{
+.category_div_adjust {
   min-width:290px;
-
 }
 .category_div_adjust label{
   display:inline-block;
   width: auto;
 }
-.subcats-show
-{
-
+.subcats-show {
   max-height:500.313rem;
   min-height:1.3125rem;
   transition: all 0.5s;
-
 }
-.up-arrow
-{
+.up-arrow {
   transform:rotate(180deg);
   transition: all 0.3s;
   height:30px;
   width:35px;
 display: inline-block;
 }
-
-.down-arrow
-{
+.down-arrow {
   transition: all 0.3s;
   height:30px;
   width:35px;
@@ -37,15 +28,12 @@ display: inline-block;
   height:25px;
   width:17px;
 }
-
-.subcats-hide
-{
+.subcats-hide {
   max-height:0px;
   min-height:0px;
   transition: all 0.5s;
   overflow: hidden;
 }
-
 .filter-category-select-list {
   min-width: 310px;
   line-height: 2;
