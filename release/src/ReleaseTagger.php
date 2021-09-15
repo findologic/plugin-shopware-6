@@ -58,7 +58,7 @@ class ReleaseTagger
     {
         exec('git reset HEAD -- .');
         exec('git add composer.json composer.lock');
-        exec('git commit -m "Bump version"');
+        exec(sprintf('git commit -m "Bump version %s"', $version));
         exec('git push');
     }
 
@@ -72,7 +72,8 @@ class ReleaseTagger
     {
         $version = readline('Version number (e.g. 1.2.3 or 1.2.3-RC3): ');
         if (!is_string($version)) {
-            return '';
+            $this->logger->error('Could not parse version number. Please try again.');
+            exit(1);
         }
 
         return $version;

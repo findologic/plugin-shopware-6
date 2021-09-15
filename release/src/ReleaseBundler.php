@@ -117,7 +117,7 @@ class ReleaseBundler
     {
         chdir(self::SYS_TMP_DIR);
 
-        $zipFileDest = sprintf('%s/FinSearch.zip', __DIR__ . '/../../..');
+        $zipFileDest = sprintf('%s/FinSearch.zip', __DIR__ . '/../..');
         exec(sprintf('zip -r9 %s FinSearch -x %s', $zipFileDest, implode(' ', self::IGNORED)));
 
         return $zipFileDest;
@@ -126,6 +126,6 @@ class ReleaseBundler
     private function cleanUpTempFolderAndResetDir(): void
     {
         exec(sprintf('rm -rf "%s"', self::TMP_DIR));
-        chdir(realpath(__DIR__ . '/../../..'));
+        chdir(__DIR__ . '/../..');
     }
 }
