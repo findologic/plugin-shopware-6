@@ -1,5 +1,5 @@
 # 2.2.0
-- [SW-595] Categories and cat_urls are now generated recursively, and filter names will no longer get their filter name sanitized for Direct Integration.
+- [SW-595] Exported categories and category urls are now generated recursively, and filter names will no longer get their filter name sanitized for Direct Integration.
 - Please ensure that filter names containing special characters are properly configured in the filter-configuration after updating.
 - [SW-645] Added Shopware 6.4.4.0 to the test matrix.
 

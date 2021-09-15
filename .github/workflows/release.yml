@@ -10,7 +10,7 @@ env:
   PLUGIN_NAME: FinSearch
   ACCOUNT_USER: ${{ secrets.ACCOUNT_USER }}
   ACCOUNT_PASSWORD: ${{ secrets.ACCOUNT_PASSWORD }}
-  PLUGIN_UPLOADER_VERSION: 0.3.11
+  PLUGIN_UPLOADER_VERSION: 0.3.16
 
 jobs:
   validatePlugin:
@@ -36,10 +36,10 @@ jobs:
       - name: Download plugin uploader
         run: wget 'https://github.com/FriendsOfShopware/FroshPluginUploader/releases/download/${{ env.PLUGIN_UPLOADER_VERSION }}/frosh-plugin-upload.phar' -O frosh-plugin-upload.phar
 
-      - name: Build Plugin Relase-Zipfile
+      - name: Build plugin release zip file
         run: composer build-release
 
-      - name: Validate Plugin Release-Zipfile
+      - name: Validate plugin release zip file
         run: php frosh-plugin-upload.phar ext:validate $(pwd)/${PLUGIN_NAME}.zip
 
   storeRelease:
@@ -73,7 +73,7 @@ jobs:
       - name: Build Plugin Relase-Zipfile
         run: composer build-release
 
-      - name: Create GitHub Release
+      - name: Create GitHub release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -85,7 +85,7 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Release Asset
+      - name: Upload release asset
         id: upload_release_asset
         uses: actions/upload-release-asset@v1.0.2
         env:
@@ -96,5 +96,5 @@ jobs:
           asset_name: ${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
 
-      - name: Upload Plugin to Shopware Store
+      - name: Upload plugin to Shopware Store
         run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}.zip
