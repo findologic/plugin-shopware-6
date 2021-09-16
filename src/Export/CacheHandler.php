@@ -103,10 +103,12 @@ class CacheHandler
 
     public function setDynamicProductGroupOffset($products, int $offset): void
     {
-        $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
-        $cacheItem->set($products);
-        $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-        $this->cache->save($cacheItem);
+        if ($offset > 0) {
+            $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
+            $cacheItem->set($products);
+            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+            $this->cache->save($cacheItem);
+        }
     }
 
     public function isCacheWarmedUp(int $offset): bool
