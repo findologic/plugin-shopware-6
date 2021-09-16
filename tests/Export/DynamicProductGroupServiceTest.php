@@ -213,8 +213,12 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->cache->expects($this->exactly(3))->method('save')->with($cacheItemMock);
         $this->cache->expects($this->exactly(6))
             ->method('getItem')
-            ->withConsecutive([$this->cacheWarmupKey], [$this->cacheTotalKey], [$this->cacheTotalKey], [$this->cacheKey])
-            ->willReturn($cacheItemMock);
+            ->withConsecutive(
+                [$this->cacheWarmupKey],
+                [$this->cacheTotalKey],
+                [$this->cacheTotalKey],
+                [$this->cacheKey]
+            )->willReturn($cacheItemMock);
 
         $dynamicService = $this->getDynamicProductGroupService();
         $dynamicService->setSalesChannel($salesChannel);
@@ -267,6 +271,7 @@ class DynamicProductGroupServiceTest extends TestCase
     private function getDynamicProductGroupService(): DynamicProductGroupService
     {
         $cacheHandler = new CacheHandler($this->cache);
+
         return DynamicProductGroupService::getInstance(
             $this->containerMock,
             $cacheHandler,
