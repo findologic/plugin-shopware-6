@@ -123,7 +123,7 @@ class CacheHandler
         return false;
     }
 
-    public function isDynamicProductGroupsCached(int $offset): bool
+    public function isDynamicProductGroupsCached(): bool
     {
         $cacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
         if ($cacheItem && $cacheItem->isHit()) {
