@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
+use FINDOLOGIC\FinSearch\Export\CacheHandler;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
@@ -16,7 +17,6 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
@@ -44,6 +44,9 @@ class ExportController extends AbstractController
     /** @var LoggerInterface */
     protected $logger;
 
+    /** @var CacheHandler */
+    protected $cacheHandler;
+
     /** @var Router */
     private $router;
 
@@ -68,9 +71,6 @@ class ExportController extends AbstractController
     /** @var Export|XmlExport|ProductIdExport */
     private $export;
 
-    /** @var CacheItemPoolInterface */
-    private $cache;
-
     /** @var SalesChannelService|null */
     private $salesChannelService;
 
@@ -82,13 +82,13 @@ class ExportController extends AbstractController
         RouterInterface $router,
         HeaderHandler $headerHandler,
         $salesChannelContextFactory,
-        CacheItemPoolInterface $cache
+        CacheHandler $cacheHandler
     ) {
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
-        $this->cache = $cache;
+        $this->cacheHandler = $cacheHandler;
     }
 
     /**
@@ -172,7 +172,7 @@ class ExportController extends AbstractController
     {
         $excludeProductGroups = filter_var($request->get('excludeProductGroups'), FILTER_VALIDATE_BOOLEAN);
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
-        if (!$excludeProductGroups && !$dynamicProductGroupService->isDynamicProductGroupWarmedUp()) {
+        if (!$excludeProductGroups && !$dynamicProductGroupService->isWarmedUp()) {
             return new PreconditionFailedResponse();
         }
 
@@ -229,10 +229,7 @@ class ExportController extends AbstractController
             $dynamicProductGroupService->warmUp();
         }
 
-        $total = $dynamicProductGroupService->getDynamicProductGroupTotalFromCache();
-        $dynamicProductGroupService->setDynamicProductGroupWarmedUpFlag($total);
-
-        return $total;
+        return $dynamicProductGroupService->getDynamicProductGroupTotal();
     }
 
     private function validateExportConfiguration(ExportConfiguration $config): array
@@ -278,7 +275,7 @@ class ExportController extends AbstractController
     {
         $dynamicProductGroupService = DynamicProductGroupService::getInstance(
             $this->container,
-            $this->cache,
+            $this->cacheHandler,
             $this->salesChannelContext->getContext(),
             $this->exportConfig->getShopkey(),
             $this->exportConfig->getStart(),

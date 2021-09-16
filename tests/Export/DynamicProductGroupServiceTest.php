@@ -94,7 +94,7 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->validShopkey = $this->getShopkey();
         $this->cacheKey = sprintf('fl_product_groups_%s_%d', $this->validShopkey, $this->start);
         $this->cacheTotalKey = sprintf('fl_product_groups_%s_total', $this->validShopkey);
-        $this->cacheWarmupKey = sprintf('fl_product_groups_%s_dpg_warmup', $this->validShopkey);
+        $this->cacheWarmupKey = sprintf('fl_product_groups_%s_dynamic_product_warmup', $this->validShopkey);
         $this->createTestProductStreams();
     }
 
