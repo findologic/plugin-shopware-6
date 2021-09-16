@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use FINDOLOGIC\FinSearch\Export\CacheHandler;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
@@ -209,7 +210,7 @@ class DynamicProductGroupServiceTest extends TestCase
         $cacheItemMock->expects($this->exactly(2))->method('set');
         $cacheItemMock->expects($this->exactly(3))->method('isHit')->willReturnOnConsecutiveCalls(false, false, true);
         $cacheItemMock->expects($this->exactly(2))->method('expiresAfter')->with(60 * 11);
-        $this->cache->expects($this->exactly(2))->method('save')->with($cacheItemMock);
+        $this->cache->expects($this->once())->method('save')->with($cacheItemMock);
         $this->cache->expects($this->exactly(4))
             ->method('getItem')
             ->withConsecutive([$this->cacheWarmupKey], [$this->cacheTotalKey], [$this->cacheKey], [$this->cacheKey])
@@ -265,9 +266,10 @@ class DynamicProductGroupServiceTest extends TestCase
 
     private function getDynamicProductGroupService(): DynamicProductGroupService
     {
+        $cacheHandler = new CacheHandler($this->cache);
         return DynamicProductGroupService::getInstance(
             $this->containerMock,
-            $this->cache,
+            $cacheHandler,
             $this->defaultContext,
             $this->validShopkey,
             $this->start,
