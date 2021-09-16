@@ -207,13 +207,13 @@ class DynamicProductGroupServiceTest extends TestCase
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
         $cacheItemMock->expects($this->once())->method('get')->willReturn($products);
-        $cacheItemMock->expects($this->exactly(2))->method('set');
+        $cacheItemMock->expects($this->exactly(3))->method('set');
         $cacheItemMock->expects($this->exactly(3))->method('isHit')->willReturnOnConsecutiveCalls(false, false, true);
-        $cacheItemMock->expects($this->exactly(2))->method('expiresAfter')->with(60 * 11);
-        $this->cache->expects($this->once())->method('save')->with($cacheItemMock);
-        $this->cache->expects($this->exactly(4))
+        $cacheItemMock->expects($this->exactly(3))->method('expiresAfter')->with(60 * 11);
+        $this->cache->expects($this->exactly(3))->method('save')->with($cacheItemMock);
+        $this->cache->expects($this->exactly(6))
             ->method('getItem')
-            ->withConsecutive([$this->cacheWarmupKey], [$this->cacheTotalKey], [$this->cacheKey], [$this->cacheKey])
+            ->withConsecutive([$this->cacheWarmupKey], [$this->cacheTotalKey], [$this->cacheTotalKey], [$this->cacheKey])
             ->willReturn($cacheItemMock);
 
         $dynamicService = $this->getDynamicProductGroupService();
