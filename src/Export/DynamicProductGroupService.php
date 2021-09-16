@@ -137,9 +137,14 @@ class DynamicProductGroupService
         $this->cacheHandler->dynamicProductGroupWarmUp($this->start, $this->count);
     }
 
-    public function isWarmedUp(): bool
+    public function isOffsetWarmedUp(): bool
     {
         return $this->cacheHandler->isCacheWarmedUp($this->start);
+    }
+
+    public function isDynamicProductGroupsCached(): bool
+    {
+        return $this->cacheHandler->isDynamicProductGroupsCached();
     }
 
     public function getDynamicProductGroupTotal()

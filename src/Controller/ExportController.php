@@ -172,7 +172,7 @@ class ExportController extends AbstractController
     {
         $excludeProductGroups = filter_var($request->get('excludeProductGroups'), FILTER_VALIDATE_BOOLEAN);
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
-        if (!$excludeProductGroups && !$dynamicProductGroupService->isWarmedUp()) {
+        if (!$excludeProductGroups && !$dynamicProductGroupService->isDynamicProductGroupsCached()) {
             return new PreconditionFailedResponse();
         }
 
@@ -225,7 +225,7 @@ class ExportController extends AbstractController
         }
 
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
-        if (!$dynamicProductGroupService->isWarmedUp()) {
+        if (!$dynamicProductGroupService->isOffsetWarmedUp()) {
             $dynamicProductGroupService->warmUp();
         }
 

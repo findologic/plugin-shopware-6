@@ -111,15 +111,27 @@ class CacheHandler
 
     public function isCacheWarmedUp(int $offset): bool
     {
-        if ($offset > 0) {
-            $cacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
-            if ($cacheItem && $cacheItem->isHit()) {
-                $cacheItem->set(true);
-                $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-                $this->cache->save($cacheItem);
+        $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
+        if ($cacheItem && $cacheItem->isHit()) {
+            $cacheItem->set(true);
+            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+            $this->cache->save($cacheItem);
 
-                return true;
-            }
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isDynamicProductGroupsCached(int $offset): bool
+    {
+        $cacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
+        if ($cacheItem && $cacheItem->isHit()) {
+            $cacheItem->set(true);
+            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+            $this->cache->save($cacheItem);
+
+            return true;
         }
 
         return false;

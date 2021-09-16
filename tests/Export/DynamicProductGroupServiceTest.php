@@ -125,13 +125,13 @@ class DynamicProductGroupServiceTest extends TestCase
         $cacheItemMock->expects($this->once())->method('isHit')->willReturn($isWarmup);
         $this->cache->expects($this->once())
             ->method('getItem')
-            ->with($this->cacheWarmupKey)
+            ->with($this->cacheKey)
             ->willReturn($cacheItemMock);
         $this->cache->expects($invokeCount)->method('save')->with($cacheItemMock);
 
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
 
-        $this->assertSame($isWarmup, $dynamicProductGroupService->isWarmedUp());
+        $this->assertSame($isWarmup, $dynamicProductGroupService->isOffsetWarmedUp());
     }
 
     public function testCategoriesAreCached(): void
@@ -214,7 +214,7 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->cache->expects($this->exactly(6))
             ->method('getItem')
             ->withConsecutive(
-                [$this->cacheWarmupKey],
+                [$this->cacheKey],
                 [$this->cacheTotalKey],
                 [$this->cacheTotalKey],
                 [$this->cacheKey]
@@ -222,7 +222,7 @@ class DynamicProductGroupServiceTest extends TestCase
 
         $dynamicService = $this->getDynamicProductGroupService();
         $dynamicService->setSalesChannel($salesChannel);
-        if (!$dynamicService->isWarmedUp()) {
+        if (!$dynamicService->isOffsetWarmedUp()) {
             $dynamicService->warmUp();
         }
         $categories = $dynamicService->getCategories($this->productId);
