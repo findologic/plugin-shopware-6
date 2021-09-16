@@ -92,7 +92,7 @@ class CacheHandler
     {
         $totalCacheItem = $this->getDynamicGroupsTotalCacheItem();
 
-        return !$totalCacheItem->isHit();
+        return $totalCacheItem->isHit();
     }
 
     public function setDynamicProductGroupTotal(int $total): void
@@ -107,6 +107,9 @@ class CacheHandler
         $cacheItem->set($products);
         $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
         $this->cache->save($cacheItem);
+
+        // For each pagination, we will try to set the cache if we have reached the last page.
+        $this->cacheHandler->dynamicProductGroupWarmUp($this->start, $this->count);
     }
 
     public function isCacheWarmedUp(int $offset): bool
