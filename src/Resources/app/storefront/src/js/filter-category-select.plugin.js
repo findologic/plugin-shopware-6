@@ -31,7 +31,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         if(arrowIcon !== false) {
             Iterator.iterate(arrowIcon,(arrow)=> {
                 arrow.addEventListener('click',function() {
-                    current._onArrowClick(arrow)
+                    current._onArrowClick(arrow);
                 });
             });
         }
@@ -90,7 +90,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         Object.keys(params).forEach(key => {
             if (key === this.options.name) {
                 stateChanged = true;
-                const ids = params[key].split('_')
+                const ids = params[key].split('_');
                 this._setCurrentCategoryAsSelected(ids);
             }
         });
@@ -120,7 +120,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
                 })
             }
             this.toggleCategoryArrows(span,'down-arrow','up-arrow');
-            this.toggleSubcategoryDisplay(inner_sub_cats,'subcats-hide','subcats-show')
+            this.toggleSubcategoryDisplay(inner_sub_cats,'subcats-hide','subcats-show');
         }
         else {
             Iterator.iterate(inner_sub_cats,(sub_cat)=> {
@@ -142,21 +142,21 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * public
      */
     toggleSubcategoryDisplayByArrows(span) {
-        let elem = span.nextElementSibling
+        let elem = span.nextElementSibling;
         let elem_array = [elem];
         do {
-            var sibs = elem_array[elem_array.length -1].nextElementSibling
-            elem_array.push(sibs)
+            var sibs = elem_array[elem_array.length -1].nextElementSibling;
+            elem_array.push(sibs);
         }
-        while( sibs !== null && sibs.getAttribute('class').indexOf('sub-item') > -1)
+        while( sibs !== null && sibs.getAttribute('class').indexOf('sub-item') > -1);
         let classList = span.getAttribute('class');
         let check = classList.indexOf('up-arrow') > -1;
         if(check) {
-            this.toggleCategoryArrows(span,'up-arrow','down-arrow')
+            this.toggleCategoryArrows(span,'up-arrow','down-arrow');
             this.toggleSubcategoryDisplay(elem_array,'subcats-show','subcats-hide');
         }
         else {
-            this.toggleCategoryArrows(span,'down-arrow','up-arrow')
+            this.toggleCategoryArrows(span,'down-arrow','up-arrow');
             this.toggleSubcategoryDisplay(elem_array,'subcats-hide','subcats-show');
         }
     }
@@ -164,7 +164,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * public
      */
     _onArrowClick(arrow) {
-        this.toggleSubcategoryDisplayByArrows(arrow)
+        this.toggleSubcategoryDisplayByArrows(arrow);
     }
     /**
      * public
@@ -173,7 +173,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         if(elem !== undefined && elem !== null) {
             Iterator.iterate(elem, (subcats) => {
                 subcats.classList.remove(removeClass);
-                subcats.classList.add(showClass)
+                subcats.classList.add(showClass);
             })
         }
     }
@@ -183,10 +183,10 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     showActiveCategory() {
         let checkboxes = DomAccess.querySelectorAll(this.el,this.options.checkboxSelector);
         Iterator.iterate(checkboxes , (checkbox) => {
-            let sub_items = checkbox.parentNode.querySelectorAll('.sub-item')
+            let sub_items = checkbox.parentNode.querySelectorAll('.sub-item');
             let span = checkbox.parentNode.getElementsByTagName('div')[0];
             if(checkbox.checked) {
-                this.toggleCategoryArrows(span,'down-arrow','up-arrow')
+                this.toggleCategoryArrows(span,'down-arrow','up-arrow');
                 this.toggleSubcategoryDisplay(sub_items,'subcats-hide','subcats-show');
             }
         })
@@ -325,8 +325,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         const mainFilterButton = DomAccess.querySelector(this.el, this.options.mainFilterButtonSelector);
         mainFilterButton.classList.add('fl-disabled');
         mainFilterButton.setAttribute('disabled', 'disabled');
-        mainFilterButton.setAttribute('title', this.options.snippets.disabledFilterText);
-    }
+        mainFilterButton.setAttribute('title', this.options.snippets.disabledFilterText);   }
     /**
      * @public
      */
