@@ -2,7 +2,7 @@
 
     {% for element in values %}
         {% block component_filter_multi_select_list_item_value %}
-            <div class="custom-control custom-checkbox sub-item">
+            <div class="custom-control custom-checkbox sub-item subcats-hide">
                 {% set id = element.id %}
                 {% set filterValue = filterValue ~ '_' ~ element.id %}
                 {% set name = element.translated.name %}
@@ -20,6 +20,17 @@
                             <span>{{ name }}</span>
                         {% endblock %}
                     </label>
+
+                    {% block arrow_icon %}
+                        {% if element.values %}
+                            <div id="arrow" class="down-arrow">
+                                {% sw_icon 'arrow-medium-up' style {
+                                    'pack': 'solid', 'size': 'sm', 'class': 'filter-panel-item-toggle'
+                                } %}
+                            </div>
+                        {% endif %}
+                    {% endblock %}
+
                 {% endblock %}
 
                 {% if element.values %}
