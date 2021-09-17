@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Release;
 
-use Bramus\Monolog\Formatter\ColoredLineFormatter;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 
 class ShopwarePluginRelease
@@ -28,15 +25,6 @@ class ShopwarePluginRelease
         $this->logger = $logger;
         $this->releaseBundler = $releaseBundler ?? new ReleaseBundler($logger);
         $this->releaseTagger = $releaseTagger ?? new ReleaseTagger($logger);
-    }
-
-    public static function buildLogger(string $name): LoggerInterface
-    {
-        $logger = new Logger($name);
-        $formatter = new ColoredLineFormatter(null, null, null, false, true);
-        $logger->pushHandler((new StreamHandler('php://stdout'))->setFormatter($formatter));
-
-        return $logger;
     }
 
     public function buildReleaseZipFile(): string

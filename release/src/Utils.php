@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Release;
 
+use Bramus\Monolog\Formatter\ColoredLineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+
 class Utils
 {
     private const COMPOSER_JSON_DEST = __DIR__ . '/../../composer.json';
@@ -28,5 +33,14 @@ class Utils
 
         // Format JSON to two instead of four spaces.
         return preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $rawJson);
+    }
+
+    public static function buildLogger(string $name): LoggerInterface
+    {
+        $logger = new Logger($name);
+        $formatter = new ColoredLineFormatter(null, null, null, false, true);
+        $logger->pushHandler((new StreamHandler('php://stdout'))->setFormatter($formatter));
+
+        return $logger;
     }
 }
