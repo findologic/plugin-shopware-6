@@ -795,27 +795,31 @@ class FindologicProduct extends Struct
     protected function getPricesFromProduct(ProductEntity $variant): array
     {
         $prices = [];
-
+        $factor = $this->salesChannelContext->getSalesChannel()->getCurrency()->getFactor();
         foreach ($variant->getPrice() as $item) {
+
+
             foreach ($this->customerGroups as $customerGroup) {
+
                 $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
                 if (Utils::isEmpty($userGroupHash)) {
                     continue;
                 }
-
                 $price = new Price();
                 if ($customerGroup->getDisplayGross()) {
-                    $price->setValue($item->getGross(), $userGroupHash);
+                    $price->setValue($item->getGross()*$factor, $userGroupHash);
                 } else {
-                    $price->setValue($item->getNet(), $userGroupHash);
+                    $price->setValue($item->getNet()*$factor, $userGroupHash);
                 }
 
                 $prices[] = $price;
             }
 
             $price = new Price();
-            $price->setValue($item->getGross());
+            $price->setValue($item->getGross()*$factor);
             $prices[] = $price;
+
+
         }
 
         return $prices;
