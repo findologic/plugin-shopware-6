@@ -106,20 +106,24 @@ Use the [FINDOLOGIC Shopware 6 extension plugin](https://github.com/findologic/p
 guide you on how you can customize certain entities, like attributes or properties.
 
 ## Deployment and Release
-Before starting the deployment make sure that a release is already created.
 
-1. Run `git fetch` and ensure that the release tag is available locally. Make sure
- that the file `composer.json` contains the correct version constraint.
-1. Run `composer release`, which will build a release `FinSearch-x.x.x.zip` file.
-1. Upload this version to Google Drive `Development/Plugins/Shopware/Shopware 6 DI & API Plugin` and move the old
- version to `alte Versionen`.
-1. Go to https://account.shopware.com and login. Go to
- `Manufacturer area > Plugins > Shopware 6 plugins > FINDOLOGIC Search & Navigation` and select *Versions*. Click
- on *Upload new version* and fill out all necessary fields. In the second step mark the plugin as compatible
- for Shopware 6.0 and newer. Last but not least upload the plugins' zip file and mark all
- required checkboxes.
-1. Once the release is available require an *automatic code review*.
-1. Notify everyone at Basecamp that the new release is available.
+1. Update the changelogs `CHANGELOG.md` and `CHANGELOG_de-DE.md`.
+2. Ensure that all changes, including the changelog changes have been merged into the `develop` branch.
+3. Switch to the `develop` branch locally and pull the most recent changes.
+   ```bash
+   git checkout develop
+   git pull
+   ```
+4. Start the release process and follow the instructions.
+   ```bash
+   composer release
+   ```
+5. Ensure that the [GitHub Actions release](https://github.com/findologic/plugin-shopware-6/actions/workflows/release.yml)
+is successful.
+6. Upload it to Google Drive, by downloading the built zip file from the [Releases page](https://github.com/findologic/plugin-shopware-6/releases).
+Upload it to the folder `Development/Plugins/Shopware/Shopware 6 DI & API Plugin` and move the old
+version to `alte Versionen`.
+7. Notify everyone in the `#releases` Slack channel.
 
 ## Test Shopware release candidates
 

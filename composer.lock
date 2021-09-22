@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6c533cccea0def2b518b2fdbccbab478",
+    "content-hash": "b85e83d01cea45ec873fa26f4e5e0d40",
     "packages": [
         {
             "name": "findologic/findologic-api",
@@ -796,6 +796,96 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "bramus/ansi-php",
+            "version": "3.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bramus/ansi-php.git",
+                "reference": "fb0be33f36053af7454d462e3ddc0a2ac0b2f311"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bramus/ansi-php/zipball/fb0be33f36053af7454d462e3ddc0a2ac0b2f311",
+                "reference": "fb0be33f36053af7454d462e3ddc0a2ac0b2f311",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bramus\\Ansi\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Bramus Van Damme",
+                    "email": "bramus@bram.us",
+                    "homepage": "https://www.bram.us/"
+                }
+            ],
+            "description": "ANSI Control Functions and ANSI Control Sequences (Colors, Erasing, etc.) for PHP CLI Apps",
+            "support": {
+                "issues": "https://github.com/bramus/ansi-php/issues",
+                "source": "https://github.com/bramus/ansi-php/tree/master"
+            },
+            "time": "2019-12-03T09:04:38+00:00"
+        },
+        {
+            "name": "bramus/monolog-colored-line-formatter",
+            "version": "3.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bramus/monolog-colored-line-formatter.git",
+                "reference": "0b0df515b770056ff7ca4ab789587197113d3a5c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bramus/monolog-colored-line-formatter/zipball/0b0df515b770056ff7ca4ab789587197113d3a5c",
+                "reference": "0b0df515b770056ff7ca4ab789587197113d3a5c",
+                "shasum": ""
+            },
+            "require": {
+                "bramus/ansi-php": "^3.0.3",
+                "php": "^7.2|~8.0.0"
+            },
+            "require-dev": {
+                "monolog/monolog": "~2.0",
+                "phpunit/phpunit": "~7.0|^9.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bramus\\Monolog\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Bramus Van Damme",
+                    "email": "bramus@bram.us",
+                    "homepage": "https://www.bram.us/"
+                }
+            ],
+            "description": "Colored Line Formatter for Monolog",
+            "support": {
+                "issues": "https://github.com/bramus/monolog-colored-line-formatter/issues",
+                "source": "https://github.com/bramus/monolog-colored-line-formatter/tree/3.0.5"
+            },
+            "time": "2020-11-28T23:44:05+00:00"
+        },
         {
             "name": "monolog/monolog",
             "version": "2.0.2",
