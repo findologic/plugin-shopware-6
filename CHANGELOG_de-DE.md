@@ -1,6 +1,8 @@
 # 2.2.0
+- [SW-648] Ein Fehler wurde behoben, wodurch die Bilder von Promotions auf die breite des gesamten viewports ausgegeben wurden.
 - [SW-595] Exportierte Kategorien und Kategorie Urls werden nun rekursiv generiert, und Filternamen werden nicht länger von speziellen Zeichen bereinigt, wenn die Integrationsart Direct Integration ist.
 - Hinweis: Nach dem Update sollte überprüft werden, dass die Filter noch korrekt in der Filterkonfiguration konfiguriert sind.
+- [SW-609] Der Shopware 6 Plugin Release Prozess ist nun automatisiert.
 - [SW-645] Shopware 6.4.4.0 wurde zur Test-Matrix hinzugefügt.
 
 # 2.1.2
