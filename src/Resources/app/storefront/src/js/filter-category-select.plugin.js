@@ -20,9 +20,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         this.counter = DomAccess.querySelector(this.el, this.options.countSelector);
         this._registerEvents();
     }
+
     /**
      * @private
      */
+
     _registerEvents() {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         const arrowIcon = DomAccess.querySelectorAll(this.el,this.options.arrowIcon);
@@ -35,18 +37,20 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
                 });
             });
         }
+
         Iterator.iterate(checkboxes, (checkbox) => {
             checkbox.addEventListener('change',function() {
                 current.subCategoryDisplay(this);
             })
             checkbox.addEventListener('change', this._onChangeFilter.bind(this));
-
         });
     }
+
     /**
      * @return {Array}
      * @public
      */
+
     getValues() {
         const activeCheckboxes = this.getSelected();
         let selection = [];
@@ -62,10 +66,12 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         values[this.options.name] = selection;
         return values;
     }
+
     /**
      * @return {Array}
      * @public
      */
+
     getLabels() {
         let labels = [];
         const activeCheckboxes = this.getSelected();
@@ -81,10 +87,12 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         }
         return labels;
     }
+
     /**
      * @public
      * @param params
      */
+
     setValuesFromUrl(params) {
         let stateChanged = false;
         Object.keys(params).forEach(key => {
@@ -94,21 +102,27 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
                 this._setCurrentCategoryAsSelected(ids);
             }
         });
+
         if (!stateChanged) {
             this.resetAll();
         }
         this._updateCount();
+
         return stateChanged;
     }
+
     /**
      * @private
      */
+
     _onChangeFilter() {
         this.listing.changeListing();
     }
+
     /**
      * @public
      */
+
     subCategoryDisplay(checkbox) {
         let inner_sub_cats = checkbox.parentNode.getElementsByClassName('sub-item');
         let span = checkbox.parentNode.querySelector('#arrow');
@@ -128,9 +142,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             })
         }
     }
+
     /**
      * public
      */
+
     toggleCategoryArrows(elem,removeClass,addClass) {
         let span = elem;
         if(span !== undefined && span !== null) {
@@ -138,9 +154,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             span.classList.add(addClass);
         }
     }
+
     /**
      * public
      */
+
     toggleSubcategoryDisplayByArrows(span) {
         let elem = span.nextElementSibling;
         let elem_array = [elem];
@@ -160,15 +178,19 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             this.toggleSubcategoryDisplay(elem_array,'subcats-hide','subcats-show');
         }
     }
+
     /**
      * public
      */
+
     _onArrowClick(arrow) {
         this.toggleSubcategoryDisplayByArrows(arrow);
     }
+
     /**
      * public
      */
+
     toggleSubcategoryDisplay(elem,removeClass,showClass) {
         if(elem !== undefined && elem !== null) {
             Iterator.iterate(elem, (subcats) => {
@@ -177,9 +199,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             })
         }
     }
+
     /**
      * public
      */
+
     showActiveCategory() {
         let checkboxes = DomAccess.querySelectorAll(this.el,this.options.checkboxSelector);
         Iterator.iterate(checkboxes , (checkbox) => {
@@ -191,15 +215,19 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             }
         })
     }
+
     /**
      * @public
      */
+
     reset() {
         this.resetAll();
     }
+
     /**
      * @public
      */
+
     resetAll() {
         this.selection.filter = [];
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
@@ -209,15 +237,19 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             checkbox.indeterminate = false;
         });
     }
+
     /**
      * @private
      */
+
     _updateCount() {
         this.counter.innerText = '';
     }
+
     /**
      * @private
      */
+
     _disableAll() {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
@@ -226,9 +258,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             checkbox.disabled = true;
         });
     }
+
     /**
      * @private
      */
+
     _enableAll() {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
@@ -237,10 +271,12 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             checkbox.disabled = false;
         });
     }
+
     /**
      * @param ids
      * @private
      */
+
     _setCurrentCategoryAsSelected(ids) {
         const selectedCategory = ids.pop();
         const checkboxEl = DomAccess.querySelector(this.el, `[id = "${selectedCategory}"]`, false);
@@ -251,12 +287,15 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             this.selection.push(checkboxEl.value);
         }
     }
+
     /**
      * @public
      */
+
     getSelected() {
         return DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:checked`, false);
     }
+
     refreshDisabledState(filter) {
         const activeItems = [];
         const properties = filter[this.options.name];
@@ -274,9 +313,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         }
         this._disableInactiveFilterOptions(activeItems.map(entity => entity.id));
     }
+
     /**
      * @private
      */
+
     _disableInactiveFilterOptions(activeItemIds) {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
@@ -291,44 +332,55 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             }
         });
     }
+
     /**
      * @public
      */
+
     disableOption(input){
         let listItem = input.closest('.custom-checkbox');
         listItem.classList.add('fl-disabled');
         listItem.setAttribute('title', this.options.snippets.disabledFilterText);
         input.disabled = true;
     }
+
     /**
      * @public
      */
+
     enableOption(input) {
         let listItem = input.closest('.custom-checkbox');
         listItem.removeAttribute('title');
         listItem.classList.remove('fl-disabled');
         input.disabled = false;
     }
+
     /**
      * @public
      */
+
     enableAllOptions() {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
             this.enableOption(checkbox);
         });
     }
+
     /**
      * @public
      */
+
     disableFilter() {
         const mainFilterButton = DomAccess.querySelector(this.el, this.options.mainFilterButtonSelector);
         mainFilterButton.classList.add('fl-disabled');
         mainFilterButton.setAttribute('disabled', 'disabled');
-        mainFilterButton.setAttribute('title', this.options.snippets.disabledFilterText);   }
+        mainFilterButton.setAttribute('title', this.options.snippets.disabledFilterText);
+    }
+
     /**
      * @public
      */
+
     enableFilter() {
         const mainFilterButton = DomAccess.querySelector(this.el, this.options.mainFilterButtonSelector);
         mainFilterButton.classList.remove('fl-disabled');
