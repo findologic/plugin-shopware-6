@@ -1,4 +1,16 @@
-#fl-promotion {
-  margin-bottom: 1.25rem;
-  width: 100%;
+#fl-promotion-container {
+  .cms-block-container {
+    padding: 20px;
+  }
+
+  #fl-promotion-link {
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+
+    #fl-promotion {
+      margin: 1rem 0;
+      max-width: 100%;
+    }
+  }
 }
