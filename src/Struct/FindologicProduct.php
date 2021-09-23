@@ -807,16 +807,16 @@ class FindologicProduct extends Struct
                 }
                 $price = new Price();
                 if ($customerGroup->getDisplayGross()) {
-                    $price->setValue($item->getGross()*$factor, $userGroupHash);
+                    $price->setValue($item->getGross() * $factor, $userGroupHash);
                 } else {
-                    $price->setValue($item->getNet()*$factor, $userGroupHash);
+                    $price->setValue($item->getNet() * $factor, $userGroupHash);
                 }
 
                 $prices[] = $price;
             }
 
             $price = new Price();
-            $price->setValue($item->getGross()*$factor);
+            $price->setValue($item->getGross() * $factor);
             $prices[] = $price;
 
 
