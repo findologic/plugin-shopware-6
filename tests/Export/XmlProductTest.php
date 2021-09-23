@@ -42,7 +42,7 @@ class XmlProductTest extends TestCase
     {
         $newCurrencyPrice = 0.5;
         $newProductPrice = int($productEntity->getPrice()) * $newCurrencyPrice;
-        $this->assert(int($productEntity->getPrice())/2,$newProductPrice);
+        $this->assert(int($productEntity->getPrice()) / 2,$newProductPrice);
 
     }
 
