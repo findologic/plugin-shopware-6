@@ -41,8 +41,8 @@ class XmlProductTest extends TestCase
     protected function setProductPriceToNewCurrency($productEntity): string
     {
         $newCurrencyPrice = 0.5;
-        $newProductPrice = $productEntity->getPrice() * $newCurrencyPrice;
-        $this->assert($productEntity->getPrice/2,$newProductPrice);
+        $newProductPrice = int($productEntity->getPrice()) * $newCurrencyPrice;
+        $this->assert(int($productEntity->getPrice())/2,$newProductPrice);
 
     }
 
