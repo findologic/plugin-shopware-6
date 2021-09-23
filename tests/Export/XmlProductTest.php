@@ -38,6 +38,14 @@ class XmlProductTest extends TestCase
     /** @var string */
     private $shopkey;
 
+    protected function setProductPriceToNewCurrency($productEntity): string
+    {
+        $newCurrencyPrice = 0.5;
+        $newProductPrice = $productEntity->getPrice() * $newCurrencyPrice;
+        $this->assert($productEntity->getPrice/2,$newProductPrice);
+
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -57,7 +65,7 @@ class XmlProductTest extends TestCase
     public function testIfValidXMLProductIsCreated(): void
     {
         $productEntity = $this->createTestProduct();
-
+        $this->setProductPriceToNewCurrency($productEntity);
         /** @var FindologicProduct|MockObject $findologicProductMock */
         $findologicProductMock = $this->getMockBuilder(FindologicProduct::class)->setConstructorArgs([
             $productEntity,

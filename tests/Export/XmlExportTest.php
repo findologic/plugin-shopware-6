@@ -45,7 +45,7 @@ class XmlExportTest extends TestCase
     {
         $product = $this->createVisibleTestProduct();
 
-        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $this->getExport()->   buildItems([$product], self::VALID_SHOPKEY, []);
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());
     }
