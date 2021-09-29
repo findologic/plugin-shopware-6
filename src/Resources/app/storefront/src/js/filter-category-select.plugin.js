@@ -65,7 +65,6 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         this._updateCount();
         const values = {};
         values[this.options.name] = selection;
-        
         return values;
     }
 
@@ -75,18 +74,21 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     getLabels() {
         let labels = [];
+        let catArray =[];
+        let lastLabel = "";
         const activeCheckboxes = this.getSelected();
         if(activeCheckboxes !== false) {
             Iterator.iterate(activeCheckboxes, (activeBoxes) => {
-                if (activeBoxes) {
-                    labels.push({
-                        label: activeBoxes.dataset.label,
-                        id: activeBoxes.id
-                    });
+                if (activeBoxes){
+                    let boxLabel = activeBoxes.dataset.label;
+                    let indexCat = activeBoxes.value.split('_')[0];
+                        catArray[indexCat] = {label:boxLabel,id:activeBoxes.id}
                 }
             });
+            Object.keys(catArray).forEach(cats=>{
+                labels.push(catArray[cats]);
+            });
         }
-        
         return labels;
     }
 
@@ -123,10 +125,23 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     /**
      * @public
      */
+    toggleCategoryArrows(elem,removeClass,addClass) {
+        let span = elem;
+        if(span !== undefined && span !== null) {
+            span.classList.remove(removeClass);
+            span.classList.add(addClass);
+        }
+    }
+
+
+    /**
+     * @public
+     */
     subCategoryDisplay(checkbox) {
         let inner_sub_cats = checkbox.parentNode.getElementsByClassName('sub-item');
         let span = checkbox.parentNode.querySelector('#arrow');
-        
+        let elem = span!==null ? span.nextElementSibling : null;
+        let elem_array = this.siblingsCategories(elem);
         if(checkbox.checked) {
             let split_cats = checkbox.value.split('_');
             if(split_cats.length > 0) {
@@ -135,7 +150,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
                 })
             }
             this.toggleCategoryArrows(span,'down-arrow','up-arrow');
-            this.toggleSubcategoryDisplay(inner_sub_cats,'subcats-hide','subcats-show');
+            this.toggleSubcategoryDisplay(elem_array,'subcats-hide','subcats-show');
         } else {
             Iterator.iterate(inner_sub_cats, (sub_cat)=> {
                 sub_cat.querySelector('.filter-category-select-checkbox').checked = false;
@@ -146,29 +161,13 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     /**
      * @public
      */
-    toggleCategoryArrows(elem,removeClass,addClass) {
-        let span = elem;
-        if(span !== undefined && span !== null) {
-            span.classList.remove(removeClass);
-            span.classList.add(addClass);
-        }
-    }
-
-    /**
-     * @public
-     */
     toggleSubcategoryDisplayByArrows(span) {
-        let elem = span.nextElementSibling;
-        let elem_array = [elem];
-        do {
-            var sibs = elem_array[elem_array.length -1].nextElementSibling;
-            elem_array.push(sibs);
-        }
-        while( sibs !== null && sibs.getAttribute('class').indexOf('sub-item') > -1);
-        
+        let elem = span!==null ? span.nextElementSibling : null;
+        let elem_array = this.siblingsCategories(elem);
+
         let classList = span.getAttribute('class');
         let check = classList.indexOf('up-arrow') > -1;
-        
+
         if(check) {
             this.toggleCategoryArrows(span,'up-arrow','down-arrow');
             this.toggleSubcategoryDisplay(elem_array,'subcats-show','subcats-hide');
@@ -176,6 +175,22 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             this.toggleCategoryArrows(span,'down-arrow','up-arrow');
             this.toggleSubcategoryDisplay(elem_array,'subcats-hide','subcats-show');
         }
+    }
+
+    /**
+     * @public
+     */
+    siblingsCategories(elem) {
+        let elem_array = [];
+        if(elem!== null){
+            elem_array = [elem];
+            do {
+                var sibs = elem_array[elem_array.length -1].nextElementSibling;
+                elem_array.push(sibs!==null ? sibs : "");
+            }
+            while( sibs !== null);
+        }
+        return elem_array;
     }
 
     /**
@@ -189,10 +204,15 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     toggleSubcategoryDisplay(elem,removeClass,showClass) {
-        if(elem !== undefined && elem !== null) {
+        if(elem!== undefined && elem!== null) {
             Iterator.iterate(elem, (subcats) => {
-                subcats.classList.remove(removeClass);
-                subcats.classList.add(showClass);
+                if(subcats!== null && subcats!== "") {
+                    if(subcats.classList === undefined) {
+                        console.log(subcats);
+                    }
+                    subcats.classList.remove(removeClass);
+                    subcats.classList.add(showClass);
+                }
             });
         }
     }

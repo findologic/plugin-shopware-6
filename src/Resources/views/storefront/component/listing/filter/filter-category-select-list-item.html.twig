@@ -15,20 +15,17 @@
 
             {% block component_filter_multi_select_list_item_label_element %}
                 <label class="filter-multi-select-item-label filter-category-select-item-label custom-control-label" for="{{ id }}">
-                    {% block component_multi_select_list_item_label %}
-                        <span>{{ name }}</span>
+                    {% block component_multi_select_list_item_label %}<span>{{ name }}</span>
                     {% endblock %}
-                </label>
-
-                {% block arrow_icon %}
-                    <div id="arrow" class="down-arrow">
-                        {% sw_icon 'arrow-medium-up' style {
-                            'pack': 'solid', 'size': 'sm', 'class': 'filter-panel-item-toggle'
-                        } %}
-                    </div>
+                </label>{% block arrow_icon %}
+                    {% if element.values %}
+                        <div id="arrow" class="down-arrow">{% sw_icon 'arrow-medium-up' style {
+                                'pack': 'solid', 'size': 'sm', 'class': 'filter-panel-item-toggle'
+                            } %}
+                        </div>
+                    {% endif %}
                 {% endblock %}
             {% endblock %}
-
             {% if element.values %}
                 {% sw_include '@FinSearch/storefront/component/listing/filter/filter-category-select-list-item-value.html.twig' with {
                     values: element.values,

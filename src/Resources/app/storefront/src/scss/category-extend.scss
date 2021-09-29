@@ -4,11 +4,14 @@
 .category_div_adjust label{
   display:inline-block;
   width: auto;
+  padding:0px;
 }
 .subcats-show {
   max-height:500.313rem;
   min-height:1.3125rem;
   transition: all 0.5s;
+  display:block;
+  width:109%;
 }
 .up-arrow {
   transform:rotate(180deg);
@@ -16,6 +19,8 @@
   height:30px;
   width:35px;
 display: inline-block;
+  margin-left:-5px;
+  cursor: pointer;
 }
 .down-arrow {
   transition: all 0.3s;
@@ -23,7 +28,10 @@ display: inline-block;
   width:35px;
   margin-top:-5px;
   display: inline-block;
+  margin-left:-5px;
+  cursor: pointer;
 }
+
 .up-arrow > span, .down-arrow > span{
   height:25px;
   width:17px;
@@ -33,10 +41,21 @@ display: inline-block;
   min-height:0px;
   transition: all 0.5s;
   overflow: hidden;
+  display:none;
 }
+.show
+{
+min-width:100px;
+}
+
 .filter-category-select-list {
-  min-width: 310px;
+  padding-left:10px;
+  padding-right:10px;
   line-height: 2;
   padding-top: 0.3em;
 
+}
+.icon > svg
+{
+  color:#878787 !important;
 }
