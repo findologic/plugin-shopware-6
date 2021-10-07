@@ -1,3 +1,6 @@
+# NEXT
+- [SW-649] Fixed a bug that caused products not to be exported, when they had multi-select custom-fields configured, which contained empty values.
+
 # 2.2.0
 - [SW-648] Fixed a bug that caused promotion images to take up the full width of the viewport.
 - [SW-595] Exported categories and category urls are now generated recursively, and filter names will no longer get their filter name sanitized for Direct Integration.
