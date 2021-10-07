@@ -46,6 +46,8 @@ display: inline-block;
 .show
 {
 min-width:100px;
+  max-height:1000px;
+  transition: all 0.5s;
 }
 
 .filter-category-select-list {
