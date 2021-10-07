@@ -448,18 +448,72 @@ class FindologicProductTest extends TestCase
         $this->assertEmpty($attributes);
     }
 
-    public function testProductWithMultiSelectCustomFields(): void
+    public function multiSelectCustomFieldsProvider(): array
     {
-        $data['customFields'] = [
-            'multi' => [
-                'one value',
-                'another value',
-                'even a third one!'
+        return [
+            'multiple values' => [
+                'customFields' => [
+                    'multi' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+                'expectedCustomFieldAttributes' => [
+                    'multi' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+            ],
+            'multiple values with one null value' => [
+                'customFields' => [
+                    'multiWithNull' => [
+                        'one value',
+                        'another value',
+                        'even a third one!',
+                        null
+                    ],
+                ],
+                'expectedCustomFieldAttributes' => [
+                    'multiWithNull' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+            ],
+            'multiple values with one empty value' => [
+                'customFields' => [
+                    'multiWithEmptyValue' => [
+                        'one value',
+                        'another value',
+                        'even a third one!',
+                        ''
+                    ],
+                ],
+                'expectedCustomFieldAttributes' => [
+                    'multiWithEmptyValue' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
             ]
         ];
+    }
+
+    /**
+     * @dataProvider multiSelectCustomFieldsProvider
+     */
+    public function testProductWithMultiSelectCustomFields(
+        array $customFields,
+        array $expectedCustomFieldAttributes
+    ): void {
+        $data['customFields'] = $customFields;
         $productEntity = $this->createTestProduct($data, true);
 
-        $productFields = $productEntity->getCustomFields();
         $customerGroupEntities = $this->getContainer()
             ->get('customer_group.repository')
             ->search(new Criteria(), $this->salesChannelContext->getContext())
@@ -477,7 +531,7 @@ class FindologicProductTest extends TestCase
 
         $attributes = $findologicProduct->getCustomFields();
         foreach ($attributes as $attribute) {
-            $this->assertEquals($productFields[$attribute->getKey()], $attribute->getValues());
+            $this->assertEquals($expectedCustomFieldAttributes[$attribute->getKey()], $attribute->getValues());
         }
     }
 

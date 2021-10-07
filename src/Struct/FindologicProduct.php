@@ -865,7 +865,7 @@ class FindologicProduct extends Struct
                     continue;
                 }
 
-                $customFieldAttribute = new Attribute($key, (array)$cleanedValue);
+                $customFieldAttribute = new Attribute($key, array_filter((array)$cleanedValue));
                 $attributes[] = $customFieldAttribute;
             }
         }
