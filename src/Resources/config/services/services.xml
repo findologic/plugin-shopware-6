@@ -41,7 +41,7 @@
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
-            <argument id="FINDOLOGIC\FinSearch\Export\CacheHandler" type="service" />
+            <argument id="FINDOLOGIC\FinSearch\Export\DynamicProductGroupCacheHandler" type="service" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">
@@ -86,7 +86,7 @@
         <service id="fin_search.product_service" synthetic="true" public="true"/>
         <service id="fin_search.dynamic_product_group" synthetic="true" public="true"/>
 
-        <service id="FINDOLOGIC\FinSearch\Export\CacheHandler" public="true">
+        <service id="FINDOLOGIC\FinSearch\Export\DynamicProductGroupCacheHandler" public="true">
             <argument id="serializer.mapping.cache.symfony" type="service" />
         </service>
 

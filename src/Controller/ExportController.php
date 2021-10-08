@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
-use FINDOLOGIC\FinSearch\Export\CacheHandler;
+use FINDOLOGIC\FinSearch\Export\DynamicProductGroupCacheHandler;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
@@ -32,10 +32,6 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
 
-use function filter_var;
-
-use const FILTER_VALIDATE_BOOLEAN;
-
 /**
  * @RouteScope(scopes={"storefront"})
  */
@@ -44,7 +40,7 @@ class ExportController extends AbstractController
     /** @var LoggerInterface */
     protected $logger;
 
-    /** @var CacheHandler */
+    /** @var DynamicProductGroupCacheHandler */
     protected $cacheHandler;
 
     /** @var Router */
@@ -82,7 +78,7 @@ class ExportController extends AbstractController
         RouterInterface $router,
         HeaderHandler $headerHandler,
         $salesChannelContextFactory,
-        CacheHandler $cacheHandler
+        DynamicProductGroupCacheHandler $cacheHandler
     ) {
         $this->logger = $logger;
         $this->router = $router;
@@ -108,7 +104,7 @@ class ExportController extends AbstractController
     }
 
     /**
-     * @Route("/findologic/dynamic-product-groups", name="frontend.findologic.export.productgroup",
+     * @Route("/findologic/dynamic-product-groups", name="frontend.findologic.export.dynamic_product_groups",
      *     options={"seo"="false"}, methods={"GET"})
      */
     public function exportProductGroup(Request $request, ?SalesChannelContext $context): Response
@@ -170,9 +166,9 @@ class ExportController extends AbstractController
 
     protected function validateDynamicGroupPrecondition(Request $request): ?Response
     {
-        $excludeProductGroups = filter_var($request->get('excludeProductGroups'), FILTER_VALIDATE_BOOLEAN);
+        $excludeProductGroups = $request->query->getBoolean('excludeProductGroups');
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
-        if (!$excludeProductGroups && !$dynamicProductGroupService->isDynamicProductGroupsCached()) {
+        if (!$excludeProductGroups && !$dynamicProductGroupService->areDynamicProductGroupsCached()) {
             return new PreconditionFailedResponse();
         }
 
@@ -225,11 +221,11 @@ class ExportController extends AbstractController
         }
 
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
-        if (!$dynamicProductGroupService->isOffsetWarmedUp()) {
+        if (!$dynamicProductGroupService->isCurrentOffsetWarmedUp()) {
             $dynamicProductGroupService->warmUp();
         }
 
-        return $dynamicProductGroupService->getDynamicProductGroupTotal();
+        return $dynamicProductGroupService->getDynamicProductGroupsTotal();
     }
 
     private function validateExportConfiguration(ExportConfiguration $config): array

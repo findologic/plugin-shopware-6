@@ -7,7 +7,7 @@ namespace FINDOLOGIC\FinSearch\Export;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
-class CacheHandler
+class DynamicProductGroupCacheHandler
 {
     private const CACHE_ID_PRODUCT_GROUP = 'fl_product_groups';
     private const CACHE_LIFETIME_PRODUCT_GROUP = 60 * 11;
@@ -15,7 +15,7 @@ class CacheHandler
     /** @var CacheItemPoolInterface */
     protected $cache;
 
-    /** @var string */
+    /** @var string|null */
     protected $shopkey;
 
     public function __construct(CacheItemPoolInterface $cache)
@@ -28,12 +28,10 @@ class CacheHandler
         $this->shopkey = $shopkey;
     }
 
-    /**
-     * If we have reached the last page of the dynamic product group export, we set a flag in cache to
-     * know that the dynamic product groups are warmed up.
-     */
-    public function dynamicProductGroupWarmUp(int $start, int $count, int $total = 0): void
+    public function warmUpDynamicProductGroups(int $start, int $count, int $total = 0): void
     {
+        // If we have reached the last page of the dynamic product group export, we then set a flag in cache to
+        // make sure that the dynamic product groups are all warmed up.
         if (($start + $count) >= $total) {
             $cacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
             if ($cacheItem) {
@@ -58,7 +56,7 @@ class CacheHandler
         return $this->cache->getItem($id);
     }
 
-    private function setTotalInCache(CacheItemInterface $cacheItem, $total): void
+    private function setTotalInCache(CacheItemInterface $cacheItem, int $total): void
     {
         $cacheItem->set($total);
         $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
@@ -82,7 +80,7 @@ class CacheHandler
             $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
             $this->cache->save($cacheItem);
 
-            return (int)$cacheItem->get();
+            return $cacheItem->get();
         }
 
         return 0;
@@ -101,7 +99,7 @@ class CacheHandler
         $this->setTotalInCache($totalCacheItem, $total);
     }
 
-    public function setDynamicProductGroupOffset($products, int $offset): void
+    public function setDynamicProductGroupsOffset(array $products, int $offset): void
     {
         if ($offset > 0) {
             $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
@@ -125,7 +123,7 @@ class CacheHandler
         return false;
     }
 
-    public function isDynamicProductGroupsCached(): bool
+    public function areDynamicProductGroupsCached(): bool
     {
         $cacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
         if ($cacheItem && $cacheItem->isHit()) {
@@ -139,7 +137,7 @@ class CacheHandler
         return false;
     }
 
-    public function getCachedCategoryIds(int $offset): array
+    public function getCachedCategoryIdsForCurrentOffset(int $offset): array
     {
         $categories = [];
         $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
@@ -150,7 +148,7 @@ class CacheHandler
         return $categories;
     }
 
-    public function getDynamicProductGroupCachedTotal(): int
+    public function getDynamicProductGroupsCachedTotal(): int
     {
         return $this->getDynamicProductGroupTotalFromCache();
     }

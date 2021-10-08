@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
-use FINDOLOGIC\FinSearch\Export\CacheHandler;
+use FINDOLOGIC\FinSearch\Export\DynamicProductGroupCacheHandler;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
@@ -22,6 +22,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Symfony\Component\Cache\Exception\CacheException;
 
 class DynamicProductGroupServiceTest extends TestCase
 {
@@ -30,55 +31,26 @@ class DynamicProductGroupServiceTest extends TestCase
     use ExportHelper;
     use ProductHelper;
 
-    /**
-     * @var Context
-     */
+    /** @var Context */
     protected $defaultContext;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $validShopkey;
 
-    /**
-     * @var string
-     */
-    protected $cacheKey;
-
-    /**
-     * @var MockObject|CacheItemPoolInterface
-     */
+    /** @var MockObject|CacheItemPoolInterface */
     private $cache;
 
-    /**
-     * @var ContainerInterface
-     */
+    /** @var ContainerInterface */
     private $containerMock;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $start;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $total;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $productId;
-
-    /**
-     * @var string
-     */
-    protected $cacheTotalKey;
-
-    /**
-     * @var string
-     */
-    private $cacheWarmupKey;
 
     protected function setUp(): void
     {
@@ -86,6 +58,7 @@ class DynamicProductGroupServiceTest extends TestCase
         if (Utils::versionLowerThan('6.3.1.0')) {
             $this->markTestSkipped('Product streams in category is not available until v6.3.1.0');
         }
+
         $this->cache = $this->getMockBuilder(CacheItemPoolInterface::class)->disableOriginalConstructor()->getMock();
         $services['product.repository'] = $this->getContainer()->get('product.repository');
         $this->containerMock = $this->getContainerMock($services);
@@ -93,9 +66,6 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->total = 100;
         $this->defaultContext = Context::createDefaultContext();
         $this->validShopkey = $this->getShopkey();
-        $this->cacheKey = sprintf('fl_product_groups_%s_%d', $this->validShopkey, $this->start);
-        $this->cacheTotalKey = sprintf('fl_product_groups_%s_total', $this->validShopkey);
-        $this->cacheWarmupKey = sprintf('fl_product_groups_%s_dynamic_product_warmup', $this->validShopkey);
         $this->createTestProductStreams();
     }
 
@@ -125,13 +95,13 @@ class DynamicProductGroupServiceTest extends TestCase
         $cacheItemMock->expects($this->once())->method('isHit')->willReturn($isWarmup);
         $this->cache->expects($this->once())
             ->method('getItem')
-            ->with($this->cacheKey)
+            ->with($this->getCacheKeyByType('offset'))
             ->willReturn($cacheItemMock);
         $this->cache->expects($invokeCount)->method('save')->with($cacheItemMock);
 
         $dynamicProductGroupService = $this->getDynamicProductGroupService();
 
-        $this->assertSame($isWarmup, $dynamicProductGroupService->isOffsetWarmedUp());
+        $this->assertSame($isWarmup, $dynamicProductGroupService->isCurrentOffsetWarmedUp());
     }
 
     public function testCategoriesAreCached(): void
@@ -156,7 +126,7 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->cache->expects($this->never())->method('save')->with($cacheItemMock);
         $this->cache->expects($this->once())
             ->method('getItem')
-            ->with($this->cacheKey)
+            ->with($this->getCacheKeyByType('offset'))
             ->willReturn($cacheItemMock);
 
         $dynamicService = $this->getDynamicProductGroupService();
@@ -186,7 +156,7 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->cache->expects($this->never())->method('save')->with($cacheItemMock);
         $this->cache->expects($this->once())
             ->method('getItem')
-            ->with($this->cacheKey)
+            ->with($this->getCacheKeyByType('offset'))
             ->willReturn($cacheItemMock);
 
         $dynamicService = $this->getDynamicProductGroupService();
@@ -199,6 +169,9 @@ class DynamicProductGroupServiceTest extends TestCase
     {
         $salesChannelContext = $this->getDefaultSalesChannelContextMock();
         $salesChannel = $salesChannelContext->getSalesChannel();
+        $cacheOffsetKey = $this->getCacheKeyByType('offset');
+        $cacheTotalKey = $this->getCacheKeyByType('total');
+
         $context = $salesChannelContext->getContext();
         [$categoryOne, $categoryTwo] = $this->getProductStreamCategories($context);
         $products = [];
@@ -214,15 +187,15 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->cache->expects($this->exactly(6))
             ->method('getItem')
             ->withConsecutive(
-                [$this->cacheKey],
-                [$this->cacheTotalKey],
-                [$this->cacheTotalKey],
-                [$this->cacheKey]
+                [$cacheOffsetKey],
+                [$cacheTotalKey],
+                [$cacheTotalKey],
+                [$cacheOffsetKey]
             )->willReturn($cacheItemMock);
 
         $dynamicService = $this->getDynamicProductGroupService();
         $dynamicService->setSalesChannel($salesChannel);
-        if (!$dynamicService->isOffsetWarmedUp()) {
+        if (!$dynamicService->isCurrentOffsetWarmedUp()) {
             $dynamicService->warmUp();
         }
         $categories = $dynamicService->getCategories($this->productId);
@@ -270,7 +243,7 @@ class DynamicProductGroupServiceTest extends TestCase
 
     private function getDynamicProductGroupService(): DynamicProductGroupService
     {
-        $cacheHandler = new CacheHandler($this->cache);
+        $cacheHandler = new DynamicProductGroupCacheHandler($this->cache);
 
         return DynamicProductGroupService::getInstance(
             $this->containerMock,
@@ -339,5 +312,19 @@ class DynamicProductGroupServiceTest extends TestCase
         $categoryTwo = $categoryRepository->search($criteria, $context)->first();
 
         return [$categoryOne, $categoryTwo];
+    }
+
+    private function getCacheKeyByType(string $type): string
+    {
+        switch ($type) {
+            case 'offset':
+                return sprintf('fl_product_groups_%s_%d', $this->validShopkey, $this->start);
+            case 'total':
+                return sprintf('fl_product_groups_%s_total', $this->validShopkey);
+            case 'warmup':
+                return sprintf('fl_product_groups_%s_dynamic_product_warmup', $this->validShopkey);
+            default:
+                throw new CacheException('Unknown cache type requested');
+        }
     }
 }
