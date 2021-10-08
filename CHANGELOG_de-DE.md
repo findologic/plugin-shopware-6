@@ -1,3 +1,6 @@
+# NEXT
+- [SW-649] Ein Fehler wurde behoben, wodurch der Export von Produkten scheiterte, die Mehrfachauswahl-Zusatzfelder enthielten deren Werte leer waren.
+
 # 2.2.0
 - [SW-648] Ein Fehler wurde behoben, wodurch die Bilder von Promotions auf die breite des gesamten viewports ausgegeben wurden.
 - [SW-595] Exportierte Kategorien und Kategorie Urls werden nun rekursiv generiert, und Filternamen werden nicht länger von speziellen Zeichen bereinigt, wenn die Integrationsart Direct Integration ist.
