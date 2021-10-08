@@ -8,13 +8,12 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         checkboxSelector: '.filter-category-select-checkbox',
         countSelector: '.filter-multi-select-count',
         listItemSelector: '.filter-multi-select-list-item',
-        arrowIcon : '.category_div_adjust  #arrow',
+        arrowIconsSelector: '.category_div_adjust  #arrow',
         snippets: {
             disabledFilterText: 'Filter not active'
         },
         mainFilterButtonSelector: '.filter-panel-item-toggle'
     });
-    
     init() {
         this.selection = [];
         this.showActiveCategory();
@@ -27,12 +26,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     _registerEvents() {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
-        const arrowIcon = DomAccess.querySelectorAll(this.el,this.options.arrowIcon);
-        
+        const arrowIcons = DomAccess.querySelectorAll(this.el,this.options.arrowIconsSelector);
         // because some functions need to call inside another object, for example assigning an event.
         const current = this;
-        if(arrowIcon !== false) {
-            Iterator.iterate(arrowIcon,(arrow)=> {
+        if(arrowIcons) {
+            Iterator.iterate(arrowIcons,(arrow)=> {
                 arrow.addEventListener('click',function() {
                     current._onArrowClick(arrow);
                 });
@@ -41,7 +39,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
 
         Iterator.iterate(checkboxes, (checkbox) => {
             checkbox.addEventListener('change',function() {
-                current.subCategoryDisplay(this);
+                current.onChangeCheckBox(this);
             })
             checkbox.addEventListener('change', this._onChangeFilter.bind(this));
         });
@@ -52,15 +50,14 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     getValues() {
-        const activeCheckboxes = this.getSelected();
-        let selection = [];
 
-        if(activeCheckboxes !== false) {
-            Iterator.iterate(activeCheckboxes, (activeBoxes) => {
-                selection.push(activeBoxes.value);
+        const selectedCategories = this.getSelected();
+        const selection = [];
+        if(selectedCategories) {
+            Iterator.iterate(selectedCategories, (category) => {
+                selection.push(category.value);
             });
         }
-        
         this.selection = selection;
         this._updateCount();
         const values = {};
@@ -73,20 +70,19 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     getLabels() {
-        let labels = [];
-        let catArray =[];
-        let lastLabel = "";
-        const activeCheckboxes = this.getSelected();
-        if(activeCheckboxes !== false) {
-            Iterator.iterate(activeCheckboxes, (activeBoxes) => {
-                if (activeBoxes){
-                    let boxLabel = activeBoxes.dataset.label;
-                    let indexCat = activeBoxes.value.split('_')[0];
-                        catArray[indexCat] = {label:boxLabel,id:activeBoxes.id}
+        const labels = [];
+        const categoriesLabels =[];
+        const selectedCategories = this.getSelected();
+        if(selectedCategories) {
+            Iterator.iterate(selectedCategories, (category) => {
+                if (category){
+                    const boxLabel = category.dataset.label;
+                    const indexCat = category.value.split('_')[0];
+                        categoriesLabels[indexCat] = {label:boxLabel,id:category.id}
                 }
             });
-            Object.keys(catArray).forEach(cats=>{
-                labels.push(catArray[cats]);
+            Object.keys(categoriesLabels).forEach(label=>{
+                labels.push(categoriesLabels[label]);
             });
         }
         return labels;
@@ -123,97 +119,106 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     }
 
     /**
+     * @param {HTMLObjectElement} elem
+     * @param {string} removeClass
+     * @param {string} addClass
      * @public
      */
     toggleCategoryArrows(elem,removeClass,addClass) {
-        let span = elem;
+        const span = elem;
         if(span !== undefined && span !== null) {
             span.classList.remove(removeClass);
             span.classList.add(addClass);
         }
     }
 
-
     /**
+     * @param {HTMLObjectElement} checkbox
      * @public
      */
-    subCategoryDisplay(checkbox) {
-        let inner_sub_cats = checkbox.parentNode.getElementsByClassName('sub-item');
-        let span = checkbox.parentNode.querySelector('#arrow');
-        let elem = span!==null ? span.nextElementSibling : null;
-        let elem_array = this.siblingsCategories(elem);
-        if(checkbox.checked) {
-            let split_cats = checkbox.value.split('_');
-            if(split_cats.length > 0) {
-                Iterator.iterate(split_cats,(id) => {
-                    document.getElementById(id).checked = true;
-                })
-            }
-            this.toggleCategoryArrows(span,'down-arrow','up-arrow');
-            this.toggleSubcategoryDisplay(elem_array,'subcats-hide','subcats-show');
-        } else {
-            Iterator.iterate(inner_sub_cats, (sub_cat)=> {
-                sub_cat.querySelector('.filter-category-select-checkbox').checked = false;
+    onChangeCheckBox(checkbox) {
+        const subCategories = checkbox.parentNode.getElementsByClassName('sub-item');
+        const arrow = checkbox.parentNode.querySelector('#arrow');
+        const subCategory = arrow!==null ? arrow.nextElementSibling : null;
+        //Selecting all next Categories by giving first sub category
+        const siblingCategories = this.siblingsCategories(subCategory);
+        if(!checkbox.checked) {
+            Iterator.iterate(subCategories, (category) => {
+                category.querySelector('.filter-category-select-checkbox').checked = false;
             });
+            return;
         }
+        const categoryNames = checkbox.value.split('_');
+        if(categoryNames.length > 0) {
+                Iterator.iterate(categoryNames,(name) => {
+                    document.getElementById(name).checked = true;
+                });
+        }
+        this.toggleCategoryArrows(arrow,'down-arrow','up-arrow');
+        this.toggleSubcategoryDisplay(siblingCategories,'subcats-hide','subcats-show');
     }
 
     /**
+     * @param {HTMLObjectElement} arrow
      * @public
      */
-    toggleSubcategoryDisplayByArrows(span) {
-        let elem = span!==null ? span.nextElementSibling : null;
-        let elem_array = this.siblingsCategories(elem);
+    showDropDownByIcon(arrow) {
+        const subCategory= arrow!==null ? arrow.nextElementSibling : null;
+        const siblingCategories= this.siblingsCategories(subCategory);
 
-        let classList = span.getAttribute('class');
-        let check = classList.indexOf('up-arrow') > -1;
+        const classList = arrow.getAttribute('class');
+        const isDropDownOpen = classList.indexOf('up-arrow') > -1;
 
-        if(check) {
-            this.toggleCategoryArrows(span,'up-arrow','down-arrow');
-            this.toggleSubcategoryDisplay(elem_array,'subcats-show','subcats-hide');
-        } else {
-            this.toggleCategoryArrows(span,'down-arrow','up-arrow');
-            this.toggleSubcategoryDisplay(elem_array,'subcats-hide','subcats-show');
+        if(isDropDownOpen) {
+            this.toggleCategoryArrows(arrow, 'up-arrow', 'down-arrow');
+            this.toggleSubcategoryDisplay(siblingCategories, 'subcats-show', 'subcats-hide');
+            return;
         }
+        this.toggleCategoryArrows(arrow,'down-arrow','up-arrow');
+        this.toggleSubcategoryDisplay(siblingCategories,'subcats-hide','subcats-show');
+
     }
 
     /**
+     * @param {HTMLObjectElement} elem
      * @public
      */
-    siblingsCategories(elem) {
-        let elem_array = [];
-        if(elem!== null){
-            elem_array = [elem];
+    siblingsCategories(subCategory) {
+        const siblingCategories = [];
+        if(subCategory!== null){
+            siblingCategories.push(subCategory);
             do {
-                var sibs = elem_array[elem_array.length -1].nextElementSibling;
-                elem_array.push(sibs!==null ? sibs : "");
+                var sibling = siblingCategories[siblingCategories.length -1].nextElementSibling;
+                siblingCategories.push(sibling!==null ? sibling : "");
             }
-            while( sibs !== null);
+            while( sibling!== null);
         }
-        return elem_array;
+        return siblingCategories;
     }
 
     /**
+     * @param {HTMLObjectElement} arrow
      * @public
      */
     _onArrowClick(arrow) {
-        this.toggleSubcategoryDisplayByArrows(arrow);
+        this.showDropDownByIcon(arrow);
     }
 
     /**
+     * @oaram {HTMLObjectElement} elem
+     * @param {string} removeClass
+     * @param {string} addClass
      * @public
      */
     toggleSubcategoryDisplay(elem,removeClass,showClass) {
-        if(elem!== undefined && elem!== null) {
+        if(elem!== undefined && elem!== null && typeof(elem)!== "boolean") {
             Iterator.iterate(elem, (subcats) => {
                 if(subcats!== null && subcats!== "") {
-                    if(subcats.classList === undefined) {
-                        console.log(subcats);
-                    }
                     subcats.classList.remove(removeClass);
                     subcats.classList.add(showClass);
                 }
             });
+            return;
         }
     }
 
@@ -221,13 +226,17 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     showActiveCategory() {
-        let checkboxes = DomAccess.querySelectorAll(this.el,this.options.checkboxSelector);
+        const checkboxes = DomAccess.querySelectorAll(this.el,this.options.checkboxSelector);
         Iterator.iterate(checkboxes , (checkbox) => {
-            let sub_items = checkbox.parentNode.querySelectorAll('.sub-item');
-            let span = checkbox.parentNode.getElementsByTagName('div')[0];
+
+            const arrow = checkbox.parentNode.querySelector('#arrow');
+            const subCategory = arrow!==null ? arrow.nextElementSibling : null;
+            //Selecting all next Categories by giving first sub category
+            const siblingCategories = this.siblingsCategories(subCategory);
+
             if(checkbox.checked) {
-                this.toggleCategoryArrows(span,'down-arrow','up-arrow');
-                this.toggleSubcategoryDisplay(sub_items,'subcats-hide','subcats-show');
+                this.toggleCategoryArrows(arrow,'down-arrow','up-arrow');
+                this.toggleSubcategoryDisplay(siblingCategories,'subcats-hide','subcats-show');
             }
         });
     }
@@ -305,6 +314,10 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         return DomAccess.querySelectorAll(this.el, `${this.options.checkboxSelector}:checked`, false);
     }
 
+    /**
+     *
+     * @param {array} filter
+     */
     refreshDisabledState(filter) {
         const activeItems = [];
         const properties = filter[this.options.name];
@@ -326,6 +339,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     }
 
     /**
+     * @param {array} activeItemIds
      * @private
      */
     _disableInactiveFilterOptions(activeItemIds) {
@@ -344,20 +358,22 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     }
 
     /**
+     * @param {HTMLObjectElement} input
      * @public
      */
     disableOption(input){
-        let listItem = input.closest('.custom-checkbox');
+        const listItem = input.closest('.custom-checkbox');
         listItem.classList.add('fl-disabled');
         listItem.setAttribute('title', this.options.snippets.disabledFilterText);
         input.disabled = true;
     }
 
     /**
+     * @param {HTMLObjectElement}
      * @public
      */
     enableOption(input) {
-        let listItem = input.closest('.custom-checkbox');
+        const listItem = input.closest('.custom-checkbox');
         listItem.removeAttribute('title');
         listItem.classList.remove('fl-disabled');
         input.disabled = false;
