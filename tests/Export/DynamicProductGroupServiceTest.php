@@ -244,11 +244,9 @@ class DynamicProductGroupServiceTest extends TestCase
 
     private function getDynamicProductGroupService(): DynamicProductGroupService
     {
-        $cacheHandler = new DynamicProductGroupCacheHandler($this->cache);
-
         return DynamicProductGroupService::getInstance(
             $this->containerMock,
-            $cacheHandler,
+            $this->cache,
             $this->defaultContext,
             $this->validShopkey,
             $this->start,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Category\CategoryEntity;
@@ -74,7 +75,7 @@ class DynamicProductGroupService
 
     public static function getInstance(
         ContainerInterface $container,
-        DynamicProductGroupCacheHandler $cacheHandler,
+        CacheItemPoolInterface $cache,
         Context $context,
         string $shopkey,
         int $start,
@@ -83,6 +84,7 @@ class DynamicProductGroupService
         if ($container->has(self::CONTAINER_ID)) {
             $dynamicProductGroupService = $container->get(self::CONTAINER_ID);
         } else {
+            $cacheHandler = new DynamicProductGroupCacheHandler($cache);
             $dynamicProductGroupService = new DynamicProductGroupService(
                 $container,
                 $cacheHandler,

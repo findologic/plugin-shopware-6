@@ -17,6 +17,7 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
@@ -40,8 +41,8 @@ class ExportController extends AbstractController
     /** @var LoggerInterface */
     protected $logger;
 
-    /** @var DynamicProductGroupCacheHandler */
-    protected $cacheHandler;
+    /** @var CacheItemPoolInterface */
+    protected $cache;
 
     /** @var Router */
     private $router;
@@ -78,13 +79,13 @@ class ExportController extends AbstractController
         RouterInterface $router,
         HeaderHandler $headerHandler,
         $salesChannelContextFactory,
-        DynamicProductGroupCacheHandler $cacheHandler
+        CacheItemPoolInterface $cache
     ) {
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
-        $this->cacheHandler = $cacheHandler;
+        $this->cache = $cache;
     }
 
     /**
@@ -271,7 +272,7 @@ class ExportController extends AbstractController
     {
         $dynamicProductGroupService = DynamicProductGroupService::getInstance(
             $this->container,
-            $this->cacheHandler,
+            $this->cache,
             $this->salesChannelContext->getContext(),
             $this->exportConfig->getShopkey(),
             $this->exportConfig->getStart(),
