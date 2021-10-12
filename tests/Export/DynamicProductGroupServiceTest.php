@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
@@ -299,6 +300,9 @@ class DynamicProductGroupServiceTest extends TestCase
         return $products;
     }
 
+    /**
+     * @return array<int, CategoryEntity>
+     */
     private function getProductStreamCategories(Context $context): array
     {
         $categoryRepository = $this->getContainer()->get('category.repository');

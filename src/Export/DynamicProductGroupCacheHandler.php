@@ -99,6 +99,9 @@ class DynamicProductGroupCacheHandler
         $this->setTotalInCache($totalCacheItem, $total);
     }
 
+    /**
+     * @param array<string, array<int, string>> $products
+     */
     public function setDynamicProductGroupsOffset(array $products, int $offset): void
     {
         if ($offset > 0) {

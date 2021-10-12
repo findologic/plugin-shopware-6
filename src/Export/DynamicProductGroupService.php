@@ -52,7 +52,7 @@ class DynamicProductGroupService
     /** @var EntityRepositoryInterface */
     protected $categoryRepository;
 
-    private function __construct(
+    public function __construct(
         ContainerInterface $container,
         DynamicProductGroupCacheHandler $cacheHandler,
         Context $context,
@@ -149,6 +149,9 @@ class DynamicProductGroupService
         return [];
     }
 
+    /**
+     * @return array<string, array<int, string>>
+     */
     protected function parseProductGroups(): array
     {
         $criteria = $this->buildCriteria();
