@@ -42,50 +42,6 @@ class DynamicProductGroupCacheHandler
         }
     }
 
-    private function getDynamicProductGroupWarmedUpCacheItem(): CacheItemInterface
-    {
-        $id = sprintf('%s_%s_dynamic_product_warmup', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
-
-        return $this->cache->getItem($id);
-    }
-
-    private function getDynamicProductGroupOffsetCacheItem(int $offset): CacheItemInterface
-    {
-        $id = sprintf('%s_%s_%s', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey, $offset);
-
-        return $this->cache->getItem($id);
-    }
-
-    private function setTotalInCache(CacheItemInterface $cacheItem, int $total): void
-    {
-        $cacheItem->set($total);
-        $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-        $this->cache->save($cacheItem);
-    }
-
-    private function getDynamicGroupsTotalCacheItem(): CacheItemInterface
-    {
-        $id = sprintf('%s_%s_total', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
-
-        return $this->cache->getItem($id);
-    }
-
-    /**
-     * Gets the total count of dynamic product groups from cache.
-     */
-    private function getDynamicProductGroupTotalFromCache(): int
-    {
-        $cacheItem = $this->getDynamicGroupsTotalCacheItem();
-        if ($cacheItem && $cacheItem->isHit()) {
-            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-            $this->cache->save($cacheItem);
-
-            return $cacheItem->get();
-        }
-
-        return 0;
-    }
-
     public function isDynamicProductGroupTotalCached(): bool
     {
         $totalCacheItem = $this->getDynamicGroupsTotalCacheItem();
@@ -154,5 +110,46 @@ class DynamicProductGroupCacheHandler
     public function getDynamicProductGroupsCachedTotal(): int
     {
         return $this->getDynamicProductGroupTotalFromCache();
+    }
+
+    private function getDynamicProductGroupWarmedUpCacheItem(): CacheItemInterface
+    {
+        $id = sprintf('%s_%s_dynamic_product_warmup', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
+
+        return $this->cache->getItem($id);
+    }
+
+    private function getDynamicProductGroupOffsetCacheItem(int $offset): CacheItemInterface
+    {
+        $id = sprintf('%s_%s_%s', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey, $offset);
+
+        return $this->cache->getItem($id);
+    }
+
+    private function setTotalInCache(CacheItemInterface $cacheItem, int $total): void
+    {
+        $cacheItem->set($total);
+        $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+        $this->cache->save($cacheItem);
+    }
+
+    private function getDynamicGroupsTotalCacheItem(): CacheItemInterface
+    {
+        $id = sprintf('%s_%s_total', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
+
+        return $this->cache->getItem($id);
+    }
+
+    private function getDynamicProductGroupTotalFromCache(): int
+    {
+        $cacheItem = $this->getDynamicGroupsTotalCacheItem();
+        if ($cacheItem && $cacheItem->isHit()) {
+            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+            $this->cache->save($cacheItem);
+
+            return $cacheItem->get();
+        }
+
+        return 0;
     }
 }
