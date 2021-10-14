@@ -1,5 +1,6 @@
 # NEXT
 - [SW-649] Fixed a bug that caused products not to be exported, when they had multi-select custom-fields configured, which contained empty values.
+- [SW-652] Added Shopware 6.4.5.1 to the test matrix.
 
 # 2.2.0
 - [SW-648] Fixed a bug that caused promotion images to take up the full width of the viewport.
