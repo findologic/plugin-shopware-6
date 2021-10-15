@@ -8,7 +8,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         checkboxSelector: '.filter-category-select-checkbox',
         countSelector: '.filter-multi-select-count',
         listItemSelector: '.filter-multi-select-list-item',
-        arrowIconsSelector: '.category_div_adjust  #arrow',
+        iconsSelector: '.category-filter-container #categoryToggleIcon',
         snippets: {
             disabledFilterText: 'Filter not active'
         },
@@ -16,7 +16,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     });
 
     init() {
-        this.selection = [];
+        this.selectedFilterValues = [];
         this.showActiveCategories();
         this.counter = DomAccess.querySelector(this.el, this.options.countSelector);
         this._registerEvents();
@@ -27,13 +27,13 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     _registerEvents() {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
-        const arrowIcons = DomAccess.querySelectorAll(this.el, this.options.arrowIconsSelector);
-        // because some functions need to call inside another object, for example assigning an event.
+        const icons = DomAccess.querySelectorAll(this.el, this.options.iconsSelector);
+        // Because some functions need to call inside another object, for example assigning an event.
         const current = this;
-        if (arrowIcons) {
-            Iterator.iterate(arrowIcons, (arrowIcon) => {
-                arrowIcon.addEventListener('click', function () {
-                    current.toggleCategoryListItemAndIconState(arrowIcon);
+        if (icons.length > 0) {
+            Iterator.iterate(icons, (icon) => {
+                icon.addEventListener('click', function () {
+                    current.toggleCategoryListItemAndIconState(icon);
                 });
             });
         }
@@ -53,16 +53,16 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     getValues() {
 
         const selectedCategories = this.getSelected();
-        const selection = [];
+        const selectedFilterValues = [];
+        const values = {};
         if (selectedCategories) {
             Iterator.iterate(selectedCategories, (category) => {
-                selection.push(category.value);
+                selectedFilterValues.push(category.value);
             });
         }
-        this.selection = selection;
+        this.selectedFilterValues = selectedFilterValues;
         this._updateCount();
-        const values = {};
-        values[this.options.name] = selection;
+        values[this.options.name] = selectedFilterValues;
         return values;
     }
 
@@ -72,21 +72,21 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     getLabels() {
         const labels = [];
-        const categoriesLabels = [];
+        const labelsMapping = [];
         const selectedCategories = this.getSelected();
         if (selectedCategories) {
             Iterator.iterate(selectedCategories, (category) => {
                 if (category) {
-                    const boxLabel = category.dataset.label;
-                    const indexCat = category.value.split('_')[0];
-                    categoriesLabels[indexCat] = {
-                        label: boxLabel,
+                    const categoryName = category.dataset.label;
+                    const parentCategoryName = category.value.split('_')[0];
+                    labelsMapping[parentCategoryName] = {
+                        label: categoryName,
                         id: category.id
                     }
                 }
             });
-            Object.keys(categoriesLabels).forEach(label => {
-                labels.push(categoriesLabels[label]);
+            Object.keys(labelsMapping).forEach(label => {
+                labels.push(labelsMapping[label]);
             });
         }
         return labels;
@@ -123,16 +123,15 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     }
 
     /**
-     * @param {HTMLObjectElement} iconShell
+     * @param {HTMLObjectElement} icon
      * @param {string} removeClass
      * @param {string} addClass
      * @public
      */
-    toggleCategoryListIconState(iconShell, removeClass, addClass) {
-
-        if (typeof (iconShell) !== undefined && iconShell !== null) {
-            iconShell.classList.remove(removeClass);
-            iconShell.classList.add(addClass);
+    toggleCategoryListIconState(icon, removeClass, addClass) {
+        if (typeof icon !== undefined && icon !== null) {
+            icon.classList.remove(removeClass);
+            icon.classList.add(addClass);
         }
     }
 
@@ -142,8 +141,8 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      */
     onChangeCheckBox(checkbox) {
         const subCategories = checkbox.parentNode.getElementsByClassName('sub-item');
-        const arrow = checkbox.parentNode.querySelector('#arrow');
-        const subCategory = arrow !== null ? arrow.nextElementSibling : null;
+        const icon = checkbox.parentNode.querySelector('#categoryToggleIcon');
+        const subCategory = icon !== null ? icon.nextElementSibling : null;
 
         if (!checkbox.checked) {
             Iterator.iterate(subCategories, (category) => {
@@ -155,32 +154,32 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         const categoryNames = checkbox.value.split('_');
 
         if (categoryNames.length > 0) {
-            let categoryNameAsId = ''
+            let categoryNameAsId = '';
             Iterator.iterate(categoryNames, (name) => {
                 categoryNameAsId += categoryNameAsId === '' ? name : "_" + name;
                 document.getElementById(categoryNameAsId).checked = true;
             });
         }
 
-        this.toggleCategoryListIconState(arrow, 'down-arrow', 'up-arrow');
+        this.toggleCategoryListIconState(icon, 'down-icon', 'up-icon');
         this.toggleSubcategoryDisplay(subCategory, 'hide-category-list-item', 'show-category-list-item');
     }
 
     /**
-     * @param {HTMLObjectElement} arrow
+     * @param {HTMLObjectElement} icon
      * @public
      */
-    toggleCategoryListItemAndIconState(arrow) {
-        const subCategory = arrow !== null ? arrow.nextElementSibling : null;
-        const classList = arrow.getAttribute('class');
-        const isDropdownOpen = classList.indexOf('up-arrow') > -1;
+    toggleCategoryListItemAndIconState(icon) {
+        const subCategory = icon !== null ? icon.nextElementSibling : null;
+        const classList = icon.getAttribute('class');
+        const isDropdownOpen = classList.indexOf('up-icon') > -1;
 
-        if (isDropDownOpen) {
-            this.toggleCategoryListIconState(arrow, 'up-arrow', 'down-arrow');
+        if (isDropdownOpen) {
+            this.toggleCategoryListIconState(icon, 'up-icon', 'down-icon');
             this.toggleSubcategoryDisplay(subCategory, 'show-category-list-item', 'hide-category-list-item');
             return;
         }
-        this.toggleCategoryListIconState(arrow, 'down-arrow', 'up-arrow');
+        this.toggleCategoryListIconState(icon, 'down-icon', 'up-icon');
         this.toggleSubcategoryDisplay(subCategory, 'hide-category-list-item', 'show-category-list-item');
     }
 
@@ -196,9 +195,9 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             do {
                 sibling = siblingCategories[siblingCategories.length - 1].nextElementSibling;
                 siblingCategories.push(sibling !== null ? sibling : '');
-            }
-            while (sibling !== null);
+            } while (sibling !== null);
         }
+
         return siblingCategories;
     }
 
@@ -227,10 +226,10 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
 
-            const arrow = checkbox.parentNode.querySelector('#arrow');
-            const subCategory = arrow !== null ? arrow.nextElementSibling : null;
+            const icon = checkbox.parentNode.querySelector('#categoryToggleIcon');
+            const subCategory = icon !== null ? icon.nextElementSibling : null;
             if (checkbox.checked) {
-                this.toggleCategoryListIconState(arrow, 'down-arrow', 'up-arrow');
+                this.toggleCategoryListIconState(icon, 'down-icon', 'up-icon');
                 this.toggleSubcategoryDisplay(subCategory, 'hide-category-list-item', 'show-category-list-item');
             }
         });
@@ -247,7 +246,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     resetAll() {
-        this.selection.filter = [];
+        this.selectedFilterValues.filter = [];
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
             checkbox.checked = false;
@@ -298,7 +297,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             this.enableOption(checkboxEl);
             checkboxEl.disabled = false;
             checkboxEl.checked = true;
-            this.selection.push(checkboxEl.value);
+            this.selectedFilterValues.push(checkboxEl.value);
         }
     }
 
@@ -337,15 +336,16 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     _disableInactiveFilterOptions(activeItemIds) {
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
-            if (checkbox.checked === true) {
+            if (checkbox.checked) {
                 this.enableOption(checkbox);
                 return;
             }
             if (activeItemIds.includes(checkbox.id)) {
                 this.enableOption(checkbox);
-            } else {
-                this.disableOption(checkbox);
+                return
             }
+            this.disableOption(checkbox);
+
         });
     }
 

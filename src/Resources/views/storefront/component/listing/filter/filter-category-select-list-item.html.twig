@@ -1,7 +1,7 @@
 {% block component_filter_category_select_list_options %}
 
     {% block component_filter_multi_select_list_item %}
-        <div class="custom-control custom-checkbox category_div_adjust">
+        <div class="custom-control custom-checkbox category-filter-container">
             {% set id = element.id %}
             {% set filterValue = element.id %}
             {% set name = element.translated.name %}
@@ -19,7 +19,7 @@
                     {% endblock %}
                 </label>{% block arrow_icon %}
                     {% if element.values %}
-                        <div id="arrow" class="down-arrow">{% sw_icon 'arrow-medium-up' style {
+                        <div id="categoryToggleIcon" class="down-icon">{% sw_icon 'arrow-medium-up' style {
                                 'pack': 'solid', 'size': 'sm', 'class': 'filter-panel-item-toggle'
                             } %}
                         </div>
@@ -34,5 +34,4 @@
             {% endif %}
         </div>
     {% endblock %}
-
 {% endblock %}

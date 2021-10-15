@@ -1,45 +1,43 @@
 .category-filter-container {
   min-width: 290px;
+
   label {
     display: inline-block;
     width: auto;
-    padding: 0px;
+    padding: 0;
   }
 }
 
 .show-category-list-item {
-  max-height: 500.313rem;
-  min-height: 1.3125rem;
+  max-height: 500rem;
+  min-height: 2rem;
   height: auto;
   opacity: 1;
   transition: all 0.5s;
-  width: 109%;
 }
 
-.up-arrow {
+.up-icon {
   transform: rotate(180deg);
   height: 30px;
-  width: 35px;
+  width: 30px;
   display: inline-block;
-  left: -5px;
-  top: 0px;
-  position: relative;
+  top: 0;
+  position: absolute;
   transition: all 0.5s;
   cursor: pointer;
 }
 
-.down-arrow {
+.down-icon {
   height: 30px;
   width: 35px;
   display: inline-block;
-  position: relative;
-  left: -5px;
+  position: absolute;
   top: -5px;
   transition: all 0.3s;
   cursor: pointer;
 }
 
-.up-arrow, .down-arrow {
+.up-icon, .down-icon {
   span {
     height: 25px;
     width: 17px;
@@ -47,9 +45,9 @@
 }
 
 .hide-category-list-item {
-  max-height: 0px;
-  min-height: 0px;
-  height: 0px;
+  max-height: 0;
+  min-height: 0;
+  height: 0;
   opacity: 0;
   transition: all 0.5s;
   overflow: hidden;
