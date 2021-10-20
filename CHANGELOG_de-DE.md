@@ -1,5 +1,6 @@
 # NEXT
 - [SW-649] Ein Fehler wurde behoben, wodurch der Export von Produkten scheiterte, die Mehrfachauswahl-Zusatzfelder enthielten deren Werte leer waren.
+- [SW-652] Shopware 6.4.5.1 wurde zur Test-Matrix hinzugefügt.
 
 # 2.2.0
 - [SW-648] Ein Fehler wurde behoben, wodurch die Bilder von Promotions auf die breite des gesamten viewports ausgegeben wurden.
