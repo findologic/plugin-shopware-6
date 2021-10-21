@@ -58,7 +58,7 @@ class ServiceConfigResourceTest extends TestCase
         array $directIntegration,
         bool $isStagingShop
     ): void {
-        $cacheKey = 'finsearch_serviceconfig';
+        $cacheKey = 'finsearch_serviceconfig_74B87337454200D4D33F80C4663DC5E5';
         $shopkey = $this->getShopkey();
         $serviceConfig = new ServiceConfig();
         $serviceConfig->assign(['directIntegration' => $directIntegration, 'isStagingShop' => $isStagingShop]);
@@ -115,7 +115,7 @@ class ServiceConfigResourceTest extends TestCase
         bool $isStagingShop,
         array $smartSuggestBlocks
     ): void {
-        $cacheKey = 'finsearch_serviceconfig';
+        $cacheKey = 'finsearch_serviceconfig_74B87337454200D4D33F80C4663DC5E5';
         $directIntegrationConfig = $directIntegration ? 'Direct Integration' : 'API';
         $serviceConfig = new ServiceConfig();
         $serviceConfig->assign($this->getConfig());
@@ -188,7 +188,7 @@ class ServiceConfigResourceTest extends TestCase
         $expiredDateTime = $expiredDateTime->modify($expiredTime);
         $directIntegrationConfig = $directIntegration ? 'Direct Integration' : 'API';
         $shopkey = $this->getShopkey();
-        $cacheKey = 'finsearch_serviceconfig';
+        $cacheKey = 'finsearch_serviceconfig_74B87337454200D4D33F80C4663DC5E5';
 
         /** @var ServiceConfig|MockObject $serviceConfig */
         $serviceConfig = $this->getMockBuilder(ServiceConfig::class)
