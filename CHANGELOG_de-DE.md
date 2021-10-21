@@ -1,5 +1,6 @@
 # NEXT
 - [SW-649] Ein Fehler wurde behoben, wodurch der Export von Produkten scheiterte, die Mehrfachauswahl-Zusatzfelder enthielten deren Werte leer waren.
+- [SW-653] Ein Fehler wurde behoben, welcher dazu führte, dass ein falscher Integrationstyp verwendet wurde, wenn ein Verkaufskanal mehrere Shopkeys für verschiedene Sprachen gesetzt hatte.
 - [SW-652] Shopware 6.4.5.1 wurde zur Test-Matrix hinzugefügt.
 
 # 2.2.0

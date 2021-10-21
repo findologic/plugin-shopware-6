@@ -76,9 +76,9 @@ class ServiceConfigResource
     /**
      * @throws InvalidArgumentException
      */
-    private function getFromCache(): ?ServiceConfig
+    private function getFromCache(string $shopkey): ?ServiceConfig
     {
-        $config = $this->cache->getItem(self::CACHE_KEY)->get();
+        $config = $this->cache->getItem(self::CACHE_KEY . '_' . $shopkey)->get();
         if ($config !== null) {
             return unserialize($config, [ServiceConfig::class]);
         }
@@ -94,9 +94,9 @@ class ServiceConfigResource
     /**
      * @throws InvalidArgumentException
      */
-    private function saveToCache(ServiceConfig $serviceConfig): void
+    private function saveToCache(ServiceConfig $serviceConfig, string $shopkey): void
     {
-        $cacheItem = $this->cache->getItem(self::CACHE_KEY)->set(serialize($serviceConfig));
+        $cacheItem = $this->cache->getItem(self::CACHE_KEY . '_' . $shopkey)->set(serialize($serviceConfig));
         $this->cache->save($cacheItem);
     }
 
@@ -106,12 +106,12 @@ class ServiceConfigResource
      */
     private function get(string $shopkey, string $key)
     {
-        $serviceConfig = $this->getFromCache();
+        $serviceConfig = $this->getFromCache($shopkey);
         if ($serviceConfig === null || $this->isExpired($serviceConfig)) {
             $serviceConfigClient = $this->serviceConfigClientFactory->getInstance($shopkey, $this->client);
             $serviceConfig = new ServiceConfig();
             $serviceConfig->assign($serviceConfigClient->get());
-            $this->saveToCache($serviceConfig);
+            $this->saveToCache($serviceConfig, $shopkey);
         }
 
         if (is_callable([$serviceConfig, "get$key"])) {
