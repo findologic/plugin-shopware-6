@@ -12,7 +12,8 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         snippets: {
             disabledFilterText: 'Filter not active'
         },
-        mainFilterButtonSelector: '.filter-panel-item-toggle'
+        mainFilterButtonSelector: '.filter-panel-item-toggle',
+        filter: []
     });
 
     init() {
@@ -124,14 +125,14 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
 
     /**
      * @param {HTMLObjectElement} icon
-     * @param {string} removeClass
-     * @param {string} addClass
+     * @param {string} closedClass a class to be removed that handles Icon's upside down position
+     * @param {string} openedClass a class to be add that handles Icon's upside down position
      * @public
      */
-    toggleCategoryListIconState(icon, removeClass, addClass) {
+    toggleCategoryListIconState(icon, closedClass, openedClass) {
         if (typeof icon !== undefined && icon !== null) {
-            icon.classList.remove(removeClass);
-            icon.classList.add(addClass);
+            icon.classList.remove(closedClass);
+            icon.classList.add(openedClass);
         }
     }
 
@@ -148,6 +149,8 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             Iterator.iterate(subCategories, (category) => {
                 category.querySelector('.filter-category-select-checkbox').checked = false;
             });
+            this.toggleCategoryListIconState(icon, 'up-icon', 'down-icon');
+            this.toggleSubcategoryDisplay(subCategory, 'show-category-list-item', 'hide-category-list-item');
             return;
         }
 
@@ -323,9 +326,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         const property = entities.find(entity => entity.translated.name === this.options.name);
         if (property) {
             activeItems.push(...property.options);
-            return;
         }
-        this._disableAll();
         this._disableInactiveFilterOptions(activeItems.map(entity => entity.id));
     }
 
@@ -334,18 +335,17 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @private
      */
     _disableInactiveFilterOptions(activeItemIds) {
+
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
-            if (checkbox.checked) {
-                this.enableOption(checkbox);
+            const checkboxParentIds = checkbox.id.split('_');
+            const checkboxId = checkboxParentIds[checkboxParentIds.length - 1];
+
+            if (!activeItemIds.includes(checkboxId)) {
+                this.disableOption(checkbox);
                 return;
             }
-            if (activeItemIds.includes(checkbox.id)) {
-                this.enableOption(checkbox);
-                return
-            }
-            this.disableOption(checkbox);
-
+            this.enableOption(checkbox);
         });
     }
 
