@@ -960,14 +960,11 @@ class FindologicProduct extends Struct
             }
 
             // Only export `cat_url`s recursively if integration type is Direct Integration.
-            // Note that this also applies for the `cat` attribute.
             if ($this->isDirectIntegration()) {
                 $catUrls = array_merge(
                     $catUrls,
                     $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
                 );
-
-                $categories = $this->addCategoryNamesRecursively($categoryPath, $categories);
             }
         }
     }
@@ -980,13 +977,6 @@ class FindologicProduct extends Struct
     protected function isApiIntegration(): bool
     {
         return $this->config->getIntegrationType() === IntegrationType::API;
-    }
-
-    protected function addCategoryNamesRecursively(string $categoryPath, array $categories): array
-    {
-        $parentCategory = explode('_', $categoryPath);
-
-        return array_merge($categories, $parentCategory);
     }
 
     /**
