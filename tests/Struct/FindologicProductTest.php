@@ -2109,8 +2109,6 @@ class FindologicProductTest extends TestCase
                 ],
                 'expectedCategories' => [
                     'Category1_Category2',
-                    'Category1',
-                    'Category2',
                 ],
                 'expectedCatUrls' => [
                     '/Category1/Category2/',
