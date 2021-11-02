@@ -138,7 +138,8 @@ class FindologicProduct extends Struct
         array $customerGroups,
         Item $item,
         ?Config $config = null
-    ) {
+    )
+    {
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
@@ -795,24 +796,25 @@ class FindologicProduct extends Struct
     protected function getPricesFromProduct(ProductEntity $variant): array
     {
         $prices = [];
-
         foreach ($variant->getPrice() as $item) {
             foreach ($this->customerGroups as $customerGroup) {
                 $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
                 if (Utils::isEmpty($userGroupHash)) {
                     continue;
                 }
-
+                $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+                $currencyPrice = $variant->getPrice()->getCurrencyPrice($currencyId);
+                $netPrice = $currencyPrice->getNet();
+                $grossPrice = $currencyPrice->getGross();
                 $price = new Price();
                 if ($customerGroup->getDisplayGross()) {
-                    $price->setValue($item->getGross(), $userGroupHash);
+                    $price->setValue($grossPrice, $userGroupHash);
                 } else {
-                    $price->setValue($item->getNet(), $userGroupHash);
+                    $price->setValue($netPrice, $userGroupHash);
                 }
 
                 $prices[] = $price;
             }
-
             $price = new Price();
             $price->setValue($item->getGross());
             $prices[] = $price;
@@ -932,7 +934,8 @@ class FindologicProduct extends Struct
         array $categoryCollection,
         array &$catUrls,
         array &$categories
-    ): void {
+    ): void
+    {
         if (!$categoryCollection) {
             return;
         }
