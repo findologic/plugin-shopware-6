@@ -20,6 +20,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SortingService
 {
+    protected const TOPSELLER_SORT_FIELD = 'product.sales';
+
     /** @var ProductListingSortingRegistry|null */
     private $legacySortingRegistry;
 
@@ -54,6 +56,9 @@ class SortingService
     {
         /** @var ProductSortingCollection $availableSortings */
         $availableSortings = $event->getCriteria()->getExtension('sortings') ?? new ProductSortingCollection();
+        if ($this->hasTopSellerSorting($availableSortings)) {
+            return;
+        }
 
         $sortByScore = new ProductSortingEntity();
         $sortByScore->setId(Uuid::randomHex());
@@ -73,6 +78,23 @@ class SortingService
         $availableSortings->add($sortByScore);
 
         $event->getCriteria()->addExtension('sortings', $availableSortings);
+    }
+
+    protected function hasTopSellerSorting(ProductSortingCollection $sortings): bool
+    {
+        $topsellerSortings = array_filter($sortings->getElements(), function (ProductSortingEntity $sort) {
+            foreach ($sort->getFields() as $field) {
+                if (!isset($field['field']) || $field['field'] !== self::TOPSELLER_SORT_FIELD) {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
+        });
+
+        return $topsellerSortings !== [];
     }
 
     protected function addLegacyTopResultSorting(ProductListingResultEvent $event): void
