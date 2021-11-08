@@ -1,4 +1,5 @@
-# NEXT
+# 2.2.1
+- [SW-657] Fixed a bug that caused sorting by release date not to work properly.
 - [SW-649] Fixed a bug that caused products not to be exported, when they had multi-select custom-fields configured, which contained empty values.
 - [SW-653] Fixed a bug that could cause wrong integration types, when a sales channel had multiple shopkeys for different languages set.
 - [SW-656] Fixed a bug that caused the export of nested categories to also be exported without a category path.
