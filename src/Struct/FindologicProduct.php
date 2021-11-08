@@ -306,10 +306,10 @@ class FindologicProduct extends Struct
 
     protected function setDateAdded(): void
     {
-        $createdAt = $this->product->getCreatedAt();
-        if ($createdAt !== null) {
+        $releaseDate = $this->product->getReleaseDate();
+        if ($releaseDate !== null) {
             $dateAdded = new DateAdded();
-            $dateAdded->setDateValue($createdAt);
+            $dateAdded->setDateValue($releaseDate);
             $this->dateAdded = $dateAdded;
         }
     }

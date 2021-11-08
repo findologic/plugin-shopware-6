@@ -11,8 +11,7 @@ class ReleaseDateSortingHandler implements SortingHandlerInterface
 {
     public function supportsSorting(FieldSorting $fieldSorting): bool
     {
-        // Shopware currently does not support it so we return false here
-        return false;
+        return $fieldSorting->getField() === 'product.releaseDate';
     }
 
     public function generateSorting(FieldSorting $fieldSorting, SearchNavigationRequest $searchNavigationRequest): void
