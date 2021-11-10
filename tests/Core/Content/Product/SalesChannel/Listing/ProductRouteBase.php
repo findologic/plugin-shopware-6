@@ -17,6 +17,8 @@ use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
@@ -197,17 +199,31 @@ abstract class ProductRouteBase extends TestCase
         $this->call($productRoute, $request, $salesChannelContextMock);
     }
 
+    public function testCustomCriteriaIsAllowed(): void
+    {
+        $salesChannelContextMock = $this->getMockedSalesChannelContext(true);
+        $request = Request::create('http://your-shop.de/some-category');
+        $request->setSession($this->getSessionMock());
+
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('product.name', 'yeet'));
+
+        $productRoute = $this->getRoute();
+        $this->call($productRoute, $request, $salesChannelContextMock, '69', $criteria);
+    }
+
     protected function call(
         $productRoute,
         Request $request,
         SalesChannelContext $salesChannelContext,
-        string $categoryId = '69'
+        string $categoryId = '69',
+        ?Criteria $criteria = null
     ): StoreApiResponse {
         switch (true) {
             case $productRoute instanceof AbstractProductListingRoute:
-                return $productRoute->load($categoryId, $request, $salesChannelContext);
+                return $productRoute->load($categoryId, $request, $salesChannelContext, $criteria);
             case $productRoute instanceof AbstractProductSearchRoute:
-                return $productRoute->load($request, $salesChannelContext);
+                return $productRoute->load($request, $salesChannelContext, $criteria);
             default:
                 throw new InvalidArgumentException('Unknown productRoute of class %s', get_class($productRoute));
         }
