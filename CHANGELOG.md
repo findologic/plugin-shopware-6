@@ -1,5 +1,5 @@
 # NEXT
-- [SW-658] Added Shopware 6.4.5.1 to the test matrix.
+- [SW-658] Added Shopware 6.4.6.0 to the test matrix.
 
 # 2.2.1
 - [SW-657] Fixed a bug that caused sorting by release date not to work properly.
