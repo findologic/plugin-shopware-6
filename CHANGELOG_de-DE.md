@@ -1,3 +1,6 @@
+# NEXT
+- [SW-658] Shopware 6.4.6.0 wurde zur Test-Matrix hinzugefügt.
+
 # 2.2.1
 - [SW-657] Ein Fehler wurde behoben, wodurch die Sortierung nach Release-Datum nicht korrekt funktionierte.
 - [SW-649] Ein Fehler wurde behoben, wodurch der Export von Produkten scheiterte, die Mehrfachauswahl-Zusatzfelder enthielten deren Werte leer waren.
