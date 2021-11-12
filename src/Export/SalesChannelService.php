@@ -54,18 +54,20 @@ class SalesChannelService
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
             $currentContext->getContext()
         );
-
+        /** @var  $currencyID */
+        $currencyID = $currentContext->getCurrencyId();
         /** @var FinSearchConfigEntity $systemConfigEntity */
         foreach ($systemConfigEntities as $systemConfigEntity) {
             if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
                 return $this->salesChannelContextFactory->create(
                     $currentContext->getToken(),
                     $systemConfigEntity->getSalesChannelId(),
-                    [SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId()]
+                    [SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId(),
+                     SalesChannelContextService::CURRENCY_ID => $currencyID
+                    ]
                 );
             }
         }
-
         return null;
     }
 
