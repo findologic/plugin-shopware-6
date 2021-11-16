@@ -832,7 +832,6 @@ class FindologicProduct extends Struct
         if (Utils::isEmpty($prices)) {
             throw new ProductHasNoPricesException($this->product);
         }
-
         $this->prices = array_merge($this->prices, $prices);
     }
 
