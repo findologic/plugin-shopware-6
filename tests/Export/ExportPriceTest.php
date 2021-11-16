@@ -1,7 +1,8 @@
 <?php
 
-namespace FINDOLOGIC\FinSearch\Tests\Export;
+declare(strict_types=1);
 
+namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigEntity;
@@ -21,15 +22,10 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Monolog\Logger;
 
-
-
-
-
 /**
  * @method ContainerInterface getContainer()
  */
-
-class exportPriceTest extends TestCase
+class ExportPriceTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use ProductHelper;
@@ -47,7 +43,6 @@ class exportPriceTest extends TestCase
 
     /** @var Logger */
     protected $logger;
-
 
 
     public function createCurrency(): string
@@ -84,10 +79,12 @@ class exportPriceTest extends TestCase
         return $currencyId;
     }
 
-    protected function setup():void{
+    protected function setup(): void
+    {
         $this->crossSellCategories = ["2221211212121121212122121121212"];
         $this->logger = new Logger('fl_test_logger');
     }
+
     protected function getExport(): XmlExport
     {
         /** @var Router $router */
@@ -101,31 +98,39 @@ class exportPriceTest extends TestCase
         );
     }
 
-    public function testNewCurrencyIsHalfToDefaultCurrency(){
+    public function testNewCurrencyIsHalfToDefaultCurrency()
+    {
         $currencyId = $this->createCurrency();
-        $this->salesChannelContext =  $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext->getSalesChannel()->setCurrencyId($currencyId);
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
-        $testProduct = $this->createTestProduct(['price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]
-                                                ,['currencyId' => $currencyId, 'gross' => 7.5, 'net' => 5, 'linked' => true]]]);
+        $testProduct = $this->createTestProduct([
+            'price' => [
+                ['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]
+            ]
+        ]);
         $shopKey = '286DCC326488BE6165863587EBD162F8';
         $items = $this->getExport()->buildItems([$testProduct], $shopKey, []);
         $productId = $items[0]->getId();
-            try {
+
+        try {
             $criteria = new Criteria([$productId]);
             $criteria = Utils::addProductAssociations($criteria);
             $criteria->addAssociation('visibilities');
-            $item = $this->getContainer()->get('product.repository')->search($criteria, Context::createDefaultContext())->get($productId);
+            $item = $this->getContainer()->get('product.repository')
+                ->search($criteria, Context::createDefaultContext())->get($productId);
         } catch (InconsistentCriteriaIdsException $e) {
             return null;
         }
 
-        $this->salesChannelContext->getSalesChannel()->setCurrencyId($currencyId);
-        $defaultSalesChannelCurrency = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
-        $defaultCurrencyGrossPrice = $item->getPrice()->getCurrencyPrice(Defaults::CURRENCY)->getGross();
+        $defaultSalesChannelCurrency = $this->salesChannelContext->
+        getSalesChannel()->getCurrencyId();
+
+        $defaultCurrencyGrossPrice = $item->getPrice()->
+        getCurrencyPrice($defaultSalesChannelCurrency)->getGross();
         $newCurrencyGrossPrice = $item->getPrice()->getCurrencyPrice($defaultSalesChannelCurrency)->getGross();
 
 
-         $this->assertSame($currencyId,$defaultSalesChannelCurrency);
-        $this->assertSame($defaultCurrencyGrossPrice*0.5,$newCurrencyGrossPrice);
+        $this->assertSame($defaultCurrencyGrossPrice * 0.5, $newCurrencyGrossPrice);
     }
 }
