@@ -1,4 +1,5 @@
 # NEXT
+- [SW-650] Fixed a bug that caused third-party listing criteria changes to cause an error.
 - [SW-658] Added Shopware 6.4.6.0 to the test matrix.
 
 # 2.2.1
