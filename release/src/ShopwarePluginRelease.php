@@ -29,7 +29,7 @@ class ShopwarePluginRelease
 
     public function buildReleaseZipFile(): string
     {
-//        $this->releaseBundler->resetStateToTagInComposerJson();
+        $this->releaseBundler->resetStateToTagInComposerJson();
 
         return $this->releaseBundler->bundleToZip();
     }
