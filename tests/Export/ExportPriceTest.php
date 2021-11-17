@@ -44,6 +44,8 @@ class ExportPriceTest extends TestCase
     /** @var Logger */
     protected $logger;
 
+    /** @var crossSellingCategory */
+    protected $crossSellCategories;
 
     public function createCurrency(): string
     {
@@ -81,7 +83,7 @@ class ExportPriceTest extends TestCase
 
     protected function setup(): void
     {
-        $this->crossSellCategories = ["2221211212121121212122121121212"];
+        $this->crossSellCategories = ["2121231212121121212122121121212"];
         $this->logger = new Logger('fl_test_logger');
     }
 
@@ -106,31 +108,17 @@ class ExportPriceTest extends TestCase
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $testProduct = $this->createTestProduct([
             'price' => [
-                ['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]
+                ['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false],
+                ['currencyId' => $currencyId, 'gross' => 7.5, 'net' => 5, 'linked' => false]
             ]
+
         ]);
         $shopKey = '286DCC326488BE6165863587EBD162F8';
         $items = $this->getExport()->buildItems([$testProduct], $shopKey, []);
-        $productId = $items[0]->getId();
-
-        try {
-            $criteria = new Criteria([$productId]);
-            $criteria = Utils::addProductAssociations($criteria);
-            $criteria->addAssociation('visibilities');
-            $item = $this->getContainer()->get('product.repository')
-                ->search($criteria, Context::createDefaultContext())->get($productId);
-        } catch (InconsistentCriteriaIdsException $e) {
-            return null;
-        }
-
         $defaultSalesChannelCurrency = $this->salesChannelContext->
         getSalesChannel()->getCurrencyId();
-
-        $defaultCurrencyGrossPrice = $item->getPrice()->
-        getCurrencyPrice($defaultSalesChannelCurrency)->getGross();
-        $newCurrencyGrossPrice = $item->getPrice()->getCurrencyPrice($defaultSalesChannelCurrency)->getGross();
-
-
+        $defaultCurrencyGrossPrice = $items[0]['price'][Defaults::CURRENCY]->getGross();
+        $newCurrencyGrossPrice = $items[0]['price'][$defaultSalesChannelCurrency]->getGross();
         $this->assertSame($defaultCurrencyGrossPrice * 0.5, $newCurrencyGrossPrice);
     }
 }

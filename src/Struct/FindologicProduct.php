@@ -795,32 +795,29 @@ class FindologicProduct extends Struct
      */
     protected function getPricesFromProduct(ProductEntity $variant): array
     {
-        $prices = [];
-        foreach ($variant->getPrice() as $item) {
-            foreach ($this->customerGroups as $customerGroup) {
-                $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
-                if (Utils::isEmpty($userGroupHash)) {
+                $customerGroupIds = array_keys($this->customerGroups);
+                for($i =0; $i < sizeof($customerGroupIds); $i++ ){
+                    $userGroupHash = Utils::calculateUserGroupHash($this->shopkey,$customerGroupIds[$i]);
+                    if (Utils::isEmpty($userGroupHash)) {
                     continue;
+                    }
+                    break;
                 }
                 $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
                 $currencyPrice = $variant->getPrice()->getCurrencyPrice($currencyId);
                 $netPrice = $currencyPrice->getNet();
                 $grossPrice = $currencyPrice->getGross();
                 $price = new Price();
-                if ($customerGroup->getDisplayGross()) {
+                if ($this->customerGroups[$customerGroupIds[$i]]->getDisplayGross()) {
                     $price->setValue($grossPrice, $userGroupHash);
                 } else {
                     $price->setValue($netPrice, $userGroupHash);
                 }
-
                 $prices[] = $price;
-            }
-            $price = new Price();
-            $price->setValue($item->getGross());
-            $prices[] = $price;
-        }
-
-        return $prices;
+                $price = new Price();
+                $price->setValue($grossPrice);
+                $prices[] = $price;
+                return $prices;
     }
 
     /**
