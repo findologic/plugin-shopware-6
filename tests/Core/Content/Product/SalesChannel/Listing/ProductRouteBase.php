@@ -13,7 +13,9 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
+use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
@@ -205,11 +207,23 @@ abstract class ProductRouteBase extends TestCase
         $request = Request::create('http://your-shop.de/some-category');
         $request->setSession($this->getSessionMock());
 
+        $expectedFilter = new EqualsFilter('product.name', 'yeet');
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('product.name', 'yeet'));
+        $criteria->addFilter($expectedFilter);
 
         $productRoute = $this->getRoute();
-        $this->call($productRoute, $request, $salesChannelContextMock, '69', $criteria);
+        $response = $this->call($productRoute, $request, $salesChannelContextMock, '69', $criteria);
+
+        switch (true) {
+            case $response instanceof ProductSearchRouteResponse:
+                $this->assertSame($expectedFilter, $response->getListingResult()->getCriteria()->getFilters()[0]);
+                break;
+            case $response instanceof ProductListingRouteResponse:
+                $this->assertSame($expectedFilter, $response->getResult()->getCriteria()->getFilters()[0]);
+                break;
+            default:
+                $this->fail(sprintf('Unknown route response %s', get_class($response)));
+        }
     }
 
     protected function call(
