@@ -95,7 +95,12 @@ class ProductListingRoute extends AbstractProductListingRoute
         SalesChannelContext $salesChannelContext,
         ?Criteria $criteria = null
     ): ProductListingRouteResponse {
-        $criteria = $criteria ?? new Criteria();
+        $criteria = $criteria ?? $this->criteriaBuilder->handleRequest(
+            $request,
+            new Criteria(),
+            $this->definition,
+            $salesChannelContext->getContext()
+        );
 
         $this->config->initializeBySalesChannel($salesChannelContext);
         $shouldHandleRequest = Utils::shouldHandleRequest(
@@ -112,13 +117,6 @@ class ProductListingRoute extends AbstractProductListingRoute
 
             return $this->decorated->load($categoryId, $request, $salesChannelContext, $criteria);
         }
-
-        $criteria = $this->criteriaBuilder->handleRequest(
-            $request,
-            $criteria,
-            $this->definition,
-            $salesChannelContext->getContext()
-        );
 
         $criteria->addFilter(
             new ProductAvailableFilter(
