@@ -84,27 +84,10 @@ class ProductService
         ?int $offset = null,
         ?string $productId = null
     ): EntitySearchResult {
-        $criteria = $this->getCriteriaWithProductVisibility($limit, $offset);
+        $result = $this->getVisibleProducts($limit, $offset, $productId);
+        $products = $this->buildProductsWithVariantInformation($result);
 
-        if ($productId) {
-            $this->addProductIdFilters($criteria, $productId);
-        }
-
-        /** @var EntitySearchResult $result */
-        $result = $this->container->get('product.repository')->search(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        );
-
-        /** @var ProductCollection $products */
-        $products = $result->getEntities();
-        foreach ($products as $product) {
-            $children = $this->getChildrenOrSiblings($product);
-
-            $product->setChildren($children);
-        }
-
-        return $result;
+        return EntitySearchResult::createFrom($products);
     }
 
     public function searchAllProducts(
@@ -260,5 +243,48 @@ class ProductService
                 $productFilter
             )
         );
+    }
+
+    protected function getVisibleProducts(?int $limit, ?int $offset, ?string $productId): EntitySearchResult
+    {
+        $criteria = $this->getCriteriaWithProductVisibility($limit, $offset);
+
+        if ($productId) {
+            $this->addProductIdFilters($criteria, $productId);
+        }
+
+        return $this->container->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        );
+    }
+
+    protected function buildProductsWithVariantInformation(EntitySearchResult $result): ProductCollection
+    {
+        $products = new ProductCollection();
+
+        /** @var ProductEntity $product */
+        foreach ($result->getEntities() as $product) {
+            if ($product->getMainVariantId() !== null) {
+                $product = $this->getRealMainProductWithVariants($product->getMainVariantId());
+            } else {
+                $children = $this->getChildrenOrSiblings($product);
+                $product->setChildren($children);
+            }
+
+            $products->add($product);
+        }
+
+        return $products;
+    }
+
+    protected function getRealMainProductWithVariants(string $realMainProductId): ProductEntity
+    {
+        $newProduct = $this->getVisibleProducts(1, 0, $realMainProductId)->first();
+
+        $children = $this->getChildrenOrSiblings($newProduct);
+        $newProduct->setChildren($children);
+
+        return $newProduct;
     }
 }
