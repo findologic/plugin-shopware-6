@@ -10,8 +10,6 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -50,9 +48,7 @@ class ExportPriceTest extends TestCase
     public function createCurrency(): string
     {
         $context = Context::createDefaultContext();
-
         $currencyId = Uuid::randomHex();
-
         $cashRoundingConfig = [
             'decimals' => 2,
             'interval' => 1,
