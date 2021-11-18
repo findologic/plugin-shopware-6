@@ -103,6 +103,20 @@ abstract class Filter extends BaseFilter
             $customFilter->setStep($step);
         }
 
+        if ($filter->getAttributes()->getTotalRange()) {
+            $customFilter->setTotalRange([
+                'min' => $filter->getAttributes()->getTotalRange()->getMin(),
+                'max' => $filter->getAttributes()->getTotalRange()->getMax(),
+            ]);
+        }
+
+        if ($filter->getAttributes()->getSelectedRange()) {
+            $customFilter->setSelectedRange([
+                'min' => $filter->getAttributes()->getSelectedRange()->getMin(),
+                'max' => $filter->getAttributes()->getSelectedRange()->getMax(),
+            ]);
+        }
+
         /** @var RangeSliderItem $item */
         foreach ($filter->getItems() as $item) {
             $customFilter->addValue(new FilterValue($item->getName(), $item->getName(), $filter->getName()));
