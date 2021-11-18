@@ -218,6 +218,14 @@ class Xml21ResponseParserTest extends TestCase
         $expectedPriceFilter->setMin(0.39);
         $expectedPriceFilter->setMax(2239.1);
         $expectedPriceFilter->setStep(0.1);
+        $expectedPriceFilter->setTotalRange([
+            'min' => 0.39,
+            'max' => 2239.1
+        ]);
+        $expectedPriceFilter->setSelectedRange([
+            'min' => 0.39,
+            'max' => 2239.1
+        ]);
 
         $expectedRatingFilter = new RatingFilter('rating', 'Rating');
         $expectedRatingFilter->setMaxPoints(5.0);
