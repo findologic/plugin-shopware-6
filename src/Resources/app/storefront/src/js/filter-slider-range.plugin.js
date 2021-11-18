@@ -334,8 +334,4 @@ export default class FilterSliderRange extends FilterBasePlugin {
       this.slider.noUiSlider.set([null, this._inputMax.value]);
     }
   }
-
-  refreshDisabledState(filter) {
-    // Nothing to do here.
-  }
 }
