@@ -1,4 +1,5 @@
 # NEXT
+- [SW-660] Der Export achtet nun auf die konfigurierte Hauptvariante, falls gesetzt.
 - [SW-650] Ein Fehler wurde behoben, wodurch bei einer Änderung der Criteria von Dritten, auf Listing Seiten ein Fehler ausgelöst wurde.
 - [SW-658] Shopware 6.4.6.0 wurde zur Test-Matrix hinzugefügt.
 
