@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use Doctrine\DBAL\Connection;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
@@ -16,11 +17,7 @@ use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/**
- * @method ContainerInterface getContainer()
- */
 trait SalesChannelHelper
 {
     public function buildSalesChannelContext(
@@ -78,7 +75,8 @@ trait SalesChannelHelper
         if ($languageId) {
             $options[SalesChannelContextService::LANGUAGE_ID] = $languageId;
         }
-        if ($currencyId) {
+        // Currency is not available in the sales channel context below Shopware v6.4.
+        if ($currencyId && !Utils::versionLowerThan('6.4')) {
             $options[SalesChannelContextService::CURRENCY_ID] = $currencyId;
         }
 
