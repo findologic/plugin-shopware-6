@@ -1580,38 +1580,6 @@ class FindologicProductTest extends TestCase
         $this->assertSame($isPriceAvailable, $hasListPriceNet);
     }
 
-    private function createCurrency(): string
-    {
-        $currencyId = Uuid::randomHex();
-
-        $cashRoundingConfig = [
-            'decimals' => 2,
-            'interval' => 1,
-            'roundForNet' => false
-        ];
-
-        /** @var EntityRepositoryInterface $currencyRepo */
-        $currencyRepo = $this->getContainer()->get('currency.repository');
-        $currencyRepo->upsert(
-            [
-                [
-                    'id' => $currencyId,
-                    'isoCode' => 'FDL',
-                    'factor' => 1,
-                    'symbol' => 'F',
-                    'decimalPrecision' => 2,
-                    'name' => 'Findologic Currency',
-                    'shortName' => 'FL',
-                    'itemRounding' => $cashRoundingConfig,
-                    'totalRounding' => $cashRoundingConfig,
-                ]
-            ],
-            $this->salesChannelContext->getContext()
-        );
-
-        return $currencyId;
-    }
-
     public function testCatUrlsContainDomainPathAsPrefix(): void
     {
         $expectedPath = '/staging/public';

@@ -138,8 +138,7 @@ class FindologicProduct extends Struct
         array $customerGroups,
         Item $item,
         ?Config $config = null
-    )
-    {
+    ) {
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
@@ -796,27 +795,40 @@ class FindologicProduct extends Struct
     protected function getPricesFromProduct(ProductEntity $variant): array
     {
         $prices = [];
-        foreach ($variant->getPrice() as $item) {
-            foreach ($this->customerGroups as $customerGroup) {
-                $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
-                if (Utils::isEmpty($userGroupHash)) {
-                    continue;
-                }
-                $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
-                $currencyPrice = $variant->getPrice()->getCurrencyPrice($currencyId);
-                $netPrice = $currencyPrice->getNet();
-                $grossPrice = $currencyPrice->getGross();
-                $price = new Price();
-                if ($customerGroup->getDisplayGross()) {
-                    $price->setValue($grossPrice, $userGroupHash);
-                } else {
-                    $price->setValue($netPrice, $userGroupHash);
-                }
+        $productPrice = $variant->getPrice();
+        if (!$productPrice) {
+            return [];
+        }
 
-                $prices[] = $price;
+        $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+        $currencyPrice = $productPrice->getCurrencyPrice($currencyId, false);
+
+        foreach ($this->customerGroups as $customerGroup) {
+            $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
+            if (Utils::isEmpty($userGroupHash)) {
+                continue;
             }
+
+            if (!$currencyPrice) {
+                continue;
+            }
+
+            $netPrice = $currencyPrice->getNet();
+            $grossPrice = $currencyPrice->getGross();
             $price = new Price();
-            $price->setValue($item->getGross());
+            if ($customerGroup->getDisplayGross()) {
+                $price->setValue($grossPrice, $userGroupHash);
+            } else {
+                $price->setValue($netPrice, $userGroupHash);
+            }
+
+            $prices[] = $price;
+        }
+
+        $grossPrice = $productPrice->first() ? $productPrice->first()->getGross() : null;
+        if ($grossPrice) {
+            $price = new Price();
+            $price->setValue($grossPrice);
             $prices[] = $price;
         }
 
@@ -933,8 +945,7 @@ class FindologicProduct extends Struct
         array $categoryCollection,
         array &$catUrls,
         array &$categories
-    ): void
-    {
+    ): void {
         if (!$categoryCollection) {
             return;
         }

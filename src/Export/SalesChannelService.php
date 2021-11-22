@@ -62,8 +62,9 @@ class SalesChannelService
                 return $this->salesChannelContextFactory->create(
                     $currentContext->getToken(),
                     $systemConfigEntity->getSalesChannelId(),
-                    [SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId(),
-                     SalesChannelContextService::CURRENCY_ID => $currencyID
+                    [
+                        SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId(),
+                        SalesChannelContextService::CURRENCY_ID => $currencyID
                     ]
                 );
             }

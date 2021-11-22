@@ -28,7 +28,8 @@ trait SalesChannelHelper
         string $url = 'http://test.uk',
         ?CustomerEntity $customerEntity = null,
         string $languageId = Defaults::LANGUAGE_SYSTEM,
-        array $overrides = []
+        array $overrides = [],
+        string $currencyId = Defaults::CURRENCY
     ): SalesChannelContext {
         $locale = $this->getLocaleOfLanguage($languageId);
         if ($locale) {
@@ -42,7 +43,7 @@ trait SalesChannelHelper
             'domains' => [
                 [
                     'url' => $url,
-                    'currencyId' => Defaults::CURRENCY,
+                    'currencyId' => $currencyId,
                     'languageId' => $languageId,
                     'snippetSetId' => $snippetSet
                 ]
@@ -61,18 +62,24 @@ trait SalesChannelHelper
         return $salesChannelContextFactory->create(
             Uuid::randomHex(),
             $salesChannelId,
-            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId)
+            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId, $currencyId)
         );
     }
 
-    private function buildSalesChannelContextFactoryOptions(?CustomerEntity $customerEntity, ?string $languageId): array
-    {
+    private function buildSalesChannelContextFactoryOptions(
+        ?CustomerEntity $customerEntity,
+        ?string $languageId,
+        ?string $currencyId
+    ): array {
         $options = [];
         if ($customerEntity) {
             $options[SalesChannelContextService::CUSTOMER_ID] = $customerEntity->getId();
         }
         if ($languageId) {
             $options[SalesChannelContextService::LANGUAGE_ID] = $languageId;
+        }
+        if ($currencyId) {
+            $options[SalesChannelContextService::CURRENCY_ID] = $currencyId;
         }
 
         return $options;
@@ -133,7 +140,6 @@ trait SalesChannelHelper
         );
     }
 
-
     public function getEnGbLanguageId(): string
     {
         /** @var EntityRepositoryInterface $repository */
@@ -146,5 +152,37 @@ trait SalesChannelHelper
         $language = $repository->search($criteria, Context::createDefaultContext())->first();
 
         return $language->getId();
+    }
+
+    public function createCurrency(array $data = []): string
+    {
+        $currencyId = Uuid::randomHex();
+
+        $cashRoundingConfig = [
+            'decimals' => 2,
+            'interval' => 1,
+            'roundForNet' => false
+        ];
+
+        /** @var EntityRepositoryInterface $currencyRepo */
+        $currencyRepo = $this->getContainer()->get('currency.repository');
+        $currencyRepo->upsert(
+            [
+                array_merge([
+                    'id' => $currencyId,
+                    'isoCode' => 'FDL',
+                    'factor' => 1,
+                    'symbol' => 'F',
+                    'decimalPrecision' => 2,
+                    'name' => 'Findologic Currency',
+                    'shortName' => 'FL',
+                    'itemRounding' => $cashRoundingConfig,
+                    'totalRounding' => $cashRoundingConfig,
+                ], $data)
+            ],
+            Context::createDefaultContext()
+        );
+
+        return $currencyId;
     }
 }
