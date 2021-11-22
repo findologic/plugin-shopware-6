@@ -1,4 +1,5 @@
 # NEXT
+- [SW-567] Der Kategoriefilter wurde verbessert und hat ein große UI/UX verbesserungen erhalten.
 - [SW-660] Der Export achtet nun auf die konfigurierte Hauptvariante, falls gesetzt.
 - [SW-614] Ein Fehler wurde behoben, wodurch die Option für die Plugin-Konfiguration nicht angezeigt wurde. Nun ist die Option "Erweiterung öffnen" verfügbar.
 - [SW-661] Ein Fehler wurde behoben, wodurch Bereichsslider Filter selektiert wurden, nachdem zuvor gewählte Filter deselektiert wurden.
