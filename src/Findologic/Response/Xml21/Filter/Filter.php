@@ -26,6 +26,9 @@ use GuzzleHttp\Client;
 
 abstract class Filter extends BaseFilter
 {
+    private const FILTER_RANGE_MIN = 'min';
+    private const FILTER_RANGE_MAX = 'max';
+
     /** @var FilterValue[] */
     protected $values;
 
@@ -101,6 +104,20 @@ abstract class Filter extends BaseFilter
 
         if ($step !== null) {
             $customFilter->setStep($step);
+        }
+
+        if ($filter->getAttributes()->getTotalRange()) {
+            $customFilter->setTotalRange([
+                self::FILTER_RANGE_MIN => $filter->getAttributes()->getTotalRange()->getMin(),
+                self::FILTER_RANGE_MAX => $filter->getAttributes()->getTotalRange()->getMax(),
+            ]);
+        }
+
+        if ($filter->getAttributes()->getSelectedRange()) {
+            $customFilter->setSelectedRange([
+                self::FILTER_RANGE_MIN => $filter->getAttributes()->getSelectedRange()->getMin(),
+                self::FILTER_RANGE_MAX => $filter->getAttributes()->getSelectedRange()->getMax(),
+            ]);
         }
 
         /** @var RangeSliderItem $item */

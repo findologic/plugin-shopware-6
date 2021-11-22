@@ -209,7 +209,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @param {HTMLObjectElement} subCategory
      * @public
      */
-    siblingsCategories(subCategory) {
+    getSiblingsCategories(subCategory) {
         const siblingCategories = [];
         let sibling = '';
         if (subCategory !== null) {
@@ -230,7 +230,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     toggleSubCategoryVisibility(subCategory) {
-        const siblingCategories = this.siblingsCategories(subCategory);
+        const siblingCategories = this.getSiblingsCategories(subCategory);
         if (siblingCategories.length > 0) {
             Iterator.iterate(siblingCategories, (container) => {
                 const classList = container.classList;
@@ -353,7 +353,6 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @private
      */
     _disableInactiveFilterOptions(activeItemIds) {
-
         const checkboxes = DomAccess.querySelectorAll(this.el, this.options.checkboxSelector);
         Iterator.iterate(checkboxes, (checkbox) => {
             const checkboxParentIds = checkbox.id.split('_');
@@ -363,6 +362,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
                 this.disableOption(checkbox);
                 return;
             }
+
             this.enableOption(checkbox);
         });
     }

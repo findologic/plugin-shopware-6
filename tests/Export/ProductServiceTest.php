@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\FinSearch\Export\ProductService;
+use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\AssertionFailedError;
-use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -236,5 +237,98 @@ class ProductServiceTest extends TestCase
         $products = array_values($result->getElements());
         $this->assertSame($expectedFirstVariantId, $products[0]->getId());
         $this->assertSame($expectedSecondVariantId, $products[1]->getId());
+    }
+
+    public function testTheMainProductIsBasedOnTheMainVariantIdOfADisplayGroup(): void
+    {
+        $expectedParentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+        $expectedSecondVariantId = Uuid::randomHex();
+        $expectedMainVariantId = $expectedSecondVariantId;
+
+        $firstOptionId = Uuid::randomHex();
+        $secondOptionId = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+
+        $this->createVisibleTestProduct([
+            'id' => $expectedParentId,
+            'active' => false,
+            'configuratorSettings' => [
+                [
+                    'option' => [
+                        'id' => $firstOptionId,
+                        'name' => 'Red',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $secondOptionId,
+                        'name' => 'Orange',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+            ],
+            'configuratorGroupConfig' => [
+                [
+                    'id' => $optionGroupId,
+                    // Explicitly set this to false. This tells Shopware to consider the mainVariationId (if set).
+                    'expressionForListings' => false,
+                    'representation' => 'box'
+                ]
+            ],
+        ]);
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]));
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]));
+
+        $this->getContainer()->get('product.repository')->update([
+            [
+                'id' => $expectedFirstVariantId,
+                'mainVariantId' => $expectedMainVariantId
+            ],
+            [
+                'id' => $expectedSecondVariantId,
+                'mainVariantId' => $expectedMainVariantId
+            ]
+        ], Context::createDefaultContext());
+
+        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $this->assertCount(1, $result->getElements());
+
+        $product = $result->first();
+        $this->assertSame($expectedMainVariantId, $product->getId());
+
+        $this->assertCount(2, $product->getChildren());
+        foreach ($product->getChildren() as $child) {
+            if ($child->getParentId() === null) {
+                $this->assertSame($expectedParentId, $child->getId());
+            } else {
+                $this->assertSame($expectedFirstVariantId, $child->getId());
+            }
+        }
     }
 }
