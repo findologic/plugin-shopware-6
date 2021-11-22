@@ -27,5 +27,10 @@ Module.register('findologic-module', {
         parentPath: 'sw.settings.index'
       }
     }
+  },
+
+  extensionEntryRoute: {
+    extensionName: 'FinSearch',
+    route: 'findologic.module.index'
   }
 });
