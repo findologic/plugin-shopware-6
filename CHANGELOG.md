@@ -1,5 +1,6 @@
 # NEXT
 - [SW-660] The export will now respect the configured main variant, if set.
+- [SW-614] Fixed a bug that caused the configuration option not to show up. Now there is an "Open extension" option available.
 - [SW-661] Fixed a bug that caused range-slider filters to be selected after deselecting previously selected filters.
 - [SW-650] Fixed a bug that caused third-party listing criteria changes to cause an error.
 - [SW-658] Added Shopware 6.4.6.0 to the test matrix.
