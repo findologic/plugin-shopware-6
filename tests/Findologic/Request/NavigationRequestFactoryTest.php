@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Request;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -25,6 +26,7 @@ class NavigationRequestFactoryTest extends TestCase
      */
     public function testNavigationRequestInstance(): void
     {
+        $_SERVER['HTTP_CLIENT_IP'] = '192.168.0.1';
         $cacheKey = 'finsearch_version';
         $expectedReferer = 'http://localhost.shopware';
         $expectedIpAddress = '192.168.0.1';
@@ -32,6 +34,7 @@ class NavigationRequestFactoryTest extends TestCase
         $expectedAdapter = 'XML_2.1';
         $expectedVersion = '0.1.0';
         $expectedCategoryPath = 'Kids & Music_Computers & Shoes';
+        $expectedShopType = "Shopware6";
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
@@ -71,6 +74,8 @@ class NavigationRequestFactoryTest extends TestCase
         $this->assertSame($expectedIpAddress, $params['userip']);
         $this->assertSame($expectedAdapter, $params['outputAdapter']);
         $this->assertSame($expectedHost, $params['shopurl']);
+        $this->assertSame($expectedShopType,$params['shopType']);
+        $this->assertSame(Utils::getCleanShopwareVersion(),$params['shopVersion']);
         $this->assertSame($expectedCategoryPath, $params['selected']['cat'][0]);
     }
 }
