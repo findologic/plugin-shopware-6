@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
@@ -254,6 +255,11 @@ class FilterHandler
 
                 if ($filter instanceof CategoryFilter) {
                     $this->handleCategoryFilters($values, $filterValues);
+                } elseif ($filter instanceof RangeSliderFilter) {
+                    $filterValues[] = [
+                        'selectedRange' => $filter->getSelectedRange(),
+                        'totalRange' => $filter->getTotalRange(),
+                    ];
                 } else {
                     foreach ($values as $value) {
                         $valueId = $value->getUuid() ?? $value->getId();

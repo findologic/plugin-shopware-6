@@ -16,9 +16,9 @@ trait ConfigHelper
         return '74B87337454200D4D33F80C4663DC5E5';
     }
 
-    public function getConfig(bool $assoc = true)
+    public function getConfig(bool $assoc = true, string $fileName = 'di_config.json')
     {
-        $config = file_get_contents(__DIR__ . '/../../MockData/ConfigResponse/example_config.json');
+        $config = file_get_contents(__DIR__ . '/../../MockData/ConfigResponse/' . $fileName);
         if ($assoc) {
             return json_decode($config, true);
         }

@@ -334,18 +334,4 @@ export default class FilterSliderRange extends FilterBasePlugin {
       this.slider.noUiSlider.set([null, this._inputMax.value]);
     }
   }
-
-  refreshDisabledState(filter) {
-    const properties = filter[this.options.name];
-    const entities = properties.entities;
-    if(entities.length > 0) {
-      const options = entities[0].options;
-      if(options.length >= 4) {
-        this._inputMin.value = parseFloat((options[1].id).split('-')[0]);
-        this._inputMax.value = parseFloat((options[3].id).split('-')[0]);
-        this.setMinKnobValue();
-        this.setMaxKnobValue();
-      }
-    }
-  }
 }

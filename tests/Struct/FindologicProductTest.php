@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
+use DateTime;
 use DateTimeImmutable;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\Image;
@@ -140,6 +141,26 @@ class FindologicProductTest extends TestCase
         } else {
             $this->assertFalse($findologicProduct->hasName());
         }
+    }
+
+    public function testDateAddedIsBasedOnReleaseDate(): void
+    {
+        $releaseDate = DateTime::createFromFormat(DATE_ATOM, '2021-11-09T16:00:00+00:00');
+
+        $productEntity = $this->createTestProduct();
+        $productEntity->setReleaseDate($releaseDate);
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertSame($releaseDate->format(DATE_ATOM), $findologicProduct->getDateAdded()->getValues()['']);
     }
 
     /**
@@ -2109,8 +2130,6 @@ class FindologicProductTest extends TestCase
                 ],
                 'expectedCategories' => [
                     'Category1_Category2',
-                    'Category1',
-                    'Category2',
                 ],
                 'expectedCatUrls' => [
                     '/Category1/Category2/',

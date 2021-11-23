@@ -1,5 +1,17 @@
-# NEXT
+# 2.3.0
+- [SW-567] The category filter has been improved and received a major UI/UX improvement.
+- [SW-660] The export will now respect the configured main variant, if set.
+- [SW-614] Fixed a bug that caused the configuration option not to show up. Now there is an "Open extension" option available.
+- [SW-661] Fixed a bug that caused range-slider filters to be selected after deselecting previously selected filters.
+- [SW-650] Fixed a bug that caused third-party listing criteria changes to cause an error.
+- [SW-658] Added Shopware 6.4.6.0 to the test matrix.
+
+# 2.2.1
+- [SW-657] Fixed a bug that caused sorting by release date not to work properly.
 - [SW-649] Fixed a bug that caused products not to be exported, when they had multi-select custom-fields configured, which contained empty values.
+- [SW-653] Fixed a bug that could cause wrong integration types, when a sales channel had multiple shopkeys for different languages set.
+- [SW-656] Fixed a bug that caused the export of nested categories to also be exported without a category path.
+- [SW-654] Fixed a bug that caused the sorting option "Topseller" to be shown twice on category pages.
 - [SW-652] Added Shopware 6.4.5.1 to the test matrix.
 
 # 2.2.0

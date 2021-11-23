@@ -1,5 +1,17 @@
-# NEXT
+# 2.3.0
+- [SW-567] Der Kategoriefilter wurde verbessert und hat ein große UI/UX verbesserungen erhalten.
+- [SW-660] Der Export achtet nun auf die konfigurierte Hauptvariante, falls gesetzt.
+- [SW-614] Ein Fehler wurde behoben, wodurch die Option für die Plugin-Konfiguration nicht angezeigt wurde. Nun ist die Option "Erweiterung öffnen" verfügbar.
+- [SW-661] Ein Fehler wurde behoben, wodurch Bereichsslider Filter selektiert wurden, nachdem zuvor gewählte Filter deselektiert wurden.
+- [SW-650] Ein Fehler wurde behoben, wodurch bei einer Änderung der Criteria von Dritten, auf Listing Seiten ein Fehler ausgelöst wurde.
+- [SW-658] Shopware 6.4.6.0 wurde zur Test-Matrix hinzugefügt.
+
+# 2.2.1
+- [SW-657] Ein Fehler wurde behoben, wodurch die Sortierung nach Release-Datum nicht korrekt funktionierte.
 - [SW-649] Ein Fehler wurde behoben, wodurch der Export von Produkten scheiterte, die Mehrfachauswahl-Zusatzfelder enthielten deren Werte leer waren.
+- [SW-653] Ein Fehler wurde behoben, welcher dazu führte, dass ein falscher Integrationstyp verwendet wurde, wenn ein Verkaufskanal mehrere Shopkeys für verschiedene Sprachen gesetzt hatte.
+- [SW-656] Ein Fehler wurde behoben, wodurch Unterkategorien zusätzlich ohne Kategoriebaum exportiert wurden.
+- [SW-654] Ein Fehler wurde behoben, wodurch die Sortieroption "Beste Ergebnisse" doppelt auf Kategorieseiten angezeigt wurde.
 - [SW-652] Shopware 6.4.5.1 wurde zur Test-Matrix hinzugefügt.
 
 # 2.2.0

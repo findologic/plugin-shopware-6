@@ -101,7 +101,12 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         SalesChannelContext $context,
         ?Criteria $criteria = null
     ): ProductSearchRouteResponse {
-        $criteria = $criteria ?? new Criteria();
+        $criteria = $criteria ?? $this->criteriaBuilder->handleRequest(
+            $request,
+            new Criteria(),
+            $this->definition,
+            $context->getContext()
+        );
 
         $this->config->initializeBySalesChannel($context);
         $shouldHandleRequest = Utils::shouldHandleRequest(
@@ -109,13 +114,6 @@ class ProductSearchRoute extends AbstractProductSearchRoute
             $context->getContext(),
             $this->serviceConfigResource,
             $this->config
-        );
-
-        $criteria = $this->criteriaBuilder->handleRequest(
-            $request,
-            $criteria,
-            $this->definition,
-            $context->getContext()
         );
 
         $criteria->addFilter(
