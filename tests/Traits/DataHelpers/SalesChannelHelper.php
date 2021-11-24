@@ -59,14 +59,13 @@ trait SalesChannelHelper
         return $salesChannelContextFactory->create(
             Uuid::randomHex(),
             $salesChannelId,
-            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId, $currencyId)
+            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId)
         );
     }
 
     private function buildSalesChannelContextFactoryOptions(
         ?CustomerEntity $customerEntity,
-        ?string $languageId,
-        ?string $currencyId
+        ?string $languageId
     ): array {
         $options = [];
         if ($customerEntity) {
@@ -74,10 +73,6 @@ trait SalesChannelHelper
         }
         if ($languageId) {
             $options[SalesChannelContextService::LANGUAGE_ID] = $languageId;
-        }
-        // Currency is not available in the sales channel context below Shopware v6.4.
-        if ($currencyId && !Utils::versionLowerThan('6.4')) {
-            $options[SalesChannelContextService::CURRENCY_ID] = $currencyId;
         }
 
         return $options;

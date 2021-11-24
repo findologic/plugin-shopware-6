@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export;
 
-use FINDOLOGIC\FinSearch\Definitions\Defaults;
 use FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigEntity;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -18,8 +17,6 @@ use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
-
-use function method_exists;
 
 class SalesChannelService
 {
@@ -61,18 +58,10 @@ class SalesChannelService
         /** @var FinSearchConfigEntity $systemConfigEntity */
         foreach ($systemConfigEntities as $systemConfigEntity) {
             if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
-                $options = [
-                    SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId(),
-                ];
-                if (method_exists($currentContext, 'getCurrencyId')) {
-                    $currencyId = $currentContext->getCurrencyId();
-                    $options[SalesChannelContextService::CURRENCY_ID] = $currencyId;
-                }
-
                 return $this->salesChannelContextFactory->create(
                     $currentContext->getToken(),
                     $systemConfigEntity->getSalesChannelId(),
-                    $options
+                    [SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId()]
                 );
             }
         }

@@ -801,15 +801,14 @@ class FindologicProduct extends Struct
         }
 
         $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
-        $currencyPrice = $productPrice->getCurrencyPrice($currencyId, false);
+        $currencyPrice = $productPrice->getCurrencyPrice($currencyId);
+        if (!$currencyPrice) {
+            return [];
+        }
 
         foreach ($this->customerGroups as $customerGroup) {
             $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
             if (Utils::isEmpty($userGroupHash)) {
-                continue;
-            }
-
-            if (!$currencyPrice) {
                 continue;
             }
 
