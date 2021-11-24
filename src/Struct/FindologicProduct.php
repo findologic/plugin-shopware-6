@@ -792,18 +792,20 @@ class FindologicProduct extends Struct
     /**
      * @return Price[]
      */
-    protected function getPricesFromProduct(ProductEntity $variant): array
+    protected function getPricesFromProduct(ProductEntity $product): array
     {
         $prices = [];
-        $productPrice = $variant->getPrice();
-        if (!$productPrice) {
+        $productPrice = $product->getPrice();
+        if (!$productPrice || !$productPrice->first()) {
             return [];
         }
 
         $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
-        $currencyPrice = $productPrice->getCurrencyPrice($currencyId);
+        $currencyPrice = $productPrice->getCurrencyPrice($currencyId, false);
+
+        // If no currency price is available, fallback to the default price.
         if (!$currencyPrice) {
-            return [];
+            $currencyPrice = $productPrice->first();
         }
 
         foreach ($this->customerGroups as $customerGroup) {
@@ -824,12 +826,9 @@ class FindologicProduct extends Struct
             $prices[] = $price;
         }
 
-        $grossPrice = $productPrice->first() ? $productPrice->first()->getGross() : null;
-        if ($grossPrice) {
-            $price = new Price();
-            $price->setValue($grossPrice);
-            $prices[] = $price;
-        }
+        $price = new Price();
+        $price->setValue($currencyPrice->getGross());
+        $prices[] = $price;
 
         return $prices;
     }
