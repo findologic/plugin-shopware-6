@@ -1,4 +1,4 @@
-# NEXT
+# 2.3.0
 - [SW-567] Der Kategoriefilter wurde verbessert und hat ein große UI/UX verbesserungen erhalten.
 - [SW-660] Der Export achtet nun auf die konfigurierte Hauptvariante, falls gesetzt.
 - [SW-614] Ein Fehler wurde behoben, wodurch die Option für die Plugin-Konfiguration nicht angezeigt wurde. Nun ist die Option "Erweiterung öffnen" verfügbar.
