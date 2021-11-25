@@ -74,8 +74,8 @@ class NavigationRequestFactoryTest extends TestCase
         $this->assertSame($expectedIpAddress, $params['userip']);
         $this->assertSame($expectedAdapter, $params['outputAdapter']);
         $this->assertSame($expectedHost, $params['shopurl']);
-        $this->assertSame($expectedShopType,$params['shopType']);
-        $this->assertSame(Utils::getCleanShopwareVersion(),$params['shopVersion']);
+        $this->assertSame($expectedShopType, $params['shopType']);
+        $this->assertSame(Utils::getCleanShopwareVersion(), $params['shopVersion']);
         $this->assertSame($expectedCategoryPath, $params['selected']['cat'][0]);
     }
 }
