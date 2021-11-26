@@ -34,7 +34,8 @@ class NavigationRequestFactoryTest extends TestCase
         $expectedAdapter = 'XML_2.1';
         $expectedVersion = '0.1.0';
         $expectedCategoryPath = 'Kids & Music_Computers & Shoes';
-        $expectedShopType = "Shopware6";
+        $expectedShopType = 'Shopware6';
+        $expectedShopVersion = Utils::getCleanShopwareVersion();
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
@@ -75,7 +76,7 @@ class NavigationRequestFactoryTest extends TestCase
         $this->assertSame($expectedAdapter, $params['outputAdapter']);
         $this->assertSame($expectedHost, $params['shopurl']);
         $this->assertSame($expectedShopType, $params['shopType']);
-        $this->assertSame(Utils::getCleanShopwareVersion(), $params['shopVersion']);
+        $this->assertSame($expectedShopVersion, $params['shopVersion']);
         $this->assertSame($expectedCategoryPath, $params['selected']['cat'][0]);
     }
 }
