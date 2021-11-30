@@ -26,7 +26,6 @@ class NavigationRequestFactoryTest extends TestCase
      */
     public function testNavigationRequestInstance(): void
     {
-        $_SERVER['HTTP_CLIENT_IP'] = '192.168.0.1';
         $cacheKey = 'finsearch_version';
         $expectedReferer = 'http://localhost.shopware';
         $expectedIpAddress = '192.168.0.1';
