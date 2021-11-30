@@ -365,7 +365,7 @@ class FindologicProductTest extends TestCase
     {
         $productEntity = $this->createTestProduct();
 
-        $productTag = new Keyword('FINDOLOGIC Tag');
+        $productKeyword = new Keyword('FINDOLOGIC Keyword');
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
@@ -396,7 +396,7 @@ class FindologicProductTest extends TestCase
         $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals([$productTag], $findologicProduct->getKeywords());
+        $this->assertEquals([$productKeyword], $findologicProduct->getKeywords());
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
