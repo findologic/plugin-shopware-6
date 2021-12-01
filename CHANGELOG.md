@@ -1,3 +1,6 @@
+# NEXT
+- [SW-662] Ein Fehler wurde behoben, wodurch der Export scheiterte, wenn die konfigurierte Hauptvariante für den exportierenden Verkaufskanal nicht verfügbar war.
+
 # 2.3.0
 - [SW-567] The category filter has been improved and received a major UI/UX improvement.
 - [SW-660] The export will now respect the configured main variant, if set.
