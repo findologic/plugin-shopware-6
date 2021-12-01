@@ -1,5 +1,6 @@
 # NEXT
 - [SW-662] Fixed a bug that caused the export to fail, if the configured main variant had been set to inactive for the exporting sales channel.
+- [SW-663] Fixed a bug that caused products not to be exported, if they had configured a custom field containing "0".
 
 # 2.3.0
 - [SW-567] The category filter has been improved and received a major UI/UX improvement.
