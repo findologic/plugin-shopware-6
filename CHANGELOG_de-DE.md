@@ -1,6 +1,7 @@
 # NEXT
 - [SW-662] Ein Fehler wurde behoben, wodurch der Export scheiterte, wenn die konfigurierte Hauptvariante für den exportierenden Verkaufskanal nicht verfügbar war.
 - [SW-663] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, wenn diese ein Zusatzfeld mit dem Wert "0" enthielten.
+- [SW-612] Ein Fehler wurde behoben, wodurch ein falscher Produkt-Preis exportiert wurde, wenn der exportierende Verkaufskanal nicht die konfigurierte standard Währung verwendete.
 
 # 2.3.0
 - [SW-567] Der Kategoriefilter wurde verbessert und hat ein große UI/UX verbesserungen erhalten.
