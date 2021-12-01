@@ -1,5 +1,5 @@
 # NEXT
-- [SW-662] Ein Fehler wurde behoben, wodurch der Export scheiterte, wenn die konfigurierte Hauptvariante für den exportierenden Verkaufskanal nicht verfügbar war.
+- [SW-662] Fixed a bug that caused the export to fail, if the configured main variant had been set to inactive for the exporting sales channel.
 
 # 2.3.0
 - [SW-567] The category filter has been improved and received a major UI/UX improvement.
