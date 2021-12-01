@@ -26,6 +26,8 @@ class NavigationRequestFactoryTest extends TestCase
      */
     public function testNavigationRequestInstance(): void
     {
+        $expectedShopType = 'Shopware6';
+        $expectedShopVersion = Utils::getCleanShopwareVersion();
         $cacheKey = 'finsearch_version';
         $expectedReferer = 'http://localhost.shopware';
         $expectedIpAddress = '192.168.0.1';
@@ -33,8 +35,6 @@ class NavigationRequestFactoryTest extends TestCase
         $expectedAdapter = 'XML_2.1';
         $expectedVersion = '0.1.0';
         $expectedCategoryPath = 'Kids & Music_Computers & Shoes';
-        $expectedShopType = 'Shopware6';
-        $expectedShopVersion = Utils::getCleanShopwareVersion();
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
@@ -74,8 +74,8 @@ class NavigationRequestFactoryTest extends TestCase
         $this->assertSame($expectedIpAddress, $params['userip']);
         $this->assertSame($expectedAdapter, $params['outputAdapter']);
         $this->assertSame($expectedHost, $params['shopurl']);
+        $this->assertSame($expectedCategoryPath, $params['selected']['cat'][0]);
         $this->assertSame($expectedShopType, $params['shopType']);
         $this->assertSame($expectedShopVersion, $params['shopVersion']);
-        $this->assertSame($expectedCategoryPath, $params['selected']['cat'][0]);
     }
 }
