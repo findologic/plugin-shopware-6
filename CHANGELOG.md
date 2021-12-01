@@ -1,3 +1,6 @@
+# NEXT
+- [SW-662] Fixed a bug that caused the export to fail, if the configured main variant had been set to inactive for the exporting sales channel.
+
 # 2.3.0
 - [SW-567] The category filter has been improved and received a major UI/UX improvement.
 - [SW-660] The export will now respect the configured main variant, if set.

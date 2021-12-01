@@ -1,3 +1,6 @@
+# NEXT
+- [SW-662] Ein Fehler wurde behoben, wodurch der Export scheiterte, wenn die konfigurierte Hauptvariante für den exportierenden Verkaufskanal nicht verfügbar war.
+
 # 2.3.0
 - [SW-567] Der Kategoriefilter wurde verbessert und hat ein große UI/UX verbesserungen erhalten.
 - [SW-660] Der Export achtet nun auf die konfigurierte Hauptvariante, falls gesetzt.
