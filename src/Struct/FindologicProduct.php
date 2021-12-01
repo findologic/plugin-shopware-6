@@ -865,7 +865,8 @@ class FindologicProduct extends Struct
                     continue;
                 }
 
-                $customFieldAttribute = new Attribute($key, array_filter((array)$cleanedValue));
+                // Filter null, false and empty strings, but not "0". See: https://stackoverflow.com/a/27501297/6281648
+                $customFieldAttribute = new Attribute($key, array_filter((array)$cleanedValue, 'strlen'));
                 $attributes[] = $customFieldAttribute;
             }
         }
