@@ -26,8 +26,6 @@ class NavigationRequestFactoryTest extends TestCase
      */
     public function testNavigationRequestInstance(): void
     {
-        $expectedShopType = 'Shopware6';
-        $expectedShopVersion = Utils::getCleanShopwareVersion();
         $cacheKey = 'finsearch_version';
         $expectedReferer = 'http://localhost.shopware';
         $expectedIpAddress = '192.168.0.1';
@@ -35,6 +33,8 @@ class NavigationRequestFactoryTest extends TestCase
         $expectedAdapter = 'XML_2.1';
         $expectedVersion = '0.1.0';
         $expectedCategoryPath = 'Kids & Music_Computers & Shoes';
+        $expectedShopType = 'Shopware6';
+        $expectedShopVersion = Utils::getCleanShopwareVersion();
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
