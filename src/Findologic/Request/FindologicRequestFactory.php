@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request;
 
 use FINDOLOGIC\Api\Definitions\OutputAdapter;
 use FINDOLOGIC\Api\Exceptions\InvalidParamException;
+use FINDOLOGIC\Api\Requests\Request as FindoLogicApiRequest;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -18,7 +19,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use FINDOLOGIC\Api\Requests\Request as FindoLogicApiRequest;
 
 abstract class FindologicRequestFactory
 {
@@ -40,31 +40,6 @@ abstract class FindologicRequestFactory
     abstract public function getInstance(Request $request);
 
     /**
-     * @throws InvalidArgumentException
-     * @throws InconsistentCriteriaIdsException
-     */
-    protected function getPluginVersion(): string
-    {
-        $item = $this->cache->getItem(self::CACHE_VERSION_KEY);
-        if (empty($item->get())) {
-            $criteria = new Criteria();
-            $criteria->setLimit(1);
-            $criteria->addFilter(new EqualsFilter('name', 'FinSearch'));
-
-            $result = $this->container->get('plugin.repository')->search($criteria, Context::createDefaultContext());
-
-            /** @var PluginEntity $plugin */
-            $plugin = $result->first();
-            $item->set($plugin->getVersion());
-            $item->expiresAfter(self::CACHE_VERSION_LIFETIME);
-
-            $this->cache->save($item);
-        }
-
-        return $item->get();
-    }
-
-    /**
      * @throws InconsistentCriteriaIdsException
      * @throws InvalidArgumentException
      */
@@ -76,7 +51,9 @@ abstract class FindologicRequestFactory
         $searchNavigationRequest->setRevision($this->getPluginVersion());
         $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
         $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindoLogicApiRequest::ADD_VALUE);
-        $searchNavigationRequest->addIndividualParam('shopVersion', Utils::getCleanShopwareVersion(), FindoLogicApiRequest::ADD_VALUE);
+        $searchNavigationRequest->addIndividualParam('shopVersion',
+            Utils::getCleanShopwareVersion(),
+            FindoLogicApiRequest::ADD_VALUE);
 
         // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
         //  Shopware themselves have it hardcoded at 24.
@@ -129,6 +106,31 @@ abstract class FindologicRequestFactory
         $ipAddress = implode(',', array_unique(array_map('trim', explode(',', $ipAddress))));
 
         return $ipAddress;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws InconsistentCriteriaIdsException
+     */
+    protected function getPluginVersion(): string
+    {
+        $item = $this->cache->getItem(self::CACHE_VERSION_KEY);
+        if (empty($item->get())) {
+            $criteria = new Criteria();
+            $criteria->setLimit(1);
+            $criteria->addFilter(new EqualsFilter('name', 'FinSearch'));
+
+            $result = $this->container->get('plugin.repository')->search($criteria, Context::createDefaultContext());
+
+            /** @var PluginEntity $plugin */
+            $plugin = $result->first();
+            $item->set($plugin->getVersion());
+            $item->expiresAfter(self::CACHE_VERSION_LIFETIME);
+
+            $this->cache->save($item);
+        }
+
+        return $item->get();
     }
 
     /**
