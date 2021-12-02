@@ -111,24 +111,6 @@ abstract class FindologicRequestFactory
     }
 
     /**
-     * Findologic provides an interface to boost certain products based on their attributes, so they are ranked
-     * higher in the search results.
-     * The format of the parameter is:
-     * `pushAttrib[key][value] = factor`
-     */
-    private function setPushAttribValues(Request $request, SearchNavigationRequest $searchNavigationRequest): void
-    {
-        $pushAttrib = $request->get('pushAttrib', []);
-        if (!Utils::isEmpty($pushAttrib)) {
-            foreach ($pushAttrib as $key => $attrib) {
-                foreach ($attrib as $value => $factor) {
-                    $searchNavigationRequest->addPushAttrib($key, $value, $factor);
-                }
-            }
-        }
-    }
-
-    /**
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
      */
@@ -151,5 +133,23 @@ abstract class FindologicRequestFactory
         }
 
         return $item->get();
+    }
+
+    /**
+     * Findologic provides an interface to boost certain products based on their attributes, so they are ranked
+     * higher in the search results.
+     * The format of the parameter is:
+     * `pushAttrib[key][value] = factor`
+     */
+    private function setPushAttribValues(Request $request, SearchNavigationRequest $searchNavigationRequest): void
+    {
+        $pushAttrib = $request->get('pushAttrib', []);
+        if (!Utils::isEmpty($pushAttrib)) {
+            foreach ($pushAttrib as $key => $attrib) {
+                foreach ($attrib as $value => $factor) {
+                    $searchNavigationRequest->addPushAttrib($key, $value, $factor);
+                }
+            }
+        }
     }
 }
