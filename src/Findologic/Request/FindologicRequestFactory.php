@@ -152,5 +152,4 @@ abstract class FindologicRequestFactory
 
         return $item->get();
     }
-
 }
