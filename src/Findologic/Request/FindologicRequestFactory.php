@@ -18,6 +18,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use FINDOLOGIC\Api\Requests\Request as FindoLogicApiRequest;
 
 abstract class FindologicRequestFactory
 {
@@ -74,8 +75,9 @@ abstract class FindologicRequestFactory
         $searchNavigationRequest->setUserIp($this->fetchClientIp());
         $searchNavigationRequest->setRevision($this->getPluginVersion());
         $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
-        $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', true);
-        $searchNavigationRequest->addIndividualParam('shopVersion', Utils::getCleanShopwareVersion(), 'set');
+        $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindoLogicApiRequest::ADD_VALUE);
+        $searchNavigationRequest->addIndividualParam('shopVersion', Utils::getCleanShopwareVersion(),
+            FindoLogicApiRequest::ADD_VALUE);
 
         // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
         //  Shopware themselves have it hardcoded at 24.
