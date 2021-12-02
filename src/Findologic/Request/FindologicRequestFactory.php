@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request;
 
 use FINDOLOGIC\Api\Definitions\OutputAdapter;
 use FINDOLOGIC\Api\Exceptions\InvalidParamException;
-use FINDOLOGIC\Api\Requests\Request as FindoLogicApiRequest;
+use FINDOLOGIC\Api\Requests\Request as FindologicApiRequest;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -50,11 +50,11 @@ abstract class FindologicRequestFactory
         $searchNavigationRequest->setUserIp($this->fetchClientIp());
         $searchNavigationRequest->setRevision($this->getPluginVersion());
         $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
-        $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindoLogicApiRequest::ADD_VALUE);
+        $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindologicApiRequest::SET_VALUE);
         $searchNavigationRequest->addIndividualParam(
             'shopVersion',
             Utils::getCleanShopwareVersion(),
-            FindoLogicApiRequest::ADD_VALUE
+            FindologicApiRequest::SET_VALUE
         );
 
         // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
