@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Export;
+use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\ProductService;
@@ -146,10 +147,13 @@ class ExportController extends AbstractController
             $this->exportConfig->getProductId()
         );
 
+        $exportContext = $this->buildExportContext();
+        $this->container->set('fin_search.export_context', $exportContext);
+
         $items = $this->export->buildItems(
             $products->getElements(),
             $this->exportConfig->getShopkey(),
-            $this->productService->getAllCustomerGroups()
+            $exportContext->getCustomerGroups()
         );
 
         return $this->export->buildResponse(
@@ -234,5 +238,17 @@ class ExportController extends AbstractController
         $attributes = $request->attributes->all();
 
         $originalRequest->attributes->replace($attributes);
+    }
+
+    private function buildExportContext(): ExportContext
+    {
+        return new ExportContext(
+            $this->exportConfig->getShopkey(),
+            $this->productService->getAllCustomerGroups(),
+            Utils::fetchNavigationCategoryFromSalesChannel(
+                $this->container->get('category.repository'),
+                $this->salesChannelContext->getSalesChannel()
+            )
+        );
     }
 }

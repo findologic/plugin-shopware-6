@@ -118,6 +118,10 @@ class XmlExport extends Export
             return null;
         }
 
+        /** @var ExportItemAdapter $exportItemAdapter */
+        $exportItemAdapter = $this->container->get(ExportItemAdapter::class);
+        return $exportItemAdapter->adapt($this->xmlFileConverter->createItem($productEntity->getId()), $productEntity);
+
         $xmlProduct = new XmlProduct(
             $productEntity,
             $this->router,

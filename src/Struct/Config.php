@@ -233,4 +233,14 @@ class Config extends Struct
     {
         return $this->filterPosition;
     }
+
+    public function isIntegrationTypeDirectIntegration(): bool
+    {
+        return $this->integrationType === IntegrationType::DI;
+    }
+
+    public function isIntegrationTypeApi(): bool
+    {
+        return $this->integrationType === IntegrationType::API;
+    }
 }

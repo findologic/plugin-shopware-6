@@ -82,9 +82,66 @@
             <argument type="service" id="router"/>
         </service>
 
+        <service
+                id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory"
+                class="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory"
+        >
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter"/>
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter"
+                class="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter"
+        >
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config"/>
+            <argument type="service" id="fin_search.dynamic_product_group"/>
+            <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator"/>
+            <argument type="service" id="fin_search.sales_channel_context"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService"/>
+            <argument type="service" id="fin_search.export_context"/>
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter"
+                class="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter"
+        >
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"
+                class="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"
+        >
+            <argument type="service" id="fin_search.export_context"/>
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter"
+                class="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter"
+        >
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService"/>
+            <argument type="service" id="fin_search.sales_channel_context"/>
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Export\ExportItemAdapter"
+                class="FINDOLOGIC\FinSearch\Export\ExportItemAdapter"
+                public="true"
+        >
+            <argument type="service" id="service_container"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory"/>
+            <argument type="service" id="fin_search.export_context"/>
+        </service>
+
         <service id="fin_search.sales_channel_context" synthetic="true" public="true"/>
         <service id="fin_search.product_service" synthetic="true" public="true"/>
         <service id="fin_search.dynamic_product_group" synthetic="true" public="true"/>
+        <service id="fin_search.export_context" synthetic="true" public="true"/>
 
         <!-- Storefront -->
 
