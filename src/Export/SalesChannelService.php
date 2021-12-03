@@ -106,7 +106,6 @@ class SalesChannelService
             $languageId
         );
 
-        return Utils::filterSalesChannelDomainsWithoutHeadlessDomain($domains)
-            ->first();
+        return Utils::filterSalesChannelDomainsWithoutHeadlessDomain($domains)->first();
     }
 }
