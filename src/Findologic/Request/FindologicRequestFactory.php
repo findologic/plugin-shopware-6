@@ -79,6 +79,31 @@ abstract class FindologicRequestFactory
         return $searchNavigationRequest;
     }
 
+    /**
+     * @throws InvalidArgumentException
+     * @throws InconsistentCriteriaIdsException
+     */
+    protected function getPluginVersion(): string
+    {
+        $item = $this->cache->getItem(self::CACHE_VERSION_KEY);
+        if (empty($item->get())) {
+            $criteria = new Criteria();
+            $criteria->setLimit(1);
+            $criteria->addFilter(new EqualsFilter('name', 'FinSearch'));
+
+            $result = $this->container->get('plugin.repository')->search($criteria, Context::createDefaultContext());
+
+            /** @var PluginEntity $plugin */
+            $plugin = $result->first();
+            $item->set($plugin->getVersion());
+            $item->expiresAfter(self::CACHE_VERSION_LIFETIME);
+
+            $this->cache->save($item);
+        }
+
+        return $item->get();
+    }
+
     private function fetchClientIp(): string
     {
         if (isset($_SERVER['HTTP_CLIENT_IP'])) {
@@ -108,31 +133,6 @@ abstract class FindologicRequestFactory
         $ipAddress = implode(',', array_unique(array_map('trim', explode(',', $ipAddress))));
 
         return $ipAddress;
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     * @throws InconsistentCriteriaIdsException
-     */
-    protected function getPluginVersion(): string
-    {
-        $item = $this->cache->getItem(self::CACHE_VERSION_KEY);
-        if (empty($item->get())) {
-            $criteria = new Criteria();
-            $criteria->setLimit(1);
-            $criteria->addFilter(new EqualsFilter('name', 'FinSearch'));
-
-            $result = $this->container->get('plugin.repository')->search($criteria, Context::createDefaultContext());
-
-            /** @var PluginEntity $plugin */
-            $plugin = $result->first();
-            $item->set($plugin->getVersion());
-            $item->expiresAfter(self::CACHE_VERSION_LIFETIME);
-
-            $this->cache->save($item);
-        }
-
-        return $item->get();
     }
 
     /**
