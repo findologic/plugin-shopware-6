@@ -20,8 +20,8 @@ class ExportContext
 
     public function __construct(
         string $shopkey,
-        array $customerGroups,
-        ?CategoryEntity $navigationRootCategory
+        array $customerGroups = [],
+        ?CategoryEntity $navigationRootCategory = null
     ) {
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;

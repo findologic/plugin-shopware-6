@@ -114,6 +114,7 @@
                 id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"
                 class="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"
         >
+            <argument type="service" id="fin_search.sales_channel_context"/>
             <argument type="service" id="fin_search.export_context"/>
         </service>
 

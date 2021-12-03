@@ -4,12 +4,32 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
+use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
+use Shopware\Core\Framework\Context;
 use Shopware\Storefront\Framework\Routing\Router;
 
 class ProductIdExportTest extends XmlExportTest
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        DynamicProductGroupService::getInstance(
+            $this->getContainer(),
+            $this->getContainer()->get('serializer.mapping.cache.symfony'),
+            Context::createDefaultContext(),
+            'ABCDABCDABCDABCDABCDABCDABCDABCD',
+            0
+        );
+        $this->getContainer()->set(
+            'fin_search.export_context',
+            new ExportContext('ABCDABCDABCDABCDABCDABCDABCDABCD')
+        );
+    }
+
     public function testProductsInCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
     {
         $product = $this->createVisibleTestProduct();

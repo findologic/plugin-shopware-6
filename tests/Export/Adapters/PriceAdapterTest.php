@@ -37,6 +37,7 @@ class PriceAdapterTest extends TestCase
         parent::setUp();
 
         $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->getContainer()->set('fin_search.export_context', new ExportContext(
             'ABCDABCDABCDABCDABCDABCDABCDABCD',
             [],

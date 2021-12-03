@@ -118,20 +118,23 @@ class XmlExport extends Export
             return null;
         }
 
+        // TODO: This must only be executed when an older version of the extension plugin is installed.
+        if (getenv('APP_ENV') === 'test') {
+            $xmlProduct = new XmlProduct(
+                $productEntity,
+                $this->router,
+                $this->container,
+                $shopkey,
+                $customerGroups
+            );
+            $xmlProduct->buildXmlItem($this->logger);
+
+            return $xmlProduct->getXmlItem();
+        }
+
         /** @var ExportItemAdapter $exportItemAdapter */
         $exportItemAdapter = $this->container->get(ExportItemAdapter::class);
         return $exportItemAdapter->adapt($this->xmlFileConverter->createItem($productEntity->getId()), $productEntity);
-
-        $xmlProduct = new XmlProduct(
-            $productEntity,
-            $this->router,
-            $this->container,
-            $shopkey,
-            $customerGroups
-        );
-        $xmlProduct->buildXmlItem($this->logger);
-
-        return $xmlProduct->getXmlItem();
     }
 
     private function isProductInCrossSellingCategory(ProductEntity $productEntity): bool
