@@ -55,14 +55,15 @@ jobs:
           cd development
           ./psh.phar init
 
-      - name: Install Plugin dependencies
+      - name: Install dependencies
         run: |
+          ./psh.phar storefront:install-dependencies
           cd plugin-shopware-6
           composer install --no-interaction
           cd src/Resources/app/storefront
           npm ci
 
-      - name: Install Plugin
+      - name: Install plugin
         run: |
           mv plugin-shopware-6 development/custom/plugins
           cd development
