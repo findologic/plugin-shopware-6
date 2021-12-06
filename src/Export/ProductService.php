@@ -266,7 +266,9 @@ class ProductService
         /** @var ProductEntity $product */
         foreach ($result->getEntities() as $product) {
             if ($product->getMainVariantId() !== null) {
-                $product = $this->getRealMainProductWithVariants($product->getMainVariantId());
+                if (!$product = $this->getRealMainProductWithVariants($product->getMainVariantId())) {
+                    continue;
+                }
             }
 
             $this->assignChildrenOrSiblings($product);
@@ -276,7 +278,7 @@ class ProductService
         return $products;
     }
 
-    protected function getRealMainProductWithVariants(string $realMainProductId): ProductEntity
+    protected function getRealMainProductWithVariants(string $realMainProductId): ?ProductEntity
     {
         return $this->getVisibleProducts(1, 0, $realMainProductId)->first();
     }

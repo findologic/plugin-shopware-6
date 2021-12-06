@@ -331,4 +331,94 @@ class ProductServiceTest extends TestCase
             }
         }
     }
+
+    public function testProductIsNotFoundIfMainVariantIsNotAvailableForSalesChannel(): void
+    {
+        $expectedParentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+        $expectedSecondVariantId = Uuid::randomHex();
+        $expectedMainVariantId = $expectedSecondVariantId;
+
+        $firstOptionId = Uuid::randomHex();
+        $secondOptionId = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+
+        $this->createVisibleTestProduct([
+            'id' => $expectedParentId,
+            'active' => false,
+            'configuratorSettings' => [
+                [
+                    'option' => [
+                        'id' => $firstOptionId,
+                        'name' => 'Red',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $secondOptionId,
+                        'name' => 'Orange',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+            ],
+            'configuratorGroupConfig' => [
+                [
+                    'id' => $optionGroupId,
+                    // Explicitly set this to false. This tells Shopware to consider the mainVariationId (if set).
+                    'expressionForListings' => false,
+                    'representation' => 'box'
+                ]
+            ],
+        ]);
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]));
+
+        // Create main variant, but make it not available for the sales channel.
+        $this->createTestProduct($this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+            'visibilities' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'visibility' => 0
+                ]
+            ]
+        ]));
+
+        $this->getContainer()->get('product.repository')->update([
+            [
+                'id' => $expectedFirstVariantId,
+                'mainVariantId' => $expectedMainVariantId
+            ],
+            [
+                'id' => $expectedSecondVariantId,
+                'mainVariantId' => $expectedMainVariantId
+            ]
+        ], Context::createDefaultContext());
+
+        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+
+        $this->assertEmpty($result->getElements());
+    }
 }

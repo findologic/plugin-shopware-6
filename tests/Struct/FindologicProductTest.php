@@ -469,6 +469,35 @@ class FindologicProductTest extends TestCase
         $this->assertEmpty($attributes);
     }
 
+    public function testCustomFieldsContainingZeroAsStringAreProperlyExported(): void
+    {
+        $productEntity = $this->createTestProduct([
+            'customFields' => [
+                'nice' => "0\n"
+            ]
+        ], true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+
+        $this->assertCount(1, $attributes);
+        $this->assertSame(['0'], $attributes[0]->getValues());
+    }
+
     public function multiSelectCustomFieldsProvider(): array
     {
         return [
@@ -1578,38 +1607,6 @@ class FindologicProductTest extends TestCase
 
         $this->assertSame($isPriceAvailable, $hasListPrice);
         $this->assertSame($isPriceAvailable, $hasListPriceNet);
-    }
-
-    private function createCurrency(): string
-    {
-        $currencyId = Uuid::randomHex();
-
-        $cashRoundingConfig = [
-            'decimals' => 2,
-            'interval' => 1,
-            'roundForNet' => false
-        ];
-
-        /** @var EntityRepositoryInterface $currencyRepo */
-        $currencyRepo = $this->getContainer()->get('currency.repository');
-        $currencyRepo->upsert(
-            [
-                [
-                    'id' => $currencyId,
-                    'isoCode' => 'FDL',
-                    'factor' => 1,
-                    'symbol' => 'F',
-                    'decimalPrecision' => 2,
-                    'name' => 'Findologic Currency',
-                    'shortName' => 'FL',
-                    'itemRounding' => $cashRoundingConfig,
-                    'totalRounding' => $cashRoundingConfig,
-                ]
-            ],
-            $this->salesChannelContext->getContext()
-        );
-
-        return $currencyId;
     }
 
     public function testCatUrlsContainDomainPathAsPrefix(): void

@@ -792,31 +792,43 @@ class FindologicProduct extends Struct
     /**
      * @return Price[]
      */
-    protected function getPricesFromProduct(ProductEntity $variant): array
+    protected function getPricesFromProduct(ProductEntity $product): array
     {
         $prices = [];
+        $productPrice = $product->getPrice();
+        if (!$productPrice || !$productPrice->first()) {
+            return [];
+        }
 
-        foreach ($variant->getPrice() as $item) {
-            foreach ($this->customerGroups as $customerGroup) {
-                $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
-                if (Utils::isEmpty($userGroupHash)) {
-                    continue;
-                }
+        $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+        $currencyPrice = $productPrice->getCurrencyPrice($currencyId, false);
 
-                $price = new Price();
-                if ($customerGroup->getDisplayGross()) {
-                    $price->setValue($item->getGross(), $userGroupHash);
-                } else {
-                    $price->setValue($item->getNet(), $userGroupHash);
-                }
+        // If no currency price is available, fallback to the default price.
+        if (!$currencyPrice) {
+            $currencyPrice = $productPrice->first();
+        }
 
-                $prices[] = $price;
+        foreach ($this->customerGroups as $customerGroup) {
+            $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
+            if (Utils::isEmpty($userGroupHash)) {
+                continue;
             }
 
+            $netPrice = $currencyPrice->getNet();
+            $grossPrice = $currencyPrice->getGross();
             $price = new Price();
-            $price->setValue($item->getGross());
+            if ($customerGroup->getDisplayGross()) {
+                $price->setValue($grossPrice, $userGroupHash);
+            } else {
+                $price->setValue($netPrice, $userGroupHash);
+            }
+
             $prices[] = $price;
         }
+
+        $price = new Price();
+        $price->setValue($currencyPrice->getGross());
+        $prices[] = $price;
 
         return $prices;
     }
@@ -830,7 +842,6 @@ class FindologicProduct extends Struct
         if (Utils::isEmpty($prices)) {
             throw new ProductHasNoPricesException($this->product);
         }
-
         $this->prices = array_merge($this->prices, $prices);
     }
 
@@ -865,7 +876,8 @@ class FindologicProduct extends Struct
                     continue;
                 }
 
-                $customFieldAttribute = new Attribute($key, array_filter((array)$cleanedValue));
+                // Filter null, false and empty strings, but not "0". See: https://stackoverflow.com/a/27501297/6281648
+                $customFieldAttribute = new Attribute($key, array_filter((array)$cleanedValue, 'strlen'));
                 $attributes[] = $customFieldAttribute;
             }
         }
