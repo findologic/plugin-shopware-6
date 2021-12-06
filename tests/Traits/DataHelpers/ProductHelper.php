@@ -83,7 +83,7 @@ trait ProductHelper
             'stock' => 10,
             'ean' => 'FL001',
             'description' => 'FINDOLOGIC Description',
-            'custom_search_keyword' => [
+            'tags' => [
                 ['id' => Uuid::randomHex(), 'name' => 'FINDOLOGIC Tag']
             ],
             'name' => 'FINDOLOGIC Product',

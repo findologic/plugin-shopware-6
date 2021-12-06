@@ -365,6 +365,7 @@ class FindologicProductTest extends TestCase
     {
         $productEntity = $this->createTestProduct();
 
+        $productEntity->setCustomSearchKeywords(['FINDOLOGIC Keyword']);
         $productKeyword = new Keyword('FINDOLOGIC Keyword');
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
