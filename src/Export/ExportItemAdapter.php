@@ -6,8 +6,8 @@ namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory;
-use FINDOLOGIC\FinSearch\Export\Events\ItemAfterAdaptEvent;
-use FINDOLOGIC\FinSearch\Export\Events\ItemBeforeAdaptEvent;
+use FINDOLOGIC\FinSearch\Export\Events\AfterItemAdaptEvent;
+use FINDOLOGIC\FinSearch\Export\Events\BeforeItemAdaptEvent;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -53,7 +53,7 @@ class ExportItemAdapter implements ExportItemAdapterInterface
 
     public function adapt(Item $item, ProductEntity $product): Item
     {
-        $this->eventDispatcher->dispatch(new ItemBeforeAdaptEvent($product, $item), ItemBeforeAdaptEvent::NAME);
+        $this->eventDispatcher->dispatch(new BeforeItemAdaptEvent($product, $item), BeforeItemAdaptEvent::NAME);
 
         $item->setName($this->adapterFactory->getNameAdapter()->adapt($product));
         foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
@@ -62,7 +62,7 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
         $item->setUrl($this->adapterFactory->getUrlAdapter()->adapt($product));
 
-        $this->eventDispatcher->dispatch(new ItemAfterAdaptEvent($product, $item), ItemAfterAdaptEvent::NAME);
+        $this->eventDispatcher->dispatch(new AfterItemAdaptEvent($product, $item), AfterItemAdaptEvent::NAME);
 
         return $item;
     }

@@ -8,9 +8,9 @@ use FINDOLOGIC\Export\Data\Item;
 use Shopware\Core\Content\Product\ProductEntity;
 use Symfony\Contracts\EventDispatcher\Event;
 
-class ItemAfterAdaptEvent extends Event
+class BeforeItemAdaptEvent extends Event
 {
-    public const NAME = 'fin_search.export.item_after_adapt';
+    public const NAME = 'fin_search.export.before_item_adapt';
 
     /** @var ProductEntity */
     protected $product;
