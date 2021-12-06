@@ -54,10 +54,10 @@ jobs:
           cp plugin-shopware-6/.github/.psh.yaml.override development
           cd development
           ./psh.phar init
+          ./psh.phar storefront:install-dependencies
 
       - name: Install dependencies
         run: |
-          ./psh.phar storefront:install-dependencies
           cd plugin-shopware-6
           composer install --no-interaction
           cd src/Resources/app/storefront
