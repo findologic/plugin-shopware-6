@@ -59,6 +59,8 @@ jobs:
         run: |
           cd plugin-shopware-6
           composer install --no-interaction
+          cd src/Resources/app/storefront
+          npm ci
 
       - name: Install Plugin
         run: |
@@ -67,7 +69,12 @@ jobs:
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
 
-      - name: Run test suite
+      - name: Run PHPUnit test suite
         run: |
           cd development/custom/plugins/plugin-shopware-6
           SYMFONY_DEPRECATIONS_HELPER=disabled composer test
+
+      - name: Run storefront Jest test suite
+        run: |
+          cd development/custom/plugins/plugin-shopware-6/src/Resources/app/storefront
+          npm run test
