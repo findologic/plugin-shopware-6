@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/findologic/plugin-shopware-6.git"
+    "url": "https://github.com/findologic/plugin-shopware-6.git"
   },
   "author": "FINDOLOGIC GmbH",
   "license": "GPL-3.0-or-later",
