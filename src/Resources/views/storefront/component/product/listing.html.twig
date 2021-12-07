@@ -12,7 +12,7 @@
             {{ parent() }}
         {% endblock %}
 
-        {% if searchResult.total > 0 %}
+        {% if searchResult.total > 1 %}
             {% block element_product_listing_pagination_nav_bottom %}
                 {{ parent() }}
             {% endblock %}
