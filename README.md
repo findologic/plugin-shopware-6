@@ -76,11 +76,15 @@ Tests can also be run separately within the IDE. Simply ensure to set `phpunit.x
 
 #### Setup
 
-1. Install dependencies
+1. Navigate to the storefront folder
+   ```bash
+   cd src/Resources/app/storefront
+   ```
+2. Install dependencies
    ```bash
    npm install
    ```
-2. Run unit-tests using jest
+3. Run unit-tests using jest
    ```bash
    npm run test
    ```
