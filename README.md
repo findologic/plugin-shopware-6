@@ -66,6 +66,29 @@ Tests can also be run separately within the IDE. Simply ensure to set `phpunit.x
 
 ![PHPUnit configuration](docs/images/phpunit_configuration.png)
 
+### Run Storefront Jest tests
+
+#### Prerequisites
+
+* npm
+* node
+* See [Shopware 6 environment requirements](https://developer.shopware.com/docs/guides/installation/overview#environment) minimal required versions.
+
+#### Setup
+
+1. Install dependencies
+   ```bash
+   npm install
+   ```
+2. Run unit-tests using jest
+   ```bash
+   npm run test
+   ```
+
+After dependency installation all tests can also be run via the IDE without any additional configuration.
+
+![Running Jest test in IDE](docs/images/jest_test_ide.png)
+
 ### Developing custom JavaScript plugins
 
 - Check out the
