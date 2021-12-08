@@ -40,7 +40,6 @@ use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-
 use function method_exists;
 
 class FindologicProduct extends Struct
@@ -356,11 +355,13 @@ class FindologicProduct extends Struct
 
     protected function setKeywords(): void
     {
-        $keywords = $this->product->getCustomSearchKeywords();
-        if ($keywords !== null && sizeof($keywords) > 0) {
+        $criteria = new Criteria([$this->product->getId()]);
+        Utils::addProductAssociations($criteria);
+        $keywords = $this->product->getSearchKeywords();
+        if ($keywords !== null && $keywords->count() > 0) {
             foreach ($keywords as $keyword) {
                 if (!Utils::isEmpty($keyword)) {
-                    $this->keywords[] = new Keyword($keyword);
+                    $this->keywords[] = new Keyword($keyword->getKeyword());
                 }
             }
         }
@@ -588,6 +589,14 @@ class FindologicProduct extends Struct
         return $this->properties && !empty($this->properties);
     }
 
+    /**
+     * @return Attribute[]
+     */
+    public function getCustomFields(): array
+    {
+        return $this->customFields;
+    }
+
     protected function setVendors(): void
     {
         $manufacturer = $this->product->getManufacturer();
@@ -666,6 +675,24 @@ class FindologicProduct extends Struct
         }
 
         return $properties;
+    }
+
+    /**
+     * For API Integrations, we have to remove special characters from the attribute key as a requirement for
+     * sending data via API.
+     */
+    protected function getAttributeKey(?string $key): ?string
+    {
+        if ($this->isApiIntegration()) {
+            return Utils::removeSpecialChars($key);
+        }
+
+        return $key;
+    }
+
+    protected function isApiIntegration(): bool
+    {
+        return $this->config->getIntegrationType() === IntegrationType::API;
     }
 
     /**
@@ -874,14 +901,6 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @return Attribute[]
-     */
-    public function getCustomFields(): array
-    {
-        return $this->customFields;
-    }
-
-    /**
      * @param array<string, int, bool>|string|int|bool $value
      *
      * @return array<string, int, bool>|string|int|bool
@@ -972,23 +991,5 @@ class FindologicProduct extends Struct
     protected function isDirectIntegration(): bool
     {
         return $this->config->getIntegrationType() === IntegrationType::DI;
-    }
-
-    protected function isApiIntegration(): bool
-    {
-        return $this->config->getIntegrationType() === IntegrationType::API;
-    }
-
-    /**
-     * For API Integrations, we have to remove special characters from the attribute key as a requirement for
-     * sending data via API.
-     */
-    protected function getAttributeKey(?string $key): ?string
-    {
-        if ($this->isApiIntegration()) {
-            return Utils::removeSpecialChars($key);
-        }
-
-        return $key;
     }
 }
