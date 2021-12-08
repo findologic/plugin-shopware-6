@@ -355,8 +355,6 @@ class FindologicProduct extends Struct
 
     protected function setKeywords(): void
     {
-        $criteria = new Criteria([$this->product->getId()]);
-        Utils::addProductAssociations($criteria);
         $keywords = $this->product->getSearchKeywords();
         if ($keywords !== null && $keywords->count() > 0) {
             foreach ($keywords as $keyword) {

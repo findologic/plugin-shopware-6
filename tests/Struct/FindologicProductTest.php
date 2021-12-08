@@ -373,7 +373,6 @@ class FindologicProductTest extends TestCase
     public function testProduct(): void
     {
         $productEntity = $this->createTestProduct();
-        $productKeyword = new Keyword('FINDOLOGIC001');
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
@@ -398,6 +397,7 @@ class FindologicProductTest extends TestCase
             $config
         );
 
+        $productKeyword = new Keyword($findologicProduct->getKeywords()[0]->getValue());
         $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
         $urlBuilderService->setSalesChannelContext($this->salesChannelContext);
 
