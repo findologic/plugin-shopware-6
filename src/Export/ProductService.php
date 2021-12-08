@@ -44,13 +44,13 @@ class ProductService
     ) {
         $this->container = $container;
         $this->salesChannelContext = $salesChannelContext;
-        $this->config = $config;
+        $this->config = $config ?? $container->get(Config::class);
     }
 
     public static function getInstance(
         ContainerInterface $container,
         ?SalesChannelContext $salesChannelContext,
-        ?Config $config
+        ?Config $config = null
     ): ProductService {
         if ($container->has(self::CONTAINER_ID)) {
             $productService = $container->get(self::CONTAINER_ID);
