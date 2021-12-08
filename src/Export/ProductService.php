@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export;
 
+use FINDOLOGIC\FinSearch\Findologic\MainVariant;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
@@ -26,31 +28,43 @@ class ProductService
 {
     public const CONTAINER_ID = 'fin_search.product_service';
 
+    /** @var Config|null */
+    private $config;
+
     /** @var ContainerInterface */
     private $container;
 
     /** @var SalesChannelContext|null */
     private $salesChannelContext;
 
-    public function __construct(ContainerInterface $container, ?SalesChannelContext $salesChannelContext = null)
-    {
+    public function __construct(
+        ContainerInterface $container,
+        ?SalesChannelContext $salesChannelContext = null,
+        ?Config $config = null
+    ) {
         $this->container = $container;
         $this->salesChannelContext = $salesChannelContext;
+        $this->config = $config;
     }
 
     public static function getInstance(
         ContainerInterface $container,
-        ?SalesChannelContext $salesChannelContext
+        ?SalesChannelContext $salesChannelContext,
+        ?Config $config
     ): ProductService {
         if ($container->has(self::CONTAINER_ID)) {
             $productService = $container->get(self::CONTAINER_ID);
         } else {
-            $productService = new ProductService($container, $salesChannelContext);
+            $productService = new ProductService($container, $salesChannelContext, $config);
             $container->set(self::CONTAINER_ID, $productService);
         }
 
         if ($salesChannelContext && !$productService->getSalesChannelContext()) {
             $productService->setSalesChannelContext($salesChannelContext);
+        }
+
+        if ($config && !$productService->getConfig()) {
+            $productService->setConfig($config);
         }
 
         return $productService;
@@ -61,9 +75,19 @@ class ProductService
         $this->salesChannelContext = $salesChannelContext;
     }
 
+    public function setConfig(Config $config): void
+    {
+        $this->config = $config;
+    }
+
     public function getSalesChannelContext(): ?SalesChannelContext
     {
         return $this->salesChannelContext;
+    }
+
+    public function getConfig(): ?Config
+    {
+        return $this->config;
     }
 
     public function getTotalProductCount(): int
@@ -275,7 +299,37 @@ class ProductService
             $products->add($product);
         }
 
-        return $products;
+        if ($this->config->getMainVariant() === MainVariant::SHOPWARE_DEFAULT) {
+            return $products;
+        }
+
+        return $this->getProductsByMainVariantBasedOnConfig($products);
+    }
+
+    protected function getProductsByMainVariantBasedOnConfig(ProductCollection $products): ProductCollection
+    {
+        $mainVariantConfig = $this->config->getMainVariant();
+        $variantProducts = new ProductCollection();
+
+        foreach ($products as $product) {
+            switch ($mainVariantConfig) {
+                case MainVariant::MAIN_PARENT:
+                    $parent = $this->getParentByMainProduct($product);
+                    break;
+                case MainVariant::CHEAPEST:
+                    $parent = $this->getParentByCheapestVariant($product);
+                    break;
+                default:
+                    $parent = null;
+                    break;
+            }
+
+            if ($parent) {
+                $variantProducts->add($parent);
+            }
+        }
+
+        return $variantProducts->count() > 0 ? $variantProducts : $products;
     }
 
     protected function getRealMainProductWithVariants(string $realMainProductId): ?ProductEntity
@@ -287,5 +341,54 @@ class ProductService
     {
         $children = $this->getChildrenOrSiblings($product);
         $product->setChildren($children);
+    }
+
+    private function getParentByMainProduct(ProductEntity $product): ProductEntity
+    {
+        $children = new ProductCollection();
+        foreach ($product->getChildren() as $child) {
+            if ($child->getId() !== $product->getId()) {
+                $children->add($child);
+            }
+        }
+
+        // Reset the current product's children as it will be now a child of the configured variant.
+        $product->setChildren($children);
+
+        return $product;
+    }
+
+    private function getParentByCheapestVariant(ProductEntity $product): ProductEntity
+    {
+        $parent = null;
+        $cheapestPrice = 0;
+        $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+        $children = $product->getChildren();
+        foreach ($children as $child) {
+            $price = $child->getCurrencyPrice($currencyId);
+            if (!$price) {
+                continue;
+            }
+
+            if (!$cheapestPrice || $price->getGross() < $cheapestPrice) {
+                $cheapestPrice = $price->getGross();
+                $parent = $child;
+            }
+        }
+
+        $configuredChildren = $children->filter(static function (ProductEntity $child) use ($parent) {
+            return $child->getId() !== $parent->getId();
+        });
+
+        if ($parent) {
+            // Reset the current product's children as it will be now a child of the configured variant.
+            $product->setChildren(new ProductCollection());
+            $configuredChildren->add($product);
+            $parent->setChildren($configuredChildren);
+
+            return $parent;
+        }
+
+        return $product;
     }
 }

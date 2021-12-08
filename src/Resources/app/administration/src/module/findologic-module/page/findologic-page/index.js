@@ -131,6 +131,9 @@ Component.register('findologic-page', {
                     if (!values['FinSearch.config.filterPosition']) {
                         values['FinSearch.config.filterPosition'] = 'top';
                     }
+                    if (!values['FinSearch.config.mainVariant']) {
+                        values['FinSearch.config.mainVariant'] = 'default';
+                    }
 
                     this.actualConfigData = values;
                     this.isLoading = false;

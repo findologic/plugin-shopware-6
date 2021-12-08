@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Struct;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
+use FINDOLOGIC\FinSearch\Findologic\MainVariant;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Cache\InvalidArgumentException;
@@ -27,7 +28,8 @@ class Config extends Struct
         'navigationResultContainer',
         'integrationType',
         'initialized',
-        'filterPosition'
+        'filterPosition',
+        'mainVariant'
     ];
 
     /** @var FindologicConfigService */
@@ -62,6 +64,9 @@ class Config extends Struct
 
     /** @var string */
     private $filterPosition;
+
+    /** @var string */
+    private $mainVariant;
 
     /** @var array */
     private $crossSellingCategories = [];
@@ -162,6 +167,12 @@ class Config extends Struct
             'FinSearch.config.filterPosition',
             FilterPosition::TOP
         );
+        $this->mainVariant = $this->getConfig(
+            $salesChannelId,
+            $languageId,
+            'FinSearch.config.mainVariant',
+            MainVariant::SHOPWARE_DEFAULT
+        );
 
         $this->initializeReadonlyConfig($salesChannelId, $languageId);
 
@@ -232,5 +243,21 @@ class Config extends Struct
     public function getFilterPosition(): string
     {
         return $this->filterPosition;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMainVariant(): string
+    {
+        return $this->mainVariant;
+    }
+
+    /**
+     * @param string $mainVariant
+     */
+    public function setMainVariant(string $mainVariant): void
+    {
+        $this->mainVariant = $mainVariant;
     }
 }
