@@ -40,7 +40,6 @@ use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-
 use function method_exists;
 
 class FindologicProduct extends Struct
@@ -192,19 +191,6 @@ class FindologicProduct extends Struct
         return $this->name;
     }
 
-    /**
-     * @throws ProductHasNoNameException
-     */
-    protected function setName(): void
-    {
-        $name = $this->product->getTranslation('name');
-        if (Utils::isEmpty($name)) {
-            throw new ProductHasNoNameException($this->product);
-        }
-
-        $this->name = Utils::removeControlCharacters($name);
-    }
-
     public function hasName(): bool
     {
         return !Utils::isEmpty($this->name);
@@ -221,18 +207,6 @@ class FindologicProduct extends Struct
         }
 
         return $this->attributes;
-    }
-
-    /**
-     * @throws ProductHasNoCategoriesException
-     */
-    protected function setAttributes(): void
-    {
-        $this->setCategoriesAndCatUrls();
-        $this->setVendors();
-        $this->setAttributeProperties();
-        $this->setCustomFieldAttributes();
-        $this->setAdditionalAttributes();
     }
 
     public function hasAttributes(): bool
@@ -253,15 +227,6 @@ class FindologicProduct extends Struct
         return $this->prices;
     }
 
-    /**
-     * @throws ProductHasNoPricesException
-     */
-    protected function setPrices(): void
-    {
-        $this->setVariantPrices();
-        $this->setProductPrices();
-    }
-
     public function hasPrices(): bool
     {
         return !Utils::isEmpty($this->prices);
@@ -277,14 +242,6 @@ class FindologicProduct extends Struct
         }
 
         return $this->description;
-    }
-
-    protected function setDescription(): void
-    {
-        $description = $this->product->getTranslation('description');
-        if (!Utils::isEmpty($description)) {
-            $this->description = Utils::cleanString($description);
-        }
     }
 
     public function hasDescription(): bool
@@ -304,16 +261,6 @@ class FindologicProduct extends Struct
         return $this->dateAdded;
     }
 
-    protected function setDateAdded(): void
-    {
-        $releaseDate = $this->product->getReleaseDate();
-        if ($releaseDate !== null) {
-            $dateAdded = new DateAdded();
-            $dateAdded->setDateValue($releaseDate);
-            $this->dateAdded = $dateAdded;
-        }
-    }
-
     public function hasDateAdded(): bool
     {
         return $this->dateAdded && !empty($this->dateAdded);
@@ -329,11 +276,6 @@ class FindologicProduct extends Struct
         }
 
         return $this->url;
-    }
-
-    protected function setUrl(): void
-    {
-        $this->url = $this->urlBuilderService->buildProductUrl($this->product);
     }
 
     public function hasUrl(): bool
@@ -354,18 +296,6 @@ class FindologicProduct extends Struct
         return $this->keywords;
     }
 
-    protected function setKeywords(): void
-    {
-        $keywords = $this->product->getSearchKeywords();
-        if ($keywords !== null && $keywords->count() > 0) {
-            foreach ($keywords as $keyword) {
-                if (!Utils::isEmpty($keyword)) {
-                    $this->keywords[] = new Keyword($keyword->getKeyword());
-                }
-            }
-        }
-    }
-
     public function hasKeywords(): bool
     {
         return $this->keywords && !empty($this->keywords);
@@ -384,11 +314,6 @@ class FindologicProduct extends Struct
         return $this->images;
     }
 
-    protected function setImages(): void
-    {
-        $this->images = $this->productImageService->getProductImages($this->product);
-    }
-
     public function hasImages(): bool
     {
         return $this->images && !empty($this->images);
@@ -397,6 +322,148 @@ class FindologicProduct extends Struct
     public function getSalesFrequency(): int
     {
         return $this->salesFrequency;
+    }
+
+    public function hasSalesFrequency(): bool
+    {
+        // In case a product has no sales, it's sales frequency would still be 0.
+        return true;
+    }
+
+    /**
+     * @return Usergroup[]
+     * @throws AccessEmptyPropertyException
+     */
+    public function getUserGroups(): array
+    {
+        if (!$this->hasUserGroups()) {
+            throw new AccessEmptyPropertyException($this->product);
+        }
+
+        return $this->userGroups;
+    }
+
+    public function hasUserGroups(): bool
+    {
+        return $this->userGroups && !empty($this->userGroups);
+    }
+
+    /**
+     * @return Ordernumber[]
+     * @throws AccessEmptyPropertyException
+     */
+    public function getOrdernumbers(): array
+    {
+        if (!$this->hasOrdernumbers()) {
+            throw new AccessEmptyPropertyException($this->product);
+        }
+
+        return $this->ordernumbers;
+    }
+
+    public function hasOrdernumbers(): bool
+    {
+        return $this->ordernumbers && !empty($this->ordernumbers);
+    }
+
+    /**
+     * @return Property[]
+     * @throws AccessEmptyPropertyException
+     */
+    public function getProperties(): array
+    {
+        if (!$this->hasProperties()) {
+            throw new AccessEmptyPropertyException($this->product);
+        }
+
+        return $this->properties;
+    }
+
+    public function hasProperties(): bool
+    {
+        return $this->properties && !empty($this->properties);
+    }
+
+    /**
+     * @return Attribute[]
+     */
+    public function getCustomFields(): array
+    {
+        return $this->customFields;
+    }
+
+    /**
+     * @throws ProductHasNoNameException
+     */
+    protected function setName(): void
+    {
+        $name = $this->product->getTranslation('name');
+        if (Utils::isEmpty($name)) {
+            throw new ProductHasNoNameException($this->product);
+        }
+
+        $this->name = Utils::removeControlCharacters($name);
+    }
+
+    /**
+     * @throws ProductHasNoCategoriesException
+     */
+    protected function setAttributes(): void
+    {
+        $this->setCategoriesAndCatUrls();
+        $this->setVendors();
+        $this->setAttributeProperties();
+        $this->setCustomFieldAttributes();
+        $this->setAdditionalAttributes();
+    }
+
+    /**
+     * @throws ProductHasNoPricesException
+     */
+    protected function setPrices(): void
+    {
+        $this->setVariantPrices();
+        $this->setProductPrices();
+    }
+
+    protected function setDescription(): void
+    {
+        $description = $this->product->getTranslation('description');
+        if (!Utils::isEmpty($description)) {
+            $this->description = Utils::cleanString($description);
+        }
+    }
+
+    protected function setDateAdded(): void
+    {
+        $releaseDate = $this->product->getReleaseDate();
+        if ($releaseDate !== null) {
+            $dateAdded = new DateAdded();
+            $dateAdded->setDateValue($releaseDate);
+            $this->dateAdded = $dateAdded;
+        }
+    }
+
+    protected function setUrl(): void
+    {
+        $this->url = $this->urlBuilderService->buildProductUrl($this->product);
+    }
+
+    protected function setKeywords(): void
+    {
+        $keywords = $this->product->getSearchKeywords();
+        if ($keywords !== null && $keywords->count() > 0) {
+            foreach ($keywords as $keyword) {
+                if (!Utils::isEmpty($keyword)) {
+                    $this->keywords[] = new Keyword($keyword->getKeyword());
+                }
+            }
+        }
+    }
+
+    protected function setImages(): void
+    {
+        $this->images = $this->productImageService->getProductImages($this->product);
     }
 
     protected function setSalesFrequency(): void
@@ -419,25 +486,6 @@ class FindologicProduct extends Struct
         $this->salesFrequency = $orders->getTotal();
     }
 
-    public function hasSalesFrequency(): bool
-    {
-        // In case a product has no sales, it's sales frequency would still be 0.
-        return true;
-    }
-
-    /**
-     * @return Usergroup[]
-     * @throws AccessEmptyPropertyException
-     */
-    public function getUserGroups(): array
-    {
-        if (!$this->hasUserGroups()) {
-            throw new AccessEmptyPropertyException($this->product);
-        }
-
-        return $this->userGroups;
-    }
-
     protected function setUserGroups(): void
     {
         foreach ($this->customerGroups as $customerGroupEntity) {
@@ -447,48 +495,12 @@ class FindologicProduct extends Struct
         }
     }
 
-    public function hasUserGroups(): bool
-    {
-        return $this->userGroups && !empty($this->userGroups);
-    }
-
-    /**
-     * @return Ordernumber[]
-     * @throws AccessEmptyPropertyException
-     */
-    public function getOrdernumbers(): array
-    {
-        if (!$this->hasOrdernumbers()) {
-            throw new AccessEmptyPropertyException($this->product);
-        }
-
-        return $this->ordernumbers;
-    }
-
     protected function setOrdernumbers(): void
     {
         $this->setOrdernumberByProduct($this->product);
         foreach ($this->product->getChildren() as $productEntity) {
             $this->setOrdernumberByProduct($productEntity);
         }
-    }
-
-    public function hasOrdernumbers(): bool
-    {
-        return $this->ordernumbers && !empty($this->ordernumbers);
-    }
-
-    /**
-     * @return Property[]
-     * @throws AccessEmptyPropertyException
-     */
-    public function getProperties(): array
-    {
-        if (!$this->hasProperties()) {
-            throw new AccessEmptyPropertyException($this->product);
-        }
-
-        return $this->properties;
     }
 
     protected function setProperties(): void
@@ -581,19 +593,6 @@ class FindologicProduct extends Struct
             $translated = $this->translateBooleanValue($isMarkedAsTopseller);
             $this->addProperty('product_promotion', $translated);
         }
-    }
-
-    public function hasProperties(): bool
-    {
-        return $this->properties && !empty($this->properties);
-    }
-
-    /**
-     * @return Attribute[]
-     */
-    public function getCustomFields(): array
-    {
-        return $this->customFields;
     }
 
     protected function setVendors(): void
