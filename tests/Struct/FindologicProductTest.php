@@ -389,14 +389,20 @@ class FindologicProductTest extends TestCase
             $config
         );
 
-        $productKeyword = new Keyword($findologicProduct->getKeywords()[0]->getValue());
+        $productKeyword = new Keyword('FINDOLOGIC001');
+        $keywords = $findologicProduct->getKeywords();
+        $this->assertNotCount(0, $keywords);
+        foreach($keywords as $keyword){
+            if($keyword->getValue() === $productKeyword->getValue()){
+                $this->assertEquals($productKeyword,$keyword);
+            }
+        }
         $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
         $urlBuilderService->setSalesChannelContext($this->salesChannelContext);
 
         $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals($productKeyword, $findologicProduct->getKeywords()[0]);
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
