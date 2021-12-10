@@ -35,7 +35,6 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
-use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
@@ -364,15 +363,8 @@ class FindologicProductTest extends TestCase
 
     public function testProduct(): void
     {
-        $productId = '29d554327a16fd51350688cfa9930b29';
-        $languageId = Defaults::LANGUAGE_SYSTEM;
-        $productEntity = $this->createTestProduct([
-            'searchKeywords' => [
-                ['id' => Uuid::randomHex(), 'productId' => $productId, 'languageId' => $languageId, 'keyword' => 'FINDOLOGIC Keyword', 'ranking' => 500]
-            ]
-        ]);
+        $productEntity = $this->createTestProduct();
 
-        $productKeyword = new Keyword('FINDOLOGIC Keyword');
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
@@ -397,13 +389,14 @@ class FindologicProductTest extends TestCase
             $config
         );
 
+        $productKeyword = new Keyword($findologicProduct->getKeywords()[0]->getValue());
         $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
         $urlBuilderService->setSalesChannelContext($this->salesChannelContext);
 
         $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals([$productKeyword], $findologicProduct->getKeywords());
+        $this->assertEquals($productKeyword, $findologicProduct->getKeywords()[0]);
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
