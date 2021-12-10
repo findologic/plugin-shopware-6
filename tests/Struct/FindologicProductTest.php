@@ -35,6 +35,7 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
+use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
@@ -87,6 +88,17 @@ class FindologicProductTest extends TestCase
 
     /** @var EntityRepositoryInterface */
     private $customerRepository;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->router = $this->getContainer()->get('router');
+        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->shopkey = $this->getShopkey();
+        $this->ids = new TestDataCollection(Context::createDefaultContext());
+        $this->customerRepository = $this->getContainer()->get('customer.repository');
+        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
+    }
 
     public function productNameProvider(): array
     {
@@ -275,27 +287,6 @@ class FindologicProductTest extends TestCase
         $this->assertContains(sprintf('/navigation/%s', $categoryId), $attribute->getValues());
     }
 
-    private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
-    {
-        $override = [
-            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
-            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
-        ];
-
-        /** @var FindologicConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $override);
-
-        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
-        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $serviceConfigResource->expects($this->once())
-            ->method('isDirectIntegration')
-            ->willReturn($integrationType === 'Direct Integration');
-
-        return new Config($configServiceMock, $serviceConfigResource);
-    }
-
     /**
      * @throws AccessEmptyPropertyException
      * @throws ProductHasNoCategoriesException
@@ -373,7 +364,15 @@ class FindologicProductTest extends TestCase
 
     public function testProduct(): void
     {
-        $productEntity = $this->createTestProduct();
+        $productId = '29d554327a16fd51350688cfa9930b29';
+        $languageId = Defaults::LANGUAGE_SYSTEM;
+        $productEntity = $this->createTestProduct([
+            'searchKeywords' => [
+                ['id' => Uuid::randomHex(), 'productId' => $productId, 'languageId' => $languageId, 'keyword' => 'FINDOLOGIC Keyword', 'ranking' => 500]
+            ]
+        ]);
+
+        $productKeyword = new Keyword('FINDOLOGIC Keyword');
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
@@ -398,337 +397,19 @@ class FindologicProductTest extends TestCase
             $config
         );
 
-        $productKeyword = new Keyword($findologicProduct->getKeywords()[0]->getValue());
         $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
         $urlBuilderService->setSalesChannelContext($this->salesChannelContext);
 
         $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals($productKeyword, $findologicProduct->getKeywords()[0]);
+        $this->assertEquals([$productKeyword], $findologicProduct->getKeywords());
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
         $this->assertEquals($userGroup, $findologicProduct->getUserGroups());
         $this->assertEquals($ordernumbers, $findologicProduct->getOrdernumbers());
         $this->assertEquals($properties, $findologicProduct->getProperties());
-    }
-
-    /**
-     * @return Image[]
-     */
-    private function getImages(ProductEntity $productEntity): array
-    {
-        $images = [];
-        if (!$productEntity->getMedia() || !$productEntity->getMedia()->count()) {
-            $fallbackImage = sprintf(
-                '%s/%s',
-                getenv('APP_URL'),
-                'bundles/storefront/assets/icon/default/placeholder.svg'
-            );
-
-            $images[] = new Image($fallbackImage);
-            $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
-
-            return $images;
-        }
-
-        $mediaCollection = $productEntity->getMedia();
-        $media = $mediaCollection->getMedia();
-        $thumbnails = $media->first()->getThumbnails();
-
-        $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
-        $firstThumbnail = $filteredThumbnails->first();
-
-        $image = $firstThumbnail ?? $media->first();
-        $url = $this->getEncodedUrl($image->getUrl());
-        $images[] = new Image($url);
-
-        $imageIds = [];
-        foreach ($thumbnails as $thumbnail) {
-            if (in_array($thumbnail->getMediaId(), $imageIds)) {
-                continue;
-            }
-
-            $url = $this->getEncodedUrl($thumbnail->getUrl());
-            $images[] = new Image($url, Image::TYPE_THUMBNAIL);
-            $imageIds[] = $thumbnail->getMediaId();
-        }
-
-        return $images;
-    }
-
-    private function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
-    {
-        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
-            return $thumbnail->getWidth() >= 600;
-        });
-
-        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
-            return $a->getWidth() <=> $b->getWidth();
-        });
-
-        return $filteredThumbnails;
-    }
-
-    protected function getEncodedUrl(string $url): string
-    {
-        $parsedUrl = parse_url($url);
-        $urlPath = explode('/', $parsedUrl['path']);
-        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
-        $parsedUrl['path'] = implode('/', $encodedPath);
-
-        return Utils::buildUrl($parsedUrl);
-    }
-
-    /**
-     * @return Attribute[]
-     */
-    private function getAttributes(ProductEntity $productEntity, string $integrationType = 'Direct Integration'): array
-    {
-        $catUrl1 = '/FINDOLOGIC-Category/';
-        $defaultCatUrl = '';
-
-        foreach ($productEntity->getCategories() as $category) {
-            if ($category->getName() === 'FINDOLOGIC Category') {
-                $defaultCatUrl = sprintf('/navigation/%s', $category->getId());
-            }
-        }
-
-        $attributes = [];
-        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $defaultCatUrl]);
-        $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
-        $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
-
-        if ($integrationType === 'Direct Integration') {
-            $attributes[] = $catUrlAttribute;
-        }
-
-        $attributes[] = $catAttribute;
-        $attributes[] = $vendorAttribute;
-        $attributes[] = new Attribute(
-            $productEntity->getProperties()
-                ->first()
-                ->getGroup()
-                ->getName(),
-            [
-                $productEntity->getProperties()
-                    ->first()
-                    ->getName()
-            ]
-        );
-        $attributes[] = new Attribute(
-            $productEntity->getProperties()
-                ->first()
-                ->getProductConfiguratorSettings()
-                ->first()
-                ->getOption()
-                ->getGroup()
-                ->getName(),
-            [
-                $productEntity->getProperties()
-                    ->first()
-                    ->getProductConfiguratorSettings()
-                    ->first()
-                    ->getOption()
-                    ->getName()
-            ]
-        );
-
-        $shippingFree = $this->translateBooleanValue($productEntity->getShippingFree());
-        $attributes[] = new Attribute('shipping_free', [$shippingFree]);
-
-        $rating = $productEntity->getRatingAverage() ?? 0.0;
-        $attributes[] = new Attribute('rating', [$rating]);
-
-        // Custom fields as attributes
-        $productFields = $productEntity->getCustomFields();
-        if ($productFields) {
-            foreach ($productFields as $key => $value) {
-                if (is_bool($value)) {
-                    $value = $this->translateBooleanValue($value);
-                }
-                $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
-            }
-        }
-
-        foreach ($productEntity->getChildren() as $variant) {
-            $productFields = $variant->getCustomFields();
-            if ($productFields) {
-                foreach ($productFields as $key => $value) {
-                    if (is_bool($value)) {
-                        $value = $this->translateBooleanValue($value);
-                    }
-                    $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
-                }
-            }
-        }
-
-        return $attributes;
-    }
-
-    private function translateBooleanValue(bool $value): string
-    {
-        $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
-
-        return $this->getContainer()->get('translator')->trans($translationKey);
-    }
-
-    /**
-     * @param CustomerGroupEntity[]
-     *
-     * @return Usergroup[]
-     */
-    private function getUserGroups(array $customerGroupEntities): array
-    {
-        $userGroup = [];
-
-        /** @var CustomerGroupEntity $customerGroupEntity */
-        foreach ($customerGroupEntities as $customerGroupEntity) {
-            $userGroup[] = new Usergroup(
-                Utils::calculateUserGroupHash($this->shopkey, $customerGroupEntity->getId())
-            );
-        }
-
-        return $userGroup;
-    }
-
-    /**
-     * @return Ordernumber[]
-     */
-    private function getOrdernumber(ProductEntity $productEntity): array
-    {
-        $ordernumbers = [];
-        if ($productEntity->getProductNumber()) {
-            $ordernumbers[] = new Ordernumber($productEntity->getProductNumber());
-        }
-        if ($productEntity->getEan()) {
-            $ordernumbers[] = new Ordernumber($productEntity->getEan());
-        }
-
-        if ($productEntity->getManufacturerNumber()) {
-            $ordernumbers[] = new Ordernumber($productEntity->getManufacturerNumber());
-        }
-
-        return $ordernumbers;
-    }
-
-    /**
-     * @return Property[]
-     */
-    private function getProperties(ProductEntity $productEntity): array
-    {
-        $properties = [];
-
-        if ($productEntity->getTax()) {
-            $property = new Property('tax');
-            $property->addValue((string)$productEntity->getTax()->getTaxRate());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getDeliveryDate()->getLatest()) {
-            $property = new Property('latestdeliverydate');
-            $property->addValue($productEntity->getDeliveryDate()->getLatest()->format(DATE_ATOM));
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getDeliveryDate()->getEarliest()) {
-            $property = new Property('earliestdeliverydate');
-            $property->addValue($productEntity->getDeliveryDate()->getEarliest()->format(DATE_ATOM));
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getPurchaseUnit()) {
-            $property = new Property('purchaseunit');
-            $property->addValue((string)$productEntity->getPurchaseUnit());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getReferenceUnit()) {
-            $property = new Property('referenceunit');
-            $property->addValue((string)$productEntity->getReferenceUnit());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getPackUnit()) {
-            $property = new Property('packunit');
-            $property->addValue((string)$productEntity->getPackUnit());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getStock()) {
-            $property = new Property('stock');
-            $property->addValue((string)$productEntity->getStock());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getAvailableStock()) {
-            $property = new Property('availableStock');
-            $property->addValue((string)$productEntity->getAvailableStock());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getWeight()) {
-            $property = new Property('weight');
-            $property->addValue((string)$productEntity->getWeight());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getWidth()) {
-            $property = new Property('width');
-            $property->addValue((string)$productEntity->getWidth());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getHeight()) {
-            $property = new Property('height');
-            $property->addValue((string)$productEntity->getHeight());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getLength()) {
-            $property = new Property('length');
-            $property->addValue((string)$productEntity->getLength());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getReleaseDate()) {
-            $property = new Property('releasedate');
-            $property->addValue((string)$productEntity->getReleaseDate()->format(DATE_ATOM));
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getManufacturer() && $productEntity->getManufacturer()->getMedia()) {
-            $property = new Property('vendorlogo');
-            $property->addValue($productEntity->getManufacturer()->getMedia()->getUrl());
-            $properties[] = $property;
-        }
-
-        if ($productEntity->getPrice()) {
-            $price = $productEntity->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
-            if ($price) {
-                $listPrice = $price->getListPrice();
-                if ($listPrice) {
-                    $property = new Property('old_price');
-                    $property->addValue((string)$listPrice->getGross());
-                    $properties[] = $property;
-
-                    $property = new Property('old_price_net');
-                    $property->addValue((string)$listPrice->getNet());
-                    $properties[] = $property;
-                }
-            }
-        }
-
-        if (method_exists($productEntity, 'getMarkAsTopseller')) {
-            $isMarkedAsTopseller = $productEntity->getMarkAsTopseller() ?? false;
-            $promotionValue = $this->translateBooleanValue($isMarkedAsTopseller);
-            $property = new Property('product_promotion');
-            $property->addValue($promotionValue);
-            $properties[] = $property;
-        }
-
-        return $properties;
     }
 
     public function testProductWithCustomFields(): void
@@ -793,6 +474,35 @@ class FindologicProductTest extends TestCase
 
         $attributes = $findologicProduct->getCustomFields();
         $this->assertEmpty($attributes);
+    }
+
+    public function testCustomFieldsContainingZeroAsStringAreProperlyExported(): void
+    {
+        $productEntity = $this->createTestProduct([
+            'customFields' => [
+                'nice' => "0\n"
+            ]
+        ], true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+
+        $this->assertCount(1, $attributes);
+        $this->assertSame(['0'], $attributes[0]->getValues());
     }
 
     public function multiSelectCustomFieldsProvider(): array
@@ -1154,6 +864,303 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($expectedPropertyValue, $property->getAllValues()['']); // '' = Empty usergroup.
     }
 
+    /**
+     * @return Property[]
+     */
+    private function getProperties(ProductEntity $productEntity): array
+    {
+        $properties = [];
+
+        if ($productEntity->getTax()) {
+            $property = new Property('tax');
+            $property->addValue((string)$productEntity->getTax()->getTaxRate());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getDeliveryDate()->getLatest()) {
+            $property = new Property('latestdeliverydate');
+            $property->addValue($productEntity->getDeliveryDate()->getLatest()->format(DATE_ATOM));
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getDeliveryDate()->getEarliest()) {
+            $property = new Property('earliestdeliverydate');
+            $property->addValue($productEntity->getDeliveryDate()->getEarliest()->format(DATE_ATOM));
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getPurchaseUnit()) {
+            $property = new Property('purchaseunit');
+            $property->addValue((string)$productEntity->getPurchaseUnit());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getReferenceUnit()) {
+            $property = new Property('referenceunit');
+            $property->addValue((string)$productEntity->getReferenceUnit());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getPackUnit()) {
+            $property = new Property('packunit');
+            $property->addValue((string)$productEntity->getPackUnit());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getStock()) {
+            $property = new Property('stock');
+            $property->addValue((string)$productEntity->getStock());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getAvailableStock()) {
+            $property = new Property('availableStock');
+            $property->addValue((string)$productEntity->getAvailableStock());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getWeight()) {
+            $property = new Property('weight');
+            $property->addValue((string)$productEntity->getWeight());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getWidth()) {
+            $property = new Property('width');
+            $property->addValue((string)$productEntity->getWidth());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getHeight()) {
+            $property = new Property('height');
+            $property->addValue((string)$productEntity->getHeight());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getLength()) {
+            $property = new Property('length');
+            $property->addValue((string)$productEntity->getLength());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getReleaseDate()) {
+            $property = new Property('releasedate');
+            $property->addValue((string)$productEntity->getReleaseDate()->format(DATE_ATOM));
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getManufacturer() && $productEntity->getManufacturer()->getMedia()) {
+            $property = new Property('vendorlogo');
+            $property->addValue($productEntity->getManufacturer()->getMedia()->getUrl());
+            $properties[] = $property;
+        }
+
+        if ($productEntity->getPrice()) {
+            $price = $productEntity->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
+            if ($price) {
+                $listPrice = $price->getListPrice();
+                if ($listPrice) {
+                    $property = new Property('old_price');
+                    $property->addValue((string)$listPrice->getGross());
+                    $properties[] = $property;
+
+                    $property = new Property('old_price_net');
+                    $property->addValue((string)$listPrice->getNet());
+                    $properties[] = $property;
+                }
+            }
+        }
+
+        if (method_exists($productEntity, 'getMarkAsTopseller')) {
+            $isMarkedAsTopseller = $productEntity->getMarkAsTopseller() ?? false;
+            $promotionValue = $this->translateBooleanValue($isMarkedAsTopseller);
+            $property = new Property('product_promotion');
+            $property->addValue($promotionValue);
+            $properties[] = $property;
+        }
+
+        return $properties;
+    }
+
+    /**
+     * @return Ordernumber[]
+     */
+    private function getOrdernumber(ProductEntity $productEntity): array
+    {
+        $ordernumbers = [];
+        if ($productEntity->getProductNumber()) {
+            $ordernumbers[] = new Ordernumber($productEntity->getProductNumber());
+        }
+        if ($productEntity->getEan()) {
+            $ordernumbers[] = new Ordernumber($productEntity->getEan());
+        }
+
+        if ($productEntity->getManufacturerNumber()) {
+            $ordernumbers[] = new Ordernumber($productEntity->getManufacturerNumber());
+        }
+
+        return $ordernumbers;
+    }
+
+    /**
+     * @param CustomerGroupEntity[]
+     *
+     * @return Usergroup[]
+     */
+    private function getUserGroups(array $customerGroupEntities): array
+    {
+        $userGroup = [];
+
+        /** @var CustomerGroupEntity $customerGroupEntity */
+        foreach ($customerGroupEntities as $customerGroupEntity) {
+            $userGroup[] = new Usergroup(
+                Utils::calculateUserGroupHash($this->shopkey, $customerGroupEntity->getId())
+            );
+        }
+
+        return $userGroup;
+    }
+
+    /**
+     * @return Attribute[]
+     */
+    private function getAttributes(ProductEntity $productEntity, string $integrationType = 'Direct Integration'): array
+    {
+        $catUrl1 = '/FINDOLOGIC-Category/';
+        $defaultCatUrl = '';
+
+        foreach ($productEntity->getCategories() as $category) {
+            if ($category->getName() === 'FINDOLOGIC Category') {
+                $defaultCatUrl = sprintf('/navigation/%s', $category->getId());
+            }
+        }
+
+        $attributes = [];
+        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $defaultCatUrl]);
+        $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
+        $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
+
+        if ($integrationType === 'Direct Integration') {
+            $attributes[] = $catUrlAttribute;
+        }
+
+        $attributes[] = $catAttribute;
+        $attributes[] = $vendorAttribute;
+        $attributes[] = new Attribute(
+            $productEntity->getProperties()
+                ->first()
+                ->getGroup()
+                ->getName(),
+            [
+                $productEntity->getProperties()
+                    ->first()
+                    ->getName()
+            ]
+        );
+        $attributes[] = new Attribute(
+            $productEntity->getProperties()
+                ->first()
+                ->getProductConfiguratorSettings()
+                ->first()
+                ->getOption()
+                ->getGroup()
+                ->getName(),
+            [
+                $productEntity->getProperties()
+                    ->first()
+                    ->getProductConfiguratorSettings()
+                    ->first()
+                    ->getOption()
+                    ->getName()
+            ]
+        );
+
+        $shippingFree = $this->translateBooleanValue($productEntity->getShippingFree());
+        $attributes[] = new Attribute('shipping_free', [$shippingFree]);
+
+        $rating = $productEntity->getRatingAverage() ?? 0.0;
+        $attributes[] = new Attribute('rating', [$rating]);
+
+        // Custom fields as attributes
+        $productFields = $productEntity->getCustomFields();
+        if ($productFields) {
+            foreach ($productFields as $key => $value) {
+                if (is_bool($value)) {
+                    $value = $this->translateBooleanValue($value);
+                }
+                $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+            }
+        }
+
+        foreach ($productEntity->getChildren() as $variant) {
+            $productFields = $variant->getCustomFields();
+            if ($productFields) {
+                foreach ($productFields as $key => $value) {
+                    if (is_bool($value)) {
+                        $value = $this->translateBooleanValue($value);
+                    }
+                    $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
+                }
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @return Image[]
+     */
+    private function getImages(ProductEntity $productEntity): array
+    {
+        $images = [];
+        if (!$productEntity->getMedia() || !$productEntity->getMedia()->count()) {
+            $fallbackImage = sprintf(
+                '%s/%s',
+                getenv('APP_URL'),
+                'bundles/storefront/assets/icon/default/placeholder.svg'
+            );
+
+            $images[] = new Image($fallbackImage);
+            $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
+
+            return $images;
+        }
+
+        $mediaCollection = $productEntity->getMedia();
+        $media = $mediaCollection->getMedia();
+        $thumbnails = $media->first()->getThumbnails();
+
+        $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
+        $firstThumbnail = $filteredThumbnails->first();
+
+        $image = $firstThumbnail ?? $media->first();
+        $url = $this->getEncodedUrl($image->getUrl());
+        $images[] = new Image($url);
+
+        $imageIds = [];
+        foreach ($thumbnails as $thumbnail) {
+            if (in_array($thumbnail->getMediaId(), $imageIds)) {
+                continue;
+            }
+
+            $url = $this->getEncodedUrl($thumbnail->getUrl());
+            $images[] = new Image($url, Image::TYPE_THUMBNAIL);
+            $imageIds[] = $thumbnail->getMediaId();
+        }
+
+        return $images;
+    }
+
+    protected function getEncodedUrl(string $url): string
+    {
+        $parsedUrl = parse_url($url);
+        $urlPath = explode('/', $parsedUrl['path']);
+        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
+        $parsedUrl['path'] = implode('/', $encodedPath);
+
+        return Utils::buildUrl($parsedUrl);
+    }
+
     public function emptyValuesProvider(): array
     {
         return [
@@ -1472,14 +1479,6 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($this->buildXmlPrice(15), $actualPrices[3]);
     }
 
-    private function buildXmlPrice(float $value, string $userGroup = ''): Price
-    {
-        $price = new Price();
-        $price->setValue($value, $userGroup);
-
-        return $price;
-    }
-
     public function testUsesMemoryEfficientWayToFetchSalesFrequency(): void
     {
         $expectedSalesFrequency = 1337;
@@ -1525,6 +1524,21 @@ class FindologicProductTest extends TestCase
         );
 
         $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
+    }
+
+    private function buildXmlPrice(float $value, string $userGroup = ''): Price
+    {
+        $price = new Price();
+        $price->setValue($value, $userGroup);
+
+        return $price;
+    }
+
+    private function translateBooleanValue(bool $value): string
+    {
+        $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
+
+        return $this->getContainer()->get('translator')->trans($translationKey);
     }
 
     public function listPriceProvider(): array
@@ -1858,6 +1872,19 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    private function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
+    {
+        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
+            return $thumbnail->getWidth() >= 600;
+        });
+
+        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
+            return $a->getWidth() <=> $b->getWidth();
+        });
+
+        return $filteredThumbnails;
+    }
+
     /**
      * URL decodes images. This avoids having to debug the difference between URL encoded characters.
      *
@@ -2019,6 +2046,27 @@ class FindologicProductTest extends TestCase
         $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
     }
 
+    private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
+    {
+        $override = [
+            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
+            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
+        ];
+
+        /** @var FindologicConfigService|MockObject $configServiceMock */
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $override);
+
+        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
+        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serviceConfigResource->expects($this->once())
+            ->method('isDirectIntegration')
+            ->willReturn($integrationType === 'Direct Integration');
+
+        return new Config($configServiceMock, $serviceConfigResource);
+    }
+
     public function categoryAndCatUrlWithIntegrationTypeProvider(): array
     {
         return [
@@ -2171,16 +2219,5 @@ class FindologicProductTest extends TestCase
             $this->assertSameSize($expectedCategories, $attributes[0]->getValues());
             $this->assertSame($expectedCategories, $attributes[0]->getValues());
         }
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->router = $this->getContainer()->get('router');
-        $this->salesChannelContext = $this->buildSalesChannelContext();
-        $this->shopkey = $this->getShopkey();
-        $this->ids = new TestDataCollection(Context::createDefaultContext());
-        $this->customerRepository = $this->getContainer()->get('customer.repository');
-        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 }
