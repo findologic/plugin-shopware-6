@@ -392,9 +392,9 @@ class FindologicProductTest extends TestCase
         $productKeyword = new Keyword('FINDOLOGIC001');
         $keywords = $findologicProduct->getKeywords();
         $this->assertNotCount(0, $keywords);
-        foreach($keywords as $keyword){
-            if($keyword->getValue() === $productKeyword->getValue()){
-                $this->assertEquals($productKeyword,$keyword);
+        foreach ($keywords as $keyword) {
+            if ($keyword->getValue() === $productKeyword->getValue()) {
+                $this->assertEquals($productKeyword, $keyword);
             }
         }
         $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
