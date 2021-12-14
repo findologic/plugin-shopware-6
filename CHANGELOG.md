@@ -1,4 +1,4 @@
-# NEXT
+# 2.4.0
 - [SW-601] Requests to the Findologic API now include the shopsystem and the shop version.
 - [SW-662] Fixed a bug that caused the export to fail, if the configured main variant had been set to inactive for the exporting sales channel.
 - [SW-663] Fixed a bug that caused products not to be exported, if they had configured a custom field containing "0".
