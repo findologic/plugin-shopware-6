@@ -267,7 +267,7 @@ class FindologicProductTest extends TestCase
         $categoryData['categories'] = $data;
         $productEntity = $this->createTestProduct($categoryData);
 
-        $config = $this->getMockedConfig();
+        $config = $this->getFindologicConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -295,7 +295,7 @@ class FindologicProductTest extends TestCase
     public function testProductCategoriesSeoUrl(): void
     {
         $productEntity = $this->createTestProduct();
-        $config = $this->getMockedConfig();
+        $config = $this->getFindologicConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -378,7 +378,7 @@ class FindologicProductTest extends TestCase
         $ordernumbers = $this->getOrdernumber($productEntity);
         $properties = $this->getProperties($productEntity);
 
-        $config = $this->getMockedConfig();
+        $config = $this->getFindologicConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -760,7 +760,7 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
-        $config = $this->getMockedConfig($integrationType);
+        $config = $this->getFindologicConfig($integrationType);
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1221,7 +1221,7 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
-        $config = $this->getMockedConfig('API');
+        $config = $this->getFindologicConfig('API');
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1385,7 +1385,7 @@ class FindologicProductTest extends TestCase
             ]
         );
 
-        $config = $this->getMockedConfig();
+        $config = $this->getFindologicConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1644,7 +1644,7 @@ class FindologicProductTest extends TestCase
 
         $productEntity = $this->createTestProduct();
 
-        $config = $this->getMockedConfig();
+        $config = $this->getFindologicConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -2039,7 +2039,7 @@ class FindologicProductTest extends TestCase
         $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
     }
 
-    private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
+    private function getFindologicConfig(string $integrationType = 'Direct Integration'): Config
     {
         $override = [
             'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
@@ -2047,7 +2047,7 @@ class FindologicProductTest extends TestCase
         ];
 
         /** @var FindologicConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $override);
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($override);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
         $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
@@ -2185,7 +2185,7 @@ class FindologicProductTest extends TestCase
         }
 
         $productEntity = $this->createTestProduct(['categories' => $categories]);
-        $config = $this->getMockedConfig($integrationType);
+        $config = $this->getFindologicConfig($integrationType);
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
