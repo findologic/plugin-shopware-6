@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Request;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -32,6 +33,8 @@ class NavigationRequestFactoryTest extends TestCase
         $expectedAdapter = 'XML_2.1';
         $expectedVersion = '0.1.0';
         $expectedCategoryPath = 'Kids & Music_Computers & Shoes';
+        $expectedShopType = 'Shopware6';
+        $expectedShopVersion = Utils::getCleanShopwareVersion();
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)
@@ -72,5 +75,7 @@ class NavigationRequestFactoryTest extends TestCase
         $this->assertSame($expectedAdapter, $params['outputAdapter']);
         $this->assertSame($expectedHost, $params['shopurl']);
         $this->assertSame($expectedCategoryPath, $params['selected']['cat'][0]);
+        $this->assertSame($expectedShopType, $params['shopType']);
+        $this->assertSame($expectedShopVersion, $params['shopVersion']);
     }
 }
