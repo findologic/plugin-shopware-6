@@ -1,4 +1,5 @@
 # NEXT
+- [SW-601] Anfragen an die Findologic API enthalten nun das Shopsystem und die Version.
 - [SW-662] Ein Fehler wurde behoben, wodurch der Export scheiterte, wenn die konfigurierte Hauptvariante für den exportierenden Verkaufskanal nicht verfügbar war.
 - [SW-663] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, wenn diese ein Zusatzfeld mit dem Wert "0" enthielten.
 - [SW-612] Ein Fehler wurde behoben, wodurch ein falscher Produkt-Preis exportiert wurde, wenn der exportierende Verkaufskanal nicht die konfigurierte standard Währung verwendete.
