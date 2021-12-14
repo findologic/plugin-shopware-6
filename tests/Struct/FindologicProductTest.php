@@ -389,13 +389,13 @@ class FindologicProductTest extends TestCase
             $config
         );
 
-        $productKeyword = new Keyword('FINDOLOGIC001');
-        $productKeyMatched = false;
+        $productKeyword = new Keyword('FINDOLOGIC Keyword');
+        $expectedProductKeywordExists = false;
         $keywords = $findologicProduct->getKeywords();
         $this->assertNotCount(0, $keywords);
         foreach ($keywords as $keyword) {
             if ($keyword->getValue() === $productKeyword->getValue()) {
-                $productKeyMatched = true;
+                $expectedProductKeywordExists = true;
             }
         }
 
@@ -405,7 +405,7 @@ class FindologicProductTest extends TestCase
         $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals(true, $productKeyMatched);
+        $this->assertTrue($expectedProductKeywordExists);
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());

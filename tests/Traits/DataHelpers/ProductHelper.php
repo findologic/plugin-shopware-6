@@ -39,6 +39,7 @@ trait ProductHelper
         $newCategoryId = Uuid::randomHex();
         $redId = Uuid::randomHex();
         $colorId = Uuid::randomHex();
+        $languageId = Defaults::LANGUAGE_SYSTEM;
 
         $container = $this->getContainer();
         $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
@@ -85,6 +86,9 @@ trait ProductHelper
             'description' => 'FINDOLOGIC Description',
             'tags' => [
                 ['id' => Uuid::randomHex(), 'name' => 'FINDOLOGIC Tag']
+            ],
+            'searchKeywords' => [
+                ['id' => Uuid::randomHex(), 'languageId' => $languageId, 'productId' => $id, 'ranking' => 500,  'keyword' => 'FINDOLOGIC Keyword']
             ],
             'name' => 'FINDOLOGIC Product',
             'cover' => [
