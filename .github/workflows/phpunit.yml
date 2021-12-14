@@ -54,20 +54,28 @@ jobs:
           cp plugin-shopware-6/.github/.psh.yaml.override development
           cd development
           ./psh.phar init
+          ./psh.phar storefront:install-dependencies
 
-      - name: Install Plugin dependencies
+      - name: Install dependencies
         run: |
           cd plugin-shopware-6
           composer install --no-interaction
+          cd src/Resources/app/storefront
+          npm ci
 
-      - name: Install Plugin
+      - name: Install plugin
         run: |
           mv plugin-shopware-6 development/custom/plugins
           cd development
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
 
-      - name: Run test suite
+      - name: Run PHPUnit test suite
         run: |
           cd development/custom/plugins/plugin-shopware-6
           SYMFONY_DEPRECATIONS_HELPER=disabled composer test
+
+      - name: Run storefront Jest test suite
+        run: |
+          cd development/custom/plugins/plugin-shopware-6/src/Resources/app/storefront
+          npm run test
