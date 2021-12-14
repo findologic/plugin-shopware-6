@@ -28,7 +28,7 @@ class ProductService
 {
     public const CONTAINER_ID = 'fin_search.product_service';
 
-    /** @var Config|null */
+    /** @var Config */
     private $config;
 
     /** @var ContainerInterface */
@@ -61,10 +61,6 @@ class ProductService
 
         if ($salesChannelContext && !$productService->getSalesChannelContext()) {
             $productService->setSalesChannelContext($salesChannelContext);
-        }
-
-        if ($config && !$productService->getConfig()) {
-            $productService->setConfig($config);
         }
 
         return $productService;
@@ -360,7 +356,7 @@ class ProductService
 
     private function getParentByCheapestVariant(ProductEntity $product): ProductEntity
     {
-        $parent = null;
+        $parent = $product;
         $cheapestPrice = 0;
         $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
         $children = $product->getChildren();

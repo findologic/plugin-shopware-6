@@ -433,31 +433,31 @@ class ProductServiceTest extends TestCase
                 'config' => 'default',
                 'parentId' => $parentId,
                 'parentPrice' => 15,
-                'cheapest' => 2
+                'cheapestPrice' => 2
             ],
             'export main parent' => [
                 'config' => 'parent',
                 'parentId' => $parentId,
                 'parentPrice' => 15,
-                'cheapest' => 2
+                'cheapestPrice' => 2
             ],
             'export cheapest variant' => [
-                'config' => 'parent',
+                'config' => 'cheapest',
                 'parentId' => $parentId,
                 'parentPrice' => 15,
-                'cheapest' => 2
+                'cheapestPrice' => 2
             ],
             'export cheapest variant with parent price being cheaper' => [
-                'config' => 'parent',
+                'config' => 'cheapest',
                 'parentId' => $parentId,
                 'parentPrice' => 3,
                 'cheapest' => 5
             ],
             'export cheapest variant with all same prices' => [
-                'config' => 'parent',
+                'config' => 'cheapest',
                 'parentId' => $parentId,
                 'parentPrice' => 4,
-                'cheapest' => 4
+                'cheapestPrice' => 4
             ],
         ];
     }
@@ -606,7 +606,6 @@ class ProductServiceTest extends TestCase
         $result = $this->defaultProductService->searchVisibleProducts(20, 0);
         $elements = $result->getElements();
 
-        $this->assertNotEmpty($elements);
         $this->assertCount(1, $elements);
         $mainVariant = current($elements);
 
@@ -625,6 +624,27 @@ class ProductServiceTest extends TestCase
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
+    public function testProductWithMultipleVariantsIfExportConfigIsCheapest(string $config, string $parentId): void
+    {
+        $this->createVisibleTestProduct(['id' => $parentId]);
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
+        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
+
+        $this->defaultProductService->setConfig($mockedConfig);
+        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $elements = $result->getElements();
+
+        $this->assertCount(1, $elements);
+        $mainVariant = current($elements);
+
+        // If there are no variants, the main product will always be exported as the main variant, irrespective
+        // of the export configuration.
+        $this->assertSame($parentId, $mainVariant->getId());
+    }
+
+    /**
+     * @dataProvider mainVariantDefaultConfigProvider
+     */
     public function testProductWithoutVariantsBasedOnExportConfig(string $config, string $parentId): void
     {
         $this->createVisibleTestProduct(['id' => $parentId]);
@@ -635,7 +655,6 @@ class ProductServiceTest extends TestCase
         $result = $this->defaultProductService->searchVisibleProducts(20, 0);
         $elements = $result->getElements();
 
-        $this->assertNotEmpty($elements);
         $this->assertCount(1, $elements);
         $mainVariant = current($elements);
 

@@ -63,10 +63,10 @@ class Config extends Struct
     private $initialized = false;
 
     /** @var string */
-    private $filterPosition;
+    private $filterPosition = FilterPosition::TOP;
 
     /** @var string */
-    private $mainVariant;
+    private $mainVariant = MainVariant::SHOPWARE_DEFAULT;
 
     /** @var array */
     private $crossSellingCategories = [];
@@ -126,6 +126,21 @@ class Config extends Struct
         return $this->initialized;
     }
 
+    public function getFilterPosition(): string
+    {
+        return $this->filterPosition;
+    }
+
+    public function getMainVariant(): string
+    {
+        return $this->mainVariant;
+    }
+
+    public function getCrossSellingCategories(): array
+    {
+        return $this->crossSellingCategories;
+    }
+
     /**
      * @throws InvalidArgumentException
      */
@@ -179,11 +194,6 @@ class Config extends Struct
         $this->initialized = true;
     }
 
-    public function getCrossSellingCategories(): array
-    {
-        return $this->crossSellingCategories;
-    }
-
     /**
      * @throws InvalidArgumentException
      */
@@ -235,29 +245,5 @@ class Config extends Struct
         }
 
         return $configValue;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFilterPosition(): string
-    {
-        return $this->filterPosition;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMainVariant(): string
-    {
-        return $this->mainVariant;
-    }
-
-    /**
-     * @param string $mainVariant
-     */
-    public function setMainVariant(string $mainVariant): void
-    {
-        $this->mainVariant = $mainVariant;
     }
 }
