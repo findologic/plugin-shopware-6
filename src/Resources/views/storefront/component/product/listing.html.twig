@@ -11,8 +11,8 @@
         {% block element_product_listing_row %}
             {{ parent() }}
         {% endblock %}
-        {% set totalPagination = (searchResult.criteria.extensions.flPagination.total / searchResult.criteria.extensions.flPagination.limit)|round(0, 'ceil') %}
-        {% if totalPagination > 1 %}
+        {% set paginationPages = (searchResult.criteria.extensions.flPagination.total / searchResult.criteria.extensions.flPagination.limit)|round(0, 'ceil') %}
+        {% if paginationPages > 1 %}
             {% block element_product_listing_pagination_nav_bottom %}
                 {{ parent() }}
             {% endblock %}
