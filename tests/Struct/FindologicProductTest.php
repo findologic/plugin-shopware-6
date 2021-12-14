@@ -35,6 +35,8 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
+use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
+use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
@@ -340,7 +342,7 @@ class FindologicProductTest extends TestCase
         $productEntity = $this->createTestProduct();
 
         if (!$price) {
-            $productEntity->setPrice(new PriceCollection([]));
+            $productEntity->setPrice(new PriceCollection());
         }
 
         $findologicProductFactory = new FindologicProductFactory();
@@ -364,7 +366,6 @@ class FindologicProductTest extends TestCase
     public function testProduct(): void
     {
         $productEntity = $this->createTestProduct();
-
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
@@ -376,6 +377,14 @@ class FindologicProductTest extends TestCase
         $userGroup = $this->getUserGroups($customerGroupEntities);
         $ordernumbers = $this->getOrdernumber($productEntity);
         $properties = $this->getProperties($productEntity);
+
+        $productSearchKeywordEntity = new ProductSearchKeywordEntity();
+        $productSearchKeywordCollection = new ProductSearchKeywordCollection();
+
+        $productSearchKeywordEntity->setKeyword('FINDOLOGIC Keyword');
+        $productSearchKeywordCollection->set('searchKeyword',$productSearchKeywordEntity);
+
+        $productEntity->setSearchKeywords($productSearchKeywordCollection);
 
         $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
@@ -390,8 +399,8 @@ class FindologicProductTest extends TestCase
         );
 
         $productKeyword = new Keyword('FINDOLOGIC Keyword');
-        $expectedProductKeywordExists = false;
         $keywords = $findologicProduct->getKeywords();
+        $expectedProductKeywordExists = false;
         $this->assertNotCount(0, $keywords);
         foreach ($keywords as $keyword) {
             if ($keyword->getValue() === $productKeyword->getValue()) {

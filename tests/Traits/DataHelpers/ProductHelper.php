@@ -87,9 +87,6 @@ trait ProductHelper
             'tags' => [
                 ['id' => Uuid::randomHex(), 'name' => 'FINDOLOGIC Tag']
             ],
-            'searchKeywords' => [
-                ['id' => Uuid::randomHex(), 'languageId' => $languageId, 'productId' => $id, 'ranking' => 500,  'keyword' => 'FINDOLOGIC Keyword']
-            ],
             'name' => 'FINDOLOGIC Product',
             'cover' => [
                 'media' => [
