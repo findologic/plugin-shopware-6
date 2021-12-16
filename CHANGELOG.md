@@ -1,7 +1,12 @@
-# NEXT
+# 2.4.1
+- [SW-669] Fixed a bug that caused an error on all listing pages where Findologic has not been active.
+
+# 2.4.0
+- [SW-601] Requests to the Findologic API now include the shopsystem and the shop version.
 - [SW-662] Fixed a bug that caused the export to fail, if the configured main variant had been set to inactive for the exporting sales channel.
 - [SW-663] Fixed a bug that caused products not to be exported, if they had configured a custom field containing "0".
 - [SW-612] Fixed a bug that caused the product price to be exported wrong, in case the exporting sales channel had configured a non-default currency.
+- [SW-632] Fixed a bug that caused the pagination at the bottom to be shown, when only one pagination page existed, which was inconsistent with the Shopware standard.
 
 # 2.3.0
 - [SW-567] The category filter has been improved and received a major UI/UX improvement.

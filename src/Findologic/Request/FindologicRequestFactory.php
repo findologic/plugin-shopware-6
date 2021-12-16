@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request;
 
 use FINDOLOGIC\Api\Definitions\OutputAdapter;
 use FINDOLOGIC\Api\Exceptions\InvalidParamException;
+use FINDOLOGIC\Api\Requests\Request as FindologicApiRequest;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -39,6 +40,46 @@ abstract class FindologicRequestFactory
     abstract public function getInstance(Request $request);
 
     /**
+     * @throws InconsistentCriteriaIdsException
+     * @throws InvalidArgumentException
+     */
+    protected function setDefaults(
+        Request $request,
+        SearchNavigationRequest $searchNavigationRequest
+    ): SearchNavigationRequest {
+        $searchNavigationRequest->setUserIp($this->fetchClientIp());
+        $searchNavigationRequest->setRevision($this->getPluginVersion());
+        $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
+        $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindologicApiRequest::SET_VALUE);
+        $searchNavigationRequest->addIndividualParam(
+            'shopVersion',
+            Utils::getCleanShopwareVersion(),
+            FindologicApiRequest::SET_VALUE
+        );
+
+        // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
+        //  Shopware themselves have it hardcoded at 24.
+        $searchNavigationRequest->setFirst(0);
+        $searchNavigationRequest->setCount(Pagination::DEFAULT_LIMIT);
+
+        if ($request->headers->get('referer')) {
+            $searchNavigationRequest->setReferer($request->headers->get('referer'));
+        }
+
+        $this->setPushAttribValues($request, $searchNavigationRequest);
+
+        try {
+            // setShopUrl() requires a valid host. If we do not have a valid host (e.g. local development)
+            // this would cause an exception.
+            $searchNavigationRequest->setShopUrl($request->getHost());
+        } catch (InvalidParamException $e) {
+            $searchNavigationRequest->setShopUrl('example.org');
+        }
+
+        return $searchNavigationRequest;
+    }
+
+    /**
      * @throws InvalidArgumentException
      * @throws InconsistentCriteriaIdsException
      */
@@ -61,39 +102,6 @@ abstract class FindologicRequestFactory
         }
 
         return $item->get();
-    }
-
-    /**
-     * @throws InconsistentCriteriaIdsException
-     * @throws InvalidArgumentException
-     */
-    protected function setDefaults(
-        Request $request,
-        SearchNavigationRequest $searchNavigationRequest
-    ): SearchNavigationRequest {
-        $searchNavigationRequest->setUserIp($this->fetchClientIp());
-        $searchNavigationRequest->setRevision($this->getPluginVersion());
-        $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
-        // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
-        //  Shopware themselves have it hardcoded at 24.
-        $searchNavigationRequest->setFirst(0);
-        $searchNavigationRequest->setCount(Pagination::DEFAULT_LIMIT);
-
-        if ($request->headers->get('referer')) {
-            $searchNavigationRequest->setReferer($request->headers->get('referer'));
-        }
-
-        $this->setPushAttribValues($request, $searchNavigationRequest);
-
-        try {
-            // setShopUrl() requires a valid host. If we do not have a valid host (e.g. local development)
-            // this would cause an exception.
-            $searchNavigationRequest->setShopUrl($request->getHost());
-        } catch (InvalidParamException $e) {
-            $searchNavigationRequest->setShopUrl('example.org');
-        }
-
-        return $searchNavigationRequest;
     }
 
     private function fetchClientIp(): string
