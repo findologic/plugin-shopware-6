@@ -1,3 +1,6 @@
+# 2.4.1
+- [SW-669] Fixed a bug that caused an error on all listing pages where Findologic has not been active.
+
 # 2.4.0
 - [SW-601] Requests to the Findologic API now include the shopsystem and the shop version.
 - [SW-662] Fixed a bug that caused the export to fail, if the configured main variant had been set to inactive for the exporting sales channel.

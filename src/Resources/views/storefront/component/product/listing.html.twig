@@ -11,8 +11,17 @@
         {% block element_product_listing_row %}
             {{ parent() }}
         {% endblock %}
-        {% set paginationPages = (searchResult.criteria.extensions.flPagination.total / searchResult.criteria.extensions.flPagination.limit)|round(0, 'ceil') %}
-        {% if paginationPages > 1 %}
+
+        {% if not (searchResult.criteria.extensions.flPagination) %}
+            {% set paginationTotal = searchResult.total %}
+            {% set paginationLimit = searchResult.limit %}
+        {% else %}
+            {% set paginationTotal = searchResult.criteria.extensions.flPagination.total %}
+            {% set paginationLimit = searchResult.criteria.extensions.flPagination.limit %}
+        {% endif %}
+
+        {% set totalPages = (paginationTotal / paginationLimit)|round(0, 'ceil') %}
+        {% if totalPages > 1 %}
             {% block element_product_listing_pagination_nav_bottom %}
                 {{ parent() }}
             {% endblock %}

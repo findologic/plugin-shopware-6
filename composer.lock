@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "18efdd2f71494c43fd4cc21cad4457a2",
+    "content-hash": "922eee612565863d645dd3567344f74d",
     "packages": [
         {
             "name": "findologic/findologic-api",

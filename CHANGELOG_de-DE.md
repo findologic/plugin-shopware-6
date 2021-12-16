@@ -1,3 +1,6 @@
+# 2.4.1
+- [SW-669] Ein Fehler wurde behoben, wodurch auf allen Listing Seiten auf denen Findologic nicht aktiv war, ein Fehler ausgegeben wurde.
+
 # 2.4.0
 - [SW-601] Anfragen an die Findologic API enthalten nun das Shopsystem und die Version.
 - [SW-662] Ein Fehler wurde behoben, wodurch der Export scheiterte, wenn die konfigurierte Hauptvariante für den exportierenden Verkaufskanal nicht verfügbar war.
