@@ -397,7 +397,11 @@ class FindologicProductTest extends TestCase
         );
 
         $productKeyword = new Keyword('FINDOLOGIC Keyword');
-        $ignoreKeyords = [$productEntity->get('id'), $productEntity->getProductNumber()];
+        $ignoreKeyords = [
+            $productEntity->get('id'),
+            $productEntity->getProductNumber(),
+            $productEntity->getManufacturer()->getName()];
+
         $keywords = $findologicProduct->getKeywords();
         $expectedProductKeywordExists = false;
         $ignoreProductKeywordExists = false;

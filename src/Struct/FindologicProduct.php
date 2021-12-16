@@ -356,7 +356,8 @@ class FindologicProduct extends Struct
 
     protected function setKeywords(): void
     {
-        $ignoreKeywords = [$this->product->getProductNumber(), $this->product->get('id')];
+        $ignoreKeywords = [$this->product->getProductNumber(), $this->product->get('id'), $this->product
+        ->getManufacturer()->getName()];
         $keywords = $this->product->getSearchKeywords();
 
         if ($keywords !== null && $keywords->count() > 0) {
