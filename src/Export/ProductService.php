@@ -356,7 +356,7 @@ class ProductService
 
     private function getParentByCheapestVariant(ProductEntity $product): ProductEntity
     {
-        $parent = $product;
+        $parent = null;
         $cheapestPrice = 0;
         $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
         $children = $product->getChildren();

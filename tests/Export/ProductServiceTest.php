@@ -426,51 +426,18 @@ class ProductServiceTest extends TestCase
 
     public function mainVariantDefaultConfigProvider(): array
     {
-        $parentId = Uuid::randomHex();
-
         return [
-            'export shopware default' => [
-                'config' => 'default',
-                'parentId' => $parentId,
-                'parentPrice' => 15,
-                'cheapestPrice' => 2
-            ],
-            'export main parent' => [
-                'config' => 'parent',
-                'parentId' => $parentId,
-                'parentPrice' => 15,
-                'cheapestPrice' => 2
-            ],
-            'export cheapest variant' => [
-                'config' => 'cheapest',
-                'parentId' => $parentId,
-                'parentPrice' => 15,
-                'cheapestPrice' => 2
-            ],
-            'export cheapest variant with parent price being cheaper' => [
-                'config' => 'cheapest',
-                'parentId' => $parentId,
-                'parentPrice' => 3,
-                'cheapest' => 5
-            ],
-            'export cheapest variant with all same prices' => [
-                'config' => 'cheapest',
-                'parentId' => $parentId,
-                'parentPrice' => 4,
-                'cheapestPrice' => 4
-            ],
+            'export shopware default' => ['config' => 'default'],
+            'export main parent' => ['config' => 'parent']
         ];
     }
 
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
-    public function testProductWithMultipleVariantsBasedOnExportConfig(
-        string $config,
-        string $parentId,
-        float $parentPrice,
-        float $cheapestPrice
-    ): void {
+    public function testProductWithMultipleVariantsBasedOnExportConfig(string $config): void
+    {
+        $parentId = Uuid::randomHex();
         $expectedFirstVariantId = Uuid::randomHex();
         $expectedSecondVariantId = Uuid::randomHex();
         $expectedThirdVariantId = Uuid::randomHex();
@@ -484,14 +451,6 @@ class ProductServiceTest extends TestCase
         $this->createVisibleTestProduct([
             'id' => $parentId,
             'active' => false,
-            'price' => [
-                [
-                    'currencyId' => Defaults::CURRENCY,
-                    'gross' => $parentPrice,
-                    'net' => $parentPrice / 2,
-                    'linked' => false
-                ]
-            ],
             'configuratorSettings' => [
                 [
                     'option' => [
@@ -539,14 +498,6 @@ class ProductServiceTest extends TestCase
             'parentId' => $parentId,
             'productNumber' => 'FINDOLOGIC001.1',
             'name' => 'FINDOLOGIC VARIANT 1',
-            'price' => [
-                [
-                    'currencyId' => Defaults::CURRENCY,
-                    'gross' => $cheapestPrice,
-                    'net' => $cheapestPrice / 2,
-                    'linked' => false
-                ]
-            ],
             'options' => [
                 ['id' => $firstOptionId]
             ],
@@ -557,7 +508,6 @@ class ProductServiceTest extends TestCase
             'parentId' => $parentId,
             'productNumber' => 'FINDOLOGIC001.2',
             'name' => 'FINDOLOGIC VARIANT 2',
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 4, 'net' => 2, 'linked' => false]],
             'options' => [
                 ['id' => $secondOptionId]
             ],
@@ -568,7 +518,6 @@ class ProductServiceTest extends TestCase
             'parentId' => $parentId,
             'productNumber' => 'FINDOLOGIC001.3',
             'name' => 'FINDOLOGIC VARIANT 3',
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 4, 'net' => 2, 'linked' => false]],
             'options' => [
                 ['id' => $thirdOptionId]
             ],
@@ -588,15 +537,6 @@ class ProductServiceTest extends TestCase
                     'mainVariantId' => $expectedMainVariantId
                 ]
             ], Context::createDefaultContext());
-        }
-
-        // Assert that the cheapest variant is exported as main variant.
-        if ($config === 'cheapest') {
-            $expectedMainVariantId = $expectedFirstVariantId;
-            // If the parent price itself is the cheapest, we export that as the cheapest variant.
-            if ($parentPrice <= $cheapestPrice) {
-                $expectedMainVariantId = $parentId;
-            }
         }
 
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
@@ -621,13 +561,166 @@ class ProductServiceTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider mainVariantDefaultConfigProvider
-     */
-    public function testProductWithMultipleVariantsIfExportConfigIsCheapest(string $config, string $parentId): void
+    public function mainVariantCheapestProvider(): array
     {
-        $this->createVisibleTestProduct(['id' => $parentId]);
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
+        return [
+            'export cheapest variant' => [
+                'parentPrice' => 15,
+                'firstVariantPrice' => 2,
+                'secondVariantPrice' => 6,
+                'thirdVariantPrice' => 4,
+                'cheapestPrice' => 2
+            ],
+            'export cheapest variant with parent price being cheaper' => [
+                'parentPrice' => 3,
+                'firstVariantPrice' => 10,
+                'secondVariantPrice' => 10,
+                'thirdVariantPrice' => 10,
+                'cheapest' => 3
+            ],
+            'export cheapest variant with all same prices' => [
+                'parentPrice' => 4,
+                'firstVariantPrice' => 4,
+                'secondVariantPrice' => 4,
+                'thirdVariantPrice' => 4,
+                'cheapestPrice' => 4
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider mainVariantCheapestProvider
+     */
+    public function testProductWithMultipleVariantsIfExportConfigIsCheapest(
+        float $parentPrice,
+        float $firstVariantPrice,
+        float $secondVariantPrice,
+        float $thirdVariantPrice,
+        float $cheapestPrice
+    ): void {
+        $parentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+        $expectedSecondVariantId = Uuid::randomHex();
+        $expectedThirdVariantId = Uuid::randomHex();
+
+        $firstOptionId = Uuid::randomHex();
+        $secondOptionId = Uuid::randomHex();
+        $thirdOptionId = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+
+        $this->createVisibleTestProduct([
+            'id' => $parentId,
+            'active' => false,
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $parentPrice,
+                    'net' => $parentPrice,
+                    'linked' => false
+                ]
+            ],
+            'configuratorSettings' => [
+                [
+                    'option' => [
+                        'id' => $firstOptionId,
+                        'name' => 'Red',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $secondOptionId,
+                        'name' => 'Orange',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $thirdOptionId,
+                        'name' => 'Green',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+            ],
+            'configuratorGroupConfig' => [
+                [
+                    'id' => $optionGroupId,
+                    'expressionForListings' => false,
+                    'representation' => 'box'
+                ]
+            ],
+        ]);
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $firstVariantPrice,
+                    'net' => $firstVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]));
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $secondVariantPrice,
+                    'net' => $secondVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]));
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedThirdVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.3',
+            'name' => 'FINDOLOGIC VARIANT 3',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $thirdVariantPrice,
+                    'net' => $thirdVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $thirdOptionId]
+            ],
+        ]));
+
+        // By default, main product will be exported, unless there is a cheaper price.
+        $expectedMainVariantId = $parentId;
+        if ($cheapestPrice < $parentPrice) {
+            $expectedMainVariantId = $expectedFirstVariantId;
+        }
+
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'cheapest']);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
 
         $this->defaultProductService->setConfig($mockedConfig);
@@ -637,16 +730,15 @@ class ProductServiceTest extends TestCase
         $this->assertCount(1, $elements);
         $mainVariant = current($elements);
 
-        // If there are no variants, the main product will always be exported as the main variant, irrespective
-        // of the export configuration.
-        $this->assertSame($parentId, $mainVariant->getId());
+        $this->assertSame($expectedMainVariantId, $mainVariant->getId());
     }
 
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
-    public function testProductWithoutVariantsBasedOnExportConfig(string $config, string $parentId): void
+    public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
     {
+        $parentId = Uuid::randomHex();
         $this->createVisibleTestProduct(['id' => $parentId]);
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
