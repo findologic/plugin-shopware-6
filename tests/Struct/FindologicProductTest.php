@@ -379,11 +379,9 @@ class FindologicProductTest extends TestCase
         $properties = $this->getProperties($productEntity);
 
         $productSearchKeywordEntity = new ProductSearchKeywordEntity();
-        $productSearchKeywordCollection = new ProductSearchKeywordCollection();
-
+        $productSearchKeywordEntity->setId('2255566389092766485905746366');
+        $productSearchKeywordCollection = new ProductSearchKeywordCollection([$productSearchKeywordEntity]);
         $productSearchKeywordEntity->setKeyword('FINDOLOGIC Keyword');
-        $productSearchKeywordCollection->set('searchKeyword', $productSearchKeywordEntity);
-
         $productEntity->setSearchKeywords($productSearchKeywordCollection);
 
         $config = $this->getMockedConfig();
@@ -399,7 +397,7 @@ class FindologicProductTest extends TestCase
         );
 
         $productKeyword = new Keyword('FINDOLOGIC Keyword');
-        $ignoreKeyords = [$productId = $productEntity->get('id'), $productNumber = $productEntity->getProductNumber()];
+        $ignoreKeyords = [$productEntity->get('id'), $productEntity->getProductNumber()];
         $keywords = $findologicProduct->getKeywords();
         $expectedProductKeywordExists = false;
         $ignoreProductKeywordExists = false;
