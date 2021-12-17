@@ -363,6 +363,11 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    /**
+     * @param $keyword
+     * @return ProductSearchKeywordEntity
+     */
+
     private function getKeywordEntity($keyword)
     {
         $productSearchKeywordEntity = new ProductSearchKeywordEntity();
@@ -406,14 +411,15 @@ class FindologicProductTest extends TestCase
         $keywords = [new Keyword('keyword1'), new Keyword('keyword2')];
         $expelledKeywords = [
             $productEntity->getProductNumber(),
-            $productEntity->getManufacturer()->getTranslation('name')];
+            $productEntity->getManufacturer()->getTranslation('name')
+        ];
 
         $productKeywords = $findologicProduct->getKeywords();
-        $expelledProductKeywordExists = false;
-        $this->assertNotCount(0, $productKeywords);
+        $isExpelledKeyword = false;
+        $this->assertNotEmpty($productKeywords);
         foreach ($productKeywords as $keyword) {
             if (in_array($keyword->getValue(), $expelledKeywords)) {
-                $expelledProductKeywordExists = true;
+                $isExpelledKeyword = true;
             }
         }
 
@@ -424,7 +430,7 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
         $this->assertEquals($keywords, $productKeywords);
-        $this->assertFalse($expelledProductKeywordExists);
+        $this->assertFalse($isExpelledKeyword);
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());

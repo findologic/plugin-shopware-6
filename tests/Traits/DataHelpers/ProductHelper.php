@@ -39,6 +39,7 @@ trait ProductHelper
         $newCategoryId = Uuid::randomHex();
         $redId = Uuid::randomHex();
         $colorId = Uuid::randomHex();
+
         $container = $this->getContainer();
         $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
         $categoryData = [
