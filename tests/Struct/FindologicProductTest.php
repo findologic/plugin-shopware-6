@@ -363,6 +363,15 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    private function getKeywordEntity($keyword)
+    {
+        $productSearchKeywordEntity = new ProductSearchKeywordEntity();
+        $productSearchKeywordEntity->setId(Uuid::randomHex());
+        $productSearchKeywordEntity->setKeyword($keyword);
+
+        return $productSearchKeywordEntity;
+    }
+
     public function testProduct(): void
     {
         $productEntity = $this->createTestProduct();
@@ -378,10 +387,8 @@ class FindologicProductTest extends TestCase
         $ordernumbers = $this->getOrdernumber($productEntity);
         $properties = $this->getProperties($productEntity);
 
-        $productSearchKeywordEntity = new ProductSearchKeywordEntity();
-        $productSearchKeywordEntity->setId('2255566389092766485905746366');
-        $productSearchKeywordCollection = new ProductSearchKeywordCollection([$productSearchKeywordEntity]);
-        $productSearchKeywordEntity->setKeyword('FINDOLOGIC Keyword');
+        $keywordEntities = [$this->getKeywordEntity('keyword1'), $this->getKeywordEntity('keyword2')];
+        $productSearchKeywordCollection = new ProductSearchKeywordCollection($keywordEntities);
         $productEntity->setSearchKeywords($productSearchKeywordCollection);
 
         $config = $this->getMockedConfig();
@@ -396,22 +403,17 @@ class FindologicProductTest extends TestCase
             $config
         );
 
-        $productKeyword = new Keyword('FINDOLOGIC Keyword');
-        $ignoreKeyords = [
-            $productEntity->get('id'),
+        $keywords = [new Keyword('keyword1'), new Keyword('keyword2')];
+        $expelledKeywords = [
             $productEntity->getProductNumber(),
-            $productEntity->getManufacturer()->getName()];
+            $productEntity->getManufacturer()->getTranslation('name')];
 
-        $keywords = $findologicProduct->getKeywords();
-        $expectedProductKeywordExists = false;
-        $ignoreProductKeywordExists = false;
-        $this->assertNotCount(0, $keywords);
-        foreach ($keywords as $keyword) {
-            if ($productKeyword->getValue() === $keyword->getValue()) {
-                $expectedProductKeywordExists = true;
-            }
-            if (in_array($keyword->getValue(), $ignoreKeyords)) {
-                $ignoreProductKeywordExists = true;
+        $productKeywords = $findologicProduct->getKeywords();
+        $expelledProductKeywordExists = false;
+        $this->assertNotCount(0, $productKeywords);
+        foreach ($productKeywords as $keyword) {
+            if (in_array($keyword->getValue(), $expelledKeywords)) {
+                $expelledProductKeywordExists = true;
             }
         }
 
@@ -421,8 +423,8 @@ class FindologicProductTest extends TestCase
         $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertTrue($expectedProductKeywordExists);
-        $this->assertFalse($ignoreProductKeywordExists);
+        $this->assertEquals($keywords, $productKeywords);
+        $this->assertFalse($expelledProductKeywordExists);
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
