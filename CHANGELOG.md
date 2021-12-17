@@ -1,3 +1,6 @@
+# NEXT
+- [SW-668] Added Shopware 6.4.7.0 to the test matrix.
+
 # 2.4.1
 - [SW-669] Fixed a bug that caused an error on all listing pages where Findologic has not been active.
 
