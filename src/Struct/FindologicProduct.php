@@ -356,7 +356,7 @@ class FindologicProduct extends Struct
 
     protected function setKeywords(): void
     {
-        $expelledKeywords = [
+        $blackListedKeywords = [
             $this->product->getProductNumber(),
             $this->product->getManufacturer()->getTranslation('name')
         ];
@@ -366,8 +366,8 @@ class FindologicProduct extends Struct
             foreach ($keywords as $keyword) {
                 $keywordValue = $keyword->getKeyword();
                 if (!Utils::isEmpty($keywordValue)) {
-                    $isExpelledKeyword = in_array($keywordValue, $expelledKeywords);
-                    if (!$isExpelledKeyword) {
+                    $isBlackListedKeyword = in_array($keywordValue, $blackListedKeywords);
+                    if (!$isBlackListedKeyword) {
                         $this->keywords[] = new Keyword($keywordValue);
                     }
                 }

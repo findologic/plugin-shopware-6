@@ -41,6 +41,7 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -363,12 +364,7 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    /**
-     * @param $keyword
-     * @return ProductSearchKeywordEntity
-     */
-
-    private function getKeywordEntity($keyword)
+    private function getKeywordEntity(string $keyword): EntityRepository
     {
         $productSearchKeywordEntity = new ProductSearchKeywordEntity();
         $productSearchKeywordEntity->setId(Uuid::randomHex());
@@ -409,17 +405,17 @@ class FindologicProductTest extends TestCase
         );
 
         $keywords = [new Keyword('keyword1'), new Keyword('keyword2')];
-        $expelledKeywords = [
+        $blackListedKeywords = [
             $productEntity->getProductNumber(),
             $productEntity->getManufacturer()->getTranslation('name')
         ];
 
         $productKeywords = $findologicProduct->getKeywords();
-        $isExpelledKeyword = false;
+        $isBlackListedKeyword = false;
         $this->assertNotEmpty($productKeywords);
         foreach ($productKeywords as $keyword) {
-            if (in_array($keyword->getValue(), $expelledKeywords)) {
-                $isExpelledKeyword = true;
+            if (in_array($keyword->getValue(), $blackListedKeywords)) {
+                $isBlackListedKeyword = true;
             }
         }
 
@@ -430,7 +426,7 @@ class FindologicProductTest extends TestCase
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
         $this->assertEquals($keywords, $productKeywords);
-        $this->assertFalse($isExpelledKeyword);
+        $this->assertFalse($isBlackListedKeyword);
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
