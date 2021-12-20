@@ -364,7 +364,7 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    private function getKeywordEntity(string $keyword): EntityRepository
+    private function getKeywordEntity(string $keyword): ProductSearchKeywordEntity
     {
         $productSearchKeywordEntity = new ProductSearchKeywordEntity();
         $productSearchKeywordEntity->setId(Uuid::randomHex());
