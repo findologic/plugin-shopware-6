@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Export;
 use FINDOLOGIC\FinSearch\Findologic\MainVariant;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductCollection;
@@ -316,16 +317,13 @@ class ProductService
                     $parent = $this->getParentByCheapestVariant($product);
                     break;
                 default:
-                    $parent = null;
-                    break;
+                    throw new InvalidArgumentException($mainVariantConfig);
             }
 
-            if ($parent) {
-                $variantProducts->add($parent);
-            }
+            $variantProducts->add($parent);
         }
 
-        return $variantProducts->count() > 0 ? $variantProducts : $products;
+        return $variantProducts;
     }
 
     protected function getRealMainProductWithVariants(string $realMainProductId): ?ProductEntity
@@ -339,7 +337,7 @@ class ProductService
         $product->setChildren($children);
     }
 
-    private function getParentByMainProduct(ProductEntity $product): ProductEntity
+    protected function getParentByMainProduct(ProductEntity $product): ProductEntity
     {
         $children = new ProductCollection();
         foreach ($product->getChildren() as $child) {
@@ -353,11 +351,12 @@ class ProductService
         return $product;
     }
 
-    private function getParentByCheapestVariant(ProductEntity $product): ProductEntity
+    protected function getParentByCheapestVariant(ProductEntity $product): ProductEntity
     {
         $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
-        // Add the current product as a child, so it gets considered in the loop.
         $children = $product->getChildren();
+        // Add the current product in the children collection, so we can include it when
+        // checking for the cheapest price logic in the loop below.
         $children->add($product);
         // Get the real parent of the product. If no product is found, it means we
         // already have the real parent.
@@ -390,7 +389,6 @@ class ProductService
 
         $parent->setParentId(null);
         $parent->setChildren($configuredChildren);
-        $this->assignChildrenOrSiblings($parent);
 
         return $parent;
     }
