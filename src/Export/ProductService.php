@@ -12,6 +12,7 @@ use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityD
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -356,10 +357,15 @@ class ProductService
     private function getParentByCheapestVariant(ProductEntity $product): ProductEntity
     {
         $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+        // Add the current product as a child, so it gets considered in the loop.
         $children = $product->getChildren();
+        $children->add($product);
         // Get the real parent of the product. If no product is found, it means we
         // already have the real parent.
-        $parent = $children->filterByProperty('parentId', null)->first();
+        $parent = $children->filter(static function (ProductEntity $childEntity) {
+            return $childEntity->getParentId() === null;
+        })->first();
+
         if (!$parent) {
             $parent = $product;
         }
