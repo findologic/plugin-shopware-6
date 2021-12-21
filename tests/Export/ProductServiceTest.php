@@ -424,122 +424,35 @@ class ProductServiceTest extends TestCase
         $this->assertEmpty($result->getElements());
     }
 
-    public function mainVariantDefaultConfigProvider(): array
-    {
-        return [
-            'export shopware default' => ['config' => 'default'],
-            'export main parent' => ['config' => 'parent']
-        ];
-    }
-
-    /**
-     * @dataProvider mainVariantDefaultConfigProvider
-     */
-    public function testProductWithMultipleVariantsBasedOnExportConfig(string $config): void
+    public function testProductWithMultipleVariantsIfExportConfigIsParent(): void
     {
         $parentId = Uuid::randomHex();
         $expectedFirstVariantId = Uuid::randomHex();
         $expectedSecondVariantId = Uuid::randomHex();
         $expectedThirdVariantId = Uuid::randomHex();
-        $expectedMainVariantId = $expectedSecondVariantId;
 
-        $firstOptionId = Uuid::randomHex();
-        $secondOptionId = Uuid::randomHex();
-        $thirdOptionId = Uuid::randomHex();
-        $optionGroupId = Uuid::randomHex();
-
-        $this->createVisibleTestProduct([
-            'id' => $parentId,
-            'active' => false,
-            'configuratorSettings' => [
-                [
-                    'option' => [
-                        'id' => $firstOptionId,
-                        'name' => 'Red',
-                        'group' => [
-                            'id' => $optionGroupId,
-                            'name' => 'Color',
-                        ],
-                    ],
-                ],
-                [
-                    'option' => [
-                        'id' => $secondOptionId,
-                        'name' => 'Orange',
-                        'group' => [
-                            'id' => $optionGroupId,
-                            'name' => 'Color',
-                        ],
-                    ],
-                ],
-                [
-                    'option' => [
-                        'id' => $thirdOptionId,
-                        'name' => 'Green',
-                        'group' => [
-                            'id' => $optionGroupId,
-                            'name' => 'Color',
-                        ],
-                    ],
-                ],
-            ],
-            'configuratorGroupConfig' => [
-                [
-                    'id' => $optionGroupId,
-                    // This tells Shopware to consider the mainVariationId if set.
-                    'expressionForListings' => $config === 'parent',
-                    'representation' => 'box'
-                ]
-            ],
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'options' => [
-                ['id' => $firstOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'options' => [
-                ['id' => $secondOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedThirdVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.3',
-            'name' => 'FINDOLOGIC VARIANT 3',
-            'options' => [
-                ['id' => $thirdOptionId]
-            ],
-        ]));
+        $this->createProductWithMultipleVariants(
+            $parentId,
+            $expectedFirstVariantId,
+            $expectedSecondVariantId,
+            $expectedThirdVariantId
+        );
 
         // Explicitly assign the main variant ID to the product, and assert that the assigned main variant
         // is the exported variant.
-        if ($config === 'parent') {
-            $expectedMainVariantId = $expectedThirdVariantId;
-            $this->getContainer()->get('product.repository')->update([
-                [
-                    'id' => $expectedFirstVariantId,
-                    'mainVariantId' => $expectedMainVariantId
-                ],
-                [
-                    'id' => $expectedSecondVariantId,
-                    'mainVariantId' => $expectedMainVariantId
-                ]
-            ], Context::createDefaultContext());
-        }
+        $expectedMainVariantId = $expectedThirdVariantId;
+        $this->getContainer()->get('product.repository')->update([
+            [
+                'id' => $expectedFirstVariantId,
+                'mainVariantId' => $expectedMainVariantId
+            ],
+            [
+                'id' => $expectedSecondVariantId,
+                'mainVariantId' => $expectedMainVariantId
+            ]
+        ], Context::createDefaultContext());
 
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'parent']);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
 
         $this->defaultProductService->setConfig($mockedConfig);
@@ -549,16 +462,39 @@ class ProductServiceTest extends TestCase
         $this->assertCount(1, $elements);
         $mainVariant = current($elements);
 
-        if ($config === 'default') {
-            // Assert that exported main variant is one of the variants when using "default" configuration.
-            $this->assertContains($expectedMainVariantId, [
-                $expectedFirstVariantId,
-                $expectedSecondVariantId,
-                $expectedThirdVariantId
-            ]);
-        } else {
-            $this->assertSame($expectedMainVariantId, $mainVariant->getId());
-        }
+        $this->assertSame($expectedMainVariantId, $mainVariant->getId());
+    }
+
+    public function testProductWithMultipleVariantsIfExportConfigIsDefault(): void
+    {
+        $parentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+        $expectedSecondVariantId = Uuid::randomHex();
+        $expectedThirdVariantId = Uuid::randomHex();
+        $expectedMainVariantId = $expectedSecondVariantId;
+
+        $this->createProductWithMultipleVariants(
+            $parentId,
+            $expectedFirstVariantId,
+            $expectedSecondVariantId,
+            $expectedThirdVariantId
+        );
+
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'default']);
+        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
+
+        $this->defaultProductService->setConfig($mockedConfig);
+        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $elements = $result->getElements();
+
+        $this->assertCount(1, $elements);
+
+        // Assert that exported main variant is one of the variants when using "default" configuration.
+        $this->assertContains($expectedMainVariantId, [
+            $expectedFirstVariantId,
+            $expectedSecondVariantId,
+            $expectedThirdVariantId
+        ]);
     }
 
     public function mainVariantCheapestProvider(): array
@@ -603,6 +539,156 @@ class ProductServiceTest extends TestCase
         $expectedSecondVariantId = Uuid::randomHex();
         $expectedThirdVariantId = Uuid::randomHex();
 
+        $this->createProductWithDifferentPriceVariants(
+            $parentId,
+            $parentPrice,
+            $expectedFirstVariantId,
+            $firstVariantPrice,
+            $expectedSecondVariantId,
+            $secondVariantPrice,
+            $expectedThirdVariantId,
+            $thirdVariantPrice
+        );
+
+        // By default, main product will be exported, unless there is a cheaper price.
+        $expectedMainVariantId = $parentId;
+        if ($cheapestPrice < $parentPrice) {
+            $expectedMainVariantId = $expectedFirstVariantId;
+        }
+
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'cheapest']);
+        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
+
+        $this->defaultProductService->setConfig($mockedConfig);
+        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $elements = $result->getElements();
+
+        $this->assertCount(1, $elements);
+        $mainVariant = current($elements);
+
+        $this->assertSame($expectedMainVariantId, $mainVariant->getId());
+    }
+
+    public function mainVariantDefaultConfigProvider(): array
+    {
+        return [
+            'export shopware default' => ['config' => 'default'],
+            'export main parent' => ['config' => 'parent'],
+            'export cheapest variant' => ['config' => 'cheapest']
+        ];
+    }
+
+    /**
+     * @dataProvider mainVariantDefaultConfigProvider
+     */
+    public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
+    {
+        $parentId = Uuid::randomHex();
+        $this->createVisibleTestProduct(['id' => $parentId]);
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
+        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
+
+        $this->defaultProductService->setConfig($mockedConfig);
+        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $elements = $result->getElements();
+
+        $this->assertCount(1, $elements);
+        $mainVariant = current($elements);
+
+        // If there are no variants, the main product will always be exported as the main variant, irrespective
+        // of the export configuration.
+        $this->assertSame($parentId, $mainVariant->getId());
+    }
+
+    private function createProductWithMultipleVariants(
+        string $parentId,
+        string $expectedFirstVariantId,
+        string $expectedSecondVariantId,
+        string $expectedThirdVariantId
+    ): void {
+        $firstOptionId = Uuid::randomHex();
+        $secondOptionId = Uuid::randomHex();
+        $thirdOptionId = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+
+        $this->createVisibleTestProduct([
+            'id' => $parentId,
+            'active' => false,
+            'configuratorSettings' => [
+                [
+                    'option' => [
+                        'id' => $firstOptionId,
+                        'name' => 'Red',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $secondOptionId,
+                        'name' => 'Orange',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $thirdOptionId,
+                        'name' => 'Green',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+            ]
+        ]);
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]));
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]));
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => $expectedThirdVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.3',
+            'name' => 'FINDOLOGIC VARIANT 3',
+            'options' => [
+                ['id' => $thirdOptionId]
+            ],
+        ]));
+    }
+
+    private function createProductWithDifferentPriceVariants(
+        string $parentId,
+        float $parentPrice,
+        string $expectedFirstVariantId,
+        float $firstVariantPrice,
+        string $expectedSecondVariantId,
+        float $secondVariantPrice,
+        string $expectedThirdVariantId,
+        float $thirdVariantPrice
+    ): void {
         $firstOptionId = Uuid::randomHex();
         $secondOptionId = Uuid::randomHex();
         $thirdOptionId = Uuid::randomHex();
@@ -650,14 +736,7 @@ class ProductServiceTest extends TestCase
                         ],
                     ],
                 ],
-            ],
-            'configuratorGroupConfig' => [
-                [
-                    'id' => $optionGroupId,
-                    'expressionForListings' => false,
-                    'representation' => 'box'
-                ]
-            ],
+            ]
         ]);
 
         $this->createVisibleTestProduct($this->getBasicVariantData([
@@ -713,45 +792,5 @@ class ProductServiceTest extends TestCase
                 ['id' => $thirdOptionId]
             ],
         ]));
-
-        // By default, main product will be exported, unless there is a cheaper price.
-        $expectedMainVariantId = $parentId;
-        if ($cheapestPrice < $parentPrice) {
-            $expectedMainVariantId = $expectedFirstVariantId;
-        }
-
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'cheapest']);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
-        $this->defaultProductService->setConfig($mockedConfig);
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
-        $elements = $result->getElements();
-
-        $this->assertCount(1, $elements);
-        $mainVariant = current($elements);
-
-        $this->assertSame($expectedMainVariantId, $mainVariant->getId());
-    }
-
-    /**
-     * @dataProvider mainVariantDefaultConfigProvider
-     */
-    public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
-    {
-        $parentId = Uuid::randomHex();
-        $this->createVisibleTestProduct(['id' => $parentId]);
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
-        $this->defaultProductService->setConfig($mockedConfig);
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
-        $elements = $result->getElements();
-
-        $this->assertCount(1, $elements);
-        $mainVariant = current($elements);
-
-        // If there are no variants, the main product will always be exported as the main variant, irrespective
-        // of the export configuration.
-        $this->assertSame($parentId, $mainVariant->getId());
     }
 }

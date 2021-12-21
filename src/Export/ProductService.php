@@ -348,7 +348,6 @@ class ProductService
             }
         }
 
-        // Reset the current product's children as it will be now a child of the configured variant.
         $product->setChildren($children);
 
         return $product;
@@ -356,18 +355,26 @@ class ProductService
 
     private function getParentByCheapestVariant(ProductEntity $product): ProductEntity
     {
-        $parent = null;
-        $cheapestPrice = 0;
         $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
         $children = $product->getChildren();
+        // Get the real parent of the product. If no product is found, it means we
+        // already have the real parent.
+        $parent = $children->filterByProperty('parentId', null)->first();
+        if (!$parent) {
+            $parent = $product;
+        }
+
+        // Consider the current product to have the cheapest price by default, and look for
+        // a cheaper product in its children.
+        $cheapestPrice = $parent->getCurrencyPrice($currencyId);
         foreach ($children as $child) {
             $price = $child->getCurrencyPrice($currencyId);
             if (!$price) {
                 continue;
             }
 
-            if (!$cheapestPrice || $price->getGross() < $cheapestPrice) {
-                $cheapestPrice = $price->getGross();
+            if ($price->getGross() < $cheapestPrice->getGross()) {
+                $cheapestPrice->setGross($price->getGross());
                 $parent = $child;
             }
         }
@@ -376,15 +383,10 @@ class ProductService
             return $child->getId() !== $parent->getId();
         });
 
-        if ($parent) {
-            // Reset the current product's children as it will be now a child of the configured variant.
-            $product->setChildren(new ProductCollection());
-            $configuredChildren->add($product);
-            $parent->setChildren($configuredChildren);
+        $parent->setParentId(null);
+        $parent->setChildren($configuredChildren);
+        $this->assignChildrenOrSiblings($parent);
 
-            return $parent;
-        }
-
-        return $product;
+        return $parent;
     }
 }
