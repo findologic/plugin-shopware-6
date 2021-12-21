@@ -1,7 +1,15 @@
 # NEXT
+- [SW-668] Shopware 6.4.7.0 wurde zur Test-Matrix hinzugefügt.
+
+# 2.4.1
+- [SW-669] Ein Fehler wurde behoben, wodurch auf allen Listing Seiten auf denen Findologic nicht aktiv war, ein Fehler ausgegeben wurde.
+
+# 2.4.0
+- [SW-601] Anfragen an die Findologic API enthalten nun das Shopsystem und die Version.
 - [SW-662] Ein Fehler wurde behoben, wodurch der Export scheiterte, wenn die konfigurierte Hauptvariante für den exportierenden Verkaufskanal nicht verfügbar war.
 - [SW-663] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, wenn diese ein Zusatzfeld mit dem Wert "0" enthielten.
 - [SW-612] Ein Fehler wurde behoben, wodurch ein falscher Produkt-Preis exportiert wurde, wenn der exportierende Verkaufskanal nicht die konfigurierte standard Währung verwendete.
+- [SW-632] Ein Fehler wurde behoben, wodurch die untere Pagination angezeigt wurde, wenn nur eine einzige Paginationsseite existierte, was nicht dem Shopware Standard entsprach.
 
 # 2.3.0
 - [SW-567] Der Kategoriefilter wurde verbessert und hat ein große UI/UX verbesserungen erhalten.
