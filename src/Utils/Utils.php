@@ -101,6 +101,8 @@ class Utils
                 'children.cover',
                 'children.properties',
                 'children.properties.group',
+                'children.categories',
+                'children.categories.seoUrls',
                 'children.properties.productConfiguratorSettings',
                 'children.properties.productConfiguratorSettings.option',
                 'children.properties.productConfiguratorSettings.option.group',

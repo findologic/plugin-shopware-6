@@ -762,7 +762,9 @@ class FindologicProduct extends Struct
     protected function setCategoriesAndCatUrls(): void
     {
         $productCategories = $this->product->getCategories();
-        if ($productCategories === null || empty($productCategories->count())) {
+        $productVariants = $this->product->getChildren()->getElements();
+
+        if (($productCategories === null || empty($productCategories->count()))) {
             throw new ProductHasNoCategoriesException($this->product);
         }
 
@@ -770,6 +772,14 @@ class FindologicProduct extends Struct
         $categories = [];
 
         $this->parseCategoryAttributes($productCategories->getElements(), $catUrls, $categories);
+            foreach($productVariants as $variant){
+                $variantCategories = $variant->getCategories();
+                if($variantCategories !== null){
+                    $variantCategories = $variant->getCategories()->getElements();
+                    $this->parseCategoryAttributes($variantCategories, $catUrls, $categories);
+                }
+            }
+
         if ($this->dynamicProductGroupService) {
             $dynamicGroupCategories = $this->dynamicProductGroupService->getCategories($this->product->getId());
             $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
