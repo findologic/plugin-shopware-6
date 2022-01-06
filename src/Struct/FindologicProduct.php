@@ -762,9 +762,11 @@ class FindologicProduct extends Struct
     protected function setCategoriesAndCatUrls(): void
     {
         $productCategories = $this->product->getCategories();
-        $productVariants = $this->product->getChildren()->getElements();
+        $productVariants = $this->product->getChildren();
 
-        if (($productCategories === null || empty($productCategories->count()))) {
+        if (($productCategories === null || empty($productCategories->count()))
+            && (empty($productVariants->count()))
+        ) {
             throw new ProductHasNoCategoriesException($this->product);
         }
 
@@ -772,13 +774,13 @@ class FindologicProduct extends Struct
         $categories = [];
 
         $this->parseCategoryAttributes($productCategories->getElements(), $catUrls, $categories);
-            foreach($productVariants as $variant){
-                $variantCategories = $variant->getCategories();
-                if($variantCategories !== null){
-                    $variantCategories = $variant->getCategories()->getElements();
-                    $this->parseCategoryAttributes($variantCategories, $catUrls, $categories);
-                }
+        foreach ($productVariants->getElements() as $variant) {
+            $variantCategories = $variant->getCategories();
+            if ($variantCategories !== null) {
+                $variantCategories = $variant->getCategories()->getElements();
+                $this->parseCategoryAttributes($variantCategories, $catUrls, $categories);
             }
+        }
 
         if ($this->dynamicProductGroupService) {
             $dynamicGroupCategories = $this->dynamicProductGroupService->getCategories($this->product->getId());
@@ -993,6 +995,7 @@ class FindologicProduct extends Struct
                 $categoryEntity->getBreadcrumb(),
                 $this->navigationCategory
             );
+
 
             if (!Utils::isEmpty($categoryPath)) {
                 $categories = array_merge($categories, [$categoryPath]);

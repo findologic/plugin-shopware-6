@@ -33,6 +33,7 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
@@ -178,6 +179,95 @@ class FindologicProductTest extends TestCase
         $productEntity = $this->createTestProduct();
         $productEntity->setCategories(new CategoryCollection([]));
 
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+    }
+
+    /**
+     * @dataProvider categoryAndCatUrlWithIntegrationTypeProvider
+     */
+    public function testOnlyUniqueCategoriesExported(
+        ?string $integrationType,
+        array $categories,
+        array $expectedCatUrls
+    ): void {
+        foreach ($categories as $key => $category) {
+            $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+            $categories[$key]['parentId'] = $navigationCategoryId;
+        }
+
+        $productEntity = $this->createTestProduct(['categories' => $categories]);
+        $config = $this->getMockedConfig($integrationType);
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123'),
+            $config
+        );
+        $categoriesToBeChecked = [];
+        $isUnique = true;
+        $this->assertTrue($findologicProduct->hasAttributes());
+        $attributes = $findologicProduct->getAttributes();
+        if (count($expectedCatUrls) > 0) {
+            $catValues = $attributes[1]->getValues();
+        } else {
+            $catValues = $attributes[0]->getValues();
+        }
+        foreach ($catValues as $category) {
+            if (!empty(array_search($category, $categoriesToBeChecked))) {
+                $isUnique = false;
+                break;
+            }
+            $categoriesArray[] = $category;
+        }
+        $this->assertTrue($isUnique);
+    }
+
+    public function testSetVariantCategoryOnly()
+    {
+        $categoryEntity = new CategoryEntity();
+        $categoryEntity->setId('46663551748484645637374545');
+        $categoryEntity->setName('Findologic Category');
+        $categoryEntity->setActive(true);
+        $newCategory = new CategoryCollection([$categoryEntity]);
+        $productEntity = $this->createTestProduct(
+            ['categories' => []],
+            true
+        );
+        $children = $productEntity->getChildren()->getElements();
+        foreach ($children as $child) {
+            $child->setCategories($newCategory);
+            $categories = $child->getCategories();
+            foreach ($categories->getElements() as $category) {
+                $category->setBreadcrumb(["Home", "Findologic Category"]);
+            }
+        }
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+    }
+
+    public function testSetParentCategoryOnly()
+    {
+        $productEntity = $this->createTestProduct([], true);
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProductFactory->buildInstance(
             $productEntity,
