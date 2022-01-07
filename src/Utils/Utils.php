@@ -153,17 +153,17 @@ class Utils
         // Composer 2 runtime API uses the `InstalledVersions::class` in favor of the
         // deprecated/removed `Versions::class`
         if (class_exists(InstalledVersions::class)) {
-            $coreIsInstalled = InstalledVersions::isInstalled('shopware/core');
-            $coreVersion = InstalledVersions::getVersion('shopware/core');
-            $platformVersion = InstalledVersions::getVersion('shopware/platform');
+            $platformIsInstalled = InstalledVersions::isInstalled('shopware/platform');
+            $platformVersion = InstalledVersions::getPrettyVersion('shopware/platform');
+            $coreVersion = InstalledVersions::getPrettyVersion('shopware/core');
         } else {
             $packageVersions = Versions::VERSIONS;
-            $coreIsInstalled = isset($packageVersions['shopware/core']);
-            $coreVersion = Versions::getVersion('shopware/core');
+            $platformIsInstalled = isset($packageVersions['shopware/platform']);
             $platformVersion = Versions::getVersion('shopware/platform');
+            $coreVersion = Versions::getVersion('shopware/core');
         }
 
-        return $coreIsInstalled ? $coreVersion : $platformVersion;
+        return $platformIsInstalled ? $platformVersion : $coreVersion;
     }
 
     protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string
