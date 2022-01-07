@@ -154,16 +154,22 @@ class Utils
         // deprecated/removed `Versions::class`
         if (class_exists(InstalledVersions::class)) {
             $platformIsInstalled = InstalledVersions::isInstalled('shopware/platform');
-            $platformVersion = InstalledVersions::getPrettyVersion('shopware/platform');
-            $coreVersion = InstalledVersions::getPrettyVersion('shopware/core');
+            if ($platformIsInstalled) {
+                $shopwareVersion = InstalledVersions::getPrettyVersion('shopware/platform');
+            } else {
+                $shopwareVersion = InstalledVersions::getPrettyVersion('shopware/core');
+            }
         } else {
             $packageVersions = Versions::VERSIONS;
             $platformIsInstalled = isset($packageVersions['shopware/platform']);
-            $platformVersion = Versions::getVersion('shopware/platform');
-            $coreVersion = Versions::getVersion('shopware/core');
+            if ($platformIsInstalled) {
+                $shopwareVersion = Versions::getVersion('shopware/platform');
+            } else {
+                $shopwareVersion = Versions::getVersion('shopware/core');
+            }
         }
 
-        return $platformIsInstalled ? $platformVersion : $coreVersion;
+        return $shopwareVersion;
     }
 
     protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string
