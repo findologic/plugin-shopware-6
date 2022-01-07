@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Utils;
 
+use Composer\InstalledVersions;
 use FINDOLOGIC\FinSearch\Definitions\Defaults;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
@@ -149,18 +150,20 @@ class Utils
      */
     protected static function getShopwareVersion(): string
     {
-        $packageVersions = Versions::VERSIONS;
-        $coreIsInstalled = isset($packageVersions['shopware/core']);
-
-        $shopwareVersion = $coreIsInstalled ?
-            Versions::getVersion('shopware/core') :
-            Versions::getVersion('shopware/platform');
-
-        if (!trim($shopwareVersion, 'v@')) {
-            return $coreIsInstalled ? $packageVersions['shopware/core'] : $packageVersions['shopware/platform'];
+        // Composer 2 runtime API uses the `InstalledVersions::class` in favor of the
+        // deprecated/removed `Versions::class`
+        if (class_exists(InstalledVersions::class)) {
+            $coreIsInstalled = InstalledVersions::isInstalled('shopware/core');
+            $coreVersion = InstalledVersions::getVersion('shopware/core');
+            $platformVersion = InstalledVersions::getVersion('shopware/platform');
+        } else {
+            $packageVersions = Versions::VERSIONS;
+            $coreIsInstalled = isset($packageVersions['shopware/core']);
+            $coreVersion = Versions::getVersion('shopware/core');
+            $platformVersion = Versions::getVersion('shopware/platform');
         }
 
-        return $shopwareVersion;
+        return $coreIsInstalled ? $coreVersion : $platformVersion;
     }
 
     protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string

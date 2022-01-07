@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Migration;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
+use Exception;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -34,7 +34,11 @@ CREATE TABLE IF NOT EXISTS `finsearch_config` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 SQL;
 
-        $connection->executeUpdate($sql);
+        if (method_exists($connection, 'executeStatement')) {
+            $connection->executeStatement($sql);
+        } else {
+            $connection->executeUpdate($sql);
+        }
 
         $this->insertPreviousConfigurationIfExists($connection);
     }
@@ -58,7 +62,12 @@ FROM `system_config`
 WHERE `configuration_key` LIKE '%FinSearch.config%'
 SQL;
 
-        $configs = $connection->fetchAll($sql);
+        if (method_exists($connection, 'fetchAllAssociative')) {
+            $configs = $connection->fetchAllAssociative($sql);
+        } else {
+            $configs = $connection->fetchAll($sql);
+        }
+
         if (Utils::isEmpty($configs)) {
             return;
         }
@@ -70,7 +79,12 @@ SQL;
             }
 
             $sql = 'SELECT LOWER(HEX(`language_id`)) AS `language_id` FROM `sales_channel` WHERE `id` = UNHEX(?)';
-            $languageId = $connection->fetchColumn($sql, [$salesChannelId]);
+            if (method_exists($connection, 'fetchOne')) {
+                $languageId = $connection->fetchOne($sql, [$salesChannelId]);
+            } else {
+                $languageId = $connection->fetchColumn($sql, [$salesChannelId]);
+            }
+
             if (!$languageId) {
                 continue;
             }
@@ -80,7 +94,7 @@ SQL;
             $data['sales_channel_id'] = Uuid::fromHexToBytes($salesChannelId);
             try {
                 $connection->insert('finsearch_config', $data);
-            } catch (DBALException $ignored) {
+            } catch (Exception $ignored) {
                 // Do nothing here as configuration already exists
             }
         }
@@ -89,6 +103,10 @@ SQL;
     private function getDefaultSalesChannelId(Connection $connection)
     {
         $sql = 'SELECT LOWER(HEX(`id`)) AS `id` FROM `sales_channel` WHERE `type_id` = UNHEX(?) AND `active` = \'1\'';
+
+        if (method_exists($connection, 'fetchOne')) {
+            return $connection->fetchOne($sql, [Defaults::SALES_CHANNEL_TYPE_STOREFRONT]);
+        }
 
         return $connection->fetchColumn($sql, [Defaults::SALES_CHANNEL_TYPE_STOREFRONT]);
     }
