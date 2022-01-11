@@ -343,9 +343,9 @@ Component.register('findologic-page', {
                 this.selectedSalesChannelId = salesChannelId;
                 this.onSelectedLanguage(selectedChannel.languageId);
                 selectedChannel.languages.forEach((language) => {
-                    let domain = selectedChannel.domains.find(item => item.languageId === language.id);
-                    if(domain){
-                        if(domain.url !== null && domain.url !== ""){
+                    const domain = selectedChannel.domains.find(item => item.languageId === language.id);
+                    if (domain) {
+                        if(domain.url !== null && domain.url !== ''){
                             this.language.push({
                                 name: language.name,
                                 label: language.name,
