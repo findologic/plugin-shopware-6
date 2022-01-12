@@ -339,16 +339,19 @@ class ProductService
 
     protected function getParentByMainProduct(ProductEntity $product): ProductEntity
     {
+        $parent = $product;
         $children = new ProductCollection();
         foreach ($product->getChildren() as $child) {
-            if ($child->getId() !== $product->getId()) {
+            if ($child->getParentId()) {
                 $children->add($child);
+            } else {
+                $parent = $child;
             }
         }
 
-        $product->setChildren($children);
+        $parent->setChildren($children);
 
-        return $product;
+        return $parent;
     }
 
     protected function getParentByCheapestVariant(ProductEntity $product): ProductEntity
