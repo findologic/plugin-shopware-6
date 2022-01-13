@@ -430,6 +430,7 @@ class ProductServiceTest extends TestCase
         $expectedFirstVariantId = Uuid::randomHex();
         $expectedSecondVariantId = Uuid::randomHex();
         $expectedThirdVariantId = Uuid::randomHex();
+        $expectedMainVariantId = $parentId;
 
         $this->createProductWithMultipleVariants(
             $parentId,
@@ -437,20 +438,6 @@ class ProductServiceTest extends TestCase
             $expectedSecondVariantId,
             $expectedThirdVariantId
         );
-
-        // Explicitly assign the main variant ID to the product, and assert that the assigned main variant
-        // is the exported variant.
-        $expectedMainVariantId = $expectedThirdVariantId;
-        $this->getContainer()->get('product.repository')->update([
-            [
-                'id' => $expectedFirstVariantId,
-                'mainVariantId' => $expectedMainVariantId
-            ],
-            [
-                'id' => $expectedSecondVariantId,
-                'mainVariantId' => $expectedMainVariantId
-            ]
-        ], Context::createDefaultContext());
 
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'parent']);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
