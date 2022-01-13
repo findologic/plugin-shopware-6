@@ -155,21 +155,19 @@ class Utils
         if (class_exists(InstalledVersions::class)) {
             $platformIsInstalled = InstalledVersions::isInstalled('shopware/platform');
             if ($platformIsInstalled) {
-                $shopwareVersion = InstalledVersions::getPrettyVersion('shopware/platform');
-            } else {
-                $shopwareVersion = InstalledVersions::getPrettyVersion('shopware/core');
+                return InstalledVersions::getPrettyVersion('shopware/platform');
             }
-        } else {
-            $packageVersions = Versions::VERSIONS;
-            $platformIsInstalled = isset($packageVersions['shopware/platform']);
-            if ($platformIsInstalled) {
-                $shopwareVersion = Versions::getVersion('shopware/platform');
-            } else {
-                $shopwareVersion = Versions::getVersion('shopware/core');
-            }
+
+            return InstalledVersions::getPrettyVersion('shopware/core');
         }
 
-        return $shopwareVersion;
+        $packageVersions = Versions::VERSIONS;
+        $platformIsInstalled = isset($packageVersions['shopware/platform']);
+        if ($platformIsInstalled) {
+            return $packageVersions['shopware/platform'];
+        }
+
+        return $packageVersions['shopware/core'];
     }
 
     protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string
