@@ -1,3 +1,7 @@
+# NEXT
+- [SW-671] Ein Fehler wurde behoben, wodurch der automatisierte build-Prozess scheiterte, da veraltete Composer 1 Klassen verwendet wurden.
+- [SW-668] Shopware 6.4.7.0 wurde zur Test-Matrix hinzugefügt.
+
 # 2.4.1
 - [SW-669] Ein Fehler wurde behoben, wodurch auf allen Listing Seiten auf denen Findologic nicht aktiv war, ein Fehler ausgegeben wurde.
 
