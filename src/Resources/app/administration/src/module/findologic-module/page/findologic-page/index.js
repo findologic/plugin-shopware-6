@@ -67,7 +67,7 @@ Component.register('findologic-page', {
             }
 
             this._setErrorStates();
-        },
+        }
     },
 
     computed: {
@@ -345,7 +345,7 @@ Component.register('findologic-page', {
                 selectedChannel.languages.forEach((language) => {
                     const domain = selectedChannel.domains.find(item => item.languageId === language.id);
                     if (domain) {
-                        if(domain.url !== null && domain.url !== ''){
+                        if (domain.url !== null && domain.url !== '') {
                             this.language.push({
                                 name: language.name,
                                 label: language.name,
