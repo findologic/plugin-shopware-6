@@ -23,6 +23,7 @@ use function file_get_contents;
 use function is_numeric;
 use function json_decode;
 use function ltrim;
+use function method_exists;
 
 class FinSearch extends Plugin
 {
@@ -93,7 +94,11 @@ class FinSearch extends Plugin
     private function deleteFindologicConfig(): void
     {
         $connection = $this->container->get(Connection::class);
-        $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
+        if (method_exists($connection, 'executeStatement')) {
+            $connection->executeStatement('DROP TABLE IF EXISTS `finsearch_config`');
+        } else {
+            $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
+        }
     }
 
     protected static function isVersionLower(string $currentVersion, array $compatibleVersions): bool
