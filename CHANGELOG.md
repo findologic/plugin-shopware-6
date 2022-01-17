@@ -1,4 +1,5 @@
 # NEXT
+- [SW-613] The configuration now has a new "Export" section, where you can choose which variant should be exported to Findologic as "main variant". Options are "Shopware default", "Main-/Parent product", "Cheapest variant".
 - [SW-589] The dropdown for choosing the language in the configuration, will now only show languages that have a URL associated to them.
 - [SW-672] Fixed a bug that caused the plugin to send too many requests to the Findologic API on category pages, which negatively impacted the performance on these pages.
 - [SW-671] Fixed a bug that broke the build, due to usage of deprecated usage of Composer 1 classes.

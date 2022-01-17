@@ -2046,18 +2046,7 @@ class FindologicProductTest extends TestCase
             'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
         ];
 
-        /** @var FindologicConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $override);
-
-        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
-        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $serviceConfigResource->expects($this->once())
-            ->method('isDirectIntegration')
-            ->willReturn($integrationType === 'Direct Integration');
-
-        return new Config($configServiceMock, $serviceConfigResource);
+        return $this->getFindologicConfig($override, $integrationType === 'Direct Integration');
     }
 
     public function categoryAndCatUrlWithIntegrationTypeProvider(): array

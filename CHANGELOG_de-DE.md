@@ -1,4 +1,5 @@
 # NEXT
+- [SW-613] Die Konfiguration hat nun eine neue "Export" Sektion, wo ausgewählt werden kann, welche Variante als Hauptvariante exportiert werden soll. Auswahlmöglichkeiten sind "Shopware Standard", "Haupt-/Eltern Produkt", "Günstigste Variante".
 - [SW-589] Das Dropdown zur Auswahl der Sprache in der Konfiguration, zeigt nun nur noch Sprachen an, die auch eine URL verknüpft haben.
 - [SW-672] Ein Fehler wurde behoben, wodurch das Plugin auf Kategorieseiten zu viele Anfragen an die Findologic API gesendet hatte, wodurch die Performance auf diesen Seiten negativ beeinflusst wurde.
 - [SW-671] Ein Fehler wurde behoben, wodurch der automatisierte build-Prozess scheiterte, da veraltete Composer 1 Klassen verwendet wurden.

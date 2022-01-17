@@ -200,6 +200,23 @@ Component.register('findologic-config', {
         }];
     },
 
+    mainVariantOptions() {
+      return [
+        {
+          label: this.$tc('findologic.settingForm.config.mainVariant.default.label'),
+          value: 'default'
+        },
+        {
+          label: this.$tc('findologic.settingForm.config.mainVariant.parent.label'),
+          value: 'parent'
+        },
+        {
+          label: this.$tc('findologic.settingForm.config.mainVariant.cheapest.label'),
+          value: 'cheapest'
+        }
+      ];
+    },
+
     integrationType() {
       return this.actualConfigData['FinSearch.config.integrationType'];
     },

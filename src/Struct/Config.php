@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Struct;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
+use FINDOLOGIC\FinSearch\Findologic\MainVariant;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Cache\InvalidArgumentException;
@@ -27,7 +28,8 @@ class Config extends Struct
         'navigationResultContainer',
         'integrationType',
         'initialized',
-        'filterPosition'
+        'filterPosition',
+        'mainVariant'
     ];
 
     /** @var FindologicConfigService */
@@ -61,7 +63,10 @@ class Config extends Struct
     private $initialized = false;
 
     /** @var string */
-    private $filterPosition;
+    private $filterPosition = FilterPosition::TOP;
+
+    /** @var string */
+    private $mainVariant = MainVariant::SHOPWARE_DEFAULT;
 
     /** @var array */
     private $crossSellingCategories = [];
@@ -121,6 +126,21 @@ class Config extends Struct
         return $this->initialized;
     }
 
+    public function getFilterPosition(): string
+    {
+        return $this->filterPosition;
+    }
+
+    public function getMainVariant(): string
+    {
+        return $this->mainVariant;
+    }
+
+    public function getCrossSellingCategories(): array
+    {
+        return $this->crossSellingCategories;
+    }
+
     /**
      * @throws InvalidArgumentException
      */
@@ -162,15 +182,16 @@ class Config extends Struct
             'FinSearch.config.filterPosition',
             FilterPosition::TOP
         );
+        $this->mainVariant = $this->getConfig(
+            $salesChannelId,
+            $languageId,
+            'FinSearch.config.mainVariant',
+            MainVariant::SHOPWARE_DEFAULT
+        );
 
         $this->initializeReadonlyConfig($salesChannelId, $languageId);
 
         $this->initialized = true;
-    }
-
-    public function getCrossSellingCategories(): array
-    {
-        return $this->crossSellingCategories;
     }
 
     /**
@@ -224,13 +245,5 @@ class Config extends Struct
         }
 
         return $configValue;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFilterPosition(): string
-    {
-        return $this->filterPosition;
     }
 }
