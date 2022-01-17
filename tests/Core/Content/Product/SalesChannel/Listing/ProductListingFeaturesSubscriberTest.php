@@ -653,7 +653,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
      */
     private function getProductListingFeaturesSubscriber(array $overrides = [])
     {
-        if ($overrides[ShopwareProductListingFeaturesSubscriber::class]) {
+        if (isset($overrides[ShopwareProductListingFeaturesSubscriber::class])) {
             $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class];
         } elseif (Utils::versionLowerThan('6.3.2')) {
             /** @noinspection PhpParamsInspection Parameters are correct for older Shopware versions */
