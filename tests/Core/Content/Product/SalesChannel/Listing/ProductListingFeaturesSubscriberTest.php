@@ -200,7 +200,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->{$endpoint}($eventMock);
     }
 
@@ -267,7 +267,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->method('getInstance')
             ->willReturn($searchRequest);
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
 
         if ($expectedOrder !== '') {
@@ -296,7 +296,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
         $criteriaMock->expects($this->any())->method('assign')->with([]); // Should be empty.
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->{$endpoint}($eventMock);
     }
 
@@ -336,7 +336,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->{$endpoint}($eventMock);
     }
 
@@ -364,7 +364,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
     }
 
@@ -394,7 +394,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
     }
 
@@ -424,7 +424,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
     }
 
@@ -454,7 +454,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
     }
 
@@ -555,7 +555,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $eventMock->expects($this->any())->method('getContext')->willReturn($context);
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->handleSearchRequest($eventMock);
 
         $this->assertInstanceOf($expectedInstance, $context->getExtension('flQueryInfoMessage'));
@@ -651,15 +651,19 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /**
      * @return ProductListingFeaturesSubscriber
      */
-    private function getDefaultProductListingFeaturesSubscriber()
+    private function getProductListingFeaturesSubscriber(array $overrides = [])
     {
-        if (Utils::versionLowerThan('6.3.2')) {
+        if (isset($overrides[ShopwareProductListingFeaturesSubscriber::class])) {
+            $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class];
+        } elseif (Utils::versionLowerThan('6.3.2')) {
+            /** @noinspection PhpParamsInspection Parameters are correct for older Shopware versions */
             $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
                 $this->connectionMock,
                 $this->entityRepositoryMock,
                 $this->productListingSortingRegistry
             );
         } elseif (Utils::versionLowerThan('6.4')) {
+            /** @noinspection PhpParamsInspection Parameters are correct for older Shopware versions */
             $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
                 $this->connectionMock,
                 $this->entityRepositoryMock,
@@ -1035,7 +1039,7 @@ XML;
 
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->{$endpoint}($eventMock);
     }
 
@@ -1094,7 +1098,7 @@ XML;
         $criteriaBefore = $eventMock->getCriteria()->cloneForRead();
         $contextBefore = clone $eventMock->getContext();
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->handleListingRequest($eventMock);
 
         // Ensure that Context and Criteria were not changed. Shopware handles this request.
@@ -1134,7 +1138,7 @@ XML;
             $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.de')
         );
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->handleResult($event);
     }
 
@@ -1178,9 +1182,31 @@ XML;
                 return null;
             });
 
-        $subscriber = $this->getDefaultProductListingFeaturesSubscriber();
+        $subscriber = $this->getProductListingFeaturesSubscriber();
         $subscriber->handleListingRequest($eventMock);
 
         $this->assertTrue($addExtensionWasCalled);
+    }
+
+    public function testMultipleListingEventsWillOnlyHandleTheRequestOnce(): void
+    {
+        $decoratedSubscriberMock = $this->getMockBuilder(ShopwareProductListingFeaturesSubscriber::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $decoratedSubscriberMock->expects($this->once())->method('handleListingRequest');
+
+        $subscriber = $this->getProductListingFeaturesSubscriber([
+            ShopwareProductListingFeaturesSubscriber::class => $decoratedSubscriberMock
+        ]);
+        $this->getContainer()->set(ProductListingFeaturesSubscriber::class, $subscriber);
+
+        $eventDispatcher = $this->getContainer()->get('event_dispatcher');
+
+        // Event can be dispatched as many times as we want, but the request is only handled once.
+        $event = new ProductListingCriteriaEvent(new Request(), new Criteria(), $this->salesChannelContext);
+        $eventDispatcher->dispatch($event);
+        $eventDispatcher->dispatch($event);
+        $eventDispatcher->dispatch($event);
+        $eventDispatcher->dispatch($event);
     }
 }
