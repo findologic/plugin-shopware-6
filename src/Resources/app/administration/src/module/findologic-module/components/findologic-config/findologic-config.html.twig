@@ -34,18 +34,6 @@
                                     {{ $tc('findologic.settingForm.testButton') }}
                                 </sw-button>
                                 <span class="divider"></span>
-                                <sw-multi-select
-                                        v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
-                                        :options="categories"
-                                        :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
-                                        :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
-                                        :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
-                                >
-                                    <template #selection-label-property="{ item }">
-                                        {{ item.name }}
-                                    </template>
-
-                                </sw-multi-select>
                                 <sw-text-field
                                         v-model="actualConfigData['FinSearch.config.integrationType']"
                                         ref="integrationType"
@@ -58,8 +46,36 @@
                         {% endblock %}
                     {% endblock %}
                 </sw-container>
-
             </sw-card>
+
+
+            <sw-card class="sw-card--grid"
+                     :title="$tc('findologic.settingForm.config.export.title')">
+                <sw-container>
+                    <div class="findologic-settings-credentials-fields">
+                        <sw-single-select
+                                v-model="actualConfigData['FinSearch.config.mainVariant']"
+                                :options="mainVariantOptions"
+                                :label="$tc('findologic.settingForm.config.mainVariant.label')"
+                                :placeholder="$tc('findologic.settingForm.config.mainVariant.default.label')"
+                                :helpText="$tc('findologic.settingForm.config.mainVariant.tooltipText')">
+                        </sw-single-select>
+
+                        <sw-multi-select
+                                v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
+                                :options="categories"
+                                :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
+                                :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
+                                :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                        >
+                            <template #selection-label-property="{ item }">
+                                {{ item.name }}
+                            </template>
+                        </sw-multi-select>
+                    </div>
+                </sw-container>
+            </sw-card>
+
 
             <sw-card class="sw-card--grid"
                      v-if="showDIConfig"

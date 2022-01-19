@@ -109,9 +109,13 @@ class ExportController extends AbstractController
         $this->salesChannelContext = $this->salesChannelService ? $this->salesChannelService
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
 
-        $this->productService = ProductService::getInstance($this->container, $this->salesChannelContext);
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
+        $this->productService = ProductService::getInstance(
+            $this->container,
+            $this->salesChannelContext,
+            $this->pluginConfig
+        );
 
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
@@ -130,6 +134,7 @@ class ExportController extends AbstractController
         if (count($messages) > 0) {
             $errorHandler = new ProductErrorHandler();
             $errorHandler->getExportErrors()->addGeneralErrors($messages);
+
             return $this->export->buildErrorResponse($errorHandler, $this->headerHandler->getHeaders());
         }
 
