@@ -1,3 +1,6 @@
+# NEXT
+- [SW-673] Die Performance auf Kategorieseiten wurde verbessert, indem das Plugin nun einfacher die Information der aktuellen Kategorie erhält.
+
 # 2.5.0
 - [SW-613] Die Konfiguration hat nun eine neue "Export" Sektion, wo ausgewählt werden kann, welche Variante als Hauptvariante exportiert werden soll. Auswahlmöglichkeiten sind "Shopware Standard", "Haupt-/Eltern Produkt", "Günstigste Variante".
 - [SW-589] Das Dropdown zur Auswahl der Sprache in der Konfiguration, zeigt nun nur noch Sprachen an, die auch eine URL verknüpft haben.

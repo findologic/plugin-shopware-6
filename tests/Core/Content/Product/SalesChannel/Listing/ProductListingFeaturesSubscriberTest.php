@@ -1067,9 +1067,6 @@ XML;
         $rootCategoryMock->expects($this->any())->method('getBreadcrumb')
             ->willReturn(['FINDOLOGIC Main 2', 'FINDOLOGIC Sub', 'Very deep']);
 
-        $salesChannelMock->expects($this->once())->method('getNavigationCategory')
-            ->willReturn($rootCategoryMock);
-
         $salesChannelContextMock->expects($this->any())->method('getSalesChannel')
             ->willReturn($salesChannelMock);
 
