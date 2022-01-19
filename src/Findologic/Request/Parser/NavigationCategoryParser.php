@@ -21,7 +21,7 @@ class NavigationCategoryParser
     private $container;
 
     /**
-     * @var GenericPageLoader
+     * @var GenericPageLoader|null
      * @deprecated tag:v3.0.0 Will be removed without replacement.
      */
     private $genericPageLoader;
