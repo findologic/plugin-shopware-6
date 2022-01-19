@@ -77,7 +77,7 @@ class Utils
                 'categories',
                 'categories.seoUrls',
                 'translations',
-                'tags',
+                'searchKeywords',
                 'media',
                 'manufacturer',
                 'manufacturer.translations',

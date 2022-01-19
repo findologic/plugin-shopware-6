@@ -35,10 +35,13 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
+use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
+use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -340,7 +343,7 @@ class FindologicProductTest extends TestCase
         $productEntity = $this->createTestProduct();
 
         if (!$price) {
-            $productEntity->setPrice(new PriceCollection([]));
+            $productEntity->setPrice(new PriceCollection());
         }
 
         $findologicProductFactory = new FindologicProductFactory();
@@ -361,11 +364,18 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    private function getKeywordEntity(string $keyword): ProductSearchKeywordEntity
+    {
+        $productSearchKeywordEntity = new ProductSearchKeywordEntity();
+        $productSearchKeywordEntity->setId(Uuid::randomHex());
+        $productSearchKeywordEntity->setKeyword($keyword);
+
+        return $productSearchKeywordEntity;
+    }
+
     public function testProduct(): void
     {
         $productEntity = $this->createTestProduct();
-
-        $productTag = new Keyword('FINDOLOGIC Tag');
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
@@ -377,6 +387,10 @@ class FindologicProductTest extends TestCase
         $userGroup = $this->getUserGroups($customerGroupEntities);
         $ordernumbers = $this->getOrdernumber($productEntity);
         $properties = $this->getProperties($productEntity);
+
+        $keywordEntities = [$this->getKeywordEntity('keyword1'), $this->getKeywordEntity('keyword2')];
+        $productSearchKeywordCollection = new ProductSearchKeywordCollection($keywordEntities);
+        $productEntity->setSearchKeywords($productSearchKeywordCollection);
 
         $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
@@ -390,13 +404,29 @@ class FindologicProductTest extends TestCase
             $config
         );
 
+        $keywords = [new Keyword('keyword1'), new Keyword('keyword2')];
+        $blackListedKeywords = [
+            $productEntity->getProductNumber(),
+            $productEntity->getManufacturer()->getTranslation('name')
+        ];
+
+        $productKeywords = $findologicProduct->getKeywords();
+        $isBlackListedKeyword = false;
+        $this->assertNotEmpty($productKeywords);
+        foreach ($productKeywords as $keyword) {
+            if (in_array($keyword->getValue(), $blackListedKeywords)) {
+                $isBlackListedKeyword = true;
+            }
+        }
+
         $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
         $urlBuilderService->setSalesChannelContext($this->salesChannelContext);
 
         $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals([$productTag], $findologicProduct->getKeywords());
+        $this->assertEquals($keywords, $productKeywords);
+        $this->assertFalse($isBlackListedKeyword);
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
