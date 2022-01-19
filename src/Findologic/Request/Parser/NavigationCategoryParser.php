@@ -46,12 +46,16 @@ class NavigationCategoryParser
         return $this->parseFromRequest($request, $salesChannelContext);
     }
 
-    private function parseFromRequest(Request $request, SalesChannelContext $salesChannelContext): CategoryEntity
+    private function parseFromRequest(Request $request, SalesChannelContext $salesChannelContext): ?CategoryEntity
     {
         $navigationId = $request->get(
             'navigationId',
             $salesChannelContext->getSalesChannel()->getNavigationCategoryId()
         );
+
+        if (!$navigationId) {
+            return null;
+        }
 
         /** @var EntityRepository $categoryRepository */
         $categoryRepository = $this->container->get('category.repository');

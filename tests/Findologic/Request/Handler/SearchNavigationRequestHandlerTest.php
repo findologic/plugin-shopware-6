@@ -156,8 +156,6 @@ class SearchNavigationRequestHandlerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->genericPageLoaderMock->expects($this->once())->method('load')->willReturn($pageMock);
-
         $requestHandler = $this->buildNavigationRequestHandler();
         $requestHandler->handleRequest($event);
 
