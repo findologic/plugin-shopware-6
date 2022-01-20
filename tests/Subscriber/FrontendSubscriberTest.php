@@ -42,7 +42,7 @@ class FrontendSubscriberTest extends TestCase
         $shopkey = $this->getShopkey();
 
         /** @var FindologicConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this);
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock();
 
         /** @var HeaderPageletLoadedEvent|MockObject $headerPageletLoadedEventMock */
         $headerPageletLoadedEventMock = $this->getMockBuilder(HeaderPageletLoadedEvent::class)

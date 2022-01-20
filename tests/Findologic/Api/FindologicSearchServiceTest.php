@@ -190,8 +190,6 @@ class FindologicSearchServiceTest extends TestCase
             $this->getContainer()->get(PaginationService::class)
         );
 
-        $genericPageLoaderMock->expects($this->once())->method('load')->willreturn(new Page());
-
         $this->pluginConfigMock->expects($this->any())->method('isInitialized')->willReturn(true);
 
         $findologicService = new FindologicService();
