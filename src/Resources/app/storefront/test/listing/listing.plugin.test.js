@@ -9,6 +9,16 @@ describe('listing.plugin,js', () => {
   let spyInit = jest.fn();
   let spyInitializePlugins = jest.fn();
 
+  function setupListingPlugin() {
+    const mockElement = document.createElement('div');
+    const cmsElementProductListingWrapper = document.createElement('div');
+    cmsElementProductListingWrapper.classList.add('cms-element-product-listing-wrapper');
+
+    document.body.append(cmsElementProductListingWrapper);
+
+    listingPlugin = new FlListingPlugin(mockElement);
+  }
+
   beforeEach(() => {
     // create mocks
     window.csrf = {
@@ -55,13 +65,7 @@ describe('listing.plugin,js', () => {
     '#search:search=blub&query=blub',
     '#suggest:suggest'
   ])('history must not be changed on Direct Integration page %s', (hash) => {
-    const mockElement = document.createElement('div');
-    const cmsElementProductListingWrapper = document.createElement('div');
-    cmsElementProductListingWrapper.classList.add('cms-element-product-listing-wrapper');
-
-    document.body.append(cmsElementProductListingWrapper);
-
-    listingPlugin = new FlListingPlugin(mockElement);
+    setupListingPlugin();
 
     jest.spyOn(listingPlugin, 'refreshRegistry');
     window.location.hash = hash;
@@ -72,13 +76,7 @@ describe('listing.plugin,js', () => {
   });
 
   test('history must be changed on regular non-Direct Integration pages', () => {
-    const mockElement = document.createElement('div');
-    const cmsElementProductListingWrapper = document.createElement('div');
-    cmsElementProductListingWrapper.classList.add('cms-element-product-listing-wrapper');
-
-    document.body.append(cmsElementProductListingWrapper);
-
-    listingPlugin = new FlListingPlugin(mockElement);
+    setupListingPlugin();
 
     jest.spyOn(listingPlugin, 'refreshRegistry');
     window.location.hash = '#shopware';

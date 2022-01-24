@@ -14,6 +14,9 @@ export default class FlListingPlugin extends ListingPlugin {
     super._onWindowPopstate();
   }
 
+  /**
+   * @private
+   */
   _isDirectIntegrationPage() {
     const hash = window.location.hash;
 
