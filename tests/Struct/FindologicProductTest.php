@@ -2238,7 +2238,7 @@ class FindologicProductTest extends TestCase
         $expectedAttributeValue = '>80';
         $productEntity = $this->createTestProduct([
             'customFields' => [
-                'findologic_yeet' => '&gt;80',
+                'length' => '&gt;80',
             ]
         ], true);
 
