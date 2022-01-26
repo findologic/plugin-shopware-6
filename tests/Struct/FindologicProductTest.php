@@ -2232,4 +2232,34 @@ class FindologicProductTest extends TestCase
             $this->assertSame($expectedCategories, $attributes[0]->getValues());
         }
     }
+
+    public function testAttributesAreHtmlEntityEncoded(): void
+    {
+        $expectedAttributeValue = '>80';
+        $productEntity = $this->createTestProduct([
+            'customFields' => [
+                'findologic_yeet' => '&gt;80',
+            ]
+        ], true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+
+        $this->assertCount(1, $attributes);
+        $this->assertSame($expectedAttributeValue, $attributes[0]->getValues()[0]);
+    }
 }

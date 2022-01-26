@@ -603,7 +603,10 @@ class FindologicProduct extends Struct
         if ($manufacturer) {
             $name = $manufacturer->getTranslation('name');
             if (!Utils::isEmpty($name)) {
-                $vendorAttribute = new Attribute('vendor', [Utils::removeControlCharacters($name)]);
+                $vendorAttribute = new Attribute(
+                    'vendor',
+                    [$this->decodeHtmlEntity(Utils::removeControlCharacters($name))]
+                );
                 $this->attributes[] = $vendorAttribute;
             }
         }
@@ -690,7 +693,9 @@ class FindologicProduct extends Struct
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
                 $properyGroupAttrib = new Attribute($groupName);
-                $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionName));
+                $properyGroupAttrib->addValue($this->decodeHtmlEntity(
+                    Utils::removeControlCharacters($propertyGroupOptionName)
+                ));
 
                 $attributes[] = $properyGroupAttrib;
             }
@@ -710,7 +715,7 @@ class FindologicProduct extends Struct
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
                 $configAttrib = new Attribute($groupName);
-                $configAttrib->addValue(Utils::removeControlCharacters($optionName));
+                $configAttrib->addValue($this->decodeHtmlEntity(Utils::removeControlCharacters($optionName)));
 
                 $attributes[] = $configAttrib;
             }
@@ -772,13 +777,13 @@ class FindologicProduct extends Struct
 
         if ($this->isDirectIntegration() && !Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
-            $catUrlAttribute->setValues(Utils::flat($catUrls));
+            $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flat($catUrls)));
             $this->attributes[] = $catUrlAttribute;
         }
 
         if (!Utils::isEmpty($categories)) {
             $categoryAttribute = new Attribute('cat');
-            $categoryAttribute->setValues(array_unique($categories));
+            $categoryAttribute->setValues($this->decodeHtmlEntities(array_unique($categories)));
             $this->attributes[] = $categoryAttribute;
         }
     }
@@ -886,7 +891,10 @@ class FindologicProduct extends Struct
                 }
 
                 // Filter null, false and empty strings, but not "0". See: https://stackoverflow.com/a/27501297/6281648
-                $customFieldAttribute = new Attribute($key, array_filter((array)$cleanedValue, 'strlen'));
+                $customFieldAttribute = new Attribute(
+                    $key,
+                    $this->decodeHtmlEntities(array_filter((array)$cleanedValue, 'strlen'))
+                );
                 $attributes[] = $customFieldAttribute;
             }
         }
@@ -1011,5 +1019,30 @@ class FindologicProduct extends Struct
         }
 
         return $key;
+    }
+
+    /**
+     * Adds a single attribute to all attributes.
+     */
+    protected function decodeHtmlEntities(array $values): array
+    {
+        foreach ($values as $key => $value) {
+            $values[$key] = $this->decodeHtmlEntity($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param mixed $value
+     * @return string|mixed
+     */
+    protected function decodeHtmlEntity($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        return html_entity_decode($value);
     }
 }
