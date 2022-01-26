@@ -1,6 +1,7 @@
 # NEXT
 - [SW-673] Die Performance auf Kategorieseiten wurde verbessert, indem das Plugin nun einfacher die Information der aktuellen Kategorie erhält.
 - [SW-633] Die exportierten Keywords enthalten nun Shopware "Such-Schlagwörter", anstatt der konfigurierten "Tags".
+- [SW-674] Ein Fehler wurde behoben, wodurch Fehler in der Konsole auf Direct Integration Seiten ausgegeben wurden, die durch Aktualisierungen des Shopware-Listings ausgelöst wurden.
 
 # 2.5.0
 - [SW-613] Die Konfiguration hat nun eine neue "Export" Sektion, wo ausgewählt werden kann, welche Variante als Hauptvariante exportiert werden soll. Auswahlmöglichkeiten sind "Shopware Standard", "Haupt-/Eltern Produkt", "Günstigste Variante".
