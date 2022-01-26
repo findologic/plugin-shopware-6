@@ -1021,9 +1021,6 @@ class FindologicProduct extends Struct
         return $key;
     }
 
-    /**
-     * Adds a single attribute to all attributes.
-     */
     protected function decodeHtmlEntities(array $values): array
     {
         foreach ($values as $key => $value) {
