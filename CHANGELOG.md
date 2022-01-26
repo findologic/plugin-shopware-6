@@ -1,4 +1,4 @@
-# NEXT
+# 2.6.0
 - [SW-673] Improved performance on category pages, by improving the way the plugin gets the current category.
 - [SW-633] Exported keywords now contain Shopware "Search Keywords", instead of configured "Tags".
 - [SW-674] Fixed a bug that caused console errors on Direct Integration pages, that were caused by Shopware listing updates.
