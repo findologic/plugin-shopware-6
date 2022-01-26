@@ -1,6 +1,7 @@
 # NEXT
 - [SW-673] Improved performance on category pages, by improving the way the plugin gets the current category.
 - [SW-633] Exported keywords now contain Shopware "Search Keywords", instead of configured "Tags".
+- [SW-674] Fixed a bug that caused console errors on Direct Integration pages, that were caused by Shopware listing updates.
 
 # 2.5.0
 - [SW-613] The configuration now has a new "Export" section, where you can choose which variant should be exported to Findologic as "main variant". Options are "Shopware default", "Main-/Parent product", "Cheapest variant".
