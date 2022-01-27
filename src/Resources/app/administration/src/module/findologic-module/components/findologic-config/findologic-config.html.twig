@@ -101,18 +101,18 @@
                     <div class="findologic-settings-credentials-fields">
 
                         {% block findologic_credentials_settings_search_filter_position_container %}
-                            <sw-single-select
-                                    v-model="actualConfigData['FinSearch.config.filterPosition']"
-                                    :options="filterPositionOptions"
-                                    :label="$tc('findologic.settingForm.config.filterPosition.label')"
-                                    :helpText="$tc('findologic.settingForm.config.filterPosition.tooltipText')">
-                            </sw-single-select>
                             <sw-switch-field
                                 v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
                                 :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
                                 :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
                             >
                             </sw-switch-field>
+                            <sw-single-select
+                                    v-model="actualConfigData['FinSearch.config.filterPosition']"
+                                    :options="filterPositionOptions"
+                                    :label="$tc('findologic.settingForm.config.filterPosition.label')"
+                                    :helpText="$tc('findologic.settingForm.config.filterPosition.tooltipText')">
+                            </sw-single-select>
                         {% endblock %}
                     </div>
                 </sw-container>
