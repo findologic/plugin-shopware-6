@@ -89,8 +89,11 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder"
-                 decorates="Shopware\Elasticsearch\Product\ProductSearchBuilder">
+        <service
+            id="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder"
+            decorates="Shopware\Elasticsearch\Product\ProductSearchBuilder"
+            decoration-on-invalid="ignore"
+        >
             <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter" />
         </service>
 
