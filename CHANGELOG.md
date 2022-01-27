@@ -1,3 +1,6 @@
+# NEXT
+- [SW-677] HTML encoded attribute values are now automatically decoded in the export.
+
 # 2.6.0
 - [SW-673] Improved performance on category pages, by improving the way the plugin gets the current category.
 - [SW-633] Exported keywords now contain Shopware "Search Keywords", instead of configured "Tags".

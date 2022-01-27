@@ -1,3 +1,6 @@
+# NEXT
+- [SW-677] HTML-kodierte Attributswerte, werden nun automatisch im export dekodiert.
+
 # 2.6.0
 - [SW-673] Die Performance auf Kategorieseiten wurde verbessert, indem das Plugin nun einfacher die Information der aktuellen Kategorie erhält.
 - [SW-633] Die exportierten Keywords enthalten nun Shopware "Such-Schlagwörter", anstatt der konfigurierten "Tags".
