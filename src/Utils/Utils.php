@@ -177,7 +177,7 @@ class Utils
                 $version = $version ?: $packageVersions['shopware/platform'];
             }
 
-            if(isset($packageVersions['shopware/core'])) {
+            if (isset($packageVersions['shopware/core'])) {
                 $version = $version ?: $packageVersions['shopware/core'];
             }
         }
