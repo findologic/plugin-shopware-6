@@ -60,6 +60,7 @@ jobs:
 
       - name: Add dependency conflicts
         run: |
+          cd development
           mv composer.json temp.json
           jq -r '.conflict."symfony/framework-bundle" |= ">=5.3.14"' temp.json > composer.json
           rm temp.json
