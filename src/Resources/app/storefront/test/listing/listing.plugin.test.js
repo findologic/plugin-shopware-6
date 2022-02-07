@@ -63,7 +63,9 @@ describe('listing.plugin,js', () => {
   test.each([
     '#navigation:search=&attrib%5Bcat_url%5D%5B0%5D=%2FKids%2F',
     '#search:search=blub&query=blub',
-    '#suggest:suggest'
+    '#suggest:suggest',
+    '#navigation:attrib%5Bcat_url%5D%5B0%5D=%2Fwohnaccessoires%2F&count=24',
+    '#search:count=24',
   ])('history must not be changed on Direct Integration page %s', (hash) => {
     setupListingPlugin();
 
