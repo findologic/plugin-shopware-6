@@ -27,6 +27,10 @@ use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Throwable;
 
+use function array_unique;
+
+use const SORT_REGULAR;
+
 class Utils
 {
     public static function calculateUserGroupHash(string $shopkey, string $customerGroupId): string
@@ -448,6 +452,6 @@ class Utils
             $flattened[] = $a;
         });
 
-        return $flattened;
+        return array_unique($flattened, SORT_REGULAR);
     }
 }

@@ -764,9 +764,8 @@ class FindologicProduct extends Struct
         $productCategories = $this->product->getCategories();
         $productVariants = $this->product->getChildren();
 
-        if (($productCategories === null || empty($productCategories->count()))
-            && (empty($productVariants->count()))
-        ) {
+        // If there are no product categories, and no children either, we throw ProductHasNoCategoriesException.
+        if ($productCategories->count() === 0 && $productVariants->count() === 0) {
             throw new ProductHasNoCategoriesException($this->product);
         }
 
@@ -774,9 +773,14 @@ class FindologicProduct extends Struct
         $categories = [];
 
         $this->parseCategoryAttributes($productCategories->getElements(), $catUrls, $categories);
-        foreach ($productVariants->getElements() as $variant) {
-            $variantCategories = $variant->getCategories();
-            if ($variantCategories !== null) {
+
+        if ($productVariants) {
+            foreach ($productVariants as $variant) {
+                $variantCategories = $variant->getCategories();
+                if (!$variantCategories) {
+                    continue;
+                }
+
                 $variantCategories = $variant->getCategories()->getElements();
                 $this->parseCategoryAttributes($variantCategories, $catUrls, $categories);
             }
@@ -998,7 +1002,9 @@ class FindologicProduct extends Struct
 
 
             if (!Utils::isEmpty($categoryPath)) {
-                $categories = array_merge($categories, [$categoryPath]);
+                if (!in_array($categoryPath, $categories)) {
+                    $categories = array_merge($categories, [$categoryPath]);
+                }
             }
 
             // Only export `cat_url`s recursively if integration type is Direct Integration.
