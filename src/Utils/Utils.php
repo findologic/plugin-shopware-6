@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Utils;
 
 use Composer\InstalledVersions;
+use Exception;
 use FINDOLOGIC\FinSearch\Definitions\Defaults;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
@@ -185,7 +186,7 @@ class Utils
             }
         }
 
-        throw new \Exception('Used Shopware version cannot be detected');
+        throw new Exception('Used Shopware version cannot be detected');
     }
 
     protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string
