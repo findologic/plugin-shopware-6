@@ -21,12 +21,6 @@
                                         :helpText="$tc('findologic.settingForm.config.active.tooltipText')"
                                 >
                                 </sw-switch-field>
-                                <sw-switch-field
-                                        v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
-                                        :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
-                                        :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
-                                >
-                                </sw-switch-field>
                                 <sw-button
                                         v-show="showTestButton"
                                         @click="openSalesChannelUrl"
@@ -107,6 +101,12 @@
                     <div class="findologic-settings-credentials-fields">
 
                         {% block findologic_credentials_settings_search_filter_position_container %}
+                            <sw-switch-field
+                                v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
+                                :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
+                                :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
+                            >
+                            </sw-switch-field>
                             <sw-single-select
                                     v-model="actualConfigData['FinSearch.config.filterPosition']"
                                     :options="filterPositionOptions"
