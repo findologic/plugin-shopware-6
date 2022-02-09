@@ -161,12 +161,16 @@ class Utils
         // Composer 2 runtime API uses the `InstalledVersions::class` in favor of the
         // deprecated/removed `Versions::class`
         if (class_exists(InstalledVersions::class)) {
-            if (InstalledVersions::isInstalled('shopware/platform') && InstalledVersions::getPrettyVersion('shopware/platform')) {
-                return InstalledVersions::getPrettyVersion('shopware/platform');
+            if (InstalledVersions::isInstalled('shopware/platform')) {
+                if (InstalledVersions::getPrettyVersion('shopware/platform')) {
+                    return InstalledVersions::getPrettyVersion('shopware/platform');
+                }
             }
 
-            if (InstalledVersions::isInstalled('shopware/core') && InstalledVersions::getPrettyVersion('shopware/core')) {
-                return InstalledVersions::getPrettyVersion('shopware/core');
+            if (InstalledVersions::isInstalled('shopware/core')) {
+                if (InstalledVersions::getPrettyVersion('shopware/core')) {
+                    return InstalledVersions::getPrettyVersion('shopware/core');
+                }
             }
         }
 
@@ -180,6 +184,8 @@ class Utils
                 return $packageVersions['shopware/core'];
             }
         }
+
+        throw new \Exception('Used Shopware version cannot be detected');
     }
 
     protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string
