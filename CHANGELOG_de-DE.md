@@ -1,6 +1,7 @@
 # NEXT
 - [SW-677] HTML-kodierte Attributswerte, werden nun automatisch im export dekodiert.
 - [SW-678] Ein Fehler wurde behoben, wodurch Fehler in der Konsole auf Direct Integration Seiten ausgegeben wurden, wenn die URL keinen "query" Parameter enthielt.
+- [SW-624] Ein Fehler wurde behoben, wodurch bei fehlendem Shopware ElasticSearch Bundle ein Fehler ausgegeben wurde.
 
 # 2.6.0
 - [SW-673] Die Performance auf Kategorieseiten wurde verbessert, indem das Plugin nun einfacher die Information der aktuellen Kategorie erhält.
