@@ -3,6 +3,7 @@
 - [SW-569] Die Option für das Aktivieren von Findologic auf Kategorieseiten, wurde in die API Sektion migriert.
 - [SW-678] Ein Fehler wurde behoben, wodurch Fehler in der Konsole auf Direct Integration Seiten ausgegeben wurden, wenn die URL keinen "query" Parameter enthielt.
 - [SW-624] Ein Fehler wurde behoben, wodurch bei fehlendem Shopware ElasticSearch Bundle ein Fehler ausgegeben wurde.
+- [SW-681] Ein Fehler wurde behoben, wodurch unter Umständen bei manchen Shopware-Installationen die Version nicht korrekt erkannt wurde.
 
 # 2.6.0
 - [SW-673] Die Performance auf Kategorieseiten wurde verbessert, indem das Plugin nun einfacher die Information der aktuellen Kategorie erhält.
