@@ -1,4 +1,4 @@
-# NEXT
+# 2.6.1
 - [SW-677] HTML encoded attribute values are now automatically decoded in the export.
 - [SW-569] The option to enable Findologic on category pages, has been moved to the API section.
 - [SW-678] Fixed a bug that caused console errors on Direct Integration pages, where the URL did not contain a query parameter.

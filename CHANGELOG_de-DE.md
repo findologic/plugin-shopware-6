@@ -1,4 +1,4 @@
-# NEXT
+# 2.6.1
 - [SW-677] HTML-kodierte Attributswerte, werden nun automatisch im export dekodiert.
 - [SW-569] Die Option für das Aktivieren von Findologic auf Kategorieseiten, wurde in die API Sektion migriert.
 - [SW-678] Ein Fehler wurde behoben, wodurch Fehler in der Konsole auf Direct Integration Seiten ausgegeben wurden, wenn die URL keinen "query" Parameter enthielt.
