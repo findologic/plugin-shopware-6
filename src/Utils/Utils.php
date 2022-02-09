@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Utils;
 
+use Composer\InstalledVersions;
+use Exception;
 use FINDOLOGIC\FinSearch\Definitions\Defaults;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
@@ -149,18 +151,34 @@ class Utils
      */
     protected static function getShopwareVersion(): string
     {
-        $packageVersions = Versions::VERSIONS;
-        $coreIsInstalled = isset($packageVersions['shopware/core']);
+        // Composer 2 runtime API uses the `InstalledVersions::class` in favor of the
+        // deprecated/removed `Versions::class`
+        if (class_exists(InstalledVersions::class)) {
+            if (InstalledVersions::isInstalled('shopware/platform')) {
+                if (InstalledVersions::getPrettyVersion('shopware/platform')) {
+                    return InstalledVersions::getPrettyVersion('shopware/platform');
+                }
+            }
 
-        $shopwareVersion = $coreIsInstalled ?
-            Versions::getVersion('shopware/core') :
-            Versions::getVersion('shopware/platform');
-
-        if (!trim($shopwareVersion, 'v@')) {
-            return $coreIsInstalled ? $packageVersions['shopware/core'] : $packageVersions['shopware/platform'];
+            if (InstalledVersions::isInstalled('shopware/core')) {
+                if (InstalledVersions::getPrettyVersion('shopware/core')) {
+                    return InstalledVersions::getPrettyVersion('shopware/core');
+                }
+            }
         }
 
-        return $shopwareVersion;
+        if (defined('PackageVersions\Versions::VERSIONS')) {
+            $packageVersions = Versions::VERSIONS;
+            if (isset($packageVersions['shopware/platform'])) {
+                return $packageVersions['shopware/platform'];
+            }
+
+            if (isset($packageVersions['shopware/core'])) {
+                return $packageVersions['shopware/core'];
+            }
+        }
+
+        throw new Exception('Used Shopware version cannot be detected');
     }
 
     protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string

@@ -1,4 +1,27 @@
 # NEXT
+- [SW-677] HTML encoded attribute values are now automatically decoded in the export.
+- [SW-569] The option to enable Findologic on category pages, has been moved to the API section.
+- [SW-678] Fixed a bug that caused console errors on Direct Integration pages, where the URL did not contain a query parameter.
+- [SW-624] Fixed a bug that would cause an error if the Shopware ElasticSearch bundle is not available.
+- [SW-681] Fixed a bug that caused the Shopware version not to be properly detected on some Shopware installations.
+
+# 2.6.0
+- [SW-673] Improved performance on category pages, by improving the way the plugin gets the current category.
+- [SW-633] Exported keywords now contain Shopware "Search Keywords", instead of configured "Tags".
+- [SW-674] Fixed a bug that caused console errors on Direct Integration pages, that were caused by Shopware listing updates.
+
+# 2.5.0
+- [SW-613] The configuration now has a new "Export" section, where you can choose which variant should be exported to Findologic as "main variant". Options are "Shopware default", "Main-/Parent product", "Cheapest variant".
+- [SW-589] The dropdown for choosing the language in the configuration, will now only show languages that have a URL associated to them.
+- [SW-672] Fixed a bug that caused the plugin to send too many requests to the Findologic API on category pages, which negatively impacted the performance on these pages.
+- [SW-671] Fixed a bug that broke the build, due to usage of deprecated usage of Composer 1 classes.
+- [SW-668] Added Shopware 6.4.7.0 to the test matrix.
+
+# 2.4.1
+- [SW-669] Fixed a bug that caused an error on all listing pages where Findologic has not been active.
+
+# 2.4.0
+- [SW-601] Requests to the Findologic API now include the shopsystem and the shop version.
 - [SW-662] Fixed a bug that caused the export to fail, if the configured main variant had been set to inactive for the exporting sales channel.
 - [SW-663] Fixed a bug that caused products not to be exported, if they had configured a custom field containing "0".
 - [SW-612] Fixed a bug that caused the product price to be exported wrong, in case the exporting sales channel had configured a non-default currency.
