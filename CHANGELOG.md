@@ -1,6 +1,7 @@
 # NEXT
 - [SW-677] HTML encoded attribute values are now automatically decoded in the export.
 - [SW-678] Fixed a bug that caused console errors on Direct Integration pages, where the URL did not contain a query parameter.
+- [SW-624] Fixed a bug that would cause an error if the Shopware ElasticSearch bundle is not available.
 
 # 2.6.0
 - [SW-673] Improved performance on category pages, by improving the way the plugin gets the current category.
