@@ -20,9 +20,9 @@ export default class FlListingPlugin extends ListingPlugin {
   _isDirectIntegrationPage() {
     const hash = window.location.hash;
 
-    const isSearchPage = hash.startsWith('#search:search');
-    const isNavigationPage = hash.startsWith('#navigation:search');
-    const isMSSOpened = hash.startsWith('#suggest:suggest');
+    const isSearchPage = hash.startsWith('#search:');
+    const isNavigationPage = hash.startsWith('#navigation:');
+    const isMSSOpened = hash.startsWith('#suggest:');
 
     return isSearchPage || isNavigationPage || isMSSOpened;
   }
