@@ -20,8 +20,6 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
-use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
-use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
@@ -30,9 +28,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use PHPUnit\Framework\MockObject\MockObject;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
@@ -41,7 +37,6 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -166,16 +161,28 @@ class FindologicProductTest extends TestCase
         $this->assertSame($releaseDate->format(DATE_ATOM), $findologicProduct->getDateAdded()->getValues()['']);
     }
 
-    /**
-     * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoNameException
-     * @throws ProductHasNoPricesException
-     */
-    public function testNoProductCategories(): void
+    public function testProductAndVariantHaveNoCategories(): void
     {
         $this->expectException(ProductHasNoCategoriesException::class);
+        $id = Uuid::randomHex();
+        $this->createTestProduct([
+            'id' => $id,
+            'categories' => []
+        ]);
 
-        $productEntity = $this->createTestProduct(['categories' => []]);
+        $this->createTestProduct([
+            'parentId' => $id,
+            'productNumber' => Uuid::randomHex(),
+            'categories' => []
+        ]);
+
+        $criteria = new Criteria([$id]);
+        $criteria = Utils::addProductAssociations($criteria);
+        $criteria->addAssociation('visibilities');
+        $productEntity = $this->getContainer()->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->get($id);
 
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProductFactory->buildInstance(
@@ -202,7 +209,7 @@ class FindologicProductTest extends TestCase
             'Parent has categories and children have no categories assigned' => [
                 'isParentAssigned' => true,
                 'isVariantAssigned' => false
-            ],
+            ]
         ];
     }
 
@@ -227,13 +234,13 @@ class FindologicProductTest extends TestCase
 
         $this->createTestProduct([
             'id' => $id,
-            'categories' => $isParentAssigned ? [$categoryOne] : null
+            'categories' => $isParentAssigned ? [$categoryOne] : []
         ]);
 
         $this->createTestProduct([
             'parentId' => $id,
             'productNumber' => Uuid::randomHex(),
-            'categories' => $isVariantAssigned ? [$categoryOne] : null
+            'categories' => $isVariantAssigned ? [$categoryOne] : []
         ]);
 
         $criteria = new Criteria([$id]);

@@ -452,6 +452,11 @@ class Utils
             $flattened[] = $a;
         });
 
-        return array_unique($flattened, SORT_REGULAR);
+        return $flattened;
+    }
+
+    public static function flattenWithUnique(array $array): array
+    {
+        return array_unique(self::flat($array), SORT_REGULAR);
     }
 }

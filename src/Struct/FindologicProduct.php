@@ -761,28 +761,26 @@ class FindologicProduct extends Struct
      */
     protected function setCategoriesAndCatUrls(): void
     {
-        $productCategories = $this->product->getCategories();
-        $productVariants = $this->product->getChildren();
-
-        // If there are no product categories, and no children either, we throw ProductHasNoCategoriesException.
-        if ($productCategories->count() === 0 && $productVariants->count() === 0) {
+        if (!$this->hasCategories()) {
             throw new ProductHasNoCategoriesException($this->product);
         }
+
+        $productCategories = $this->product->getCategories();
+        $children = $this->product->getChildren();
 
         $catUrls = [];
         $categories = [];
 
         $this->parseCategoryAttributes($productCategories->getElements(), $catUrls, $categories);
 
-        if ($productVariants) {
-            foreach ($productVariants as $variant) {
-                $variantCategories = $variant->getCategories();
-                if (!$variantCategories) {
+        if ($children->count() > 0) {
+            foreach ($children as $child) {
+                $variantCategories = $child->getCategories();
+                if ($variantCategories->count() === 0) {
                     continue;
                 }
 
-                $variantCategories = $variant->getCategories()->getElements();
-                $this->parseCategoryAttributes($variantCategories, $catUrls, $categories);
+                $this->parseCategoryAttributes($variantCategories->getElements(), $catUrls, $categories);
             }
         }
 
@@ -793,7 +791,7 @@ class FindologicProduct extends Struct
 
         if ($this->isDirectIntegration() && !Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
-            $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flat($catUrls)));
+            $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flattenWithUnique($catUrls)));
             $this->attributes[] = $catUrlAttribute;
         }
 
@@ -1060,5 +1058,18 @@ class FindologicProduct extends Struct
         }
 
         return html_entity_decode($value);
+    }
+
+    /**
+     * Checks if the product, or any of its children has any category assigned.
+     */
+    private function hasCategories(): bool
+    {
+        $productCategories = $this->product->getCategories();
+        $children = $this->product->getChildren()->filter(function (ProductEntity $variant) {
+            return $variant->getCategories()->count() > 0;
+        });
+
+        return $productCategories->count() > 0 || $children->count() > 0;
     }
 }
