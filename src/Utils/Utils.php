@@ -457,6 +457,6 @@ class Utils
 
     public static function flattenWithUnique(array $array): array
     {
-        return array_unique(self::flat($array), SORT_REGULAR);
+        return array_unique(static::flat($array), SORT_REGULAR);
     }
 }

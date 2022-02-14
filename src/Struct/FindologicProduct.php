@@ -1063,13 +1063,13 @@ class FindologicProduct extends Struct
     /**
      * Checks if the product, or any of its children has any category assigned.
      */
-    private function hasCategories(): bool
+    protected function hasCategories(): bool
     {
         $productCategories = $this->product->getCategories();
-        $children = $this->product->getChildren()->filter(function (ProductEntity $variant) {
+        $childrenWithCategories = $this->product->getChildren()->filter(function (ProductEntity $variant) {
             return $variant->getCategories()->count() > 0;
         });
 
-        return $productCategories->count() > 0 || $children->count() > 0;
+        return $productCategories->count() > 0 || $childrenWithCategories->count() > 0;
     }
 }
