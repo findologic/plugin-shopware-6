@@ -117,8 +117,7 @@ class CmsController extends StorefrontController
         }
 
         $result = $this->filterHandler->handleAvailableFilters($event);
-        $hasAvailableFilters = $event->getCriteria()->hasExtension('flAvailableFilters');
-        if (!$hasAvailableFilters) {
+        if (!$event->getCriteria()->hasExtension('flAvailableFilters')) {
             return $this->decorated->filter($navigationId, $request, $context);
         }
 
