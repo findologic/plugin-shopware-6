@@ -50,7 +50,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         }
 
         Iterator.iterate(checkboxes, (checkbox) => {
-            checkbox.addEventListener('change', () => {
+            checkbox.addEventListener('click', () => {
                 this.onChangeCheckBox(checkbox);
                 this._onChangeFilter();
             });
@@ -142,7 +142,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
     }
 
     /**
-     * @param {HTMLObjectElement} icon
+     * @param {Element} icon
      * @public
      */
     toggleIconState(icon) {
@@ -170,7 +170,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         const subCategory = icon !== null ? icon.nextElementSibling : null;
 
         if (!checkbox.checked) {
-            const subCategories = checkbox.parentNode.getElementsByClassName('sub-item');
+            const subCategories = checkbox.parentNode.querySelectorAll('sub-item');
             Iterator.iterate(subCategories, (category) => {
                 category.querySelector('.filter-category-select-checkbox').checked = false;
             });
