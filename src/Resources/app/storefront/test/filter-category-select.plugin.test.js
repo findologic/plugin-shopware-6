@@ -182,8 +182,7 @@ describe('filter-category-select.plugin.js', () => {
 
      let menSub = $('#Men').parent()[0].querySelector('.sub-item')
 
-      const icon = $('.category-toggle-icon')[0];
-
+      const icon = $('.category-toggle-icon')[0]
       const subCategory = menSub
       let isSubHide = subCategory.classList.contains('hide-category-list-item');
       expect(isSubHide).toBe(true);
