@@ -45,9 +45,17 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         ApiConfig $apiConfig,
         ApiClient $apiClient,
         GenericPageLoader $genericPageLoader,
+        SortingHandlerService $sortingHandlerService,
         ContainerInterface $container
     ) {
-        parent::__construct($serviceConfigResource, $findologicRequestFactory, $config, $apiConfig, $apiClient);
+        parent::__construct(
+            $serviceConfigResource,
+            $findologicRequestFactory,
+            $config,
+            $apiConfig,
+            $apiClient,
+            $sortingHandlerService
+        );
 
         $this->genericPageLoader = $genericPageLoader;
         $this->container = $container;
@@ -129,7 +137,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $navigationRequest->setSelected('cat', $categoryPath);
         $this->setUserGroup($salesChannelContext, $navigationRequest);
         $this->setPaginationParams($event, $navigationRequest, $limit);
-        $this->addSorting($navigationRequest, $event->getCriteria());
+        $this->sortingHandlerService->handle($navigationRequest, $event->getCriteria());
 
         if ($event->getCriteria()->hasExtension('flFilters')) {
             $this->filterHandler->handleFilters($event, $navigationRequest);
