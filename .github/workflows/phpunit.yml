@@ -60,6 +60,7 @@ jobs:
           path: development
 
       - name: Add dependency conflicts
+        if: matrix.shopware-versions == 'v6.4.7.0'
         run: |
           cd development
           mv composer.json temp.json
