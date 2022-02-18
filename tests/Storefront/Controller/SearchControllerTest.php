@@ -166,7 +166,7 @@ class SearchControllerTest extends TestCase
         $this->assertSame($filterResponse, $expectedFilters);
     }
 
-    public function testShopwareSearchControllerIsUsedForFilterActionWhenFindologicIsDisabled() : void
+    public function testShopwareSearchControllerIsUsedForFilterActionWhenFindologicIsDisabled(): void
     {
         $findologicService = new FindologicService();
         $findologicService->disable();
