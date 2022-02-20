@@ -2,17 +2,19 @@
  * @jest-environment jsdom
  */
 
-import FilterCategorySelectPlugin from'../src/js/filter-category-select.plugin';
-import FilterCategorySelectElement from './filter-category-select-helper'
+import FilterCategorySelectPlugin from '../src/js/filter-category-select.plugin';
+import FilterCategorySelectElement from './filter-category-select-helper';
+import Iterator from 'src/helper/iterator.helper';
 import ListingPlugin
-  from "../../../../../../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront/src/plugin/listing/listing.plugin";
+    from '../../../../../../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront/src/plugin/listing/listing.plugin';
 import '@testing-library/jest-dom/extend-expect';
+
 describe('filter-category-select.plugin.js', () => {
-  let filterCategorySelectPlugin;
-  let filterCategorySelectElement;
-  let $ = require('jquery');
-  beforeEach(() => {
-    window.csrf = {
+    let filterCategorySelectPlugin;
+    let filterCategorySelectElement;
+    let $ = require('jquery');
+    beforeEach(() => {
+        window.csrf = {
       enabled: false
     };
 
@@ -26,9 +28,6 @@ describe('filter-category-select.plugin.js', () => {
     const mockElementSpan = document.createElement('span');
     mockElementSpan.classList.add('filter-multi-select-count');
 
-    const checkboxSelector = document.createElement('input');
-    checkboxSelector.classList.add('filter-category-select-checkbox');
-
     const mockElementButton = document.createElement('button');
     mockElementButton.classList.add('filter-panel-item-toggle');
     filterCategorySelectElement = new FilterCategorySelectElement();
@@ -36,7 +35,6 @@ describe('filter-category-select.plugin.js', () => {
     mockElement.appendChild(cmsElementProductListingWrapper);
     mockElement.appendChild(mockElementButton);
     mockElement.appendChild(mockElementSpan);
-    mockElement.appendChild(checkboxSelector);
     mockElement.appendChild(filterCategorySelectElement.createCategoryStructure());
 
     document.body.appendChild(mockElement);
@@ -56,7 +54,6 @@ describe('filter-category-select.plugin.js', () => {
     };
 
      filterCategorySelectPlugin = new FilterCategorySelectPlugin(mockElement);
-     filterCategorySelectPlugin._registerEvents();
   });
 
   afterEach(() => {
@@ -88,17 +85,16 @@ describe('filter-category-select.plugin.js', () => {
   });
 
   test('On select Men Category: sub-categories visible on their first level',() => {
-      let menCategoryCheckbox = $('input')[1];
+      let menCategoryCheckbox = $('input')[0];
       let isUrlUpdated;
       const expectedClass = 'show-category-list-item'
           $(menCategoryCheckbox).click();
 
       let menSubCategory = $(menCategoryCheckbox).parent()[0].querySelectorAll('.sub-item')
-      filterCategorySelectPlugin.toggleSubCategoryVisibility(menSubCategory[0]);
       isUrlUpdated = window.location.search.indexOf('Men') > -1
 
       let menSiblingCategories = filterCategorySelectPlugin.getSiblingsCategories(menSubCategory[0]);
-      let allSiblingsVisible
+      let allSiblingsVisible;
       for(let i = 0; i < menSiblingCategories.length; i++){
           if(menSiblingCategories[i].classList.contains(expectedClass)){
               allSiblingsVisible = true;
@@ -117,75 +113,160 @@ describe('filter-category-select.plugin.js', () => {
       expect(isUrlUpdated).toBe(true)
   });
 
-  test('All Parent Categories has icon except Newcomers (this has no child)', ()=>{
-      let categoryCheckboxes = '.filter-category-select-checkbox';
-      $(categoryCheckboxes).each(function(index){
-          let categoryParent = $(categoryCheckboxes)[index].parentNode;
-          let isSubCategoryExist = categoryParent.querySelector('sub-item');
-          let isToggleIconExist = categoryParent.querySelector('category-toggle-icon');
+    test('All Parent Categories has icon', () => {
+        let categoryCheckboxes = '.filter-category-select-checkbox';
+        $(categoryCheckboxes).each(function (index) {
+            let categoryParent = $(categoryCheckboxes)[index].parentNode;
+            let isSubCategoryExist = categoryParent.querySelector('sub-item');
+            let isToggleIconExist = categoryParent.querySelector('category-toggle-icon');
+            expect(isSubCategoryExist).toBe(isToggleIconExist);
+        });
+    });
 
-          expect(isSubCategoryExist).toBe(isToggleIconExist);
-      })
-  });
+    test('Selecting Newcomer, updates the url accordingly', () => {
+        $('#Newcomers').click();
+        let isUrlUpdated = window.location.search.indexOf('Newcomers') > -1;
+        expect(isUrlUpdated).toBe(true);
+    });
 
-  test('Selecting Newcomer, updates the url accordingly', () => {
-      $('#Newcomers').click();
-      let isUrlUpdated = window.location.search.indexOf('Newcomers') > -1;
-      expect(isUrlUpdated).toBe(true);
-  });
+    test('On click women Category Icon: sub-categories visible, no update in url, checkbox not selected', () => {
+        let isShowClassExist;
+        let womenCategoryToggleIcon = $('.category-toggle-icon')[2];
+        $(womenCategoryToggleIcon).click();
 
-  test('On click women Category Icon: sub-categories visible, no update in url, checkbox not selected', ()=>{
-      console.log("Working");
-      let areAllSiblingsVisible;
-      let womenCategoryToggleIcon = $('.category-toggle-icon')[2];
+        let womenSubCategory = $(womenCategoryToggleIcon).parent()[0].querySelectorAll('.sub-item')[0]
+        let womenSubSiblings = filterCategorySelectPlugin.getSiblingsCategories(womenSubCategory);
+        womenSubSiblings.push(womenSubCategory);
+        for (let i = 0; i < womenSubSiblings.length; i++) {
+            isShowClassExist = womenSubSiblings[i].classList.contains('show-category-list-item');
+            if (!isShowClassExist) {
+                break;
+            }
+        }
 
-      $(womenCategoryToggleIcon).click();
+        let isUrlUpdated = window.location.search.indexOf('Women') > -1
+        let isCategorySelected = document.getElementById('Women').checked;
+        let areMoreDeepVisible = womenSubSiblings[0].querySelectorAll('show-category-list-item').length;
 
-      let womenSubCategory = $(womenCategoryToggleIcon).parent()[0].querySelectorAll('.sub-item')[0]
-      let womenSiblingCategories = filterCategorySelectPlugin.getSiblingsCategories(womenSubCategory);
-      filterCategorySelectPlugin.toggleSubCategoryVisibility(womenSubCategory);
+        expect(isShowClassExist).toBe(true);
+        expect(isUrlUpdated).not.toBe(true);
+        expect(isCategorySelected).not.toBe(true)
+        expect(areMoreDeepVisible).not.toBe(true);
 
-      for(let i = 0; i < womenSiblingCategories.length; i++){
-          let isShowClassExist = womenSiblingCategories[i].classList.contains('show-category-list-item');
-          if(isShowClassExist){
-              areAllSiblingsVisible = true;
-          }else{
-              areAllSiblingsVisible = false;
-              break;
-          }
-      }
+    });
 
-      let isUrlUpdated = window.location.search.indexOf('Women') > -1
-      let isCategorySelected = document.getElementById('Women').checked;
-      let areMoreSiblingsVisible = !womenSiblingCategories[0].querySelectorAll('show-category-list-item');
+    test('Women and hats categories to be selected', () => {
+        $('#Women_Hats').click();
+        let isCategorySelected = document.getElementById('Women').checked;
+        let womenHat = document.getElementById('Women_Hats').checked;
+        let isWomenAddedToUrl = window.location.search.indexOf('Women') > -1;
+        let isWomenHatAddedToUrl = window.location.search.indexOf('Women_Hats') > -1;
+        expect(isCategorySelected).toBe(true);
+        expect(womenHat).toBe(true);
+        expect(isWomenAddedToUrl).toBe(true);
+        expect(isWomenHatAddedToUrl).toBe(true);
+    });
 
-      expect(areAllSiblingsVisible).toBe(true);
-      expect(isUrlUpdated).not.toBe(true);
-      expect(isCategorySelected).not.toBe(true)
-      expect(areMoreSiblingsVisible).not.toBe(true)
+    test('Seleting Men category, click on an icon to hide sub categories', () => {
 
-  });
+        let menSub = $('#Men').parent()[0].querySelector('.sub-item')
+        const subCategory = menSub
+        const icon = $('.category-toggle-icon')[0];
+        icon.dispatchEvent(new Event('click'))
+        let isSubHide = subCategory.classList.contains('hide-category-list-item');
+        expect(isSubHide).toBe(true);
+    });
 
-  test('Women and hats categories to be selected', ()=>{
-      $('#Women_Hats').click();
-      let isCategorySelected = document.getElementById('Women').checked;
-      let womenHat = document.getElementById('Women').checked;
-      let isWomenAddedToUrl = window.location.search.indexOf('Women') > -1;
-      let isWomenHatAddedToUrl = window.location.search.indexOf('Women_Hats') > -1;
-      expect(isCategorySelected).toBe(true);
-      expect(womenHat).toBe(true);
-      expect(isWomenAddedToUrl).toBe(true);
-      expect(isWomenHatAddedToUrl).toBe(true);
-  });
+    test('Ensure that deselecting an already selected category, will automatically hide all subcategories', () => {
+        const icon = $('.category-toggle-icon')
+        icon[0].dispatchEvent(new Event('click')); // To show Subcategories, so can be hidden on deslecting parent
+        let subCategory = $('#Men').parent()[0].querySelector('.sub-item');
+        let isSubHide = subCategory.classList.contains('show-category-list-item');
+        expect(isSubHide).toBe(true);
+        $('#Men').click();
+        isSubHide = subCategory.classList.contains('hide-category-list-item');
+        expect(isSubHide).toBe(true);
+    });
 
-  test('Seleting Men category, click on an icon to hide sub categories', ()=>{
+    test('Disable Inactive Filters', () => {
+        let filters =
+            {
+                'cat':
+                    {
+                        'entities':
+                            [
+                                {
+                                    'translated': {'name': 'cat'},
+                                    'options': [
+                                        {'id': 'Men', 'translated': {'name': 'Men'}}
+                                    ]
+                                },
+                                {
+                                    'translated': {'name': 'cat'},
+                                    'options': [{
+                                        'id': 'Hats', 'translated': {'name': 'Hats'}
+                                    }]
+                                },
+                                {
+                                    'translated': {'name': 'cat'},
+                                    'options': [{
+                                        'id': 'Shirts', 'translated': {'name': 'Shirts'}
+                                    }]
+                                },
+                                {
+                                    'translated': {'name': 'cat'},
+                                    'options': [{
+                                        'id': 'Shoes', 'translated': {'name': 'Shoes'}
+                                    }]
+                                },
+                                {
+                                    'translated': {'name': 'cat'},
+                                    'options': [{
+                                        'id': 'Cool Hats', 'translated': {'name': 'Cool Hats'}
+                                    }]
+                                },
+                                {
+                                    'translated': {'name': 'cat'},
+                                    'options': [{
+                                        'id': 'Lame Hats', 'translated': {'name': 'Lame Hats'}
+                                    }]
+                                }
+                            ]
+                    }, 'vendor':
+                    {'entities': []},
+                'price': {'entities': []},
+                'color': {'entities': []},
+                'shipping_free': {'entities': []},
+                'shoe-color': {'entities': []},
+                'textile': {'entities': []},
+                'width': {'entities': []}
+            };
+        filterCategorySelectPlugin.options.name = 'cat';
+        filterCategorySelectPlugin.refreshDisabledState(filters);
+        let checkboxes = document.querySelectorAll('.filter-category-select-checkbox');
+        let isDisable;
+        let activeItems = [];
+        const properties = filters['cat'];
+        const entities = properties.entities;
+        const property = entities.find(entity => entity.translated.name === 'cat');
+        if (property) {
+            activeItems.push(...property.options);
+        }
+        let activeIds = activeItems.map(entity => entity.id);
+        let disabledChecked = false;
+        Iterator.iterate(checkboxes, (checkbox) => {
+            let notActiveId = !activeIds.includes(checkbox.id);
+            isDisable = notActiveId ? checkbox.disabled : false;
+            if (!isDisable) {
+                return isDisable;
+            }
+            let event = new Event('click');
+            checkbox.dispatchEvent(event);
+            disabledChecked = checkbox.checked;
+        });
+        expect(isDisable).toBe(true)
 
-     let menSub = $('#Men').parent()[0].querySelector('.sub-item')
 
-      const icon = $('.category-toggle-icon')[0]
-      const subCategory = menSub
-      let isSubHide = subCategory.classList.contains('hide-category-list-item');
-      expect(isSubHide).toBe(true);
-  });
+    })
 
 });
