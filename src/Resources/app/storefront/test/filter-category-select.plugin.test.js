@@ -237,7 +237,6 @@ describe('filter-category-select.plugin.js', () => {
             checkbox.dispatchEvent(event);
             disabledChecked = checkbox.checked;
         });
-        console.log(activeIds);
         expect(isDisable).toBe(true)
 
 
