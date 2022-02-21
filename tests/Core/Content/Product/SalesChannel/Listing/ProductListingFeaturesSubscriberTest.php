@@ -15,6 +15,7 @@ use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Api\PaginationService;
 use FINDOLOGIC\FinSearch\Findologic\Api\SortingService;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
@@ -687,6 +688,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             $this->getContainer()->get('translator')
         );
         $paginationService = new PaginationService();
+        $sortingHandlerService = $this->getContainer()->get(SortingHandlerService::class);
 
         $findologicSearchService = new FindologicSearchService(
             $this->containerMock,
@@ -695,7 +697,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             $this->configMock,
             $this->genericPageLoaderMock,
             $sortingService,
-            $paginationService
+            $paginationService,
+            $sortingHandlerService
         );
 
         return new ProductListingFeaturesSubscriber(
