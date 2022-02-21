@@ -20,8 +20,6 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
-use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
-use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
@@ -30,9 +28,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use PHPUnit\Framework\MockObject\MockObject;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
@@ -41,7 +37,6 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -166,17 +161,28 @@ class FindologicProductTest extends TestCase
         $this->assertSame($releaseDate->format(DATE_ATOM), $findologicProduct->getDateAdded()->getValues()['']);
     }
 
-    /**
-     * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoNameException
-     * @throws ProductHasNoPricesException
-     */
-    public function testNoProductCategories(): void
+    public function testProductAndVariantHaveNoCategories(): void
     {
         $this->expectException(ProductHasNoCategoriesException::class);
+        $id = Uuid::randomHex();
+        $this->createTestProduct([
+            'id' => $id,
+            'categories' => []
+        ]);
 
-        $productEntity = $this->createTestProduct();
-        $productEntity->setCategories(new CategoryCollection([]));
+        $this->createTestProduct([
+            'parentId' => $id,
+            'productNumber' => Uuid::randomHex(),
+            'categories' => []
+        ]);
+
+        $criteria = new Criteria([$id]);
+        $criteria = Utils::addProductAssociations($criteria);
+        $criteria->addAssociation('visibilities');
+        $productEntity = $this->getContainer()->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->get($id);
 
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProductFactory->buildInstance(
@@ -187,6 +193,86 @@ class FindologicProductTest extends TestCase
             [],
             new XMLItem('123')
         );
+    }
+
+    public function parentAndChildrenCategoryProvider(): array
+    {
+        return [
+            'Parent and children have the same categories assigned' => [
+                'isParentAssigned' => true,
+                'isVariantAssigned' => true,
+            ],
+            'Parent has no categories and children have some categories assigned' => [
+                'isParentAssigned' => false,
+                'isVariantAssigned' => true
+            ],
+            'Parent has categories and children have no categories assigned' => [
+                'isParentAssigned' => true,
+                'isVariantAssigned' => false
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider parentAndChildrenCategoryProvider
+     */
+    public function testOnlyUniqueCategoriesAreExported(bool $isParentAssigned, bool $isVariantAssigned): void
+    {
+        $id = Uuid::randomHex();
+        $mainNavigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+        $categoryOne = [
+            'id' => 'cce80a72bc3481d723c38cccf592d45a',
+            'name' => 'Category1',
+            'parentId' => $mainNavigationCategoryId
+        ];
+
+        $expectedCategories = ['Category1'];
+        $expectedCatUrls = [
+            '/Category1/',
+            '/navigation/cce80a72bc3481d723c38cccf592d45a'
+        ];
+
+        $this->createTestProduct([
+            'id' => $id,
+            'categories' => $isParentAssigned ? [$categoryOne] : []
+        ]);
+
+        $this->createTestProduct([
+            'parentId' => $id,
+            'productNumber' => Uuid::randomHex(),
+            'categories' => $isVariantAssigned ? [$categoryOne] : []
+        ]);
+
+        $criteria = new Criteria([$id]);
+        $criteria = Utils::addProductAssociations($criteria);
+        $criteria->addAssociation('visibilities');
+        $productEntity = $this->getContainer()->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->get($id);
+
+        $config = $this->getMockedConfig();
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123'),
+            $config
+        );
+
+        $this->assertTrue($findologicProduct->hasAttributes());
+        [$categoryUrlAttribute, $categoryAttribute] = $findologicProduct->getAttributes();
+
+        $this->assertSame('cat_url', $categoryUrlAttribute->getKey());
+        $categoryUrlAttributeValues = $categoryUrlAttribute->getValues();
+        $this->assertSame($expectedCatUrls, $categoryUrlAttributeValues);
+
+        $this->assertSame('cat', $categoryAttribute->getKey());
+        $categoryAttributeValues = $categoryAttribute->getValues();
+        $this->assertSame($expectedCategories, $categoryAttributeValues);
     }
 
     public function categorySeoProvider(): array

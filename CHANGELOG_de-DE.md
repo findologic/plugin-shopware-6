@@ -1,3 +1,8 @@
+# NEXT
+- [SW-644] Die exportierten Kategorien und cat_urls enthalten nun auch Daten von nicht-Hauptvarianten.
+- [SW-683] Ein Fehler wurde behoben, wodurch bei Direct Integration auf Kategorieseiten ein flicker-Effekt auftrat, wenn viele JavaScript Ressourcen geladen wurden, bevor die Findologic JavaScript Ressourcen laden konnten.
+- [SW-687] Shopware 6.4.8.1 wurde zur Test-Matrix hinzugefügt.
+
 # 2.6.1
 - [SW-677] HTML-kodierte Attributswerte, werden nun automatisch im export dekodiert.
 - [SW-569] Die Option für das Aktivieren von Findologic auf Kategorieseiten, wurde in die API Sektion migriert.
