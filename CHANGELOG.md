@@ -1,3 +1,6 @@
+# NEXT
+- [SW-644] Exported categories and cat_urls now also include data from non-main variants.
+
 # 2.6.1
 - [SW-677] HTML encoded attribute values are now automatically decoded in the export.
 - [SW-569] The option to enable Findologic on category pages, has been moved to the API section.
