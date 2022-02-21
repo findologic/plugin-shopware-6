@@ -7,7 +7,6 @@ import FilterCategorySelectElement from './filter-category-select-helper';
 import Iterator from 'src/helper/iterator.helper';
 import ListingPlugin
     from '../../../../../../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront/src/plugin/listing/listing.plugin';
-import '@testing-library/jest-dom/extend-expect';
 
 describe('filter-category-select.plugin.js', () => {
     let filterCategorySelectPlugin;
