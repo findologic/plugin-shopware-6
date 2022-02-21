@@ -198,38 +198,12 @@ describe('filter-category-select.plugin.js', () => {
                                 {
                                     'translated': {'name': 'cat'},
                                     'options': [
-                                        {'id': 'Men', 'translated': {'name': 'Men'}}
-                                    ]
-                                },
-                                {
-                                    'translated': {'name': 'cat'},
-                                    'options': [{
-                                        'id': 'Hats', 'translated': {'name': 'Hats'}
-                                    }]
-                                },
-                                {
-                                    'translated': {'name': 'cat'},
-                                    'options': [{
-                                        'id': 'Shirts', 'translated': {'name': 'Shirts'}
-                                    }]
-                                },
-                                {
-                                    'translated': {'name': 'cat'},
-                                    'options': [{
-                                        'id': 'Shoes', 'translated': {'name': 'Shoes'}
-                                    }]
-                                },
-                                {
-                                    'translated': {'name': 'cat'},
-                                    'options': [{
-                                        'id': 'Cool Hats', 'translated': {'name': 'Cool Hats'}
-                                    }]
-                                },
-                                {
-                                    'translated': {'name': 'cat'},
-                                    'options': [{
-                                        'id': 'Lame Hats', 'translated': {'name': 'Lame Hats'}
-                                    }]
+                                        {'id': 'Men', 'translated': {'name': 'Men'}},
+                                        {'id': 'Hats', 'translated': {'name': 'Hats'}},
+                                        {'id': 'Shoes', 'translated': {'name': 'Shoes'}},
+                                        {'id': 'Shirts', 'translated': {'name': 'Shirts'}},
+                                        {'id': 'Cool Hats', 'translated': {'name': 'Cool Hats'}},
+                                        {'id': 'Lame Hats', 'translated': {'name': 'Lame Hats'}}]
                                 }
                             ]
                     }, 'vendor':
@@ -264,6 +238,7 @@ describe('filter-category-select.plugin.js', () => {
             checkbox.dispatchEvent(event);
             disabledChecked = checkbox.checked;
         });
+        console.log(activeIds);
         expect(isDisable).toBe(true)
 
 
