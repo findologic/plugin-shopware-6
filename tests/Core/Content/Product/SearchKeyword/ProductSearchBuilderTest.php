@@ -52,8 +52,8 @@ class ProductSearchBuilderTest extends TestCase
 
     public function testBuildMethodForShopwareLower64IsUsed(): void
     {
-        if (!Utils::versionLowerThan('6.4.4.0')) {
-            $this->markTestSkipped('Test ProductSearchBuilder::build for version lower 6.4.4.0');
+        if (!Utils::versionLowerThan('6.4.0.0')) {
+            $this->markTestSkipped('Test ProductSearchBuilder::build for version lower 6.4.0.0');
         }
 
         /** @var ProductSearchTermInterpreterInterface|MockObject $interpreterMock */
@@ -76,8 +76,8 @@ class ProductSearchBuilderTest extends TestCase
 
     public function testBuildMethodForShopwareGreater64IsUsed(): void
     {
-        if (Utils::versionLowerThan('6.4.4.0')) {
-            $this->markTestSkipped('Test ProductSearchBuilder::build for version greater 6.4.4.0');
+        if (Utils::versionLowerThan('6.4.0.0')) {
+            $this->markTestSkipped('Test ProductSearchBuilder::build for version greater 6.4.0.0');
         }
 
         /** @var ProductSearchTermInterpreterInterface|MockObject $interpreterMock */
