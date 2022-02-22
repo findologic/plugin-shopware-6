@@ -44,7 +44,7 @@ class ProductSearchBuilder extends ShopwareProductSearchBuilder
         parent::build($request, $criteria, $context);
     }
 
-    private function buildShopware63AndLower(Request $request, Criteria $criteria, SalesChannelContext $context): void
+    public function buildShopware63AndLower(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
         if ($request->getPathInfo() === '/suggest') {
             $this->buildParent($request, $criteria, $context);
@@ -88,7 +88,7 @@ class ProductSearchBuilder extends ShopwareProductSearchBuilder
         );
     }
 
-    private function buildShopware64AndGreater(Request $request, Criteria $criteria, SalesChannelContext $context): void
+    public function buildShopware64AndGreater(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
         if ($request->getPathInfo() === '/suggest') {
             $this->buildParent($request, $criteria, $context);
