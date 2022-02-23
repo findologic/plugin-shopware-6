@@ -151,6 +151,11 @@
             <argument type="service" id="FINDOLOGIC\Api\Config" />
         </service>
 
+        <service
+                id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService"
+                class="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService"
+        />
+
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true" />
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" autowire="true" />
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\PaginationService" autowire="true" />
