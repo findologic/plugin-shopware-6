@@ -50,7 +50,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         }
 
         Iterator.iterate(checkboxes, (checkbox) => {
-            checkbox.addEventListener('click', () => {
+            checkbox.addEventListener('change', () => {
                 this.onChangeCheckBox(checkbox);
                 this._onChangeFilter();
             });
