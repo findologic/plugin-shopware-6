@@ -170,7 +170,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         const subCategory = icon !== null ? icon.nextElementSibling : null;
 
         if (!checkbox.checked) {
-            const subCategories = checkbox.parentNode.querySelectorAll('sub-item');
+            const subCategories = checkbox.parentNode.querySelectorAll('.sub-item');
             Iterator.iterate(subCategories, (category) => {
                 category.querySelector('.filter-category-select-checkbox').checked = false;
             });

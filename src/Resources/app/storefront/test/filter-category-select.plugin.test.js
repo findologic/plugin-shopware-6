@@ -14,111 +14,118 @@ describe('filter-category-select.plugin.js', () => {
 
     beforeEach(() => {
         window.csrf = {
-      enabled: false
-    };
-
-    window.router = [];
-
-    const mockElement = document.createElement('div');
-
-    const cmsElementProductListingWrapper = document.createElement('div');
-    cmsElementProductListingWrapper.classList.add('cms-element-product-listing-wrapper');
-
-    const mockElementSpan = document.createElement('span');
-    mockElementSpan.classList.add('filter-multi-select-count');
-
-    const mockElementButton = document.createElement('button');
-    mockElementButton.classList.add('filter-panel-item-toggle');
-    filterCategorySelectElement = new FilterCategorySelectElement();
-
-    mockElement.appendChild(cmsElementProductListingWrapper);
-    mockElement.appendChild(mockElementButton);
-    mockElement.appendChild(mockElementSpan);
-    mockElement.appendChild(filterCategorySelectElement.createCategoryStructure());
-
-    document.body.appendChild(mockElement);
-
-    window.PluginManager = {
-      getPluginInstancesFromElement: () => {
-        return new Map();
-      },
-      getPlugin: () => {
-        return {
-          get: () => []
+            enabled: false
         };
-      },
-      getPluginInstanceFromElement: () => {
-        return new ListingPlugin(mockElement);
-      },
-    };
 
-     filterCategorySelectPlugin = new FilterCategorySelectPlugin(mockElement);
-  });
+        window.router = [];
 
-  afterEach(() => {
-    filterCategorySelectPlugin = null;
-  });
+        const mockElement = document.createElement('div');
 
-  test('filter category select plugin exists', () => {
-    expect(typeof filterCategorySelectPlugin).toBe('object');
-  });
+        const cmsElementProductListingWrapper = document.createElement('div');
+        cmsElementProductListingWrapper.classList.add('cms-element-product-listing-wrapper');
 
-  test('On initialization only main parent categories should be visible, all child categories must be hidden', () => {
+        const mockElementSpan = document.createElement('span');
+        mockElementSpan.classList.add('filter-multi-select-count');
 
-      let mainParentsVisible;
-      let childsVisible;
-      let categories = document.querySelectorAll('.category-filter-container');
-      let subCategories = document.querySelectorAll('.sub-item');
+        const mockElementButton = document.createElement('button');
+        mockElementButton.classList.add('filter-panel-item-toggle');
+        filterCategorySelectElement = new FilterCategorySelectElement();
 
-      for (let i = 0; i < categories.length; i++) {
-          mainParentsVisible = categories[i].classList.contains('category-filter-container');
-      }
-      for (let i = 0; i < subCategories.length; i++) {
-          childsVisible = subCategories[i].classList.contains('show-category-list-item');
-      }
-      expect(mainParentsVisible).toBe(true);
-      expect(childsVisible).not.toBe(true);
+        mockElement.appendChild(cmsElementProductListingWrapper);
+        mockElement.appendChild(mockElementButton);
+        mockElement.appendChild(mockElementSpan);
+        mockElement.appendChild(filterCategorySelectElement.createCategoryStructure());
 
-  });
+        document.body.appendChild(mockElement);
 
-  test('On select Men Category: sub-categories visible on their first level',() => {
-      let men = document.querySelector('#Men');
-      const expectedClass = 'show-category-list-item';
-      const clickEvent = new Event('click');
-      let child = men.parentNode.querySelectorAll('.sub-item');
-      men.addEventListener('click', () => {
-          men.checked = !men.checked;
-          men.dispatchEvent(new Event('change'));
-      });
-      men.dispatchEvent(new Event('click'));
-      let isUrlUpdated = window.location.search.indexOf('Men') > -1
-      let childs = filterCategorySelectPlugin.getSiblingsCategories(child[0]);
-      let childsVisible;
+        window.PluginManager = {
+            getPluginInstancesFromElement: () => {
+                return new Map();
+            },
+            getPlugin: () => {
+                return {
+                    get: () => []
+                };
+            },
+            getPluginInstanceFromElement: () => {
+                return new ListingPlugin(mockElement);
+            },
+        };
 
-      for (let i = 0; i < childs.length; i++) {
-          childsVisible = childs[i].classList.contains(expectedClass);
-          if (!childs) {
-              break;
-          }
-      }
+        filterCategorySelectPlugin = new FilterCategorySelectPlugin(mockElement);
+    });
 
-      let grandChilds = childs[0].querySelector('.sub-item');
-      let grandChildsVisible = grandChilds.classList.contains('hide-category-list-item');
+    afterEach(() => {
+        filterCategorySelectPlugin = null;
+    });
 
-      expect(men.checked).toBe(true);
-      expect(childsVisible).toBe(true);
-      expect(grandChildsVisible).toBe(true)
-      expect(isUrlUpdated).toBe(true)
-  });
+    test('filter category select plugin exists', () => {
+        expect(typeof filterCategorySelectPlugin).toBe('object');
+    });
+
+    test('On initialization only main parent categories should be visible, all child categories must be hidden', () => {
+
+        let mainParentsVisible;
+        let childsVisible;
+        let categories = document.querySelectorAll('.category-filter-container');
+        let subCategories = document.querySelectorAll('.sub-item');
+
+        for (let i = 0; i < categories.length; i++) {
+            mainParentsVisible = categories[i].classList.contains('category-filter-container');
+        }
+        for (let i = 0; i < subCategories.length; i++) {
+            childsVisible = subCategories[i].classList.contains('show-category-list-item');
+        }
+        expect(mainParentsVisible).toBe(true);
+        expect(childsVisible).not.toBe(true);
+
+    });
+
+    test('On select Men Category: sub-categories visible on their first level', () => {
+        let men = document.querySelector('#Men');
+        const expectedClass = 'show-category-list-item';
+        const clickEvent = new Event('click');
+        let child = men.parentNode.querySelectorAll('.sub-item');
+        men.addEventListener('click', () => {
+            men.checked = !men.checked;
+            men.dispatchEvent(new Event('change'));
+        });
+        men.dispatchEvent(new Event('click'));
+
+        let isUrlUpdated = window.location.search.indexOf('Men') !== -1;
+        let childs = filterCategorySelectPlugin.getSiblingsCategories(child[0]);
+        let childsVisible;
+
+        for (let i = 0; i < childs.length; i++) {
+            childsVisible = childs[i].classList.contains(expectedClass);
+            if (!childs) {
+                break;
+            }
+        }
+
+        let grandChilds = childs[0].querySelector('.sub-item');
+        let grandChildsVisible = grandChilds.classList.contains('hide-category-list-item');
+
+        expect(men.checked).toBe(true);
+        expect(childsVisible).toBe(true);
+        expect(grandChildsVisible).toBe(true)
+        expect(isUrlUpdated).toBe(true);
+    });
 
     test('All Parent Categories has icon', () => {
-        let categoryCheckboxes = document.querySelectorAll('.filter-category-select-checkbox');
-        for (let i = 0; i < categoryCheckboxes.length; i++) {
-            let categoryParent = categoryCheckboxes[i].parentNode;
+        let checkboxes = document.querySelectorAll('.filter-category-select-checkbox');
+        let bothExist;
+        for (let i = 0; i < checkboxes.length; i++) {
+            let categoryParent = checkboxes[i].parentNode;
             let isSubCategoryExist = categoryParent.querySelector('.sub-item');
             let isToggleIconExist = categoryParent.querySelector('.category-toggle-icon');
-            expect(isSubCategoryExist).not.toBe(!isToggleIconExist);
+
+            bothExist = isSubCategoryExist !== (!isToggleIconExist);
+            if (!bothExist) {
+                break;
+            }
         }
+        expect(bothExist).toBe(true);
     });
 
     test('Selecting Newcomer, updates the url accordingly', () => {
@@ -131,7 +138,7 @@ describe('filter-category-select.plugin.js', () => {
         });
         checkbox.dispatchEvent(clickEvent);
 
-        let isUrlUpdated = window.location.search.indexOf('Newcomers') > -1;
+        let isUrlUpdated = window.location.search.indexOf('Newcomers') !== -1;
         expect(isUrlUpdated).toBe(true);
     });
 
@@ -141,7 +148,7 @@ describe('filter-category-select.plugin.js', () => {
         const clickEvent = new Event('click');
         womenCategoryToggleIcon.dispatchEvent(clickEvent);
 
-        let womenSubCategory = womenCategoryToggleIcon.parentNode.querySelector('.sub-item')
+        let womenSubCategory = womenCategoryToggleIcon.parentNode.querySelector('.sub-item');
         let womenSubSiblings = filterCategorySelectPlugin.getSiblingsCategories(womenSubCategory);
         womenSubSiblings.push(womenSubCategory);
         for (let i = 0; i < womenSubSiblings.length; i++) {
@@ -151,7 +158,7 @@ describe('filter-category-select.plugin.js', () => {
             }
         }
 
-        let isUrlUpdated = window.location.search.indexOf('Women') > -1
+        let isUrlUpdated = window.location.search.indexOf('Women') !== -1;
         let isCategorySelected = document.getElementById('Women').checked;
         let areMoreDeepVisible = womenSubSiblings[0].querySelectorAll('show-category-list-item').length;
 
@@ -165,7 +172,7 @@ describe('filter-category-select.plugin.js', () => {
     test('Women and hats categories to be selected', () => {
         let checkbox = document.querySelector('#Women_Hats');
         const clickEvent = new Event('click');
-        checkbox.addEventListener('click', ()=>{
+        checkbox.addEventListener('click', () => {
             checkbox.checked = !checkbox.checked;
             checkbox.dispatchEvent(new Event('change'));
         });
@@ -174,7 +181,7 @@ describe('filter-category-select.plugin.js', () => {
         let isCategorySelected = document.getElementById('Women').checked;
         let isWomenHat = checkbox.checked;
         let params = window.location.search;
-        let isUrlUpdated = params.indexOf('Women') > -1 && params.indexOf('Women_Hats') > -1;
+        let isUrlUpdated = params.indexOf('Women') !== -1 && params.indexOf('Women_Hats') !== -1;
         expect(isCategorySelected).toBe(true);
         expect(isWomenHat).toBe(true);
         expect(isUrlUpdated).toBe(true);
@@ -183,7 +190,7 @@ describe('filter-category-select.plugin.js', () => {
     test('Seleting Men category, click on an icon to hide sub categories', () => {
 
         let men = document.querySelector('#Men');
-        let child = men.parentNode.querySelector('.sub-item')
+        let child = men.parentNode.querySelector('.sub-item');
         const subCategory = child;
         const icon = document.querySelector('.category-toggle-icon');
         icon.dispatchEvent(new Event('click'));
@@ -192,15 +199,16 @@ describe('filter-category-select.plugin.js', () => {
     });
 
     test('Ensure that deselecting an already selected category, will automatically hide all subcategories', () => {
-        const icon = document.querySelector('.category-toggle-icon')
-        icon.dispatchEvent(new Event('click')); // To show Subcategories, so can be hidden on deslecting parent
+        const icon = document.querySelector('.category-toggle-icon');
+        // To show Subcategories, so that they can be hidden by deselecting parent
+        icon.dispatchEvent(new Event('click'));
 
         let category = document.querySelector('#Men');
         let subCategory = category.parentNode.querySelector('.sub-item');
         let isVisible = subCategory.classList.contains('show-category-list-item');
 
         expect(isVisible).toBe(true);
-        category.addEventListener('click', ()=>{
+        category.addEventListener('click', () => {
             category.checked = !category.checked;
         });
         category.dispatchEvent(new Event('click'));
@@ -257,7 +265,7 @@ describe('filter-category-select.plugin.js', () => {
             checkbox.dispatchEvent(new Event('click'));
             disabledChecked = checkbox.checked;
         });
-        expect(isDisable).toBe(true)
+        expect(isDisable).toBe(true);
 
 
     })
