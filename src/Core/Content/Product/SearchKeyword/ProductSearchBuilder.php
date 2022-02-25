@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilder as ShopwareProductSearchBuilder;
+use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreterInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\AndFilter;
@@ -17,16 +17,23 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Term\SearchPattern;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
-class ProductSearchBuilder extends ShopwareProductSearchBuilder
+class ProductSearchBuilder implements ProductSearchBuilderInterface
 {
     /**
      * @var ProductSearchTermInterpreterInterface
      */
     private $interpreter;
 
-    public function __construct(ProductSearchTermInterpreterInterface $interpreter)
-    {
-        parent::__construct($interpreter);
+    /**
+     * @var ProductSearchBuilderInterface
+     */
+    private $decorated;
+
+    public function __construct(
+        ProductSearchBuilderInterface $decorated,
+        ProductSearchTermInterpreterInterface $interpreter
+    ) {
+        $this->decorated = $decorated;
         $this->interpreter = $interpreter;
     }
 
@@ -39,17 +46,13 @@ class ProductSearchBuilder extends ShopwareProductSearchBuilder
         }
     }
 
-    public function buildParent(Request $request, Criteria $criteria, SalesChannelContext $context): void
-    {
-        parent::build($request, $criteria, $context);
-    }
-
     public function buildShopware63AndLower(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
-        if ($request->getPathInfo() === '/suggest') {
-            $this->buildParent($request, $criteria, $context);
+        //if ($request->getPathInfo() === '/suggest') {
+            $this->decorated->build($request, $criteria, $context);
+
             return;
-        }
+        //}
 
         $search = $request->query->get('search');
 
