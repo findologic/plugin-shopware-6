@@ -40,7 +40,7 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
     public function build(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
         if ($request->getPathInfo() === '/suggest') {
-            $this->decorated->build($request, $criteria, $context);
+            $this->buildParent($request, $criteria, $context);
             return;
         }
 
@@ -49,6 +49,11 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
         } else {
             $this->buildShopware64AndGreater($request, $criteria, $context);
         }
+    }
+
+    public function buildParent(Request $request, Criteria $criteria, SalesChannelContext $context): void
+    {
+        $this->decorated->build($request, $criteria, $context);
     }
 
     public function buildShopware63AndLower(Request $request, Criteria $criteria, SalesChannelContext $context): void
