@@ -31,8 +31,8 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
 
     public function __construct(
         ProductSearchTermInterpreterInterface $interpreter,
-        ProductSearchBuilderInterface $decorated)
-    {
+        ProductSearchBuilderInterface $decorated
+    ) {
         $this->interpreter = $interpreter;
         $this->decorated = $decorated;
     }
