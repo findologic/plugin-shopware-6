@@ -30,15 +30,20 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
     private $decorated;
 
     public function __construct(
-        ProductSearchBuilderInterface $decorated,
-        ProductSearchTermInterpreterInterface $interpreter
-    ) {
-        $this->decorated = $decorated;
+        ProductSearchTermInterpreterInterface $interpreter,
+        ProductSearchBuilderInterface $decorated)
+    {
         $this->interpreter = $interpreter;
+        $this->decorated = $decorated;
     }
 
     public function build(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
+        if ($request->getPathInfo() === '/suggest') {
+            $this->decorated->build($request, $criteria, $context);
+            return;
+        }
+
         if (Utils::versionLowerThan('6.4.0.0')) {
             $this->buildShopware63AndLower($request, $criteria, $context);
         } else {
@@ -48,12 +53,6 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
 
     public function buildShopware63AndLower(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
-        //if ($request->getPathInfo() === '/suggest') {
-            $this->decorated->build($request, $criteria, $context);
-
-            return;
-        //}
-
         $search = $request->query->get('search');
 
         if (is_array($search)) {
@@ -91,13 +90,9 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
         );
     }
 
+
     public function buildShopware64AndGreater(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
-        if ($request->getPathInfo() === '/suggest') {
-            $this->buildParent($request, $criteria, $context);
-            return;
-        }
-
         $search = $request->query->get('search');
 
         if (is_array($search)) {

@@ -18,6 +18,7 @@ use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
@@ -101,6 +102,9 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         SalesChannelContext $context,
         ?Criteria $criteria = null
     ): ProductSearchRouteResponse {
+
+        $context->getContext()->addState(Context::STATE_ELASTICSEARCH_AWARE);
+
         $criteria = $criteria ?? $this->criteriaBuilder->handleRequest(
             $request,
             new Criteria(),
