@@ -153,6 +153,7 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $context->method('getVersionId')->willReturn(Defaults::LIVE_VERSION);
+        $context->expects($this->any())->method('addState')->with(Context::STATE_ELASTICSEARCH_AWARE);
 
         $findologicService = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
