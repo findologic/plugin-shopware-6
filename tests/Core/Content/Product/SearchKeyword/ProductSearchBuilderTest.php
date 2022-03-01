@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreterInterface;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -24,21 +25,29 @@ class ProductSearchBuilderTest extends TestCase
     /** @var SalesChannelContext */
     private $salesChannelContext;
 
+    /** @var MockObject|ProductSearchTermInterpreterInterface  */
+    private $interpreterMock;
+
+    /** @var MockObject|ProductSearchBuilderInterface */
+    private $decoratedProductSearchBuilderMock;
+
     public function setUp(): void
     {
-        $this-> salesChannelContext = $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.de');
+        $this->salesChannelContext = $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.de');
+        $this->interpreterMock = $this->getMockBuilder(ProductSearchTermInterpreterInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->decoratedProductSearchBuilderMock = $this->getMockBuilder(ProductSearchBuilderInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         parent::setUp();
     }
 
     public function testSuggestRouteIsIgnoredByFindologic(): void
     {
-        /** @var ProductSearchTermInterpreterInterface|MockObject $interpreterMock */
-        $interpreterMock = $this->getMockBuilder(ProductSearchTermInterpreterInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $productSearchBuilderMock = $this->getMockBuilder(ProductSearchBuilder::class)
-            ->setConstructorArgs([$interpreterMock])
+            ->setConstructorArgs([$this->interpreterMock, $this->decoratedProductSearchBuilderMock])
             ->onlyMethods(['buildParent'])
             ->getMock();
 
@@ -56,13 +65,8 @@ class ProductSearchBuilderTest extends TestCase
             $this->markTestSkipped('Test ProductSearchBuilder::build for version lower 6.4.0.0');
         }
 
-        /** @var ProductSearchTermInterpreterInterface|MockObject $interpreterMock */
-        $interpreterMock = $this->getMockBuilder(ProductSearchTermInterpreterInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $productSearchBuilderMock = $this->getMockBuilder(ProductSearchBuilder::class)
-            ->setConstructorArgs([$interpreterMock])
+            ->setConstructorArgs([$this->interpreterMock, $this->decoratedProductSearchBuilderMock])
             ->onlyMethods(['buildShopware63AndLower', 'buildShopware64AndGreater'])
             ->getMock();
 
@@ -80,13 +84,8 @@ class ProductSearchBuilderTest extends TestCase
             $this->markTestSkipped('Test ProductSearchBuilder::build for version greater 6.4.0.0');
         }
 
-        /** @var ProductSearchTermInterpreterInterface|MockObject $interpreterMock */
-        $interpreterMock = $this->getMockBuilder(ProductSearchTermInterpreterInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $productSearchBuilderMock = $this->getMockBuilder(ProductSearchBuilder::class)
-            ->setConstructorArgs([$interpreterMock])
+            ->setConstructorArgs([$this->interpreterMock, $this->decoratedProductSearchBuilderMock])
             ->onlyMethods(['buildShopware63AndLower', 'buildShopware64AndGreater'])
             ->getMock();
 

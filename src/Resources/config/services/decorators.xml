@@ -91,10 +91,10 @@
 
         <service
             id="FINDOLOGIC\FinSearch\Elasticsearch\Product\ProductSearchBuilder"
-            decorates="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"
+            decorates="Shopware\Elasticsearch\Product\ProductSearchBuilder"
             decoration-priority="-51000"
         >
-            <argument type="service" id="Shopware\Elasticsearch\Product\ProductSearchBuilder.inner"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Elasticsearch\Product\ProductSearchBuilder.inner"/>
             <argument type="service" id="Shopware\Elasticsearch\Framework\ElasticsearchHelper"/>
             <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition"/>
         </service>
