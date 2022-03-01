@@ -73,7 +73,7 @@ class ProductSearchBuilderTest extends TestCase
         $productSearchBuilderMock->expects($this->once())->method('buildShopware63AndLower');
         $productSearchBuilderMock->expects($this->never())->method('buildShopware64AndGreater');
 
-        $request = Request::create('http://your-shop.de/suggest?search=blubbergurken');
+        $request = Request::create('http://your-shop.de/search?search=blubbergurken');
         $criteria = new Criteria();
         $productSearchBuilderMock->build($request, $criteria, $this->salesChannelContext);
     }
@@ -92,7 +92,7 @@ class ProductSearchBuilderTest extends TestCase
         $productSearchBuilderMock->expects($this->never())->method('buildShopware63AndLower');
         $productSearchBuilderMock->expects($this->once())->method('buildShopware64AndGreater');
 
-        $request = Request::create('http://your-shop.de/suggest?search=blubbergurken');
+        $request = Request::create('http://your-shop.de/search?search=blubbergurken');
         $criteria = new Criteria();
         $productSearchBuilderMock->build($request, $criteria, $this->salesChannelContext);
     }
