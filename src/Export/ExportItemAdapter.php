@@ -61,6 +61,33 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         }
         $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
         $item->setUrl($this->adapterFactory->getUrlAdapter()->adapt($product));
+        $item->setDescription($this->adapterFactory->getDescriptionAdapter()->adapt($product));
+
+        if ($dateAdded = $this->adapterFactory->getDateAddedAdapter()->adapt($product)) {
+            $item->setDateAdded($dateAdded);
+        }
+
+        foreach ($this->adapterFactory->getKeywordsAdapter()->adapt($product) as $keyword) {
+            $item->addKeyword($keyword);
+        }
+
+        foreach ($this->adapterFactory->getImagesAdapter()->adapt($product) as $image) {
+            $item->addImage($image);
+        }
+
+        $item->setSalesFrequency($this->adapterFactory->getSalesFrequencyAdapter()->adapt($product));
+
+        foreach ($this->adapterFactory->getUserGroupsAdapter()->adapt($product, $this->exportContext) as $userGroup) {
+            $item->addUsergroup($userGroup);
+        }
+
+        foreach ($this->adapterFactory->getOrderNumbersAdapter()->adapt($product) as $orderNumber) {
+            $item->addOrdernumber($orderNumber);
+        }
+
+        foreach ($this->adapterFactory->getPropertiesAdapter()->adapt($product) as $property) {
+            $item->addProperty($property);
+        }
 
         $this->eventDispatcher->dispatch(new AfterItemAdaptEvent($product, $item), AfterItemAdaptEvent::NAME);
 

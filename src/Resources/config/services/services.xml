@@ -90,6 +90,14 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter"/>
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"/>
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter"/>
         </service>
 
         <service
@@ -108,6 +116,59 @@
                 id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter"
                 class="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter"
         >
+        </service>
+
+        <service
+            id="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter"
+            class="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter"
+        >
+        </service>
+
+        <service
+            id="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter"
+            class="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter"
+        >
+        </service>
+
+        <service
+            id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter"
+            class="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter"
+        >
+        </service>
+
+        <service
+            id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"
+            class="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"
+        >
+        </service>
+
+        <service
+            id="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter"
+            class="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter"
+        >
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\ProductImageService" />
+        </service>
+
+        <service
+            id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter"
+            class="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter"
+        >
+            <argument type="service" id="order_line_item.repository" />
+            <argument type="service" id="fin_search.sales_channel_context" />
+        </service>
+
+        <service
+            id="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter"
+            class="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter"
+        >
+        </service>
+
+        <service
+            id="FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter"
+            class="FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter"
+        >
+            <argument type="service" id="fin_search.sales_channel_context" />
+            <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
         </service>
 
         <service
