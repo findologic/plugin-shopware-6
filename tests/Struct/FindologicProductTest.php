@@ -459,9 +459,24 @@ class FindologicProductTest extends TestCase
         return $productSearchKeywordEntity;
     }
 
-    public function testProduct(): void
+    public function hasManufacturerProvider(): array {
+        return [
+            'Has manufacturer' => [true],
+            'Without manufacturer' => [false],
+        ];
+    }
+
+    /**
+     * @dataProvider hasManufacturerProvider
+     * @param bool $hasManufacturer
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
+     */
+    public function testProduct(bool $hasManufacturer): void
     {
-        $productEntity = $this->createTestProduct();
+        $productEntity = $this->createTestProduct([], false, false, $hasManufacturer);
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
@@ -493,8 +508,10 @@ class FindologicProductTest extends TestCase
         $keywords = [new Keyword('keyword1'), new Keyword('keyword2')];
         $blackListedKeywords = [
             $productEntity->getProductNumber(),
-            $productEntity->getManufacturer()->getTranslation('name')
         ];
+        if ($manufacturer = $productEntity->getManufacturer()) {
+            $blackListedKeywords[] = $manufacturer->getTranslation('name');
+        }
 
         $productKeywords = $findologicProduct->getKeywords();
         $isBlackListedKeyword = false;
@@ -1147,14 +1164,17 @@ class FindologicProductTest extends TestCase
         $attributes = [];
         $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $defaultCatUrl]);
         $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
-        $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
+
+        if ($productEntity->getManufacturer()) {
+            $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
+            $attributes[] = $vendorAttribute;
+        }
 
         if ($integrationType === 'Direct Integration') {
             $attributes[] = $catUrlAttribute;
         }
 
         $attributes[] = $catAttribute;
-        $attributes[] = $vendorAttribute;
         $attributes[] = new Attribute(
             $productEntity->getProperties()
                 ->first()
