@@ -463,25 +463,21 @@ class FindologicProductTest extends TestCase
     {
         return [
             'Product with manufacturer' => [
-                'hasManufacturer' => true,
+                'withManufacturer' => true,
             ],
             'Product without manufacturer' => [
-                'hasManufacturer' => false,
+                'withManufacturer' => false,
             ],
         ];
     }
 
     /**
      * @dataProvider hasManufacturerProvider
-     * @param bool $hasManufacturer
-     * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoNameException
-     * @throws ProductHasNoPricesException
+     * @param bool $withManufacturer
      */
-    public function testProduct(bool $hasManufacturer): void
+    public function testProduct(bool $withManufacturer): void
     {
-        $productEntity = $this->createTestProduct([], false, false, $hasManufacturer);
+        $productEntity = $this->createTestProduct([], false, false, $withManufacturer);
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
