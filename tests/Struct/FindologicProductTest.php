@@ -462,8 +462,12 @@ class FindologicProductTest extends TestCase
     public function hasManufacturerProvider(): array
     {
         return [
-            'Has manufacturer' => [true],
-            'Without manufacturer' => [false],
+            'Product with manufacturer' => [
+                'hasManufacturer' => true,
+            ],
+            'Product without manufacturer' => [
+                'hasManufacturer' => false,
+            ],
         ];
     }
 
