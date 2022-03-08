@@ -103,7 +103,9 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         ?Criteria $criteria = null
     ): ProductSearchRouteResponse {
 
-        $context->getContext()->addState(Context::STATE_ELASTICSEARCH_AWARE);
+        if (!Utils::versionLowerThan('6.4.0.0')) {
+            $this->addElasticSearchContext($context);
+        }
 
         $criteria = $criteria ?? $this->criteriaBuilder->handleRequest(
             $request,
@@ -158,5 +160,10 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         }
 
         return $this->fetchProducts($criteria, $context, $query);
+    }
+
+    private function addElasticSearchContext(SalesChannelContext $context): void
+    {
+        $context->getContext()->addState(Context::STATE_ELASTICSEARCH_AWARE);
     }
 }
