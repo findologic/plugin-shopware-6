@@ -652,8 +652,10 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /**
      * @return ProductListingFeaturesSubscriber
      */
-    private function getProductListingFeaturesSubscriber(array $overrides = [])
-    {
+    private function getProductListingFeaturesSubscriber(
+        array $overrides = [],
+        FindologicSearchService $findologicSearchService = null
+    ) {
         if (isset($overrides[ShopwareProductListingFeaturesSubscriber::class])) {
             $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class];
         } elseif (Utils::versionLowerThan('6.3.2')) {
@@ -690,7 +692,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $paginationService = new PaginationService();
         $sortingHandlerService = $this->getContainer()->get(SortingHandlerService::class);
 
-        $findologicSearchService = new FindologicSearchService(
+        $findologicSearchService = $findologicSearchService ?? new FindologicSearchService(
             $this->containerMock,
             $this->apiClientMock,
             $this->apiConfigMock,
@@ -1193,11 +1195,16 @@ XML;
         $decoratedSubscriberMock = $this->getMockBuilder(ShopwareProductListingFeaturesSubscriber::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $decoratedSubscriberMock->expects($this->once())->method('handleListingRequest');
+        $decoratedSubscriberMock->expects($this->exactly(4))->method('handleListingRequest');
+
+        $findologicSearchServiceMock = $this->getMockBuilder(FindologicSearchService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $findologicSearchServiceMock->expects($this->once())->method('doNavigation');
 
         $subscriber = $this->getProductListingFeaturesSubscriber([
             ShopwareProductListingFeaturesSubscriber::class => $decoratedSubscriberMock
-        ]);
+        ], $findologicSearchServiceMock);
         $this->getContainer()->set(ProductListingFeaturesSubscriber::class, $subscriber);
 
         $eventDispatcher = $this->getContainer()->get('event_dispatcher');

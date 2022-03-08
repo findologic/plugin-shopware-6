@@ -44,12 +44,13 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
 
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
     {
+        $this->decorated->handleListingRequest($event);
+
         if (!$this->shouldHandleListingRequest()) {
             return;
         }
 
         $limit = $event->getCriteria()->getLimit();
-        $this->decorated->handleListingRequest($event);
 
         $limitOverride = $limit ?? $event->getCriteria()->getLimit();
         $this->findologicSearchService->doNavigation($event, $limitOverride);
