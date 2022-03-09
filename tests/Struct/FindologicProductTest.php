@@ -473,7 +473,6 @@ class FindologicProductTest extends TestCase
 
     /**
      * @dataProvider hasManufacturerProvider
-     * @param bool $withManufacturer
      */
     public function testProduct(bool $withManufacturer): void
     {
