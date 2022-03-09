@@ -94,7 +94,7 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
             new EqualsFilter('product.searchKeywords.languageId', $context->getContext()->getLanguageId())
         );
     }
-    
+
     public function buildShopware64AndGreater(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
         $search = $request->query->get('search');

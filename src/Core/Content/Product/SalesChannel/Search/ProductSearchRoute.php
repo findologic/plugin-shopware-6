@@ -82,12 +82,12 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         FindologicConfigService $findologicConfigService,
         ?Config $config = null
     ) {
+        $this->decorated = $decorated;
         $this->searchBuilder = $searchBuilder;
         $this->eventDispatcher = $eventDispatcher;
+        $this->productRepository = $productRepository;
         $this->definition = $definition;
         $this->criteriaBuilder = $criteriaBuilder;
-        $this->decorated = $decorated;
-        $this->productRepository = $productRepository;
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
@@ -162,7 +162,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         return $this->fetchProducts($criteria, $context, $query);
     }
 
-    private function addElasticSearchContext(SalesChannelContext $context): void
+    public function addElasticSearchContext(SalesChannelContext $context): void
     {
         $context->getContext()->addState(Context::STATE_ELASTICSEARCH_AWARE);
     }
