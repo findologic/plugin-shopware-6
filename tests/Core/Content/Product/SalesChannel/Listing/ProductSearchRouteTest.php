@@ -213,7 +213,10 @@ class ProductSearchRouteTest extends ProductRouteBase
             ->getMock();
 
         $searchPageLoader = new SearchPageLoader(
-            $genericPageLoaderMock, $productSearchRouteMock, $this->eventDispatcherMock);
+            $genericPageLoaderMock,
+            $productSearchRouteMock,
+            $this->eventDispatcherMock
+        );
 
         $searchPageLoader->load($request, $salesChannelContextMock);
     }
