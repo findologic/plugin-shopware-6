@@ -575,7 +575,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->getMock();
 
         // Sorting is handled via database since Shopware 6.3.2.
-        if (!Utils::versionLowerThan('6.3.2')) {
+        if (Utils::versionGreaterOrEqual('6.3.2')) {
             $sorting = new ProductSortingEntity();
             $sorting->setId('score');
             $sorting->setKey('score');
@@ -1108,14 +1108,14 @@ XML;
 
     public function testHandleResultDoesNotThrowExceptionWhenCalledManually(): void
     {
-        if (Utils::versionLowerThan('6.3.3') && !Utils::versionLowerThan('6.3.1')) {
+        if (Utils::versionLowerThan('6.3.3') && Utils::versionGreaterOrEqual('6.3.1')) {
             $this->markTestSkipped('Shopware sorting bug prevents this from properly working.');
         }
 
         $this->initMocks();
 
         $criteria = new Criteria();
-        if (!Utils::versionLowerThan('6.3.2')) {
+        if (Utils::versionGreaterOrEqual('6.3.2')) {
             $criteria->addExtension('sortings', $this->sortingCollection);
         }
 

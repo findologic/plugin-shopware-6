@@ -103,7 +103,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         ?Criteria $criteria = null
     ): ProductSearchRouteResponse {
 
-        if (!Utils::versionLowerThan('6.4.0.0')) {
+        if (Utils::versionGreaterOrEqual('6.4.0.0')) {
             $this->addElasticSearchContext($context);
         }
 
