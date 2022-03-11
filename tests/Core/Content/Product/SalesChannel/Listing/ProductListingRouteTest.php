@@ -152,7 +152,10 @@ class ProductListingRouteTest extends ProductRouteBase
         /** @var ProductListingRouteResponse $response */
         $response = $this->call($productRoute, $request, $salesChannelContextMock, $categoryId, $criteria);
 
-        $this->assertEquals($streamId, $response->getResult()->getStreamId());
+        if (method_exists($response->getResult(), 'getStreamId')) {
+            $this->assertEquals($streamId, $response->getResult()->getStreamId());
+        }
+
         foreach ($expectedFilters as $expectedFilter) {
             $this->assertContains($expectedFilter, $response->getResult()->getCriteria()->getFilters());
         }
