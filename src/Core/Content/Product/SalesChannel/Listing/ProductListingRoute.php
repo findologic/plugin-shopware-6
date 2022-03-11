@@ -232,7 +232,10 @@ class ProductListingRoute extends AbstractProductListingRoute
         Criteria $criteria,
         CategoryEntity $category
     ): ?string {
-        $isProductStream =
+        $supportsProductStreams = defined(
+            '\Shopware\Core\Content\Category\CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM'
+        );
+        $isProductStream = $supportsProductStreams &&
             $category->getProductAssignmentType() === CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM;
         if ($isProductStream && $category->getProductStreamId() !== null) {
             $filters = $this->productStreamBuilder->buildFilters(

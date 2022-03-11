@@ -204,11 +204,18 @@ abstract class ProductRouteBase extends TestCase
 
     protected function setCategoryMock(
         string $categoryId = '69',
-        string $productAssignmentType = CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT
+        ?string $productAssignmentType = null
     ) {
         $category = new CategoryEntity();
         $category->setId($categoryId);
-        $category->setProductAssignmentType($productAssignmentType);
+
+        $supportsProductStreams = defined(
+            '\Shopware\Core\Content\Category\CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM'
+        );
+        if ($supportsProductStreams) {
+            $productAssignmentType = $productAssignmentType ?? CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT;
+            $category->setProductAssignmentType($productAssignmentType);
+        }
 
         $categoryResult = new EntitySearchResult(
             'category',
