@@ -15,20 +15,18 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryDefinition;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductDefinition;
-use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
+use Shopware\Core\Content\ProductStream\ProductStreamEntity;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -206,7 +204,8 @@ abstract class ProductRouteBase extends TestCase
 
     protected function setCategoryMock(
         string $categoryId = '69',
-        ?string $productAssignmentType = null
+        ?string $productAssignmentType = null,
+        ?string $streamId = '96'
     ) {
         $category = new CategoryEntity();
         $category->setId($categoryId);
@@ -215,8 +214,13 @@ abstract class ProductRouteBase extends TestCase
             '\Shopware\Core\Content\Category\CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM'
         );
         if ($supportsProductStreams) {
+            $productStream = new ProductStreamEntity();
+            $productStream->setId($streamId);
             $productAssignmentType = $productAssignmentType ?? CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT;
+
             $category->setProductAssignmentType($productAssignmentType);
+            $category->setProductStream($productStream);
+            $category->setProductStreamId($productStream->getId());
         }
 
         $categoryResult = Utils::buildEntitySearchResult(

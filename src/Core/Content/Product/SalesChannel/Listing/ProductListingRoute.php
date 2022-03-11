@@ -155,7 +155,6 @@ class ProductListingRoute extends AbstractProductListingRoute
             new ProductListingCriteriaEvent($request, $criteria, $salesChannelContext)
         );
 
-
         $result = $this->doSearch($criteria, $salesChannelContext);
         /** @var ProductListingResult $productListing */
         $productListing = ProductListingResult::createFrom($result);
