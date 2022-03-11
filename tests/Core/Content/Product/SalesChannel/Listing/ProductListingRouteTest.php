@@ -28,6 +28,8 @@ class ProductListingRouteTest extends ProductRouteBase
         return new ProductListingRoute(
             $this->original,
             $this->productRepositoryMock,
+            $this->categoryRepositoryMock,
+            $this->productStreamBuilderMock,
             $this->eventDispatcherMock,
             $this->productDefinition,
             $this->criteriaBuilder,
@@ -49,6 +51,8 @@ class ProductListingRouteTest extends ProductRouteBase
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true, $expectedMainCategoryId);
         $request = Request::create('http://your-shop.de/some-category');
         $request->setSession($this->getSessionMock());
+
+        $this->setCategoryMock($expectedMainCategoryId);
 
         $productRoute = $this->getRoute();
 
