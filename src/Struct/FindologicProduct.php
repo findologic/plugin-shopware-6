@@ -358,9 +358,12 @@ class FindologicProduct extends Struct
     {
         $blackListedKeywords = [
             $this->product->getProductNumber(),
-            $this->product->getManufacturer()->getTranslation('name')
         ];
         $keywords = $this->product->getSearchKeywords();
+
+        if ($manufacturer = $this->product->getManufacturer()) {
+            $blackListedKeywords[] = $manufacturer->getTranslation('name');
+        }
 
         if ($keywords !== null && $keywords->count() > 0) {
             foreach ($keywords as $keyword) {
