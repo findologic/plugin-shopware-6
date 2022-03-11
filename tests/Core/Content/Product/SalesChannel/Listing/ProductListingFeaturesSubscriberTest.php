@@ -1202,9 +1202,10 @@ XML;
             ->getMock();
         $findologicSearchServiceMock->expects($this->once())->method('doNavigation');
 
-        $subscriber = $this->getProductListingFeaturesSubscriber([
-            ShopwareProductListingFeaturesSubscriber::class => $decoratedSubscriberMock
-        ], $findologicSearchServiceMock);
+        $subscriber = $this->getProductListingFeaturesSubscriber(
+            [ShopwareProductListingFeaturesSubscriber::class => $decoratedSubscriberMock],
+            $findologicSearchServiceMock
+        );
         $this->getContainer()->set(ProductListingFeaturesSubscriber::class, $subscriber);
 
         $eventDispatcher = $this->getContainer()->get('event_dispatcher');
