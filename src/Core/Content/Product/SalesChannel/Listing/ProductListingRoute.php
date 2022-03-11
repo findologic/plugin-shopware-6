@@ -160,7 +160,10 @@ class ProductListingRoute extends AbstractProductListingRoute
         /** @var ProductListingResult $productListing */
         $productListing = ProductListingResult::createFrom($result);
         $productListing->addCurrentFilter('navigationId', $categoryId);
-        $productListing->setStreamId($streamId);
+
+        if (method_exists($productListing, 'setStreamId')) {
+            $productListing->setStreamId($streamId);
+        }
 
         $this->eventDispatcher->dispatch(
             new ProductListingResultEvent($request, $productListing, $salesChannelContext)
