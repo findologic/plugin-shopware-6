@@ -31,7 +31,8 @@ trait ProductHelper
     public function createTestProduct(
         array $overrideData = [],
         bool $withVariant = false,
-        bool $overrideRecursively = false
+        bool $overrideRecursively = false,
+        bool $withManufacturer = true
     ): ?ProductEntity {
         $context = Context::createDefaultContext();
         $id = '29d554327a16fd51350688cfa9930b29';
@@ -105,9 +106,7 @@ trait ProductHelper
                     ]
                 ],
             ],
-            'manufacturerNumber' => 'MAN001',
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
-            'manufacturer' => ['name' => 'FINDOLOGIC'],
             'tax' => ['id' => Uuid::randomHex(),  'name' => '9%', 'taxRate' => 9],
             'categories' => [
                 [
@@ -164,6 +163,13 @@ trait ProductHelper
                 ]
             ],
         ];
+
+        if ($withManufacturer) {
+            $productData = array_merge($productData, [
+                'manufacturerNumber' => 'MAN001',
+                'manufacturer' => ['name' => 'FINDOLOGIC'],
+            ]);
+        }
 
         $productInfo = [];
         // Main product data

@@ -2,6 +2,7 @@
 - [SW-644] Die exportierten Kategorien und cat_urls enthalten nun auch Daten von nicht-Hauptvarianten.
 - [SW-685] Drittanbieter Plugins können nun einfacher die Anfrage an Findologic anhand der gesetzten Sortierung manipulieren.
 - [SW-683] Ein Fehler wurde behoben, wodurch bei Direct Integration auf Kategorieseiten ein flicker-Effekt auftrat, wenn viele JavaScript Ressourcen geladen wurden, bevor die Findologic JavaScript Ressourcen laden konnten.
+- [SW-690] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, die keinen Hersteller zugewiesen hatten.
 - [SW-687] Shopware 6.4.8.1 wurde zur Test-Matrix hinzugefügt.
 
 # 2.6.1
