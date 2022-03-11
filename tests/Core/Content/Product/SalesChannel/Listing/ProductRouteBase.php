@@ -8,12 +8,14 @@ use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryDefinition;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductDefinition;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
@@ -217,13 +219,13 @@ abstract class ProductRouteBase extends TestCase
             $category->setProductAssignmentType($productAssignmentType);
         }
 
-        $categoryResult = new EntitySearchResult(
-            'category',
+        $categoryResult = Utils::buildEntitySearchResult(
+            CategoryEntity::class,
             1,
             new EntityCollection([$category]),
-            new AggregationResultCollection([]),
+            null,
             new Criteria(),
-            Context::createDefaultContext()
+            $this->getMockedSalesChannelContext(true)->getContext()
         );
 
         $this->categoryRepositoryMock->expects($this->any())->method('search')->willReturn($categoryResult);
