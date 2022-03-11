@@ -227,9 +227,15 @@ class ProductListingRoute extends AbstractProductListingRoute
         return $path === '' || $path === '/';
     }
 
-    private function addCategoryFilter(SalesChannelContext $salesChannelContext, Criteria $criteria, CategoryEntity $category): ?string
-    {
-        if ($category->getProductAssignmentType() === CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM && $category->getProductStreamId() !== null) {
+    private function addCategoryFilter(
+        SalesChannelContext $salesChannelContext,
+        Criteria $criteria,
+        CategoryEntity $category
+    ): ?string {
+        if(
+            $category->getProductAssignmentType() === CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM &&
+            $category->getProductStreamId() !== null
+        ) {
             $filters = $this->productStreamBuilder->buildFilters(
                 $category->getProductStreamId(),
                 $salesChannelContext->getContext()
