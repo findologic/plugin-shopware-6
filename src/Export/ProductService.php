@@ -159,7 +159,8 @@ class ProductService
         $childrenCriteria->addFilter(
             new EqualsFilter('displayGroup', $product->getDisplayGroup())
         );
-        $this->addVisibilityFilter($criteria);
+        $this->addActiveFilter($childrenCriteria);
+        $this->addVisibilityFilter($childrenCriteria);
         $this->handleAvailableStock($childrenCriteria);
 
         $this->addProductAssociations($criteria);
@@ -210,6 +211,13 @@ class ProductService
                 $this->salesChannelContext->getSalesChannel()->getId(),
                 ProductVisibilityDefinition::VISIBILITY_SEARCH
             )
+        );
+    }
+
+    protected function addActiveFilter(Criteria $criteria): void
+    {
+        $criteria->addFilter(
+            new EqualsFilter('active', true)
         );
     }
 
