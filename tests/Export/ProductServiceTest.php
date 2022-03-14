@@ -119,15 +119,53 @@ class ProductServiceTest extends TestCase
 
     public function variantProvider(): array
     {
+        $expectedParentId = Uuid::randomHex();
+
         return [
             'variant information is used instead of product information' => [
-                'mainProductActive' => false,
-                'firstVariantActive' => true,
+                'mainProduct' => [
+                    'id' => $expectedParentId,
+                    'active' => false,
+                ],
+                'variants' => [
+                    [
+                        'id' => Uuid::randomHex(),
+                        'parentId' => $expectedParentId,
+                        'active' => true,
+                        'productNumber' => 'FINDOLOGIC001.1',
+                        'name' => 'FINDOLOGIC VARIANT 1',
+                    ],
+                    [
+                        'id' => Uuid::randomHex(),
+                        'parentId' => $expectedParentId,
+                        'active' => true,
+                        'productNumber' => 'FINDOLOGIC001.2',
+                        'name' => 'FINDOLOGIC VARIANT 2',
+                    ],
+                ],
                 'expectedChildCount' => 2,
             ],
             'inactive variants are not considered' => [
-                'mainProductActive' => true,
-                'firstVariantActive' => false,
+                'mainProduct' => [
+                    'id' => $expectedParentId,
+                    'active' => true,
+                ],
+                'variants' => [
+                    [
+                        'id' => Uuid::randomHex(),
+                        'parentId' => $expectedParentId,
+                        'active' => false,
+                        'productNumber' => 'FINDOLOGIC001.1',
+                        'name' => 'FINDOLOGIC VARIANT 1',
+                    ],
+                    [
+                        'id' => Uuid::randomHex(),
+                        'parentId' => $expectedParentId,
+                        'active' => true,
+                        'productNumber' => 'FINDOLOGIC001.2',
+                        'name' => 'FINDOLOGIC VARIANT 2',
+                    ],
+                ],
                 'expectedChildCount' => 1,
             ],
         ];
@@ -137,34 +175,19 @@ class ProductServiceTest extends TestCase
      * @dataProvider variantProvider
      */
     public function testVariantDataGetsExportedDependingOnActiveState(
-        bool $mainProductActive,
-        bool $firstVariantActive,
+        array $mainProduct,
+        array $variants,
         int $expectedChildCount
     ): void {
-        $expectedParentId = Uuid::randomHex();
-        $expectedFirstVariantId = Uuid::randomHex();
-        $expectedSecondVariantId = Uuid::randomHex();
+        $this->createVisibleTestProduct($mainProduct);
 
-        $this->createVisibleTestProduct([
-            'id' => $expectedParentId,
-            'active' => $mainProductActive
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'active' => $firstVariantActive
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'active' => true
-        ]));
+        $variantIds = [];
+        foreach ($variants as $variant) {
+            $variantIds[] = $variant['id'];
+            $this->createVisibleTestProduct(
+                $this->getBasicVariantData($variant)
+            );
+        }
 
         $products = $this->defaultProductService->searchVisibleProducts(20, 0);
         /** @var ProductEntity $product */
@@ -174,6 +197,8 @@ class ProductServiceTest extends TestCase
         // sometimes the second statement may be executed before the first one, which causes a different result.
         // To prevent this test from failing if Shopware decides to create the second variant before the first one,
         // we ensure that the second variant is used instead.
+        $expectedFirstVariantId = $variantIds[0];
+        $expectedSecondVariantId =$variantIds[1];
         $expectedChildVariantId = $expectedSecondVariantId;
         try {
             $this->assertSame($expectedFirstVariantId, $product->getId());
@@ -186,7 +211,7 @@ class ProductServiceTest extends TestCase
 
         foreach ($product->getChildren() as $child) {
             if (!$child->getParentId()) {
-                $this->assertSame($expectedParentId, $child->getId());
+                $this->assertSame($mainProduct['id'], $child->getId());
             } else {
                 $this->assertSame($expectedChildVariantId, $child->getId());
             }
