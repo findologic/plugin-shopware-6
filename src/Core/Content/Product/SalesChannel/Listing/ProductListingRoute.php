@@ -91,13 +91,13 @@ class ProductListingRoute extends AbstractProductListingRoute
         FindologicConfigService $findologicConfigService,
         ?Config $config = null
     ) {
-        $this->eventDispatcher = $eventDispatcher;
-        $this->definition = $definition;
-        $this->criteriaBuilder = $criteriaBuilder;
         $this->decorated = $decorated;
         $this->productRepository = $productRepository;
         $this->categoryRepository = $categoryRepository;
         $this->productStreamBuilder = $productStreamBuilder;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->definition = $definition;
+        $this->criteriaBuilder = $criteriaBuilder;
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
@@ -149,7 +149,7 @@ class ProductListingRoute extends AbstractProductListingRoute
             $salesChannelContext->getContext()
         )->first();
 
-        $streamId = $this->addCategoryFilter($salesChannelContext, $criteria, $category);
+        $streamId = $this->extendCriteria($salesChannelContext, $criteria, $category);
 
         $this->eventDispatcher->dispatch(
             new ProductListingCriteriaEvent($request, $criteria, $salesChannelContext)
@@ -231,7 +231,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         return $path === '' || $path === '/';
     }
 
-    private function addCategoryFilter(
+    private function extendCriteria(
         SalesChannelContext $salesChannelContext,
         Criteria $criteria,
         CategoryEntity $category
