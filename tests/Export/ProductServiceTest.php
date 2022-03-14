@@ -198,7 +198,7 @@ class ProductServiceTest extends TestCase
         // To prevent this test from failing if Shopware decides to create the second variant before the first one,
         // we ensure that the second variant is used instead.
         $expectedFirstVariantId = $variantIds[0];
-        $expectedSecondVariantId =$variantIds[1];
+        $expectedSecondVariantId = $variantIds[1];
         $expectedChildVariantId = $expectedSecondVariantId;
         try {
             $this->assertSame($expectedFirstVariantId, $product->getId());
