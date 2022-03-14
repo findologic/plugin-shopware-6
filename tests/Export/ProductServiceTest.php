@@ -117,7 +117,7 @@ class ProductServiceTest extends TestCase
         $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
     }
 
-    public function variantProvider()
+    public function variantProvider(): array
     {
         return [
             'variant information is used instead of product information' => [
@@ -136,7 +136,7 @@ class ProductServiceTest extends TestCase
     /**
      * @dataProvider variantProvider
      */
-    public function testIfMoreThanOneVariantExistsItWillUseVariantInformationInsteadOfMainProductInformation(
+    public function testMultipleExistingVariants(
         bool $mainProductActive,
         bool $firstVariantActive,
         int $expectedChildCount
