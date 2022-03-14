@@ -136,7 +136,7 @@ class ProductServiceTest extends TestCase
     /**
      * @dataProvider variantProvider
      */
-    public function testMultipleExistingVariants(
+    public function testVariantDataGetsExportedDependingOnActiveState(
         bool $mainProductActive,
         bool $firstVariantActive,
         int $expectedChildCount
@@ -163,6 +163,7 @@ class ProductServiceTest extends TestCase
             'parentId' => $expectedParentId,
             'productNumber' => 'FINDOLOGIC001.2',
             'name' => 'FINDOLOGIC VARIANT 2',
+            'active' => true
         ]));
 
         $products = $this->defaultProductService->searchVisibleProducts(20, 0);
