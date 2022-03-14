@@ -4,6 +4,7 @@
 - [SW-683] Fixed a bug that caused flickering on Direct Integration category pages, when many JavaScript resources have been loaded before Findologic JavaScript resources could be loaded.
 - [SW-690] Fixed a bug that caused products not to be exported that didn't have a manufacturer assigned.
 - [SW-691] Fixed a bug that caused internal additional listing requests to be blocked.
+- [SW-693] Fixed a bug that caused data of inactive and variants out-of-stock to be exported.
 - [SW-687] Added Shopware 6.4.8.1 to the test matrix.
 
 # 2.6.1
