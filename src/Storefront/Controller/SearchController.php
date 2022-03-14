@@ -142,12 +142,12 @@ class SearchController extends StorefrontController
      */
     public function filter(Request $request, SalesChannelContext $context): Response
     {
-        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $context);
-        $this->findologicSearchService->doFilter($event);
-
         if (!Utils::isFindologicEnabled($context)) {
             return $this->decorated->filter($request, $context);
         }
+
+        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $context);
+        $this->findologicSearchService->doFilter($event);
 
         $result = $this->filterHandler->handleAvailableFilters($event);
         if (!$event->getCriteria()->hasExtension('flAvailableFilters')) {

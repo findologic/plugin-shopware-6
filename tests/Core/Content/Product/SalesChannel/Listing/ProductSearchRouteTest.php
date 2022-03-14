@@ -179,7 +179,7 @@ class ProductSearchRouteTest extends ProductRouteBase
         $this->assertSame($expectedProductNumber, $searchedProduct->getProductNumber());
     }
 
-    public function testAddElasticSearchContextForShopware64AndGreater(): void
+    public function testElasticSearchContextIsAddedForShopware64AndGreater(): void
     {
         $productSearchRouteMock = $this->getMockBuilder(ProductSearchRoute::class)
             ->setConstructorArgs([

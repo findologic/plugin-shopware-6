@@ -58,28 +58,15 @@ class ProductSearchBuilderTest extends TestCase
         $this->productSearchBuilderMock->build($request, $criteria, $this->salesChannelContext);
     }
 
-    public function testBuildMethodForShopwareLower64IsUsed(): void
+    public function testProductSearchBuildMethodIsUsedAccordingToShopwareVersion(): void
     {
         if (Utils::versionGreaterOrEqual('6.4.0.0')) {
-            $this->markTestSkipped('Test ProductSearchBuilder::build for version lower 6.4.0.0');
+            $this->productSearchBuilderMock->expects($this->never())->method('buildShopware63AndLower');
+            $this->productSearchBuilderMock->expects($this->once())->method('buildShopware64AndGreater');
+        } else {
+            $this->productSearchBuilderMock->expects($this->once())->method('buildShopware63AndLower');
+            $this->productSearchBuilderMock->expects($this->never())->method('buildShopware64AndGreater');
         }
-
-        $this->productSearchBuilderMock->expects($this->once())->method('buildShopware63AndLower');
-        $this->productSearchBuilderMock->expects($this->never())->method('buildShopware64AndGreater');
-
-        $request = Request::create('http://your-shop.de/search?search=blubbergurken');
-        $criteria = new Criteria();
-        $this->productSearchBuilderMock->build($request, $criteria, $this->salesChannelContext);
-    }
-
-    public function testBuildMethodForShopwareGreater64IsUsed(): void
-    {
-        if (Utils::versionLowerThan('6.4.0.0')) {
-            $this->markTestSkipped('Test ProductSearchBuilder::build for version greater 6.4.0.0');
-        }
-
-        $this->productSearchBuilderMock->expects($this->never())->method('buildShopware63AndLower');
-        $this->productSearchBuilderMock->expects($this->once())->method('buildShopware64AndGreater');
 
         $request = Request::create('http://your-shop.de/search?search=blubbergurken');
         $criteria = new Criteria();

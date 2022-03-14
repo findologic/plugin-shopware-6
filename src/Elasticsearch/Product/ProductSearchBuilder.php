@@ -12,6 +12,8 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Elasticsearch\Framework\ElasticsearchHelper;
 use Symfony\Component\HttpFoundation\Request;
 
+use function is_array;
+
 class ProductSearchBuilder implements ProductSearchBuilderInterface
 {
     /**
@@ -49,7 +51,7 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
 
         $search = $request->get('search');
 
-        if (\is_array($search)) {
+        if (is_array($search)) {
             $term = implode(' ', $search);
         } else {
             $term = (string) $search;
