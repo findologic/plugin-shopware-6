@@ -117,15 +117,37 @@ class ProductServiceTest extends TestCase
         $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
     }
 
-    public function testIfMoreThanOneVariantExistsItWillUseVariantInformationInsteadOfMainProductInformation(): void
+    public function variantProvider()
     {
+        return [
+            'variant information is used instead of product information' => [
+                'mainProductActive' => false,
+                'firstVariantActive' => true,
+                'expectedChildCount' => 2,
+            ],
+            'inactive variants are not considered' => [
+                'mainProductActive' => true,
+                'firstVariantActive' => false,
+                'expectedChildCount' => 1,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider variantProvider
+     */
+    public function testIfMoreThanOneVariantExistsItWillUseVariantInformationInsteadOfMainProductInformation(
+        bool $mainProductActive,
+        bool $firstVariantActive,
+        int $expectedChildCount
+    ): void {
         $expectedParentId = Uuid::randomHex();
         $expectedFirstVariantId = Uuid::randomHex();
         $expectedSecondVariantId = Uuid::randomHex();
 
         $this->createVisibleTestProduct([
             'id' => $expectedParentId,
-            'active' => false
+            'active' => $mainProductActive
         ]);
 
         $this->createVisibleTestProduct($this->getBasicVariantData([
@@ -133,6 +155,7 @@ class ProductServiceTest extends TestCase
             'parentId' => $expectedParentId,
             'productNumber' => 'FINDOLOGIC001.1',
             'name' => 'FINDOLOGIC VARIANT 1',
+            'active' => $firstVariantActive
         ]));
 
         $this->createVisibleTestProduct($this->getBasicVariantData([
@@ -158,7 +181,7 @@ class ProductServiceTest extends TestCase
             $expectedChildVariantId = $expectedFirstVariantId;
         }
 
-        $this->assertCount(2, $product->getChildren());
+        $this->assertCount($expectedChildCount, $product->getChildren());
 
         foreach ($product->getChildren() as $child) {
             if (!$child->getParentId()) {
