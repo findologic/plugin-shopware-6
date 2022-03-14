@@ -159,6 +159,8 @@ class ProductService
         $childrenCriteria->addFilter(
             new EqualsFilter('displayGroup', $product->getDisplayGroup())
         );
+        $this->addVisibilityFilter($childrenCriteria);
+        $this->handleAvailableStock($childrenCriteria);
 
         $this->addProductAssociations($criteria);
 
@@ -177,13 +179,9 @@ class ProductService
     protected function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria
     {
         $criteria = $this->buildProductCriteria($limit, $offset);
+        $this->addVisibilityFilter($criteria);
 
-        return $criteria->addFilter(
-            new ProductAvailableFilter(
-                $this->salesChannelContext->getSalesChannel()->getId(),
-                ProductVisibilityDefinition::VISIBILITY_SEARCH
-            )
-        );
+        return $criteria;
     }
 
     protected function buildProductCriteria(?int $limit = null, ?int $offset = null): Criteria
@@ -203,6 +201,16 @@ class ProductService
         }
 
         return $criteria;
+    }
+
+    protected function addVisibilityFilter(Criteria $criteria): void
+    {
+        $criteria->addFilter(
+            new ProductAvailableFilter(
+                $this->salesChannelContext->getSalesChannel()->getId(),
+                ProductVisibilityDefinition::VISIBILITY_SEARCH
+            )
+        );
     }
 
     /**
