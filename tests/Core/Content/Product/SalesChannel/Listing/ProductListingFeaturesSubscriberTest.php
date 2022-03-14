@@ -1192,15 +1192,16 @@ XML;
 
     public function testMultipleListingEventsWillOnlyHandleTheRequestOnce(): void
     {
-        $decoratedSubscriberMock = $this->getMockBuilder(ShopwareProductListingFeaturesSubscriber::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $decoratedSubscriberMock->expects($this->exactly(4))->method('handleListingRequest');
-
         $findologicSearchServiceMock = $this->getMockBuilder(FindologicSearchService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $findologicSearchServiceMock->expects($this->once())->method('doNavigation');
+
+        $decoratedSubscriberMock = $this->getMockBuilder(ShopwareProductListingFeaturesSubscriber::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        // Event is dispatched exactly 4 times in this test
+        $decoratedSubscriberMock->expects($this->exactly(4))->method('handleListingRequest');
 
         $subscriber = $this->getProductListingFeaturesSubscriber(
             [ShopwareProductListingFeaturesSubscriber::class => $decoratedSubscriberMock],
