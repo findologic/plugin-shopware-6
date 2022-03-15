@@ -29,6 +29,11 @@ Component.register('findologic-config', {
       required: false,
       default: null
     },
+    selectedSalesChannelNavigationCategoryId: {
+          type: String,
+          required: false,
+          default: null
+      },
     isStagingShop: {
       type: Boolean,
       required: true,
@@ -233,6 +238,7 @@ Component.register('findologic-config', {
       const criteria = new Criteria(1, 500);
       criteria.addSorting(Criteria.sort('name', 'ASC'));
       criteria.addSorting(Criteria.sort('parentId', 'ASC'));
+      criteria.addFilter(Criteria.contains('path', this.selectedSalesChannelNavigationCategoryId));
 
       if (this.term) {
         criteria.addFilter(Criteria.contains('name', this.term));
