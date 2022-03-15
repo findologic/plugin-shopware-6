@@ -53,7 +53,8 @@
                                                 :resetOption="$tc('sw-sales-channel-switch.labelDefaultOption')"
                                                 @change="onSelectedSalesChannel"
                                                 v-model="selectedSalesChannelId"
-                                                entity="sales_channel">
+                                                entity="sales_channel"
+                                                :criteria="salesChannelCriteria">
                                             <template #labelProperty="{item, labelProperty}">
                                                 <span v-if="item.translated">{{ item.translated[labelProperty] }}</span>
                                             </template>
@@ -84,7 +85,8 @@
                                             :allConfigs="allConfigs"
                                             :actualConfigData="actualConfigData"
                                             :shopkeyErrorState="shopkeyErrorState"
-                                            :selectedSalesChannelId="selectedSalesChannelId">
+                                            :selectedSalesChannelId="selectedSalesChannelId"
+                                            :selectedSalesChannelNavigationCategoryId="selectedSalesChannelNavigationCategoryId">
                                     </findologic-config>
                                 {% endblock %}
                             {% endblock %}
