@@ -194,6 +194,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         if (Utils::versionLowerThan('6.4')) {
             $expectedAssign['states'] = [];
         }
+        if (Utils::versionGreaterOrEqual('6.4.9.0')) {
+            $expectedAssign['fields'] = [];
+        }
         $expectedAssign['title'] = null;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
@@ -1030,6 +1033,9 @@ XML;
         }
         if (Utils::versionLowerThan('6.4')) {
             $expectedAssign['states'] = [];
+        }
+        if (Utils::versionGreaterOrEqual('6.4.9.0')) {
+            $expectedAssign['fields'] = [];
         }
         $expectedAssign['title'] = null;
         $expectedAssign['limit'] = $expectedLimit;
