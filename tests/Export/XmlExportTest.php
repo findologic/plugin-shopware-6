@@ -21,9 +21,9 @@ use Shopware\Storefront\Framework\Routing\Router;
 
 class XmlExportTest extends TestCase
 {
+    use ProductHelper;
     use SalesChannelHelper;
     use IntegrationTestBehaviour;
-    use ProductHelper;
 
     protected const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
