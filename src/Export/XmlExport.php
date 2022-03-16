@@ -138,7 +138,7 @@ class XmlExport extends Export
 
         $categories = array_merge(
             $this->getAssignedCategories($productEntity),
-            $this->getDynamicProductGroupCategories($productEntity),
+            $this->getDynamicProductGroupCategories($productEntity)
         );
 
         foreach ($categories as $categoryId => $category) {
