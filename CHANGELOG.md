@@ -1,4 +1,4 @@
-# NEXT
+# 2.7.0
 - [SW-644] Exported categories and cat_urls now also include data from non-main variants.
 - [SW-685] Third-Party plugins can now easily listen to specific sorting options and can manipulate the requests to the Findologic API accordingly.
 - [SW-683] Fixed a bug that caused flickering on Direct Integration category pages, when many JavaScript resources have been loaded before Findologic JavaScript resources could be loaded.
