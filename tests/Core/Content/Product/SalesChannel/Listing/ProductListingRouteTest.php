@@ -11,6 +11,7 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRou
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Request;
 
 class ProductListingRouteTest extends ProductRouteBase
@@ -50,7 +51,7 @@ class ProductListingRouteTest extends ProductRouteBase
 
     public function testWillUseOriginalInCaseTheCategoryIdIsTheMainCategory(): void
     {
-        $expectedMainCategoryId = '69';
+        $expectedMainCategoryId = Uuid::randomHex();
 
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true, $expectedMainCategoryId);
         $request = Request::create('http://your-shop.de/some-category');
@@ -99,7 +100,7 @@ class ProductListingRouteTest extends ProductRouteBase
 
     public function testCategoryWithManualProductSelectionAddsCategoryFilter(): void
     {
-        $categoryId = '69';
+        $categoryId = Uuid::randomHex();
 
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true, '1');
         $request = Request::create('http://your-shop.de/some-category');
@@ -126,8 +127,8 @@ class ProductListingRouteTest extends ProductRouteBase
             $this->markTestSkipped('Dynamic product groups for categories where introduced in Shopware 6.3.1.0');
         }
 
-        $categoryId = '69';
-        $streamId = '96';
+        $categoryId = Uuid::randomHex();
+        $streamId = Uuid::randomHex();
 
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true, '1');
         $request = Request::create('http://your-shop.de/some-category');

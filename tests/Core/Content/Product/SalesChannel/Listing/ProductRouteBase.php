@@ -8,6 +8,7 @@ use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\CategoryHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -30,6 +31,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
@@ -41,6 +43,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 
 abstract class ProductRouteBase extends TestCase
 {
+    use CategoryHelper;
     use IntegrationTestBehaviour;
 
     /**
@@ -204,19 +207,20 @@ abstract class ProductRouteBase extends TestCase
     }
 
     protected function setCategoryMock(
-        string $categoryId = '69',
+        ?string $categoryId = null,
         ?string $productAssignmentType = null,
-        ?string $streamId = '96'
+        ?string $streamId = null
     ) {
-        $category = new CategoryEntity();
-        $category->setId($categoryId);
+        $category = $this->createBasicCategory([
+            'id' => $categoryId ?? Uuid::randomHex()
+        ]);
 
         $supportsProductStreams = defined(
             '\Shopware\Core\Content\Category\CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM'
         );
         if ($supportsProductStreams) {
             $productStream = new ProductStreamEntity();
-            $productStream->setId($streamId);
+            $productStream->setId($streamId ?? Uuid::randomHex());
             $productAssignmentType = $productAssignmentType ?? CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT;
 
             $category->setProductAssignmentType($productAssignmentType);
@@ -272,7 +276,7 @@ abstract class ProductRouteBase extends TestCase
         $criteria = new Criteria();
         $criteria->addFilter($expectedFilter);
 
-        $categoryId = '69';
+        $categoryId = Uuid::randomHex();
         $this->setCategoryMock($categoryId);
 
         $productRoute = $this->getRoute();
