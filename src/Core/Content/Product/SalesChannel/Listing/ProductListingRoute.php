@@ -160,7 +160,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         $productListing = ProductListingResult::createFrom($result);
         $productListing->addCurrentFilter('navigationId', $categoryId);
 
-        // Getter and Setter for the stream id were only added in 6.4.0.0
+        // Getter and setter for the stream id were only added in 6.4.0.0
         // This was added by SW to adapt the cache key
         if (method_exists($productListing, 'setStreamId')) {
             $productListing->setStreamId($streamId);
