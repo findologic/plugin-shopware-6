@@ -5,6 +5,7 @@
 - [SW-690] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, die keinen Hersteller zugewiesen hatten.
 - [SW-691] Ein Fehler wurde behoben, wodurch interne Listing-Anfragen blockiert wurden.
 - [SW-693] Ein Fehler wurde behoben, wodurch Daten von inaktiven und ausverkauften Varianten exportiert wurde.
+- [SW-688] Ein Fehler wurde behoben, wodurch bei Findologic deaktivierten Verkaufskanälen bei einigen Routen MySQL anstatt ElasticSearch verwendet wurde.
 - [SW-687] Shopware 6.4.8.1 wurde zur Test-Matrix hinzugefügt.
 
 # 2.6.1

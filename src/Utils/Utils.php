@@ -148,6 +148,11 @@ class Utils
         return version_compare(static::getCleanShopwareVersion(), $version, '<');
     }
 
+    public static function versionGreaterOrEqual(string $version): bool
+    {
+        return version_compare(static::getCleanShopwareVersion(), $version, '>=');
+    }
+
     public static function getCleanShopwareVersion(): string
     {
         $version = static::getShopwareVersion();

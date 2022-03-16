@@ -18,6 +18,7 @@ use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
@@ -81,12 +82,12 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         FindologicConfigService $findologicConfigService,
         ?Config $config = null
     ) {
+        $this->decorated = $decorated;
         $this->searchBuilder = $searchBuilder;
         $this->eventDispatcher = $eventDispatcher;
+        $this->productRepository = $productRepository;
         $this->definition = $definition;
         $this->criteriaBuilder = $criteriaBuilder;
-        $this->decorated = $decorated;
-        $this->productRepository = $productRepository;
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
@@ -101,6 +102,11 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         SalesChannelContext $context,
         ?Criteria $criteria = null
     ): ProductSearchRouteResponse {
+
+        if (Utils::versionGreaterOrEqual('6.4.0.0')) {
+            $this->addElasticSearchContext($context);
+        }
+
         $criteria = $criteria ?? $this->criteriaBuilder->handleRequest(
             $request,
             new Criteria(),
@@ -154,5 +160,10 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         }
 
         return $this->fetchProducts($criteria, $context, $query);
+    }
+
+    public function addElasticSearchContext(SalesChannelContext $context): void
+    {
+        $context->getContext()->addState(Context::STATE_ELASTICSEARCH_AWARE);
     }
 }
