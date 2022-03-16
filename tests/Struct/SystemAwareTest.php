@@ -16,7 +16,7 @@ class SystemAwareTest extends TestCase
     public function testSupportsFilterDisabling(): void
     {
         // Filter disabling was introduced in Shopware 6.3.3.0.
-        $expectedIsSupported = !Utils::versionLowerThan('6.3.3.0');
+        $expectedIsSupported = Utils::versionGreaterOrEqual('6.3.3.0');
         $systemAware = new SystemAware($this->getContainer()->get('router'));
 
         $this->assertSame($expectedIsSupported, $systemAware->supportsFilterDisabling());

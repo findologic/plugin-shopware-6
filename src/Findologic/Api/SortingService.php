@@ -40,7 +40,7 @@ class SortingService
         ProductListingCriteriaEvent $event,
         SearchNavigationRequestHandler $requestHandler
     ): void {
-        if ($requestHandler instanceof NavigationRequestHandler && !Utils::versionLowerThan('6.3.3.0')) {
+        if ($requestHandler instanceof NavigationRequestHandler && Utils::versionGreaterOrEqual('6.3.3.0')) {
             $this->addTopResultSorting($event);
         }
     }

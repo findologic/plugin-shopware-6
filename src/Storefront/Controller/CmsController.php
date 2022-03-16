@@ -109,16 +109,15 @@ class CmsController extends StorefrontController
      */
     public function filter(string $navigationId, Request $request, SalesChannelContext $context): Response
     {
-        $event = new ProductListingCriteriaEvent($request, new Criteria(), $context);
-        $this->findologicSearchService->doFilter($event);
-
         if (!Utils::isFindologicEnabled($context)) {
             return $this->decorated->filter($navigationId, $request, $context);
         }
 
+        $event = new ProductListingCriteriaEvent($request, new Criteria(), $context);
+        $this->findologicSearchService->doFilter($event);
+
         $result = $this->filterHandler->handleAvailableFilters($event);
-        $hasAvailableFilters = $event->getCriteria()->hasExtension('flAvailableFilters');
-        if (!$hasAvailableFilters) {
+        if (!$event->getCriteria()->hasExtension('flAvailableFilters')) {
             return $this->decorated->filter($navigationId, $request, $context);
         }
 
