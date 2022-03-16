@@ -6,7 +6,11 @@ namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute;
 use PHPUnit\Framework\MockObject\MockObject;
+use Shopware\Core\Content\Category\CategoryDefinition;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
+use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Symfony\Component\HttpFoundation\Request;
 
 class ProductListingRouteTest extends ProductRouteBase
@@ -28,6 +32,8 @@ class ProductListingRouteTest extends ProductRouteBase
         return new ProductListingRoute(
             $this->original,
             $this->productRepositoryMock,
+            $this->categoryRepositoryMock,
+            $this->productStreamBuilderMock,
             $this->eventDispatcherMock,
             $this->productDefinition,
             $this->criteriaBuilder,
@@ -49,6 +55,8 @@ class ProductListingRouteTest extends ProductRouteBase
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true, $expectedMainCategoryId);
         $request = Request::create('http://your-shop.de/some-category');
         $request->setSession($this->getSessionMock());
+
+        $this->setCategoryMock($expectedMainCategoryId);
 
         $productRoute = $this->getRoute();
 
@@ -87,5 +95,69 @@ class ProductListingRouteTest extends ProductRouteBase
 
         $this->getOriginal()->expects($this->once())->method('load');
         $this->call($productRoute, $request, $salesChannelContextMock, '2');
+    }
+
+    public function testCategoryWithManualProductSelectionAddsCategoryFilter(): void
+    {
+        $categoryId = '69';
+
+        $salesChannelContextMock = $this->getMockedSalesChannelContext(true, '1');
+        $request = Request::create('http://your-shop.de/some-category');
+        $request->setSession($this->getSessionMock());
+
+        $expectedFilter = new EqualsFilter('product.categoriesRo.id', $categoryId);
+        $criteria = new Criteria();
+
+        $this->setCategoryMock($categoryId);
+
+        $productRoute = $this->getRoute();
+        /** @var ProductListingRouteResponse $response */
+        $response = $this->call($productRoute, $request, $salesChannelContextMock, $categoryId, $criteria);
+
+        $this->assertTrue($response->getResult()->getCriteria()->hasEqualsFilter('product.categoriesRo.id'));
+    }
+
+    public function testCategoryWithDynamicProductGroupAddsStreamIdAndFilters(): void
+    {
+        $supportsProductStreams = defined(
+            '\Shopware\Core\Content\Category\CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM'
+        );
+        if (!$supportsProductStreams) {
+            $this->markTestSkipped('Dynamic product groups for categories where introduced in Shopware 6.3.1.0');
+        }
+
+        $categoryId = '69';
+        $streamId = '96';
+
+        $salesChannelContextMock = $this->getMockedSalesChannelContext(true, '1');
+        $request = Request::create('http://your-shop.de/some-category');
+        $request->setSession($this->getSessionMock());
+
+        $criteria = new Criteria();
+        $expectedStockFilter = new EqualsFilter('product.stock', 30);
+        $expectedManufacturerFilter = new EqualsFilter('product.manufacturer.id', 10);
+        $expectedFilters = [$expectedStockFilter, $expectedManufacturerFilter];
+
+        $this->setCategoryMock(
+            $categoryId,
+            CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM,
+            $streamId
+        );
+
+        $this->productStreamBuilderMock->expects($this->once())
+            ->method('buildFilters')
+            ->willReturn($expectedFilters);
+
+        $productRoute = $this->getRoute();
+        /** @var ProductListingRouteResponse $response */
+        $response = $this->call($productRoute, $request, $salesChannelContextMock, $categoryId, $criteria);
+
+        if (method_exists($response->getResult(), 'getStreamId')) {
+            $this->assertEquals($streamId, $response->getResult()->getStreamId());
+        }
+
+        foreach ($expectedFilters as $expectedFilter) {
+            $this->assertContains($expectedFilter, $response->getResult()->getCriteria()->getFilters());
+        }
     }
 }

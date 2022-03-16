@@ -70,6 +70,8 @@
             <argument type="service"
                       id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute.inner"/>
             <argument type="service" id="sales_channel.product.repository"/>
+            <argument type="service" id="category.repository"/>
+            <argument type="service" id="Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder"/>
             <argument type="service" id="event_dispatcher"/>
             <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition"/>
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder"/>
