@@ -9,14 +9,13 @@ use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Uuid\Uuid;
 
 trait CategoryHelper
 {
     /**
      * @throws InconsistentCriteriaIdsException
      */
-    public function createTestCategory(array $categories): CategoryEntity
+    public function createTestCategory(array $categories)
     {
         $repository = $this->getContainer()->get('category.repository');
 
@@ -28,17 +27,9 @@ trait CategoryHelper
         /** @var CategoryCollection $result */
         $result = $repository->search($criteria, Context::createDefaultContext());
 
-        return $result->first();
-    }
+        /** @var CategoryEntity $first */
+        $first = $result->first();
 
-    public function createBasicCategory(?array $overrideData = []): CategoryEntity
-    {
-        $defaults = [
-            'id' => Uuid::randomHex(),
-            'name' => Uuid::randomHex(),
-            'active' => true,
-        ];
-
-        return $this->createTestCategory([array_merge($defaults, $overrideData)]);
+        return $first;
     }
 }
