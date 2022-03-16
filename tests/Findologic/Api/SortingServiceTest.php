@@ -55,7 +55,7 @@ class SortingServiceTest extends TestCase
      */
     public function testProperLegacySortingIsApplied(Request $request, string $expectedOrder): void
     {
-        if (!Utils::versionLowerThan('6.3.3.0')) {
+        if (Utils::versionGreaterOrEqual('6.3.3.0')) {
             $this->markTestSkipped('Legacy sorting is only used for Shopware versions lower than 6.3.3.0');
         }
 

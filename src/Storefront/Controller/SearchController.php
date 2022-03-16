@@ -8,6 +8,7 @@ use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
@@ -141,10 +142,14 @@ class SearchController extends StorefrontController
      */
     public function filter(Request $request, SalesChannelContext $context): Response
     {
+        if (!Utils::isFindologicEnabled($context)) {
+            return $this->decorated->filter($request, $context);
+        }
+
         $event = new ProductSearchCriteriaEvent($request, new Criteria(), $context);
         $this->findologicSearchService->doFilter($event);
-        $result = $this->filterHandler->handleAvailableFilters($event);
 
+        $result = $this->filterHandler->handleAvailableFilters($event);
         if (!$event->getCriteria()->hasExtension('flAvailableFilters')) {
             return $this->decorated->filter($request, $context);
         }

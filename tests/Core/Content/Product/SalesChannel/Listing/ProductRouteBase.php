@@ -8,17 +8,24 @@ use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Content\Category\CategoryDefinition;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
+use Shopware\Core\Content\ProductStream\ProductStreamEntity;
+use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
@@ -57,6 +64,16 @@ abstract class ProductRouteBase extends TestCase
     protected $productRepositoryMock;
 
     /**
+     * @var EntityRepositoryInterface|MockObject
+     */
+    protected $categoryRepositoryMock;
+
+    /**
+     * @var ProductStreamBuilderInterface|MockObject
+     */
+    protected $productStreamBuilderMock;
+
+    /**
      * @var ProductSearchBuilderInterface
      */
     protected $productSearchBuilderMock;
@@ -92,6 +109,14 @@ abstract class ProductRouteBase extends TestCase
         $this->criteriaBuilder = $this->getContainer()->get(RequestCriteriaBuilder::class);
 
         $this->productRepositoryMock = $this->getMockBuilder(SalesChannelRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->categoryRepositoryMock = $this->getMockBuilder(EntityRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->productStreamBuilderMock = $this->getMockBuilder(ProductStreamBuilderInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -153,6 +178,7 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $context->method('getVersionId')->willReturn(Defaults::LIVE_VERSION);
+        $context->expects($this->any())->method('addState')->with(Context::STATE_ELASTICSEARCH_AWARE);
 
         $findologicService = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -177,11 +203,46 @@ abstract class ProductRouteBase extends TestCase
             ->getMock();
     }
 
+    protected function setCategoryMock(
+        string $categoryId = '69',
+        ?string $productAssignmentType = null,
+        ?string $streamId = '96'
+    ) {
+        $category = new CategoryEntity();
+        $category->setId($categoryId);
+
+        $supportsProductStreams = defined(
+            '\Shopware\Core\Content\Category\CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM'
+        );
+        if ($supportsProductStreams) {
+            $productStream = new ProductStreamEntity();
+            $productStream->setId($streamId);
+            $productAssignmentType = $productAssignmentType ?? CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT;
+
+            $category->setProductAssignmentType($productAssignmentType);
+            $category->setProductStream($productStream);
+            $category->setProductStreamId($productStream->getId());
+        }
+
+        $categoryResult = Utils::buildEntitySearchResult(
+            CategoryEntity::class,
+            1,
+            new EntityCollection([$category]),
+            null,
+            new Criteria(),
+            $this->getMockedSalesChannelContext(true)->getContext()
+        );
+
+        $this->categoryRepositoryMock->expects($this->any())->method('search')->willReturn($categoryResult);
+    }
+
     public function testFindologicHandlesRequestWhenActive(): void
     {
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true);
         $request = Request::create('http://your-shop.de/some-category');
         $request->setSession($this->getSessionMock());
+
+        $this->setCategoryMock();
 
         $productRoute = $this->getRoute();
 
@@ -211,8 +272,11 @@ abstract class ProductRouteBase extends TestCase
         $criteria = new Criteria();
         $criteria->addFilter($expectedFilter);
 
+        $categoryId = '69';
+        $this->setCategoryMock($categoryId);
+
         $productRoute = $this->getRoute();
-        $response = $this->call($productRoute, $request, $salesChannelContextMock, '69', $criteria);
+        $response = $this->call($productRoute, $request, $salesChannelContextMock, $categoryId, $criteria);
 
         switch (true) {
             case $response instanceof ProductSearchRouteResponse:
