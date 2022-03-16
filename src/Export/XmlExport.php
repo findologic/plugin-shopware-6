@@ -132,18 +132,16 @@ class XmlExport extends Export
 
     private function isProductInCrossSellingCategory(ProductEntity $productEntity): ?CategoryEntity
     {
-        if (empty($this->crossSellingCategories)) {
-            return null;
-        }
+        if (count($this->crossSellingCategories)) {
+            $categories = array_merge(
+                $this->getAssignedCategories($productEntity),
+                $this->getDynamicProductGroupCategories($productEntity)
+            );
 
-        $categories = array_merge(
-            $this->getAssignedCategories($productEntity),
-            $this->getDynamicProductGroupCategories($productEntity)
-        );
-
-        foreach ($categories as $categoryId => $category) {
-            if (in_array($categoryId, $this->crossSellingCategories)) {
-                return $category;
+            foreach ($categories as $categoryId => $category) {
+                if (in_array($categoryId, $this->crossSellingCategories)) {
+                    return $category;
+                }
             }
         }
 
