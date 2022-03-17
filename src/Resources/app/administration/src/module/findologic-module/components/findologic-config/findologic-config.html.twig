@@ -55,17 +55,25 @@
                                 :helpText="$tc('findologic.settingForm.config.mainVariant.tooltipText')">
                         </sw-single-select>
 
-                        <sw-multi-select
-                                v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
-                                :options="categories"
-                                :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
-                                :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
-                                :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                        <fl-entity-multi-select
+                          id="crossSellingCategoriesSelect"
+                          v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
+                          :entity-collection="actualConfigData['FinSearch.config.crossSellingCategories']"
+                          entityName="category"
+                          :criteria="categoryCriteria"
+                          :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
+                          :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
+                          :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                          :searchPlaceholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
                         >
-                            <template #selection-label-property="{ item }">
-                                {{ item.name }}
+                            <template #result-label-property="{ item, searchTerm }">
+                                <sw-highlight-text
+                                  :text="item.translated.breadcrumb.join(' > ')"
+                                  :search-term="searchTerm"
+                                >
+                                </sw-highlight-text>
                             </template>
-                        </sw-multi-select>
+                        </fl-entity-multi-select>
                     </div>
                 </sw-container>
             </sw-card>

@@ -30,10 +30,10 @@ Component.register('findologic-config', {
       default: null
     },
     selectedSalesChannelNavigationCategoryId: {
-          type: String,
-          required: false,
-          default: null
-      },
+      type: String,
+      required: false,
+      default: null
+    },
     isStagingShop: {
       type: Boolean,
       required: true,
@@ -59,21 +59,10 @@ Component.register('findologic-config', {
   data () {
     return {
       isLoading: false,
-      term: null,
-      categories: [],
-      categoryIds: []
     };
   },
 
-  created () {
-    this.createdComponent();
-  },
-
   methods: {
-    createdComponent () {
-      this.getCategories();
-    },
-
     isString (value) {
       if (typeof value !== 'string') {
         return true;
@@ -150,30 +139,6 @@ Component.register('findologic-config', {
         this._openDefaultUrl();
       }
     },
-
-    /**
-     * @public
-     */
-    getCategories () {
-      this.isLoading = true;
-
-      const translatedCategories = [];
-      this.categoryRepository.search(this.categoryCriteria, Shopware.Context.api).then((items) => {
-        this.term = null;
-        this.total = items.total;
-        items.forEach((category) => {
-          translatedCategories.push({
-            value: category.id,
-            name: category.name,
-            label: category.translated.breadcrumb.join(' > ')
-          });
-        });
-
-        this.categories = this.sortByProperty(translatedCategories, 'label');
-      }).finally(() => {
-        this.isLoading = false;
-      });
-    }
   },
 
   computed: {
@@ -230,19 +195,11 @@ Component.register('findologic-config', {
       return this.repositoryFactory.create('sales_channel');
     },
 
-    categoryRepository () {
-      return this.repositoryFactory.create('category');
-    },
-
     categoryCriteria () {
       const criteria = new Criteria(1, 500);
-      criteria.addSorting(Criteria.sort('name', 'ASC'));
-      criteria.addSorting(Criteria.sort('parentId', 'ASC'));
-      criteria.addFilter(Criteria.contains('path', this.selectedSalesChannelNavigationCategoryId));
 
-      if (this.term) {
-        criteria.addFilter(Criteria.contains('name', this.term));
-      }
+      criteria.addSorting(Criteria.sort('breadcrumb', 'ASC'));
+      criteria.addFilter(Criteria.contains('path', this.selectedSalesChannelNavigationCategoryId));
 
       return criteria;
     }

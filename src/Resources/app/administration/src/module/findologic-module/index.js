@@ -1,6 +1,7 @@
 import './extension/sw-plugin';
 import './page/findologic-page';
 import './components/findologic-config';
+import './components/fl-entity-multi-select';
 
 import enGB from './snippet/en-GB.json';
 import deDE from './snippet/de-DE.json';
