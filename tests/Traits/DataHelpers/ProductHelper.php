@@ -15,6 +15,8 @@ use Shopware\Core\Framework\Uuid\Uuid;
 
 trait ProductHelper
 {
+    use CategoryHelper;
+
     public function createVisibleTestProduct(array $overrides = [], bool $withVariant = false): ?ProductEntity
     {
         return $this->createTestProduct(array_merge([
@@ -43,25 +45,21 @@ trait ProductHelper
 
         $container = $this->getContainer();
         $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-        $categoryData = [
-            [
-                'id' => Uuid::randomHex(),
-                'name' => 'FINDOLOGIC Main 2',
-                'children' => [
-                    [
-                        'id' => $newCategoryId,
-                        'name' => 'FINDOLOGIC Sub',
-                        'children' => [
-                            [
-                                'id' => Uuid::randomHex(),
-                                'name' => 'Very deep'
-                            ]
+        $this->createTestCategory([
+            'name' => 'FINDOLOGIC Main 2',
+            'children' => [
+                [
+                    'id' => $newCategoryId,
+                    'name' => 'FINDOLOGIC Sub',
+                    'children' => [
+                        [
+                            'id' => Uuid::randomHex(),
+                            'name' => 'Very deep'
                         ]
                     ]
                 ]
             ]
-        ];
-        $container->get('category.repository')->upsert($categoryData, $context);
+        ]);
         $seoUrlRepo = $container->get('seo_url.repository');
         $seoUrls = $seoUrlRepo->search(new Criteria(), Context::createDefaultContext());
         $seoUrlsStoreFrontContext = $seoUrlRepo->search(new Criteria(), $this->salesChannelContext->getContext());
