@@ -186,6 +186,10 @@ class ProductListingRoute extends AbstractProductListingRoute
         $preservedSortings = $criteria->getSorting();
         $criteria->resetSorting();
 
+        // Shopware sets the offset during their additional requests
+        // Offset should not be set, when searching for explicit IDs
+        $criteria->setOffset(null);
+
         $result = $this->fetchProducts($criteria, $context);
         foreach ($preservedSortings as $sorting) {
             $criteria->addSorting($sorting);

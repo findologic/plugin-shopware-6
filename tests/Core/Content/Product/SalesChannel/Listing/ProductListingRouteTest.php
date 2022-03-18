@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionObject;
 use Shopware\Core\Content\Category\CategoryDefinition;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
@@ -160,5 +161,19 @@ class ProductListingRouteTest extends ProductRouteBase
         foreach ($expectedFilters as $expectedFilter) {
             $this->assertContains($expectedFilter, $response->getResult()->getCriteria()->getFilters());
         }
+    }
+
+    public function testOffsetIsResetBeforeDatabaseSearch(): void
+    {
+        $productRoute = $this->getRoute();
+        $criteria = new Criteria([1,2,3,4]);
+        $criteria->setOffset(24);
+
+        $reflector = new ReflectionObject($productRoute);
+        $method = $reflector->getMethod('doSearch');
+        $method->setAccessible(true);
+        $method->invoke($productRoute, $criteria, $this->getMockedSalesChannelContext(true, '1'));
+
+        $this->assertNull($criteria->getOffset());
     }
 }
