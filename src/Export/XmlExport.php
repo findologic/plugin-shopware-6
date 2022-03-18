@@ -163,13 +163,12 @@ class XmlExport extends Export
      */
     private function getDynamicProductGroupCategories(ProductEntity $productEntity): array
     {
-        $dynamicProductGroupService = null;
         if ($this->container->has('fin_search.dynamic_product_group')) {
             $dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
-        }
 
-        if ($dynamicProductGroupService) {
-            return $dynamicProductGroupService->getCategories($productEntity->getId());
+            if ($dynamicProductGroupService) {
+                return $dynamicProductGroupService->getCategories($productEntity->getId());
+            }
         }
 
         return [];
