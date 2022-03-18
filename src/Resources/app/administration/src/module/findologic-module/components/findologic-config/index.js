@@ -1,7 +1,7 @@
 import template from './findologic-config.html.twig';
 
 const { Component, Mixin } = Shopware;
-const { Criteria } = Shopware.Data;
+const { Criteria, EntityCollection } = Shopware.Data;
 
 Component.register('findologic-config', {
   template,
@@ -23,6 +23,11 @@ Component.register('findologic-config', {
     },
     shopkeyErrorState: {
       required: true
+    },
+    selectedSalesChannelNavigationCategoryId: {
+      type: String,
+      required: false,
+      default: null
     },
     selectedSalesChannelId: {
       type: String,
@@ -54,19 +59,17 @@ Component.register('findologic-config', {
   data () {
     return {
       isLoading: false,
-      term: null,
-      categories: [],
-      categoryIds: []
+      categoryCollection: null,
     };
   },
 
   created () {
-    this.createdComponent();
+    this.createCategoryCollection();
   },
 
   methods: {
-    createdComponent () {
-      this.getCategories();
+    async createCategoryCollection () {
+      this.categoryCollection = await this.categoryRepository.search(this.selectedCategoriesCriteria, Shopware.Context.api);
     },
 
     isString (value) {
@@ -77,32 +80,6 @@ Component.register('findologic-config', {
 
     isBoolean (value) {
       return typeof value !== 'boolean';
-    },
-
-    /**
-     * @public
-     * @param result
-     * @param prop
-     * @param order
-     * @returns {function(*, *): number}
-     */
-    sortByProperty (result, prop = 'name', order = 'asc') {
-
-      result.sort(function (a, b) {
-        // Use toUpperCase() to ignore character casing
-        const case1 = typeof a[prop] === 'string' ? a[prop].toUpperCase() : a[prop];
-        const case2 = typeof b[prop] === 'string' ? b[prop].toUpperCase() : b[prop];
-
-        let sort = 0;
-        if (case1 > case2) {
-          sort = order === 'asc' ? 1 : -1;
-        } else if (case1 < case2) {
-          sort = order === 'asc' ? -1 : 1;
-        }
-        return sort;
-      });
-
-      return result;
     },
 
     /**
@@ -145,30 +122,6 @@ Component.register('findologic-config', {
         this._openDefaultUrl();
       }
     },
-
-    /**
-     * @public
-     */
-    getCategories () {
-      this.isLoading = true;
-
-      const translatedCategories = [];
-      this.categoryRepository.search(this.categoryCriteria, Shopware.Context.api).then((items) => {
-        this.term = null;
-        this.total = items.total;
-        items.forEach((category) => {
-          translatedCategories.push({
-            value: category.id,
-            name: category.name,
-            label: category.translated.breadcrumb.join(' > ')
-          });
-        });
-
-        this.categories = this.sortByProperty(translatedCategories, 'label');
-      }).finally(() => {
-        this.isLoading = false;
-      });
-    }
   },
 
   computed: {
@@ -229,16 +182,15 @@ Component.register('findologic-config', {
       return this.repositoryFactory.create('category');
     },
 
-    categoryCriteria () {
-      const criteria = new Criteria(1, 500);
-      criteria.addSorting(Criteria.sort('name', 'ASC'));
-      criteria.addSorting(Criteria.sort('parentId', 'ASC'));
+    categories () {
+      return this.categoryCollection ? this.categoryCollection : [];
+    },
 
-      if (this.term) {
-        criteria.addFilter(Criteria.contains('name', this.term));
-      }
+    selectedCategoriesCriteria () {
+      const criteria = new Criteria();
+      criteria.addFilter(Criteria.equalsAny('id', this.actualConfigData['FinSearch.config.crossSellingCategories']));
 
       return criteria;
-    }
+    },
   }
 });

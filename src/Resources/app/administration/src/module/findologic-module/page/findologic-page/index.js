@@ -24,6 +24,7 @@ Component.register('findologic-page', {
             config: null,
             allConfigs: {},
             selectedSalesChannelId: null,
+            selectedSalesChannelNavigationCategoryId: null,
             selectedLanguageId: null,
             salesChannel: [],
             language: [],
@@ -145,6 +146,7 @@ Component.register('findologic-page', {
                 let criteria = new Criteria();
                 criteria.addAssociation('languages');
                 criteria.addAssociation('domains');
+                criteria.addAssociation('navigationCategory');
                 criteria.addFilter(Criteria.equals('active', true));
 
                 this.salesChannelRepository.search(criteria, Shopware.Context.api).then(res => {
@@ -344,6 +346,7 @@ Component.register('findologic-page', {
             let selectedChannel = this.salesChannel.find(item => item.id === salesChannelId);
             if (selectedChannel) {
                 this.selectedSalesChannelId = salesChannelId;
+                this.selectedSalesChannelNavigationCategoryId = selectedChannel.navigationCategory.id;
                 this.onSelectedLanguage(selectedChannel.languageId);
                 selectedChannel.languages.forEach((language) => {
                     const domain = selectedChannel.domains.find(item => item.languageId === language.id);
