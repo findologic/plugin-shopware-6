@@ -103,7 +103,7 @@ class XmlExport extends Export
         string $shopkey,
         array $customerGroups
     ): ?Item {
-        if ($category = $this->isProductInCrossSellingCategory($productEntity)) {
+        if ($category = $this->getConfiguredCrossSellingCategory($productEntity)) {
             $this->logger->warning(
                 sprintf(
                     'Product with id %s (%s) was not exported because it is assigned to cross selling category %s (%s)',
@@ -130,7 +130,7 @@ class XmlExport extends Export
         return $xmlProduct->getXmlItem();
     }
 
-    private function isProductInCrossSellingCategory(ProductEntity $productEntity): ?CategoryEntity
+    private function getConfiguredCrossSellingCategory(ProductEntity $productEntity): ?CategoryEntity
     {
         if (count($this->crossSellingCategories)) {
             $categories = array_merge(
