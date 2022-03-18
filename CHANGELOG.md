@@ -1,3 +1,6 @@
+# NEXT
+- [SW-694] Fixed a bug that caused Dynamic Product Groups not to be excludible by cross-selling category setting.
+
 # 2.7.1
 - [SW-696] Fixed a bug that caused products not to be displayed when using pagination on navigation pages.
 

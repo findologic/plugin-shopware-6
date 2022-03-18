@@ -1,3 +1,6 @@
+# NEXT
+- [SW-694] Ein Fehler wurde behoben, wodurch Dynamische Produktgruppen nicht durch Cross-Selling Kategorien exkludiert werden konnten.
+
 # 2.7.1
 - [SW-696] Ein Fehler wurde behoben, wodurch Produkte nicht geladen werden bei Paginierung auf Navigationsseiten.
 
