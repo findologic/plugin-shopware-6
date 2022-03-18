@@ -61,6 +61,8 @@
                                 :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
                                 :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
                                 :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                                @selection-add="onCategoryAdd"
+                                @selection-remove="onCategoryRemove"
                         >
                         </sw-category-tree-field>
                     </div>

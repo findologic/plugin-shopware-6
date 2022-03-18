@@ -1,7 +1,7 @@
 import template from './findologic-config.html.twig';
 
 const { Component, Mixin } = Shopware;
-const { Criteria } = Shopware.Data;
+const { Criteria, EntityCollection } = Shopware.Data;
 
 Component.register('findologic-config', {
   template,
@@ -69,7 +69,15 @@ Component.register('findologic-config', {
 
   methods: {
     async createCategoryCollection () {
-      this.categoryCollection = await this.categoryRepository.search(this.selectedCategoriesCriteria, Shopware.Context.api);
+      this.categoryCollection = this.actualConfigData['FinSearch.config.crossSellingCategories'].length
+        ? await this.categoryRepository.search(this.selectedCategoriesCriteria, Shopware.Context.api)
+        : new EntityCollection(
+          this.categoryRepository.route,
+          this.categoryRepository.entityName,
+          Shopware.Context.api,
+          null,
+          []
+        );
     },
 
     isString (value) {
@@ -121,6 +129,15 @@ Component.register('findologic-config', {
       } else {
         this._openDefaultUrl();
       }
+    },
+
+    onCategoryAdd(item) {
+      this.actualConfigData['FinSearch.config.crossSellingCategories'].push(item.id)
+    },
+
+    onCategoryRemove(item) {
+      this.actualConfigData['FinSearch.config.crossSellingCategories'] =
+        this.actualConfigData['FinSearch.config.crossSellingCategories'].filter(categoryId => categoryId !== item.id);
     },
   },
 
