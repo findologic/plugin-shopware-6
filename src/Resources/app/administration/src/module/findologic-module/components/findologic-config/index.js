@@ -1,7 +1,7 @@
 import template from './findologic-config.html.twig';
 
 const { Component, Mixin } = Shopware;
-const { Criteria, EntityCollection } = Shopware.Data;
+const { Criteria } = Shopware.Data;
 
 Component.register('findologic-config', {
   template,
