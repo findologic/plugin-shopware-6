@@ -16,8 +16,17 @@ trait CategoryHelper
     /**
      * @throws InconsistentCriteriaIdsException
      */
-    public function createTestCategory(array $categories): CategoryEntity
+    public function createTestCategory(?array $overrideData = []): CategoryEntity
     {
+        $defaults = [
+            'id' => Uuid::randomHex(),
+            'name' => Uuid::randomHex(),
+            'active' => true,
+        ];
+        $categories = [
+            array_merge($defaults, $overrideData)
+        ];
+
         $repository = $this->getContainer()->get('category.repository');
 
         $repository->create($categories, Context::createDefaultContext());
@@ -29,16 +38,5 @@ trait CategoryHelper
         $result = $repository->search($criteria, Context::createDefaultContext());
 
         return $result->first();
-    }
-
-    public function createBasicCategory(?array $overrideData = []): CategoryEntity
-    {
-        $defaults = [
-            'id' => Uuid::randomHex(),
-            'name' => Uuid::randomHex(),
-            'active' => true,
-        ];
-
-        return $this->createTestCategory([array_merge($defaults, $overrideData)]);
     }
 }

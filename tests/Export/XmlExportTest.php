@@ -75,7 +75,7 @@ class XmlExportTest extends TestCase
     {
         $product = $this->createVisibleTestProduct();
 
-        $category = $this->createBasicCategory();
+        $category = $this->createTestCategory();
         $this->crossSellCategories = [$category->getId()];
 
         $dynamicProductGroupServiceMock = $this->getMockBuilder(DynamicProductGroupService::class)

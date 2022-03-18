@@ -211,7 +211,7 @@ abstract class ProductRouteBase extends TestCase
         ?string $productAssignmentType = null,
         ?string $streamId = null
     ) {
-        $category = $this->createBasicCategory([
+        $category = $this->createTestCategory([
             'id' => $categoryId ?? Uuid::randomHex()
         ]);
 

@@ -45,7 +45,7 @@ trait ProductHelper
 
         $container = $this->getContainer();
         $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-        $this->createBasicCategory([
+        $this->createTestCategory([
             'name' => 'FINDOLOGIC Main 2',
             'children' => [
                 [
