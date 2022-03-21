@@ -195,7 +195,7 @@ Component.register('findologic-config', {
     },
 
     categories () {
-      return this.categoryCollection ? this.categoryCollection : [];
+      return this.categoryCollection ?? [];
     },
 
     selectedCategoriesCriteria () {
