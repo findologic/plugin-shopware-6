@@ -54,7 +54,7 @@ Component.register('findologic-config', {
   data () {
     return {
       isLoading: false,
-      categoryCollection: null,
+      categoryCollection: [],
     };
   },
 
@@ -70,8 +70,6 @@ Component.register('findologic-config', {
           this.categoryRepository.route,
           this.categoryRepository.entityName,
           Shopware.Context.api,
-          null,
-          []
         );
     },
 
@@ -192,10 +190,6 @@ Component.register('findologic-config', {
 
     categoryRepository () {
       return this.repositoryFactory.create('category');
-    },
-
-    categories () {
-      return this.categoryCollection ?? [];
     },
 
     selectedCategoriesCriteria () {
