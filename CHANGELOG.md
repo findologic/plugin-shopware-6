@@ -1,4 +1,5 @@
 # NEXT
+- [SW-695] Updated the UI for selection of cross-selling categories, which allows the selection for more than 500 categories.
 - [SW-694] Fixed a bug that caused Dynamic Product Groups not to be excludible by cross-selling category setting.
 
 # 2.7.1
