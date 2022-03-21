@@ -1,4 +1,5 @@
 # NEXT
+- [SW-695] Das Design für die Selektierung, der Cross-Selling Kategorien wurde aktualisiert, wodurch nun mehr als 500 Kategorien bei der Auswahl erscheinen.
 - [SW-694] Ein Fehler wurde behoben, wodurch Dynamische Produktgruppen nicht durch Cross-Selling Kategorien exkludiert werden konnten.
 
 # 2.7.1
