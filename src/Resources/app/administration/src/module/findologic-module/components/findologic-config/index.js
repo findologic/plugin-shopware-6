@@ -24,11 +24,6 @@ Component.register('findologic-config', {
     shopkeyErrorState: {
       required: true
     },
-    selectedSalesChannelNavigationCategoryId: {
-      type: String,
-      required: false,
-      default: null
-    },
     selectedSalesChannelId: {
       type: String,
       required: false,
