@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Api;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
@@ -15,6 +16,7 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegi
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingEntity;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -28,26 +30,34 @@ class SortingService
     /** @var TranslatorInterface */
     private $translator;
 
+    /** @var string */
+    private $shopwareVersion;
+
     public function __construct(
         ?ProductListingSortingRegistry $legacySortingRegistry,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        string $shopwareVersion
     ) {
         $this->legacySortingRegistry = $legacySortingRegistry;
         $this->translator = $translator;
+        $this->shopwareVersion = $shopwareVersion;
     }
 
     public function handleRequest(
         ProductListingCriteriaEvent $event,
         SearchNavigationRequestHandler $requestHandler
     ): void {
-        if ($requestHandler instanceof NavigationRequestHandler && Utils::versionGreaterOrEqual('6.3.3.0')) {
+        if (
+            $requestHandler instanceof NavigationRequestHandler &&
+            Utils::versionGreaterOrEqual('6.3.3.0', $this->shopwareVersion)
+        ) {
             $this->addTopResultSorting($event);
         }
     }
 
     public function handleResult(ProductListingResultEvent $event): void
     {
-        if (Utils::versionLowerThan('6.3.3.0')) {
+        if (Utils::versionLowerThan('6.3.3.0', $this->shopwareVersion)) {
             $this->addLegacyTopResultSorting($event);
         }
     }
@@ -120,7 +130,7 @@ class SortingService
     protected function getCurrentLegacySorting(Request $request, string $default): ?string
     {
         $key = $request->get('order', $default);
-        if (Utils::versionLowerThan('6.2')) {
+        if (Utils::versionLowerThan('6.2', $this->shopwareVersion)) {
             $key = $request->get('sort', $default);
         }
 

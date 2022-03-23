@@ -143,19 +143,19 @@ class Utils
         );
     }
 
-    public static function versionLowerThan(string $version): bool
+    public static function versionLowerThan(string $compareVersion, ?string $actualVersion = null): bool
     {
-        return version_compare(static::getCleanShopwareVersion(), $version, '<');
+        return version_compare(static::getCleanShopwareVersion($actualVersion), $compareVersion, '<');
     }
 
-    public static function versionGreaterOrEqual(string $version): bool
+    public static function versionGreaterOrEqual(string $compareVersion, ?string $actualVersion = null): bool
     {
-        return version_compare(static::getCleanShopwareVersion(), $version, '>=');
+        return version_compare(static::getCleanShopwareVersion($actualVersion), $compareVersion, '>=');
     }
 
-    public static function getCleanShopwareVersion(): string
+    public static function getCleanShopwareVersion(?string $actualVersion = null): string
     {
-        $version = static::getShopwareVersion();
+        $version = $actualVersion ?? static::getShopwareVersion();
         $versionWithoutPrefix = ltrim($version, 'v');
 
         return static::cleanVersionCommitHashAndReleaseInformation($versionWithoutPrefix);
