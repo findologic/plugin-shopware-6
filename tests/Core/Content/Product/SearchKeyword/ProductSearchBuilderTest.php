@@ -37,7 +37,11 @@ class ProductSearchBuilderTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->productSearchBuilderMock = $this->getMockBuilder(ProductSearchBuilder::class)
-            ->setConstructorArgs([$interpreterMock, $decoratedProductSearchBuilderMock])
+            ->setConstructorArgs([
+                $interpreterMock,
+                $decoratedProductSearchBuilderMock,
+                $this->getContainer()->getParameter('kernel.shopware_version')
+            ])
             ->onlyMethods(['buildParent', 'buildShopware63AndLower', 'buildShopware64AndGreater'])
             ->getMock();
 

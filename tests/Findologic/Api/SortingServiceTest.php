@@ -142,7 +142,8 @@ class SortingServiceTest extends TestCase
 
         return new SortingService(
             $sortingRegistry,
-            $translator ?? $this->getContainer()->get('translator')
+            $translator ?? $this->getContainer()->get('translator'),
+            $this->getContainer()->getParameter('kernel.shopware_version')
         );
     }
 }

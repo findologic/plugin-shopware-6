@@ -690,7 +690,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $sortingService = new SortingService(
             $this->productListingSortingRegistry,
-            $this->getContainer()->get('translator')
+            $this->getContainer()->get('translator'),
+            $this->getContainer()->getParameter('kernel.shopware_version')
         );
         $paginationService = new PaginationService();
         $sortingHandlerService = $this->getContainer()->get(SortingHandlerService::class);
