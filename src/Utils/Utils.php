@@ -20,6 +20,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -155,7 +156,11 @@ class Utils
 
     public static function getCleanShopwareVersion(?string $actualVersion = null): string
     {
-        $version = $actualVersion ?? static::getShopwareVersion();
+        // The fallback version does not include the major version for 6.2, therefore version_compare fails
+        // It is 9999999-dev in 6.2 and 6.x.9999999.9999999-dev starting from 6.3
+        $version = $actualVersion === Kernel::SHOPWARE_FALLBACK_VERSION
+            ? static::getShopwareVersion()
+            : $actualVersion ?? static::getShopwareVersion();
         $versionWithoutPrefix = ltrim($version, 'v');
 
         return static::cleanVersionCommitHashAndReleaseInformation($versionWithoutPrefix);
