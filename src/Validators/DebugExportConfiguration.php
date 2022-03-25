@@ -20,7 +20,9 @@ class DebugExportConfiguration
 
     /**
      * @Assert\NotBlank
-     * @Assert\Type("string")
+     * @Assert\Uuid(
+     *     strict=false
+     *)
      * @var string
      */
     private $productId;

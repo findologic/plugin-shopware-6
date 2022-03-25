@@ -30,13 +30,13 @@ class ProductService
     public const CONTAINER_ID = 'fin_search.product_service';
 
     /** @var Config */
-    private $config;
+    protected $config;
 
     /** @var ContainerInterface */
-    private $container;
+    protected $container;
 
     /** @var SalesChannelContext|null */
-    private $salesChannelContext;
+    protected $salesChannelContext;
 
     public function __construct(
         ContainerInterface $container,
@@ -53,11 +53,11 @@ class ProductService
         ?SalesChannelContext $salesChannelContext,
         ?Config $config = null
     ): ProductService {
-        if ($container->has(self::CONTAINER_ID)) {
-            $productService = $container->get(self::CONTAINER_ID);
+        if ($container->has(static::CONTAINER_ID)) {
+            $productService = $container->get(static::CONTAINER_ID);
         } else {
-            $productService = new ProductService($container, $salesChannelContext, $config);
-            $container->set(self::CONTAINER_ID, $productService);
+            $productService = new static($container, $salesChannelContext, $config);
+            $container->set(static::CONTAINER_ID, $productService);
         }
 
         if ($salesChannelContext && !$productService->getSalesChannelContext()) {

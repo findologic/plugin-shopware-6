@@ -11,13 +11,14 @@ use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Validators\DebugExportConfiguration;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
+use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @RouteScope(scopes={"storefront"})
@@ -29,19 +30,6 @@ class ProductDebugController extends ExportController
 
     /** @var ProductDebugService */
     protected $productService;
-
-    /**
-     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
-     */
-    public function __construct(
-        LoggerInterface $logger,
-        RouterInterface $router,
-        HeaderHandler $headerHandler,
-        $salesChannelContextFactory,
-        CacheItemPoolInterface $cache
-    ) {
-        parent::__construct($logger, $router, $headerHandler, $salesChannelContextFactory, $cache);
-    }
 
     /**
      * @Route("/findologic/debug", name="frontend.findologic.debug", options={"seo"="false"}, methods={"GET"})
@@ -86,18 +74,11 @@ class ProductDebugController extends ExportController
     {
         $this->warmUpDynamicProductGroups();
 
-        $products = $this->productService->searchVisibleProducts(
-            $this->exportConfig->getCount(),
-            $this->exportConfig->getStart(),
-            $this->exportConfig->getProductId()
+        return new JsonResponse(
+            $this->productService->getDebugInformation(
+                $this->exportConfig->getShopkey(),
+                $this->exportConfig->getProductId()
+            )
         );
-
-        $items = $this->export->buildItems(
-            $products->getElements(),
-            $this->exportConfig->getShopkey(),
-            $this->productService->getAllCustomerGroups()
-        );
-
-        return new JsonResponse($this->productService->getDebugInformation($items));
     }
 }
