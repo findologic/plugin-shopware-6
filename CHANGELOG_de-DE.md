@@ -1,3 +1,21 @@
+# NEXT
+- [SW-695] Das Design für die Selektierung, der Cross-Selling Kategorien wurde aktualisiert, wodurch nun mehr als 500 Kategorien bei der Auswahl erscheinen.
+- [SW-694] Ein Fehler wurde behoben, wodurch Dynamische Produktgruppen nicht durch Cross-Selling Kategorien exkludiert werden konnten.
+
+# 2.7.1
+- [SW-696] Ein Fehler wurde behoben, wodurch Produkte nicht geladen werden bei Paginierung auf Navigationsseiten.
+
+# 2.7.0
+- [SW-644] Die exportierten Kategorien und cat_urls enthalten nun auch Daten von nicht-Hauptvarianten.
+- [SW-685] Drittanbieter Plugins können nun einfacher die Anfrage an Findologic anhand der gesetzten Sortierung manipulieren.
+- [SW-683] Ein Fehler wurde behoben, wodurch bei Direct Integration auf Kategorieseiten ein flicker-Effekt auftrat, wenn viele JavaScript Ressourcen geladen wurden, bevor die Findologic JavaScript Ressourcen laden konnten.
+- [SW-690] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, die keinen Hersteller zugewiesen hatten.
+- [SW-691] Ein Fehler wurde behoben, wodurch interne Listing-Anfragen blockiert wurden.
+- [SW-693] Ein Fehler wurde behoben, wodurch Daten von inaktiven und ausverkauften Varianten exportiert wurde.
+- [SW-688] Ein Fehler wurde behoben, wodurch bei Findologic deaktivierten Verkaufskanälen bei einigen Routen MySQL anstatt ElasticSearch verwendet wurde.
+- [SW-692] Ein Fehler wurde behoben, wodurch Keine-Ergebnisse auf Kategorie-Listingseiten mit Dynamischen Produktgruppen angezeigt wurden.
+- [SW-687] Shopware 6.4.8.1 wurde zur Test-Matrix hinzugefügt.
+
 # 2.6.1
 - [SW-677] HTML-kodierte Attributswerte, werden nun automatisch im export dekodiert.
 - [SW-569] Die Option für das Aktivieren von Findologic auf Kategorieseiten, wurde in die API Sektion migriert.
