@@ -39,34 +39,34 @@ class ExportController extends AbstractController
     protected $logger;
 
     /** @var Router */
-    private $router;
+    protected $router;
 
     /** @var HeaderHandler */
-    private $headerHandler;
+    protected $headerHandler;
 
     /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
-    private $salesChannelContextFactory;
+    protected $salesChannelContextFactory;
 
     /** @var SalesChannelContext */
-    private $salesChannelContext;
+    protected $salesChannelContext;
 
     /** @var ExportConfiguration */
-    private $exportConfig;
+    protected $exportConfig;
 
     /** @var ProductService */
-    private $productService;
+    protected $productService;
 
     /** @var Config */
-    private $pluginConfig;
+    protected $pluginConfig;
 
     /** @var Export|XmlExport|ProductIdExport */
-    private $export;
+    protected $export;
 
     /** @var CacheItemPoolInterface */
-    private $cache;
+    protected $cache;
 
     /** @var SalesChannelService|null */
-    private $salesChannelService;
+    protected $salesChannelService;
 
     /**
      * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
@@ -111,21 +111,31 @@ class ExportController extends AbstractController
 
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
-        $this->productService = ProductService::getInstance(
+
+        $this->productService = $this->getProductServiceInstance();
+        $this->export = $this->getExportInstance();
+
+        $this->manipulateRequestWithSalesChannelInformation($request);
+    }
+
+    protected function getProductServiceInstance(): ProductService
+    {
+        return ProductService::getInstance(
             $this->container,
             $this->salesChannelContext,
             $this->pluginConfig
         );
+    }
 
-        $this->export = Export::getInstance(
+    protected function getExportInstance(): Export
+    {
+        return Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
             $this->router,
             $this->container,
             $this->logger,
             $this->pluginConfig->getCrossSellingCategories()
         );
-
-        $this->manipulateRequestWithSalesChannelInformation($request);
     }
 
     protected function validate(): ?Response
@@ -167,7 +177,7 @@ class ExportController extends AbstractController
 
     protected function validateStateAndGetErrorMessages(): array
     {
-        $messages = $this->validateExportConfiguration($this->exportConfig);
+        $messages = $this->validateExportConfiguration();
         if (count($messages) > 0) {
             return $messages;
         }
@@ -202,10 +212,10 @@ class ExportController extends AbstractController
         }
     }
 
-    private function validateExportConfiguration(ExportConfiguration $config): array
+    private function validateExportConfiguration(): array
     {
         $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
-        $violations = $validator->validate($config);
+        $violations = $validator->validate($this->exportConfig);
 
         $messages = [];
         if ($violations->count() > 0) {
