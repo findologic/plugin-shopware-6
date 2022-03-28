@@ -1,6 +1,7 @@
-# NEXT
-- [SW-695] Das Design für die Selektierung, der Cross-Selling Kategorien wurde aktualisiert, wodurch nun mehr als 500 Kategorien bei der Auswahl erscheinen.
-- [SW-694] Ein Fehler wurde behoben, wodurch Dynamische Produktgruppen nicht durch Cross-Selling Kategorien exkludiert werden konnten.
+# 2.8.0
+- [SW-695] Die Plugin-Konfiguration für Cross-Selling Kategorien erlaubt die Selektierung von mehr als 500 Kategorien.
+- [SW-694] Ein Fehler wurde behoben, wodurch Dynamische Produktgruppen nicht als Cross-Selling Kategorien gesetzt werden können.
+- [SW-698] Ein Fehler wurde behoben, wodurch unter Umständen bei einer speziellen Shopware-Installation die Version nicht korrekt erkannt wurde.
 
 # 2.7.1
 - [SW-696] Ein Fehler wurde behoben, wodurch Produkte nicht geladen werden bei Paginierung auf Navigationsseiten.
