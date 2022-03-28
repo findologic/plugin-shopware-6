@@ -76,12 +76,7 @@ class ProductDebugController extends ExportController
         $this->warmUpDynamicProductGroups();
 
         $this->export->buildItems(
-            [
-                $this->productService->fetchProduct(
-                    $this->exportConfig->getProductId(),
-                    false
-                )
-            ],
+            [$this->productService->fetchProduct($this->exportConfig->getProductId())],
             $this->exportConfig->getShopkey(),
             $this->productService->getAllCustomerGroups()
         );

@@ -60,13 +60,13 @@ class ProductDebugService extends ProductService
             'data' => [
                 'isExportedMainVariant' => $this->exportedMainVariantId() === $this->product->getId(),
                 'product' => $this->product,
-                'siblings' => $this->getSiblings($this->product),
+                'siblings' => $this->product->getParentId() ? $this->getSiblings($this->product) : [],
                 'associations' => $this->buildCriteria()->getAssociations(),
             ]
         ];
     }
 
-    public function fetchProduct(?string $productId = null, ?bool $withVariantInformation = true): ?ProductEntity
+    public function fetchProduct(?string $productId = null): ?ProductEntity
     {
         $criteria = $this->buildCriteria($productId);
 
@@ -76,9 +76,7 @@ class ProductDebugService extends ProductService
             $this->salesChannelContext->getContext()
         );
 
-        return $withVariantInformation
-            ? $this->buildProductsWithVariantInformation($entityResult)->first()
-            : $entityResult->first();
+        return $this->buildProductsWithVariantInformation($entityResult)->first();
     }
 
     private function buildCriteria(?string $productId = null): Criteria
