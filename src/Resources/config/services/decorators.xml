@@ -60,6 +60,7 @@
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder"/>
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"/>
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
+            <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
         <service
@@ -107,6 +108,7 @@
         >
             <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder.inner"/>
+            <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
         <service

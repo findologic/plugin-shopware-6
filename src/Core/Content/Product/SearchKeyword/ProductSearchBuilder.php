@@ -29,12 +29,19 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
      */
     private $decorated;
 
+    /**
+     * @var string
+     */
+    private $shopwareVersion;
+
     public function __construct(
         ProductSearchTermInterpreterInterface $interpreter,
-        ProductSearchBuilderInterface $decorated
+        ProductSearchBuilderInterface $decorated,
+        string $shopwareVersion
     ) {
         $this->interpreter = $interpreter;
         $this->decorated = $decorated;
+        $this->shopwareVersion = $shopwareVersion;
     }
 
     public function build(Request $request, Criteria $criteria, SalesChannelContext $context): void
@@ -44,7 +51,7 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
             return;
         }
 
-        if (Utils::versionLowerThan('6.4.0.0')) {
+        if (Utils::versionLowerThan('6.4.0.0', $this->shopwareVersion)) {
             $this->buildShopware63AndLower($request, $criteria, $context);
         } else {
             $this->buildShopware64AndGreater($request, $criteria, $context);
