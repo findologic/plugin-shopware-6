@@ -7,7 +7,6 @@ namespace FINDOLOGIC\FinSearch\Findologic\Api;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
@@ -16,7 +15,6 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegi
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingEntity;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
