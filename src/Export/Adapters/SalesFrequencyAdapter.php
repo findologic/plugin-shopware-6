@@ -31,12 +31,16 @@ class SalesFrequencyAdapter
         $this->salesChannelContext = $salesChannelContext;
     }
 
-    public function adapt(ProductEntity $product): SalesFrequency
+    public function adapt(ProductEntity $product): ?SalesFrequency
     {
         $orders = $this->orderLineItemRepository->searchIds(
             $this->getCriteria($product),
             $this->salesChannelContext->getContext()
         );
+
+        if (!$orders->getTotal()) {
+            return null;
+        }
 
         $salesFrequency = new SalesFrequency();
         $salesFrequency->setValue($orders->getTotal());
