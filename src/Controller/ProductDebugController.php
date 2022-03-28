@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Controller;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductDebugService;
+use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Validators\DebugExportConfiguration;
 use Psr\Cache\CacheItemPoolInterface;
@@ -62,7 +63,7 @@ class ProductDebugController extends ExportController
     protected function getExportInstance(): Export
     {
         return Export::getInstance(
-            $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
+            Export::TYPE_PRODUCT_ID,
             $this->router,
             $this->container,
             $this->logger,
@@ -74,10 +75,22 @@ class ProductDebugController extends ExportController
     {
         $this->warmUpDynamicProductGroups();
 
+        $this->export->buildItems(
+            [
+                $this->productService->fetchProduct(
+                    $this->exportConfig->getProductId(),
+                    false
+                )
+            ],
+            $this->exportConfig->getShopkey(),
+            $this->productService->getAllCustomerGroups()
+        );
+
         return new JsonResponse(
             $this->productService->getDebugInformation(
+                $this->exportConfig->getProductId(),
                 $this->exportConfig->getShopkey(),
-                $this->exportConfig->getProductId()
+                $this->export->getErrorHandler()->getExportErrors()
             )
         );
     }

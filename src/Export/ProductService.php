@@ -151,6 +151,11 @@ class ProductService
             return $product->getChildren();
         }
 
+        return $this->getSiblings($product);
+    }
+
+    protected function getSiblings(ProductEntity $product): ?ProductCollection
+    {
         $productRepository = $this->container->get('product.repository');
         $criteria = new Criteria([$product->getParentId()]);
 
@@ -169,7 +174,8 @@ class ProductService
 
         // Remove the given children, as the child product is considered as the product, which is shown
         // in the storefront. As we also want to get the data from the parent, we also manually add it here.
-        $children = $result->first()->getChildren();
+        $mainProduct = clone $result->first();
+        $children = $mainProduct->getChildren();
         $children->remove($product->getId());
         $children->add($result->first());
 
