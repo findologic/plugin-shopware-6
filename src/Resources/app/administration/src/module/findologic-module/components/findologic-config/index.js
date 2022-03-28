@@ -133,10 +133,8 @@ Component.register('findologic-config', {
     },
 
     onCategoryRemove(item) {
-      const config = this.actualConfigData['FinSearch.config.crossSellingCategories'] || [];
-
       this.actualConfigData['FinSearch.config.crossSellingCategories'] =
-        config.filter(categoryId => categoryId !== item.id);
+        this.actualConfigData['FinSearch.config.crossSellingCategories'].filter(categoryId => categoryId !== item.id);
     },
   },
 
