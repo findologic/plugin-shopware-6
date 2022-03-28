@@ -55,6 +55,7 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->criteriaBuilder,
             $this->serviceConfigResourceMock,
             $this->findologicConfigServiceMock,
+            $this->getContainer()->getParameter('kernel.shopware_version'),
             $this->configMock
         );
     }
@@ -191,6 +192,7 @@ class ProductSearchRouteTest extends ProductRouteBase
                 $this->criteriaBuilder,
                 $this->serviceConfigResourceMock,
                 $this->findologicConfigServiceMock,
+                $this->getContainer()->getParameter('kernel.shopware_version'),
                 $this->configMock
             ])
             ->onlyMethods(['addElasticSearchContext'])
