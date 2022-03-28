@@ -64,7 +64,7 @@ Component.register('findologic-config', {
 
   methods: {
     async createCategoryCollection () {
-      this.categoryCollection = this.actualConfigData['FinSearch.config.crossSellingCategories'].length
+      this.categoryCollection = this.actualConfigData['FinSearch.config.crossSellingCategories']?.length
         ? await this.categoryRepository.search(this.selectedCategoriesCriteria, Shopware.Context.api)
         : new EntityCollection(
           this.categoryRepository.route,
@@ -125,7 +125,11 @@ Component.register('findologic-config', {
     },
 
     onCategoryAdd(item) {
-      this.actualConfigData['FinSearch.config.crossSellingCategories'].push(item.id)
+      if (this.actualConfigData['FinSearch.config.crossSellingCategories']) {
+        this.actualConfigData['FinSearch.config.crossSellingCategories'].push(item.id);
+      } else {
+        this.actualConfigData['FinSearch.config.crossSellingCategories'] = [item.id];
+      }
     },
 
     onCategoryRemove(item) {
