@@ -46,10 +46,12 @@ class ProductDebugService extends ProductService
             return $this->buildNotFoundResponse();
         }
 
+        $exportedMainProductId = $this->exportedMainVariantId();
+
         return [
             'export' => [
                 'productId' => $this->product->getId(),
-                'exportedMainProductId' => $this->exportedMainVariantId(),
+                'exportedMainProductId' => $exportedMainProductId,
                 'isExported' => true,
                 'reasons' => $this->parseExportErrors()
             ],
@@ -58,7 +60,7 @@ class ProductDebugService extends ProductService
                 'debugUrl' => $this->buildDebugUrl()
             ],
             'data' => [
-                'isExportedMainVariant' => $this->exportedMainVariantId() === $this->product->getId(),
+                'isExportedMainVariant' => $exportedMainProductId === $this->product->getId(),
                 'product' => $this->product,
                 'siblings' => $this->product->getParentId() ? $this->getSiblings($this->product) : [],
                 'associations' => $this->buildCriteria()->getAssociations(),
@@ -66,7 +68,7 @@ class ProductDebugService extends ProductService
         ];
     }
 
-    public function fetchProduct(?string $productId = null): ?ProductEntity
+    public function fetchProduct(?string $productId = null, ?bool $withVariantInformation = false): ?ProductEntity
     {
         $criteria = $this->buildCriteria($productId);
 
@@ -76,7 +78,9 @@ class ProductDebugService extends ProductService
             $this->salesChannelContext->getContext()
         );
 
-        return $this->buildProductsWithVariantInformation($entityResult)->first();
+        return $withVariantInformation
+            ? $this->buildProductsWithVariantInformation($entityResult)->first()
+            : $entityResult->first();
     }
 
     private function buildCriteria(?string $productId = null): Criteria
@@ -87,45 +91,11 @@ class ProductDebugService extends ProductService
         return $criteria;
     }
 
-    private function fetchSiblings()
+    private function exportedMainVariantId(): string
     {
-        if (!$this->product->getParentId()) {
-            return [];
-        }
+        $product = $this->fetchProduct($this->productId, true);
 
-        $criteria = new Criteria();
-        Utils::addProductAssociations($criteria);
-
-        $criteria->addFilter(
-            new EqualsFilter('parentId', $this->product->getParentId())
-        );
-        $criteria->addFilter(
-            new NotFilter(
-                NotFilter::CONNECTION_AND,
-                [new EqualsFilter('product.id', $this->product->getId())]
-            )
-        );
-
-        /** @var EntitySearchResult $entityResult */
-        $entityResult = $this->container->get('product.repository')->search(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        );
-
-        return $entityResult->getElements();
-    }
-
-    private function exportedMainVariantId(): ?string
-    {
-        if (!$this->product->getParentId()) {
-            return $this->product->getId();
-        }
-
-        if ($this->product->getMainVariantId() === $this->product->getId()) {
-            return $this->product->getId();
-        }
-
-        return null;
+        return $product->getId();
     }
 
     /**
