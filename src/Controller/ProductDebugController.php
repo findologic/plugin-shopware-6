@@ -5,16 +5,10 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\FinSearch\Export\Export;
-use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductDebugService;
-use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Validators\DebugExportConfiguration;
-use Psr\Cache\CacheItemPoolInterface;
-use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

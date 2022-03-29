@@ -4,18 +4,11 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export;
 
-use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Errors\ExportErrors;
-use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Psr\Container\ContainerInterface;
-use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class ProductDebugService extends ProductService
 {
@@ -81,9 +74,9 @@ class ProductDebugService extends ProductService
         $criteria = $this->buildCriteria($productId);
 
         /** @var EntitySearchResult $entityResult */
-        $entityResult = $this->container->get('product.repository')->search(
+        $entityResult = $this->getContainer()->get('product.repository')->search(
             $criteria,
-            $this->salesChannelContext->getContext()
+            $this->getSalesChannelContext()->getContext()
         );
 
         return $withVariantInformation
@@ -93,9 +86,9 @@ class ProductDebugService extends ProductService
 
     private function searchProduct(Criteria $criteria): ?ProductEntity
     {
-        return $this->container->get('product.repository')->search(
+        return $this->getContainer()->get('product.repository')->search(
             $criteria,
-            $this->salesChannelContext->getContext()
+            $this->getSalesChannelContext()->getContext()
         )->first();
     }
 

@@ -30,13 +30,13 @@ class ProductService
     public const CONTAINER_ID = 'fin_search.product_service';
 
     /** @var Config */
-    protected $config;
+    private $config;
 
     /** @var ContainerInterface */
-    protected $container;
+    private $container;
 
     /** @var SalesChannelContext|null */
-    protected $salesChannelContext;
+    private $salesChannelContext;
 
     public function __construct(
         ContainerInterface $container,
@@ -85,6 +85,11 @@ class ProductService
     public function getConfig(): ?Config
     {
         return $this->config;
+    }
+
+    public function getContainer(): ?ContainerInterface
+    {
+        return $this->container;
     }
 
     public function getTotalProductCount(): int
