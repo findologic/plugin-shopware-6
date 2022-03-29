@@ -185,11 +185,20 @@ class ProductDebugService extends ProductService
     {
         return sprintf(
             '%s/%s?shopkey=%s&productId=%s',
-            'http://localhost:8000',
+            $this->getShopDomain(),
             $path,
             $this->shopkey,
             $this->exportedMainVariantId()
         );
+    }
+
+    private function getShopDomain(): string
+    {
+        if ($domains = $this->getSalesChannelContext()->getSalesChannel()->getDomains()) {
+            return $domains->first()->getUrl();
+        }
+
+        return '';
     }
 
     /**
