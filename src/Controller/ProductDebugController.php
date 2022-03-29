@@ -76,12 +76,10 @@ class ProductDebugController extends ExportController
             $this->productService->getAllCustomerGroups()
         );
 
-        return new JsonResponse(
-            $this->productService->getDebugInformation(
-                $this->exportConfig->getProductId(),
-                $this->exportConfig->getShopkey(),
-                $this->export->getErrorHandler()->getExportErrors()
-            )
+        return $this->productService->getDebugInformation(
+            $this->exportConfig->getProductId(),
+            $this->exportConfig->getShopkey(),
+            $this->export->getErrorHandler()->getExportErrors()
         );
     }
 }

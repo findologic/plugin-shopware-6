@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ProductDebugService extends ProductService
 {
@@ -29,7 +30,7 @@ class ProductDebugService extends ProductService
     /** @var string[] */
     private $reasons = [];
 
-    public function getDebugInformation(string $productId, string $shopkey, ExportErrors $exportErrors): array
+    public function getDebugInformation(string $productId, string $shopkey, ExportErrors $exportErrors): JsonResponse
     {
         $this->productId = $productId;
         $this->shopkey = $shopkey;
@@ -39,7 +40,14 @@ class ProductDebugService extends ProductService
         $this->product = $this->fetchProduct();
 
         if (!$this->product) {
-            return $this->buildNotFoundResponse();
+            $this->exportErrors->addGeneralError(
+                sprintf('Product or variant with ID %s does not exist.', $this->productId)
+            );
+
+            return new JsonResponse(
+                $this->exportErrors->buildErrorResponse(),
+                422
+            );
         }
 
         $exportedMainProductId = $this->exportedMainVariantId();
@@ -49,7 +57,7 @@ class ProductDebugService extends ProductService
             $this->checkExportCriteria();
         }
 
-        return [
+        return new JsonResponse([
             'export' => [
                 'productId' => $this->product->getId(),
                 'exportedMainProductId' => $exportedMainProductId,
@@ -66,7 +74,7 @@ class ProductDebugService extends ProductService
                 'siblings' => $this->product->getParentId() ? $this->getSiblings($this->product) : [],
                 'associations' => $this->buildCriteria()->getAssociations(),
             ]
-        ];
+        ]);
     }
 
     public function fetchProduct(?string $productId = null, ?bool $withVariantInformation = false): ?ProductEntity
@@ -192,15 +200,5 @@ class ProductDebugService extends ProductService
         }
 
         return '';
-    }
-
-    /**
-     * @return string[]
-     */
-    private function buildNotFoundResponse(): array
-    {
-        return [
-            sprintf('Product or variant with ID %s does not exist.', $this->productId)
-        ];
     }
 }
