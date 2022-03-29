@@ -64,8 +64,8 @@ class ProductDebugService extends ProductService
                 'reasons' => array_merge($this->parseExportErrors(), $this->reasons)
             ],
             'debugLinks' => [
-                'exportUrl' => $this->buildExportUrl(),
-                'debugUrl' => $this->buildDebugUrl()
+                'exportUrl' => $this->buildExportUrl($exportedMainProductId),
+                'debugUrl' => $this->buildDebugUrl($exportedMainProductId)
             ],
             'data' => [
                 'isExportedMainVariant' => $exportedMainProductId === $this->product->getId(),
@@ -171,24 +171,24 @@ class ProductDebugService extends ProductService
         return $errors;
     }
 
-    private function buildExportUrl(): string
+    private function buildExportUrl(string $exportedMainProductId): string
     {
-        return $this->buildUrlByPath('findologic');
+        return $this->buildUrlByPath('findologic', $exportedMainProductId);
     }
 
-    private function buildDebugUrl(): string
+    private function buildDebugUrl(string $exportedMainProductId): string
     {
-        return $this->buildUrlByPath('findologic/debug');
+        return $this->buildUrlByPath('findologic/debug', $exportedMainProductId);
     }
 
-    private function buildUrlByPath(string $path): string
+    private function buildUrlByPath(string $path, string $exportedMainProductId): string
     {
         return sprintf(
             '%s/%s?shopkey=%s&productId=%s',
             $this->getShopDomain(),
             $path,
             $this->shopkey,
-            $this->exportedMainVariantId()
+            $exportedMainProductId
         );
     }
 
