@@ -50,7 +50,7 @@ class ProductDebugService extends ProductService
         }
 
         $exportedMainProductId = $this->exportedMainVariantId();
-        $isExported = $this->isExported();
+        $isExported = $this->isExported() && !$exportErrors->hasErrors();
 
         if (!$isExported) {
             $this->checkExportCriteria();
