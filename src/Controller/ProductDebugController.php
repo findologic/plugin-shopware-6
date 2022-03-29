@@ -77,7 +77,7 @@ class ProductDebugController extends ExportController
 
         $product = $this->productService->fetchProduct($this->exportConfig->getProductId(), true);
         $this->export->buildItems(
-            [$product],
+            $product ? [$product] : [],
             $this->exportConfig->getShopkey(),
             $this->productService->getAllCustomerGroups()
         );
