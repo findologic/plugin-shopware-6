@@ -33,6 +33,9 @@ class ProductDebugService extends ProductService
     /** @var ProductEntity */
     private $product;
 
+    /** @var string[] */
+    private $reasons = [];
+
     public function getDebugInformation(string $productId, string $shopkey, ExportErrors $exportErrors): array
     {
         $this->productId = $productId;
@@ -47,13 +50,18 @@ class ProductDebugService extends ProductService
         }
 
         $exportedMainProductId = $this->exportedMainVariantId();
+        $isExported = $this->isExported();
+
+        if (!$isExported) {
+            $this->checkExportCriteria();
+        }
 
         return [
             'export' => [
                 'productId' => $this->product->getId(),
                 'exportedMainProductId' => $exportedMainProductId,
-                'isExported' => true,
-                'reasons' => $this->parseExportErrors()
+                'isExported' => $isExported,
+                'reasons' => array_merge($this->parseExportErrors(), $this->reasons)
             ],
             'debugLinks' => [
                 'exportUrl' => $this->buildExportUrl(),
@@ -83,10 +91,21 @@ class ProductDebugService extends ProductService
             : $entityResult->first();
     }
 
-    private function buildCriteria(?string $productId = null): Criteria
+    private function searchProduct(Criteria $criteria): ?ProductEntity
+    {
+        return $this->container->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->first();
+    }
+
+    private function buildCriteria(?string $productId = null, ?bool $withAssociations = true): Criteria
     {
         $criteria = new Criteria([$productId ?? $this->productId]);
-        Utils::addProductAssociations($criteria);
+
+        if ($withAssociations) {
+            Utils::addProductAssociations($criteria);
+        }
 
         return $criteria;
     }
@@ -96,6 +115,42 @@ class ProductDebugService extends ProductService
         $product = $this->fetchProduct($this->productId, true);
 
         return $product->getId();
+    }
+
+    private function isExported(): bool
+    {
+        $result = $this->searchVisibleProducts(1, 0, $this->productId);
+
+        if ($result->count() === 1) {
+            if ($result->first()->getId() === $this->productId) {
+                return true;
+            } else {
+                $this->reasons[] = 'Different variant is used in the export.';
+            }
+        } else {
+            $this->reasons[] = 'Product could not be found or is not available for search.';
+        }
+
+        return false;
+    }
+
+    private function checkExportCriteria(): void
+    {
+        $criteriaFunctions = [
+            'addGrouping' => 'No display group set',
+            'handleAvailableStock' => 'Closeout product is out of stock',
+            'addVisibilityFilter' => 'Product is not visible for search'
+        ];
+
+        foreach ($criteriaFunctions as $function => $errorMessage) {
+            $criteria = $this->buildCriteria($this->productId, false);
+
+            $this->$function($criteria);
+
+            if (!$this->searchProduct($criteria)) {
+                $this->reasons[] = $errorMessage;
+            }
+        }
     }
 
     /**
