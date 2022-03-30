@@ -1,7 +1,51 @@
-# NEXT
+# 2.8.0
+- [SW-695] Die Plugin-Konfiguration für Cross-Selling Kategorien erlaubt die Selektierung von mehr als 500 Kategorien.
+- [SW-694] Ein Fehler wurde behoben, wodurch Dynamische Produktgruppen nicht als Cross-Selling Kategorien gesetzt werden können.
+- [SW-699] Ein Fehler wurde behoben, wodurch unter Umständen keine Cross-Selling Kategorie Vorschläge angezeigt werden.
+- [SW-698] Ein Fehler wurde behoben, wodurch bei einer speziellen Shopware-Installation die Version nicht korrekt erkannt wurde.
+
+# 2.7.1
+- [SW-696] Ein Fehler wurde behoben, wodurch Produkte nicht geladen werden bei Paginierung auf Navigationsseiten.
+
+# 2.7.0
+- [SW-644] Die exportierten Kategorien und cat_urls enthalten nun auch Daten von nicht-Hauptvarianten.
+- [SW-685] Drittanbieter Plugins können nun einfacher die Anfrage an Findologic anhand der gesetzten Sortierung manipulieren.
+- [SW-683] Ein Fehler wurde behoben, wodurch bei Direct Integration auf Kategorieseiten ein flicker-Effekt auftrat, wenn viele JavaScript Ressourcen geladen wurden, bevor die Findologic JavaScript Ressourcen laden konnten.
+- [SW-690] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, die keinen Hersteller zugewiesen hatten.
+- [SW-691] Ein Fehler wurde behoben, wodurch interne Listing-Anfragen blockiert wurden.
+- [SW-693] Ein Fehler wurde behoben, wodurch Daten von inaktiven und ausverkauften Varianten exportiert wurde.
+- [SW-688] Ein Fehler wurde behoben, wodurch bei Findologic deaktivierten Verkaufskanälen bei einigen Routen MySQL anstatt ElasticSearch verwendet wurde.
+- [SW-692] Ein Fehler wurde behoben, wodurch Keine-Ergebnisse auf Kategorie-Listingseiten mit Dynamischen Produktgruppen angezeigt wurden.
+- [SW-687] Shopware 6.4.8.1 wurde zur Test-Matrix hinzugefügt.
+
+# 2.6.1
+- [SW-677] HTML-kodierte Attributswerte, werden nun automatisch im export dekodiert.
+- [SW-569] Die Option für das Aktivieren von Findologic auf Kategorieseiten, wurde in die API Sektion migriert.
+- [SW-678] Ein Fehler wurde behoben, wodurch Fehler in der Konsole auf Direct Integration Seiten ausgegeben wurden, wenn die URL keinen "query" Parameter enthielt.
+- [SW-624] Ein Fehler wurde behoben, wodurch bei fehlendem Shopware ElasticSearch Bundle ein Fehler ausgegeben wurde.
+- [SW-681] Ein Fehler wurde behoben, wodurch unter Umständen bei manchen Shopware-Installationen die Version nicht korrekt erkannt wurde.
+
+# 2.6.0
+- [SW-673] Die Performance auf Kategorieseiten wurde verbessert, indem das Plugin nun einfacher die Information der aktuellen Kategorie erhält.
+- [SW-633] Die exportierten Keywords enthalten nun Shopware "Such-Schlagwörter", anstatt der konfigurierten "Tags".
+- [SW-674] Ein Fehler wurde behoben, wodurch Fehler in der Konsole auf Direct Integration Seiten ausgegeben wurden, die durch Aktualisierungen des Shopware-Listings ausgelöst wurden.
+
+# 2.5.0
+- [SW-613] Die Konfiguration hat nun eine neue "Export" Sektion, wo ausgewählt werden kann, welche Variante als Hauptvariante exportiert werden soll. Auswahlmöglichkeiten sind "Shopware Standard", "Haupt-/Eltern Produkt", "Günstigste Variante".
+- [SW-589] Das Dropdown zur Auswahl der Sprache in der Konfiguration, zeigt nun nur noch Sprachen an, die auch eine URL verknüpft haben.
+- [SW-672] Ein Fehler wurde behoben, wodurch das Plugin auf Kategorieseiten zu viele Anfragen an die Findologic API gesendet hatte, wodurch die Performance auf diesen Seiten negativ beeinflusst wurde.
+- [SW-671] Ein Fehler wurde behoben, wodurch der automatisierte build-Prozess scheiterte, da veraltete Composer 1 Klassen verwendet wurden.
+- [SW-668] Shopware 6.4.7.0 wurde zur Test-Matrix hinzugefügt.
+
+# 2.4.1
+- [SW-669] Ein Fehler wurde behoben, wodurch auf allen Listing Seiten auf denen Findologic nicht aktiv war, ein Fehler ausgegeben wurde.
+
+# 2.4.0
+- [SW-601] Anfragen an die Findologic API enthalten nun das Shopsystem und die Version.
 - [SW-662] Ein Fehler wurde behoben, wodurch der Export scheiterte, wenn die konfigurierte Hauptvariante für den exportierenden Verkaufskanal nicht verfügbar war.
 - [SW-663] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, wenn diese ein Zusatzfeld mit dem Wert "0" enthielten.
 - [SW-612] Ein Fehler wurde behoben, wodurch ein falscher Produkt-Preis exportiert wurde, wenn der exportierende Verkaufskanal nicht die konfigurierte standard Währung verwendete.
+- [SW-632] Ein Fehler wurde behoben, wodurch die untere Pagination angezeigt wurde, wenn nur eine einzige Paginationsseite existierte, was nicht dem Shopware Standard entsprach.
 
 # 2.3.0
 - [SW-567] Der Kategoriefilter wurde verbessert und hat ein große UI/UX verbesserungen erhalten.

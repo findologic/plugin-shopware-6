@@ -12,8 +12,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Page\GenericPageLoader;
-use Shopware\Storefront\Page\Navigation\NavigationPage;
-use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -22,11 +20,16 @@ class NavigationCategoryParser
     /** @var ContainerInterface */
     private $container;
 
-    /** @var GenericPageLoader */
+    /**
+     * @var GenericPageLoader|null
+     * @deprecated tag:v3.0.0 Will be removed without replacement.
+     */
     private $genericPageLoader;
 
-    public function __construct(ContainerInterface $container, GenericPageLoader $genericPageLoader)
-    {
+    public function __construct(
+        ContainerInterface $container,
+        ?GenericPageLoader $genericPageLoader = null
+    ) {
         $this->container = $container;
         $this->genericPageLoader = $genericPageLoader;
     }
@@ -40,33 +43,19 @@ class NavigationCategoryParser
         Request $request,
         SalesChannelContext $salesChannelContext
     ): ?CategoryEntity {
-        // Deep clone the SalesChannelContext to ensure that the state of it is not manipulated. A simple
-        // clone is not an option, as we need the entire state of the object.
-        $salesChannelContextClone = unserialize(serialize($salesChannelContext));
-
-        $page = $this->genericPageLoader->load($request, $salesChannelContextClone);
-        $navPage = NavigationPage::createFrom($page);
-
-        if ($page->getHeader()) {
-            return $this->parseFromHeader($navPage->getHeader());
-        }
-
-        if ($request->get('navigationId')) {
-            return $this->parseFromRequest($request, $salesChannelContextClone);
-        }
-
-        // Parsing the category from somewhere else is not possible.
-        return null;
+        return $this->parseFromRequest($request, $salesChannelContext);
     }
 
-    private function parseFromHeader(HeaderPagelet $header): CategoryEntity
+    private function parseFromRequest(Request $request, SalesChannelContext $salesChannelContext): ?CategoryEntity
     {
-        return $header->getNavigation()->getActive();
-    }
+        $navigationId = $request->get(
+            'navigationId',
+            $salesChannelContext->getSalesChannel()->getNavigationCategoryId()
+        );
 
-    private function parseFromRequest(Request $request, SalesChannelContext $salesChannelContext): CategoryEntity
-    {
-        $navigationId = $request->get('navigationId');
+        if (!$navigationId) {
+            return null;
+        }
 
         /** @var EntityRepository $categoryRepository */
         $categoryRepository = $this->container->get('category.repository');

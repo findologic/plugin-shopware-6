@@ -1,7 +1,51 @@
-# NEXT
+# 2.8.0
+- [SW-695] The plugin configuration now offers selection of cross-selling categories for more than 500 categories.
+- [SW-694] Fixed a bug that caused Dynamic Product Groups not to be excluded by cross-selling category setting.
+- [SW-699] Fixed a bug that caused cross-selling cateogries not being suggested in some cases.
+- [SW-698] Fixed a bug that caused the Shopware version not to be properly detected when using a special Shopware installation.
+
+# 2.7.1
+- [SW-696] Fixed a bug that caused products not to be displayed when using pagination on navigation pages.
+
+# 2.7.0
+- [SW-644] Exported categories and cat_urls now also include data from non-main variants.
+- [SW-685] Third-Party plugins can now easily listen to specific sorting options and can manipulate the requests to the Findologic API accordingly.
+- [SW-683] Fixed a bug that caused flickering on Direct Integration category pages, when many JavaScript resources have been loaded before Findologic JavaScript resources could be loaded.
+- [SW-690] Fixed a bug that caused products not to be exported that didn't have a manufacturer assigned.
+- [SW-691] Fixed a bug that caused internal additional listing requests to be blocked.
+- [SW-693] Fixed a bug that caused data of inactive and variants out-of-stock to be exported.
+- [SW-688] Fixed a bug that caused some routes to use MySQL instead of ElasticSearch for sales channels where Findologic was not active.
+- [SW-692] Fixed a bug that caused a no-result on category listings with Dynamic Product Groups.
+- [SW-687] Added Shopware 6.4.8.1 to the test matrix.
+
+# 2.6.1
+- [SW-677] HTML encoded attribute values are now automatically decoded in the export.
+- [SW-569] The option to enable Findologic on category pages, has been moved to the API section.
+- [SW-678] Fixed a bug that caused console errors on Direct Integration pages, where the URL did not contain a query parameter.
+- [SW-624] Fixed a bug that would cause an error if the Shopware ElasticSearch bundle is not available.
+- [SW-681] Fixed a bug that caused the Shopware version not to be properly detected on some Shopware installations.
+
+# 2.6.0
+- [SW-673] Improved performance on category pages, by improving the way the plugin gets the current category.
+- [SW-633] Exported keywords now contain Shopware "Search Keywords", instead of configured "Tags".
+- [SW-674] Fixed a bug that caused console errors on Direct Integration pages, that were caused by Shopware listing updates.
+
+# 2.5.0
+- [SW-613] The configuration now has a new "Export" section, where you can choose which variant should be exported to Findologic as "main variant". Options are "Shopware default", "Main-/Parent product", "Cheapest variant".
+- [SW-589] The dropdown for choosing the language in the configuration, will now only show languages that have a URL associated to them.
+- [SW-672] Fixed a bug that caused the plugin to send too many requests to the Findologic API on category pages, which negatively impacted the performance on these pages.
+- [SW-671] Fixed a bug that broke the build, due to usage of deprecated usage of Composer 1 classes.
+- [SW-668] Added Shopware 6.4.7.0 to the test matrix.
+
+# 2.4.1
+- [SW-669] Fixed a bug that caused an error on all listing pages where Findologic has not been active.
+
+# 2.4.0
+- [SW-601] Requests to the Findologic API now include the shopsystem and the shop version.
 - [SW-662] Fixed a bug that caused the export to fail, if the configured main variant had been set to inactive for the exporting sales channel.
 - [SW-663] Fixed a bug that caused products not to be exported, if they had configured a custom field containing "0".
 - [SW-612] Fixed a bug that caused the product price to be exported wrong, in case the exporting sales channel had configured a non-default currency.
+- [SW-632] Fixed a bug that caused the pagination at the bottom to be shown, when only one pagination page existed, which was inconsistent with the Shopware standard.
 
 # 2.3.0
 - [SW-567] The category filter has been improved and received a major UI/UX improvement.

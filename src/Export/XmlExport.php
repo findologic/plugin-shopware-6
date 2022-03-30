@@ -11,6 +11,7 @@ use FINDOLOGIC\Export\XML\XMLItem;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
@@ -102,8 +103,7 @@ class XmlExport extends Export
         string $shopkey,
         array $customerGroups
     ): ?Item {
-        if ($this->isProductInCrossSellingCategory($productEntity)) {
-            $category = $productEntity->getCategories()->first();
+        if ($category = $this->getConfiguredCrossSellingCategory($productEntity)) {
             $this->logger->warning(
                 sprintf(
                     'Product with id %s (%s) was not exported because it is assigned to cross selling category %s (%s)',
@@ -137,16 +137,47 @@ class XmlExport extends Export
         return $exportItemAdapter->adapt($this->xmlFileConverter->createItem($productEntity->getId()), $productEntity);
     }
 
-    private function isProductInCrossSellingCategory(ProductEntity $productEntity): bool
+    private function getConfiguredCrossSellingCategory(ProductEntity $productEntity): ?CategoryEntity
     {
-        if (!empty($this->crossSellingCategories)) {
-            $categories = $productEntity->getCategories();
-            $category = $categories ? $categories->first() : null;
-            $categoryId = $category ? $category->getId() : null;
+        if (count($this->crossSellingCategories)) {
+            $categories = array_merge(
+                $this->getAssignedCategories($productEntity),
+                $this->getDynamicProductGroupCategories($productEntity)
+            );
 
-            return (in_array($categoryId, $this->crossSellingCategories));
+            foreach ($categories as $categoryId => $category) {
+                if (in_array($categoryId, $this->crossSellingCategories)) {
+                    return $category;
+                }
+            }
         }
 
-        return false;
+        return null;
+    }
+
+    /**
+     * @param ProductEntity $productEntity
+     * @return CategoryEntity[]
+     */
+    private function getAssignedCategories(ProductEntity $productEntity): array
+    {
+        return $productEntity->getCategories() ? $productEntity->getCategories()->getElements() : [];
+    }
+
+    /**
+     * @param ProductEntity $productEntity
+     * @return CategoryEntity[]
+     */
+    private function getDynamicProductGroupCategories(ProductEntity $productEntity): array
+    {
+        if ($this->container->has('fin_search.dynamic_product_group')) {
+            $dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
+
+            if ($dynamicProductGroupService) {
+                return $dynamicProductGroupService->getCategories($productEntity->getId());
+            }
+        }
+
+        return [];
     }
 }

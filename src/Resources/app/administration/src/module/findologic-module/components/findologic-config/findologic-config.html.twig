@@ -21,12 +21,6 @@
                                         :helpText="$tc('findologic.settingForm.config.active.tooltipText')"
                                 >
                                 </sw-switch-field>
-                                <sw-switch-field
-                                        v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
-                                        :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
-                                        :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
-                                >
-                                </sw-switch-field>
                                 <sw-button
                                         v-show="showTestButton"
                                         @click="openSalesChannelUrl"
@@ -34,18 +28,6 @@
                                     {{ $tc('findologic.settingForm.testButton') }}
                                 </sw-button>
                                 <span class="divider"></span>
-                                <sw-multi-select
-                                        v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
-                                        :options="categories"
-                                        :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
-                                        :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
-                                        :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
-                                >
-                                    <template #selection-label-property="{ item }">
-                                        {{ item.name }}
-                                    </template>
-
-                                </sw-multi-select>
                                 <sw-text-field
                                         v-model="actualConfigData['FinSearch.config.integrationType']"
                                         ref="integrationType"
@@ -58,7 +40,33 @@
                         {% endblock %}
                     {% endblock %}
                 </sw-container>
+            </sw-card>
 
+
+            <sw-card class="sw-card--grid"
+                     :title="$tc('findologic.settingForm.config.export.title')">
+                <sw-container>
+                    <div class="findologic-settings-credentials-fields">
+                        <sw-single-select
+                                v-model="actualConfigData['FinSearch.config.mainVariant']"
+                                :options="mainVariantOptions"
+                                :label="$tc('findologic.settingForm.config.mainVariant.label')"
+                                :placeholder="$tc('findologic.settingForm.config.mainVariant.default.label')"
+                                :helpText="$tc('findologic.settingForm.config.mainVariant.tooltipText')">
+                        </sw-single-select>
+
+                        <sw-category-tree-field
+                                id="crossSellingCategories"
+                                :categories-collection="categoryCollection"
+                                :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
+                                :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
+                                :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                                @selection-add="onCategoryAdd"
+                                @selection-remove="onCategoryRemove"
+                        >
+                        </sw-category-tree-field>
+                    </div>
+                </sw-container>
             </sw-card>
 
             <sw-card class="sw-card--grid"
@@ -91,6 +99,12 @@
                     <div class="findologic-settings-credentials-fields">
 
                         {% block findologic_credentials_settings_search_filter_position_container %}
+                            <sw-switch-field
+                                v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
+                                :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
+                                :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
+                            >
+                            </sw-switch-field>
                             <sw-single-select
                                     v-model="actualConfigData['FinSearch.config.filterPosition']"
                                     :options="filterPositionOptions"

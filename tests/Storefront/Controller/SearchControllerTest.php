@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Storefront\Controller;
 
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21ResponseParser;
+use FINDOLOGIC\FinSearch\Storefront\Controller\SearchController;
+use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
+use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -16,6 +20,7 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
 use Shopware\Storefront\Test\Controller\StorefrontControllerTestBehaviour;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -159,5 +164,40 @@ class SearchControllerTest extends TestCase
         ];
 
         $this->assertSame($filterResponse, $expectedFilters);
+    }
+
+    public function testShopwareSearchControllerIsUsedForFilterActionWhenFindologicIsDisabled(): void
+    {
+        $findologicService = new FindologicService();
+        $findologicService->disable();
+        $this->salesChannelContext->getContext()->addExtension('findologicService', $findologicService);
+
+        $shopwareSearchControllerMock = $this->getMockBuilder(ShopwareSearchController::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $shopwareSearchControllerMock->expects($this->once())->method('filter');
+
+        $searchPageLoaderMock = $this->getMockBuilder(SearchPageLoader::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $filterHandlerMock = $this->getMockBuilder(FilterHandler::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $filterHandlerMock->expects($this->never())->method('handleAvailableFilters');
+
+        $findologicSearchServiceMock = $this->getMockBuilder(FindologicSearchService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $searchController = new SearchController(
+            $shopwareSearchControllerMock,
+            $searchPageLoaderMock,
+            $filterHandlerMock,
+            $this->getContainer(),
+            $findologicSearchServiceMock
+        );
+
+        $searchController->filter(new Request(), $this->salesChannelContext);
     }
 }

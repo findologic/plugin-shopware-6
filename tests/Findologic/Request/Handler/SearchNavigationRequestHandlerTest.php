@@ -14,6 +14,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchRequestHandler;
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
@@ -156,8 +157,6 @@ class SearchNavigationRequestHandlerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->genericPageLoaderMock->expects($this->once())->method('load')->willReturn($pageMock);
-
         $requestHandler = $this->buildNavigationRequestHandler();
         $requestHandler->handleRequest($event);
 
@@ -171,7 +170,8 @@ class SearchNavigationRequestHandlerTest extends TestCase
             $this->findologicRequestFactoryMock,
             $this->configMock,
             $this->apiConfig,
-            $this->apiClientMock
+            $this->apiClientMock,
+            $this->getContainer()->get(SortingHandlerService::class)
         );
     }
 
@@ -184,6 +184,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
             $this->apiConfig,
             $this->apiClientMock,
             $this->genericPageLoaderMock,
+            $this->getContainer()->get(SortingHandlerService::class),
             $this->getContainer()
         );
     }

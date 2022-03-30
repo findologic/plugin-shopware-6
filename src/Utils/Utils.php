@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Utils;
 
+use Composer\InstalledVersions;
+use Exception;
 use FINDOLOGIC\FinSearch\Definitions\Defaults;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
@@ -18,12 +20,17 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Throwable;
+
+use function array_unique;
+
+use const SORT_REGULAR;
 
 class Utils
 {
@@ -76,10 +83,11 @@ class Utils
                 'categories',
                 'categories.seoUrls',
                 'translations',
-                'tags',
+                'searchKeywords',
                 'media',
                 'manufacturer',
                 'manufacturer.translations',
+                'cover',
                 'properties',
                 'properties.group',
                 'properties.productConfiguratorSettings',
@@ -87,10 +95,19 @@ class Utils
                 'properties.productConfiguratorSettings.option.group',
                 'properties.productConfiguratorSettings.option.group.translations',
                 'children',
+                'children.seoUrls',
+                'children.categories',
+                'children.categories.seoUrls',
+                'children.translations',
+                'children.tags',
                 'children.media',
+                'children.manufacturer',
+                'children.manufacturer.translations',
                 'children.cover',
                 'children.properties',
                 'children.properties.group',
+                'children.categories',
+                'children.categories.seoUrls',
                 'children.properties.productConfiguratorSettings',
                 'children.properties.productConfiguratorSettings.option',
                 'children.properties.productConfiguratorSettings.option.group',
@@ -127,14 +144,23 @@ class Utils
         );
     }
 
-    public static function versionLowerThan(string $version): bool
+    public static function versionLowerThan(string $compareVersion, ?string $actualVersion = null): bool
     {
-        return version_compare(static::getCleanShopwareVersion(), $version, '<');
+        return version_compare(static::getCleanShopwareVersion($actualVersion), $compareVersion, '<');
     }
 
-    public static function getCleanShopwareVersion(): string
+    public static function versionGreaterOrEqual(string $compareVersion, ?string $actualVersion = null): bool
     {
-        $version = static::getShopwareVersion();
+        return version_compare(static::getCleanShopwareVersion($actualVersion), $compareVersion, '>=');
+    }
+
+    public static function getCleanShopwareVersion(?string $actualVersion = null): string
+    {
+        // The fallback version does not include the major version for 6.2, therefore version_compare fails
+        // It is 9999999-dev in 6.2 and 6.x.9999999.9999999-dev starting from 6.3
+        $version = $actualVersion === Kernel::SHOPWARE_FALLBACK_VERSION
+            ? static::getShopwareVersion()
+            : $actualVersion ?? static::getShopwareVersion();
         $versionWithoutPrefix = ltrim($version, 'v');
 
         return static::cleanVersionCommitHashAndReleaseInformation($versionWithoutPrefix);
@@ -149,18 +175,34 @@ class Utils
      */
     protected static function getShopwareVersion(): string
     {
-        $packageVersions = Versions::VERSIONS;
-        $coreIsInstalled = isset($packageVersions['shopware/core']);
+        // Composer 2 runtime API uses the `InstalledVersions::class` in favor of the
+        // deprecated/removed `Versions::class`
+        if (class_exists(InstalledVersions::class)) {
+            if (InstalledVersions::isInstalled('shopware/platform')) {
+                if (InstalledVersions::getPrettyVersion('shopware/platform')) {
+                    return InstalledVersions::getPrettyVersion('shopware/platform');
+                }
+            }
 
-        $shopwareVersion = $coreIsInstalled ?
-            Versions::getVersion('shopware/core') :
-            Versions::getVersion('shopware/platform');
-
-        if (!trim($shopwareVersion, 'v@')) {
-            return $coreIsInstalled ? $packageVersions['shopware/core'] : $packageVersions['shopware/platform'];
+            if (InstalledVersions::isInstalled('shopware/core')) {
+                if (InstalledVersions::getPrettyVersion('shopware/core')) {
+                    return InstalledVersions::getPrettyVersion('shopware/core');
+                }
+            }
         }
 
-        return $shopwareVersion;
+        if (defined('PackageVersions\Versions::VERSIONS')) {
+            $packageVersions = Versions::VERSIONS;
+            if (isset($packageVersions['shopware/platform'])) {
+                return $packageVersions['shopware/platform'];
+            }
+
+            if (isset($packageVersions['shopware/core'])) {
+                return $packageVersions['shopware/core'];
+            }
+        }
+
+        throw new Exception('Used Shopware version cannot be detected');
     }
 
     protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string
@@ -421,5 +463,10 @@ class Utils
         });
 
         return $flattened;
+    }
+
+    public static function flattenWithUnique(array $array): array
+    {
+        return array_unique(static::flat($array), SORT_REGULAR);
     }
 }

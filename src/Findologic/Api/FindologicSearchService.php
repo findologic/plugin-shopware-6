@@ -12,6 +12,7 @@ use FINDOLOGIC\FinSearch\Exceptions\Search\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchRequestHandler;
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
@@ -32,26 +33,43 @@ class FindologicSearchService
 {
     private const FILTER_REQUEST_LIMIT = 0;
 
-    /** @var ContainerInterface */
+    /**
+     * @var ContainerInterface
+     */
     private $container;
 
-    /** @var ApiClient */
+    /**
+     * @var ApiClient
+     */
     private $apiClient;
 
-    /** @var ApiConfig */
+    /**
+     * @var ApiConfig
+     */
     private $apiConfig;
 
-    /** @var PluginConfig */
+    /**
+     * @var PluginConfig
+     */
     private $pluginConfig;
 
-    /** @var GenericPageLoader */
+    /**
+     * @var GenericPageLoader
+     */
     private $genericPageLoader;
 
-    /** @var SortingService */
+    /**
+     * @var SortingService
+     */
     private $sortingService;
 
     /** @var PaginationService */
     private $paginationService;
+
+    /**
+     * @var SortingHandlerService
+     */
+    private $sortingHandlerService;
 
     public function __construct(
         ContainerInterface $container,
@@ -60,7 +78,8 @@ class FindologicSearchService
         PluginConfig $pluginConfig,
         GenericPageLoader $genericPageLoader,
         SortingService $sortingService,
-        PaginationService $paginationService
+        PaginationService $paginationService,
+        SortingHandlerService $sortingHandlerService
     ) {
         $this->container = $container;
         $this->apiClient = $apiClient;
@@ -69,6 +88,7 @@ class FindologicSearchService
         $this->genericPageLoader = $genericPageLoader;
         $this->sortingService = $sortingService;
         $this->paginationService = $paginationService;
+        $this->sortingHandlerService = $sortingHandlerService;
     }
 
     public function doSearch(ProductSearchCriteriaEvent $event, ?int $limitOverride = null): void
@@ -168,7 +188,8 @@ class FindologicSearchService
             $this->container->get(SearchRequestFactory::class),
             $this->pluginConfig,
             $this->apiConfig,
-            $this->apiClient
+            $this->apiClient,
+            $this->sortingHandlerService
         );
     }
 
@@ -181,6 +202,7 @@ class FindologicSearchService
             $this->apiConfig,
             $this->apiClient,
             $this->genericPageLoader,
+            $this->sortingHandlerService,
             $this->container
         );
     }
