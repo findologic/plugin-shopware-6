@@ -38,10 +38,6 @@ class SalesFrequencyAdapter
             $this->salesChannelContext->getContext()
         );
 
-        if (!$orders->getTotal()) {
-            return null;
-        }
-
         $salesFrequency = new SalesFrequency();
         $salesFrequency->setValue($orders->getTotal());
 
