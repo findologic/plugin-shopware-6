@@ -71,7 +71,7 @@ class ExportItemAdapter implements ExportItemAdapterInterface
 
         try {
             $item = $this->adaptProduct($item, $product);
-        } catch (EmptyValueNotAllowedException|ProductInvalidException|Exception|Throwable $exception) {
+        } catch (EmptyValueNotAllowedException | ProductInvalidException | Exception | Throwable $exception) {
             $exceptionLogger = new ExportExceptionLogger($this->logger);
             $exceptionLogger->log($product, $exception);
 
