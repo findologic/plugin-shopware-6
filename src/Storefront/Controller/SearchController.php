@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSearchPageLoader;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
@@ -38,18 +41,28 @@ class SearchController extends StorefrontController
     /** @var FindologicSearchService */
     private $findologicSearchService;
 
+    /** @var ServiceConfigResource */
+    private $serviceConfigResource;
+
+    /** @var Config */
+    private $config;
+
     public function __construct(
         ShopwareSearchController $decorated,
         ?SearchPageLoader $searchPageLoader,
         FilterHandler $filterHandler,
         ContainerInterface $container,
-        FindologicSearchService $findologicSearchService
+        FindologicSearchService $findologicSearchService,
+        ServiceConfigResource $serviceConfigResource,
+        FindologicConfigService $findologicConfigService
     ) {
         $this->container = $container;
         $this->decorated = $decorated;
         $this->searchPageLoader = $this->buildSearchPageLoader($searchPageLoader);
         $this->filterHandler = $filterHandler;
         $this->findologicSearchService = $findologicSearchService;
+        $this->serviceConfigResource = $serviceConfigResource;
+        $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 
     private function buildSearchPageLoader(?SearchPageLoader $searchPageLoader): SearchPageLoader
@@ -140,18 +153,26 @@ class SearchController extends StorefrontController
      * @Route("/widgets/search/filter", name="widgets.search.filter", methods={"GET", "POST"},
      *     defaults={"XmlHttpRequest"=true})
      */
-    public function filter(Request $request, SalesChannelContext $context): Response
+    public function filter(Request $request, SalesChannelContext $salesChannelContext): Response
     {
-        if (!Utils::isFindologicEnabled($context)) {
-            return $this->decorated->filter($request, $context);
+        $this->config->initializeBySalesChannel($salesChannelContext);
+        if (
+            !Utils::shouldHandleRequest(
+                $request,
+                $salesChannelContext->getContext(),
+                $this->serviceConfigResource,
+                $this->config
+            )
+        ) {
+            return $this->decorated->filter($request, $salesChannelContext);
         }
 
-        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $context);
+        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $salesChannelContext);
         $this->findologicSearchService->doFilter($event);
 
         $result = $this->filterHandler->handleAvailableFilters($event);
         if (!$event->getCriteria()->hasExtension('flAvailableFilters')) {
-            return $this->decorated->filter($request, $context);
+            return $this->decorated->filter($request, $salesChannelContext);
         }
 
         return new JsonResponse($result);
