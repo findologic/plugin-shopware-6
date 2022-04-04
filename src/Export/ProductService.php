@@ -395,12 +395,14 @@ class ProductService
         // a cheaper product in its children.
         $cheapestPrice = $parent->getCurrencyPrice($currencyId);
         foreach ($children as $child) {
-            $price = $child->getCurrencyPrice($currencyId);
-            if (!$price) {
+            if (!$price = $child->getCurrencyPrice($currencyId)) {
                 continue;
             }
 
-            if ($price->getGross() < $cheapestPrice->getGross()) {
+            if (
+                $cheapestPrice->getGross() === 0.0 ||
+                $price->getGross() < $cheapestPrice->getGross()
+            ) {
                 $cheapestPrice->setGross($price->getGross());
                 $parent = $child;
             }
