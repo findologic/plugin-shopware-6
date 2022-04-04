@@ -556,6 +556,20 @@ class ProductServiceTest extends TestCase
                 'secondVariantPrice' => 4,
                 'thirdVariantPrice' => 4,
                 'cheapestPrice' => 4
+            ],
+            'export cheapest real price with one having 0' => [
+                'parentPrice' => 12,
+                'firstVariantPrice' => 4,
+                'secondVariantPrice' => 0,
+                'thirdVariantPrice' => 9,
+                'cheapestPrice' => 4
+            ],
+            'export cheapest variant price with parent having 0' => [
+                'parentPrice' => 0,
+                'firstVariantPrice' => 4,
+                'secondVariantPrice' => 5,
+                'thirdVariantPrice' => 9,
+                'cheapestPrice' => 4
             ]
         ];
     }
@@ -588,7 +602,10 @@ class ProductServiceTest extends TestCase
 
         // By default, main product will be exported, unless there is a cheaper price.
         $expectedMainVariantId = $parentId;
-        if ($cheapestPrice < $parentPrice) {
+        if (
+            $parentPrice === 0.0 ||
+            $cheapestPrice < $parentPrice
+        ) {
             $expectedMainVariantId = $expectedFirstVariantId;
         }
 
