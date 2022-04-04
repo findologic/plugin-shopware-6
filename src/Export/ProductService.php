@@ -18,6 +18,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\RangeFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Grouping\FieldGrouping;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
@@ -161,6 +162,7 @@ class ProductService
         );
         $this->addVisibilityFilter($childrenCriteria);
         $this->handleAvailableStock($childrenCriteria);
+        $this->addHasPriceFilter($childrenCriteria);
 
         $this->addProductAssociations($criteria);
 
@@ -180,6 +182,7 @@ class ProductService
     {
         $criteria = $this->buildProductCriteria($limit, $offset);
         $this->addVisibilityFilter($criteria);
+        $this->addHasPriceFilter($criteria);
 
         return $criteria;
     }
@@ -210,6 +213,15 @@ class ProductService
                 $this->salesChannelContext->getSalesChannel()->getId(),
                 ProductVisibilityDefinition::VISIBILITY_SEARCH
             )
+        );
+    }
+
+    protected function addHasPriceFilter(Criteria $criteria): void
+    {
+        $criteria->addFilter(
+            new RangeFilter('cheapestPrice', [
+                RangeFilter::GT => 0
+            ])
         );
     }
 
