@@ -17,7 +17,7 @@ is configured on the left side.
              data-offcanvas-filter-content="true">
             {% sw_include '@Storefront/storefront/component/listing/filter-panel.html.twig' with {
                 listing: page.listing,
-                sidebar: isInSidebar
+                sidebar: true
             } %}
         </div>
     </div>
@@ -27,7 +27,7 @@ is configured on the left side.
             dataUrl: dataUrl,
             filterUrl: filterUrl,
             params: { search: page.searchTerm },
-            sidebar: isInSidebar ? 1 : 0,
+            sidebar: true,
             boxLayout: 'minimal',
             displayMode: ''
         } %}

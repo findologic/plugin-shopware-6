@@ -4,7 +4,7 @@
          data-offcanvas-filter-content="true">
         {% sw_include '@Storefront/storefront/component/listing/filter-panel.html.twig' with {
             listing: page.listing,
-            sidebar: isInSidebar
+            sidebar: false
         } %}
     </div>
 </div>
@@ -13,7 +13,7 @@
     dataUrl: dataUrl,
     filterUrl: filterUrl,
     params: { search: page.searchTerm },
-    sidebar: isInSidebar ? 1 : 0,
+    sidebar: false,
     boxLayout: 'minimal',
     displayMode: ''
 } %}

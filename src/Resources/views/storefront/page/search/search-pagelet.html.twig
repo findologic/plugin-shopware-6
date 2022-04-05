@@ -1,7 +1,5 @@
 {% sw_extends '@Storefront/storefront/page/search/search-pagelet.html.twig' %}
 
-{% set listingColumns = 'col-sm-6 col-lg-4 col-xl-3' %}
-
 {% set dataUrl =
     context.context.extensions.flSystemAware.supportsNewSearchWidget ?
     url('widgets.search.pagelet.v2') :
@@ -17,8 +15,6 @@
         {{ parent() }}
     {% else %}
         {% if page.header.extensions.flConfig.filterPosition is constant('\\FINDOLOGIC\\FinSearch\\Findologic\\FilterPosition::LEFT') %}
-            {% set sidebarClasses = 'has--sidebar' %}
-            {% set isInSidebar = true %}
             {% sw_include '@FinSearch/storefront/page/search/layout/leftFilterLayout.html.twig' %}
         {% else %}
             {% sw_include '@FinSearch/storefront/page/search/layout/topFilterLayout.html.twig' %}
