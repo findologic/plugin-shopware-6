@@ -1,3 +1,6 @@
+# NEXT
+- [SW-701] Ein Fehler wurde behoben, wodurch nicht verfügbare Filterwerte nicht deaktiviert wurden.
+
 # 2.8.0
 - [SW-695] Die Plugin-Konfiguration für Cross-Selling Kategorien erlaubt die Selektierung von mehr als 500 Kategorien.
 - [SW-694] Ein Fehler wurde behoben, wodurch Dynamische Produktgruppen nicht als Cross-Selling Kategorien gesetzt werden können.
