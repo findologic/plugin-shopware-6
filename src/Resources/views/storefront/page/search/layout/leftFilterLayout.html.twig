@@ -1,0 +1,35 @@
+{#
+Override product/filter columns in case the theme differs. Columns will only be used in case the filter position
+is configured on the left side.
+#}
+{% if filterColumns is not defined %}
+    {% set filterColumns = 'col-lg-4 col-xl-3' %}
+{% endif %}
+
+{% if productColumns is not defined %}
+    {% set productColumns = 'col-lg-8 col-xl-9' %}
+{% endif %}
+
+<div class="row">
+    <div class="cms-element-sidebar-filter {{ filterColumns }}">
+        <div id="filter-panel-wrapper"
+             class="filter-panel-wrapper"
+             data-offcanvas-filter-content="true">
+            {% sw_include '@Storefront/storefront/component/listing/filter-panel.html.twig' with {
+                listing: page.listing,
+                sidebar: isInSidebar
+            } %}
+        </div>
+    </div>
+    <div class="{{ productColumns }}">
+        {% sw_include '@Storefront/storefront/component/product/listing.html.twig' with {
+            searchResult: page.listing,
+            dataUrl: dataUrl,
+            filterUrl: filterUrl,
+            params: { search: page.searchTerm },
+            sidebar: isInSidebar ? 1 : 0,
+            boxLayout: 'minimal',
+            displayMode: ''
+        } %}
+    </div>
+</div>
