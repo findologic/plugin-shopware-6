@@ -10,20 +10,26 @@ use Shopware\Core\Content\Product\ProductEntity;
 
 class DescriptionAdapter
 {
-    public function adapt(ProductEntity $product): Description
+    public function adapt(ProductEntity $product): ?Description
     {
-        $description = new Description();
-        $description->setValue($this->getDescription($product));
+        $value = new Description();
+        $description = $this->getDescription($product);
 
-        return $description;
+        if (!$description) {
+            return null;
+        }
+
+        $value->setValue($description);
+
+        return $value;
     }
 
-    private function getDescription(ProductEntity $product): string
+    private function getDescription(ProductEntity $product): ?string
     {
         $description = $product->getTranslation('description');
 
         if (Utils::isEmpty($description)) {
-            return '';
+            return null;
         }
 
         return $description;

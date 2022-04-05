@@ -21,7 +21,7 @@ class UserGroupsAdapter
 
         /** @var CustomerGroupEntity $customerGroupEntity */
         foreach ($exportContext->getCustomerGroups() as $customerGroupEntity) {
-           $userGroups[] = new Usergroup(
+            $userGroups[] = new Usergroup(
                 Utils::calculateUserGroupHash($exportContext->getShopkey(), $customerGroupEntity->getId())
             );
         }

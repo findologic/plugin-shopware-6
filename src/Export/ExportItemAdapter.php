@@ -55,13 +55,23 @@ class ExportItemAdapter implements ExportItemAdapterInterface
     {
         $this->eventDispatcher->dispatch(new BeforeItemAdaptEvent($product, $item), BeforeItemAdaptEvent::NAME);
 
-        $item->setName($this->adapterFactory->getNameAdapter()->adapt($product));
+        if ($name = $this->adapterFactory->getNameAdapter()->adapt($product)) {
+            $item->setName($name);
+        }
+
         foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
             $item->addMergedAttribute($attribute);
         }
+
         $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
-        $item->setUrl($this->adapterFactory->getUrlAdapter()->adapt($product));
-        $item->setDescription($this->adapterFactory->getDescriptionAdapter()->adapt($product));
+
+        if ($url = $this->adapterFactory->getUrlAdapter()->adapt($product)) {
+            $item->setUrl($url);
+        }
+
+        if ($description = $this->adapterFactory->getDescriptionAdapter()->adapt($product)) {
+            $item->setDescription($description);
+        }
 
         if ($dateAdded = $this->adapterFactory->getDateAddedAdapter()->adapt($product)) {
             $item->setDateAdded($dateAdded);

@@ -14,17 +14,28 @@ class NameAdapter
     /**
      * @throws ProductHasNoNameException
      */
-    public function adapt(ProductEntity $product): Name
+    public function adapt(ProductEntity $product): ?Name
     {
+        $name = $this->getCleanedName($product);
+
+        if (!$name) {
+            return null;
+        }
+
         $value = new Name();
         $value->setValue($this->getCleanedName($product));
 
         return $value;
     }
 
-    protected function getCleanedName(ProductEntity $product): string
+    protected function getCleanedName(ProductEntity $product): ?string
     {
         $name = $product->getTranslation('name');
+
+        if (!$name) {
+            return null;
+        }
+
         if (Utils::isEmpty($name)) {
             throw new ProductHasNoNameException($product);
         }
