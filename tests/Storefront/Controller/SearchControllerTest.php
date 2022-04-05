@@ -6,7 +6,9 @@ namespace FINDOLOGIC\FinSearch\Tests\Storefront\Controller;
 
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21ResponseParser;
 use FINDOLOGIC\FinSearch\Storefront\Controller\SearchController;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
@@ -190,12 +192,22 @@ class SearchControllerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $findologicConfigServiceMock = $this->getMockBuilder(FindologicConfigService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $searchController = new SearchController(
             $shopwareSearchControllerMock,
             $searchPageLoaderMock,
             $filterHandlerMock,
             $this->getContainer(),
-            $findologicSearchServiceMock
+            $findologicSearchServiceMock,
+            $serviceConfigResource,
+            $findologicConfigServiceMock
         );
 
         $searchController->filter(new Request(), $this->salesChannelContext);
