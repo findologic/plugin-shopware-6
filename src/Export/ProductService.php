@@ -219,7 +219,7 @@ class ProductService
     protected function addHasPriceFilter(Criteria $criteria): void
     {
         $criteria->addFilter(
-            new RangeFilter('cheapestPrice', [
+            new RangeFilter('price', [
                 RangeFilter::GT => 0
             ])
         );
