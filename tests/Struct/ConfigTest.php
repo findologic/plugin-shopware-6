@@ -66,7 +66,7 @@ class ConfigTest extends TestCase
     public function testConfigPropertiesInitialization(array $data, ?ClientException $exception): void
     {
         /** @var FindologicConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($this, $data);
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($data);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
         $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)

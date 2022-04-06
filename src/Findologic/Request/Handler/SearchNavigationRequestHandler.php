@@ -64,11 +64,13 @@ abstract class SearchNavigationRequestHandler
     protected $findologicRequestFactory;
 
     /**
-     * @var SortingHandlerInterface[]
+     * @var SortingHandlerService
      */
-    protected $sortingHandlers;
+    protected $sortingHandlerService;
 
-    /** @var FilterHandler */
+    /**
+     * @var FilterHandler
+     */
     protected $filterHandler;
 
     public function __construct(
@@ -77,6 +79,7 @@ abstract class SearchNavigationRequestHandler
         Config $config,
         ApiConfig $apiConfig,
         ApiClient $apiClient,
+        SortingHandlerService $sortingHandlerService,
         ?FilterHandler $filterHandler = null
     ) {
         $this->serviceConfigResource = $serviceConfigResource;
@@ -84,9 +87,8 @@ abstract class SearchNavigationRequestHandler
         $this->config = $config;
         $this->apiConfig = $apiConfig;
         $this->apiClient = $apiClient;
+        $this->sortingHandlerService = $sortingHandlerService;
         $this->filterHandler = $filterHandler ?? new FilterHandler();
-
-        $this->sortingHandlers = $this->getSortingHandler();
     }
 
     abstract public function handleRequest(ShopwareEvent $event): void;
@@ -134,31 +136,6 @@ abstract class SearchNavigationRequestHandler
         }
 
         $event->getCriteria()->assign($vars);
-    }
-
-    /**
-     * @return SortingHandlerInterface[]
-     */
-    protected function getSortingHandler(): array
-    {
-        return [
-            new ScoreSortingHandler(),
-            new PriceSortingHandler(),
-            new ProductNameSortingHandler(),
-            new ReleaseDateSortingHandler(),
-            new TopSellerSortingHandler(),
-        ];
-    }
-
-    protected function addSorting(SearchNavigationRequest $searchNavigationRequest, Criteria $criteria): void
-    {
-        foreach ($this->sortingHandlers as $handler) {
-            foreach ($criteria->getSorting() as $fieldSorting) {
-                if ($handler->supportsSorting($fieldSorting)) {
-                    $handler->generateSorting($fieldSorting, $searchNavigationRequest);
-                }
-            }
-        }
     }
 
     protected function setPagination(

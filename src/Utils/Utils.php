@@ -20,12 +20,17 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Throwable;
+
+use function array_unique;
+
+use const SORT_REGULAR;
 
 class Utils
 {
@@ -78,10 +83,11 @@ class Utils
                 'categories',
                 'categories.seoUrls',
                 'translations',
-                'tags',
+                'searchKeywords',
                 'media',
                 'manufacturer',
                 'manufacturer.translations',
+                'cover',
                 'properties',
                 'properties.group',
                 'properties.productConfiguratorSettings',
@@ -89,10 +95,19 @@ class Utils
                 'properties.productConfiguratorSettings.option.group',
                 'properties.productConfiguratorSettings.option.group.translations',
                 'children',
+                'children.seoUrls',
+                'children.categories',
+                'children.categories.seoUrls',
+                'children.translations',
+                'children.tags',
                 'children.media',
+                'children.manufacturer',
+                'children.manufacturer.translations',
                 'children.cover',
                 'children.properties',
                 'children.properties.group',
+                'children.categories',
+                'children.categories.seoUrls',
                 'children.properties.productConfiguratorSettings',
                 'children.properties.productConfiguratorSettings.option',
                 'children.properties.productConfiguratorSettings.option.group',
@@ -129,14 +144,23 @@ class Utils
         );
     }
 
-    public static function versionLowerThan(string $version): bool
+    public static function versionLowerThan(string $compareVersion, ?string $actualVersion = null): bool
     {
-        return version_compare(static::getCleanShopwareVersion(), $version, '<');
+        return version_compare(static::getCleanShopwareVersion($actualVersion), $compareVersion, '<');
     }
 
-    public static function getCleanShopwareVersion(): string
+    public static function versionGreaterOrEqual(string $compareVersion, ?string $actualVersion = null): bool
     {
-        $version = static::getShopwareVersion();
+        return version_compare(static::getCleanShopwareVersion($actualVersion), $compareVersion, '>=');
+    }
+
+    public static function getCleanShopwareVersion(?string $actualVersion = null): string
+    {
+        // The fallback version does not include the major version for 6.2, therefore version_compare fails
+        // It is 9999999-dev in 6.2 and 6.x.9999999.9999999-dev starting from 6.3
+        $version = $actualVersion === Kernel::SHOPWARE_FALLBACK_VERSION
+            ? static::getShopwareVersion()
+            : $actualVersion ?? static::getShopwareVersion();
         $versionWithoutPrefix = ltrim($version, 'v');
 
         return static::cleanVersionCommitHashAndReleaseInformation($versionWithoutPrefix);
@@ -439,5 +463,10 @@ class Utils
         });
 
         return $flattened;
+    }
+
+    public static function flattenWithUnique(array $array): array
+    {
+        return array_unique(static::flat($array), SORT_REGULAR);
     }
 }

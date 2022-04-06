@@ -29,7 +29,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $searchRequest = $this->findologicRequestFactory->getInstance($request);
         $searchRequest->setQuery((string)$request->query->get('search'));
         $originalCriteria = clone $event->getCriteria();
-        $this->addSorting($searchRequest, $event->getCriteria());
+        $this->sortingHandlerService->handle($searchRequest, $event->getCriteria());
 
         try {
             /** @var Xml21Response $response */
@@ -86,7 +86,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $searchRequest->setQuery((string)$request->query->get('search'));
         $this->setUserGroup($event->getSalesChannelContext(), $searchRequest);
         $this->setPaginationParams($event, $searchRequest, $limit);
-        $this->addSorting($searchRequest, $event->getCriteria());
+        $this->sortingHandlerService->handle($searchRequest, $event->getCriteria());
         if ($event->getCriteria()->hasExtension('flFilters')) {
             $this->filterHandler->handleFilters($event, $searchRequest);
         }

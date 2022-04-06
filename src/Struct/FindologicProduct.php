@@ -356,11 +356,23 @@ class FindologicProduct extends Struct
 
     protected function setKeywords(): void
     {
-        $tags = $this->product->getTags();
-        if ($tags !== null && $tags->count() > 0) {
-            foreach ($tags as $tag) {
-                if (!Utils::isEmpty($tag->getName())) {
-                    $this->keywords[] = new Keyword($tag->getName());
+        $blackListedKeywords = [
+            $this->product->getProductNumber(),
+        ];
+        $keywords = $this->product->getSearchKeywords();
+
+        if ($manufacturer = $this->product->getManufacturer()) {
+            $blackListedKeywords[] = $manufacturer->getTranslation('name');
+        }
+
+        if ($keywords !== null && $keywords->count() > 0) {
+            foreach ($keywords as $keyword) {
+                $keywordValue = $keyword->getKeyword();
+                if (!Utils::isEmpty($keywordValue)) {
+                    $isBlackListedKeyword = in_array($keywordValue, $blackListedKeywords);
+                    if (!$isBlackListedKeyword) {
+                        $this->keywords[] = new Keyword($keywordValue);
+                    }
                 }
             }
         }
@@ -594,7 +606,10 @@ class FindologicProduct extends Struct
         if ($manufacturer) {
             $name = $manufacturer->getTranslation('name');
             if (!Utils::isEmpty($name)) {
-                $vendorAttribute = new Attribute('vendor', [Utils::removeControlCharacters($name)]);
+                $vendorAttribute = new Attribute(
+                    'vendor',
+                    [$this->decodeHtmlEntity(Utils::removeControlCharacters($name))]
+                );
                 $this->attributes[] = $vendorAttribute;
             }
         }
@@ -681,7 +696,9 @@ class FindologicProduct extends Struct
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
                 $properyGroupAttrib = new Attribute($groupName);
-                $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionName));
+                $properyGroupAttrib->addValue($this->decodeHtmlEntity(
+                    Utils::removeControlCharacters($propertyGroupOptionName)
+                ));
 
                 $attributes[] = $properyGroupAttrib;
             }
@@ -701,7 +718,7 @@ class FindologicProduct extends Struct
             $optionName = $settingOption->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
                 $configAttrib = new Attribute($groupName);
-                $configAttrib->addValue(Utils::removeControlCharacters($optionName));
+                $configAttrib->addValue($this->decodeHtmlEntity(Utils::removeControlCharacters($optionName)));
 
                 $attributes[] = $configAttrib;
             }
@@ -747,15 +764,29 @@ class FindologicProduct extends Struct
      */
     protected function setCategoriesAndCatUrls(): void
     {
-        $productCategories = $this->product->getCategories();
-        if ($productCategories === null || empty($productCategories->count())) {
+        if (!$this->hasCategories()) {
             throw new ProductHasNoCategoriesException($this->product);
         }
+
+        $productCategories = $this->product->getCategories();
+        $children = $this->product->getChildren();
 
         $catUrls = [];
         $categories = [];
 
         $this->parseCategoryAttributes($productCategories->getElements(), $catUrls, $categories);
+
+        if ($children->count() > 0) {
+            foreach ($children as $child) {
+                $variantCategories = $child->getCategories();
+                if ($variantCategories->count() === 0) {
+                    continue;
+                }
+
+                $this->parseCategoryAttributes($variantCategories->getElements(), $catUrls, $categories);
+            }
+        }
+
         if ($this->dynamicProductGroupService) {
             $dynamicGroupCategories = $this->dynamicProductGroupService->getCategories($this->product->getId());
             $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
@@ -763,13 +794,13 @@ class FindologicProduct extends Struct
 
         if ($this->isDirectIntegration() && !Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
-            $catUrlAttribute->setValues(Utils::flat($catUrls));
+            $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flattenWithUnique($catUrls)));
             $this->attributes[] = $catUrlAttribute;
         }
 
         if (!Utils::isEmpty($categories)) {
             $categoryAttribute = new Attribute('cat');
-            $categoryAttribute->setValues(array_unique($categories));
+            $categoryAttribute->setValues($this->decodeHtmlEntities(array_unique($categories)));
             $this->attributes[] = $categoryAttribute;
         }
     }
@@ -877,7 +908,10 @@ class FindologicProduct extends Struct
                 }
 
                 // Filter null, false and empty strings, but not "0". See: https://stackoverflow.com/a/27501297/6281648
-                $customFieldAttribute = new Attribute($key, array_filter((array)$cleanedValue, 'strlen'));
+                $customFieldAttribute = new Attribute(
+                    $key,
+                    $this->decodeHtmlEntities(array_filter((array)$cleanedValue, 'strlen'))
+                );
                 $attributes[] = $customFieldAttribute;
             }
         }
@@ -967,8 +1001,11 @@ class FindologicProduct extends Struct
                 $this->navigationCategory
             );
 
+
             if (!Utils::isEmpty($categoryPath)) {
-                $categories = array_merge($categories, [$categoryPath]);
+                if (!in_array($categoryPath, $categories)) {
+                    $categories = array_merge($categories, [$categoryPath]);
+                }
             }
 
             // Only export `cat_url`s recursively if integration type is Direct Integration.
@@ -1002,5 +1039,40 @@ class FindologicProduct extends Struct
         }
 
         return $key;
+    }
+
+    protected function decodeHtmlEntities(array $values): array
+    {
+        foreach ($values as $key => $value) {
+            $values[$key] = $this->decodeHtmlEntity($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param mixed $value
+     * @return string|mixed
+     */
+    protected function decodeHtmlEntity($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        return html_entity_decode($value);
+    }
+
+    /**
+     * Checks if the product, or any of its children has any category assigned.
+     */
+    protected function hasCategories(): bool
+    {
+        $productCategories = $this->product->getCategories();
+        $childrenWithCategories = $this->product->getChildren()->filter(function (ProductEntity $variant) {
+            return $variant->getCategories()->count() > 0;
+        });
+
+        return $productCategories->count() > 0 || $childrenWithCategories->count() > 0;
     }
 }

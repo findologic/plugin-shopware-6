@@ -18,6 +18,8 @@ use Shopware\Core\Framework\Uuid\Uuid;
 
 trait ProductHelper
 {
+    use CategoryHelper;
+
     public function createVisibleTestProduct(array $overrides = [], bool $withVariant = false): ?ProductEntity
     {
         return $this->createTestProduct(array_merge([
@@ -34,7 +36,8 @@ trait ProductHelper
     public function createTestProduct(
         array $overrideData = [],
         bool $withVariant = false,
-        bool $overrideRecursively = false
+        bool $overrideRecursively = false,
+        bool $withManufacturer = true
     ): ?ProductEntity {
         $context = Context::createDefaultContext();
         $id = '29d554327a16fd51350688cfa9930b29';
@@ -45,25 +48,21 @@ trait ProductHelper
 
         $container = $this->getContainer();
         $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-        $categoryData = [
-            [
-                'id' => Uuid::randomHex(),
-                'name' => 'FINDOLOGIC Main 2',
-                'children' => [
-                    [
-                        'id' => $newCategoryId,
-                        'name' => 'FINDOLOGIC Sub',
-                        'children' => [
-                            [
-                                'id' => Uuid::randomHex(),
-                                'name' => 'Very deep'
-                            ]
+        $this->createTestCategory([
+            'name' => 'FINDOLOGIC Main 2',
+            'children' => [
+                [
+                    'id' => $newCategoryId,
+                    'name' => 'FINDOLOGIC Sub',
+                    'children' => [
+                        [
+                            'id' => Uuid::randomHex(),
+                            'name' => 'Very deep'
                         ]
                     ]
                 ]
             ]
-        ];
-        $container->get('category.repository')->upsert($categoryData, $context);
+        ]);
         $seoUrlRepo = $container->get('seo_url.repository');
         $seoUrls = $seoUrlRepo->search(new Criteria(), Context::createDefaultContext());
         $seoUrlsStoreFrontContext = $seoUrlRepo->search(new Criteria(), $this->salesChannelContext->getContext());
@@ -108,9 +107,7 @@ trait ProductHelper
                     ]
                 ],
             ],
-            'manufacturerNumber' => 'MAN001',
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
-            'manufacturer' => ['name' => 'FINDOLOGIC'],
             'tax' => ['id' => Uuid::randomHex(),  'name' => '9%', 'taxRate' => 9],
             'categories' => [
                 [
@@ -167,6 +164,13 @@ trait ProductHelper
                 ]
             ],
         ];
+
+        if ($withManufacturer) {
+            $productData = array_merge($productData, [
+                'manufacturerNumber' => 'MAN001',
+                'manufacturer' => ['name' => 'FINDOLOGIC'],
+            ]);
+        }
 
         $productInfo = [];
         // Main product data
