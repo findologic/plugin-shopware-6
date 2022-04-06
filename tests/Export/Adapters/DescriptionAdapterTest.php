@@ -29,17 +29,17 @@ class DescriptionAdapterTest extends TestCase
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
-     public function testExceptionIsThrownIfNameOnlyContainsWhiteSpaces(): void
-     {
-         $this->expectException(EmptyValueNotAllowedException::class);
+    public function testExceptionIsThrownIfNameOnlyContainsWhiteSpaces(): void
+    {
+        $this->expectException(EmptyValueNotAllowedException::class);
 
-         $adapter = $this->getContainer()->get(DescriptionAdapter::class);
-         $product = $this->createTestProduct([
-             'description' => "\n\t\n\t\r"
-         ]);
+        $adapter = $this->getContainer()->get(DescriptionAdapter::class);
+        $product = $this->createTestProduct([
+            'description' => "\n\t\n\t\r"
+        ]);
 
-         $adapter->adapt($product);
-     }
+        $adapter->adapt($product);
+    }
 
     public function testDescriptionContainsTheDescriptionOfTheProduct(): void
     {

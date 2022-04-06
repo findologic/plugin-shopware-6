@@ -21,7 +21,7 @@ class OrderNumberAdapter
         $orderNumber = $this->getOrderNumber($product);
 
         if ($orderNumber === null) {
-           return [];
+            return [];
         }
 
         $orderNumbers[] = $orderNumber;
