@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Adapters;
 
@@ -41,7 +41,7 @@ class KeywordsAdapter
 
             $isBlackListedKeyword = in_array($keywordValue, $blackListedKeywords);
             if ($isBlackListedKeyword) {
-               continue;
+                continue;
             }
 
             $keywords[] = new Keyword($keywordValue);
