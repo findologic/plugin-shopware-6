@@ -1,19 +1,20 @@
 {% sw_extends '@Storefront/storefront/page/search/search-pagelet.html.twig' %}
 
-{% set dataUrl =
-    context.context.extensions.flSystemAware.supportsNewSearchWidget ?
-    url('widgets.search.pagelet.v2') :
-    url('widgets.search.pagelet', { search: page.searchTerm ? page.searchTerm : ' ' })
-%}
-
-{% set filterUrl =
-    context.context.extensions.flSystemAware.supportsFilterDisabling ? url('widgets.search.filter') : ''
-%}
+{% set listingColumns = 'col-sm-6 col-lg-4 col-xl-3' %}
 
 {% block element_product_listing_wrapper %}
     {% if not context.context.extensions.findologicService.enabled %}
         {{ parent() }}
     {% else %}
+        {% set dataUrl =
+            context.context.extensions.flSystemAware.supportsNewSearchWidget ?
+            url('widgets.search.pagelet.v2') :
+            url('widgets.search.pagelet', { search: page.searchTerm ? page.searchTerm : ' ' })
+        %}
+        {% set filterUrl =
+            context.context.extensions.flSystemAware.supportsFilterDisabling ? url('widgets.search.filter') : ''
+        %}
+
         {% if page.header.extensions.flConfig.filterPosition is constant('\\FINDOLOGIC\\FinSearch\\Findologic\\FilterPosition::LEFT') %}
             {% sw_include '@FinSearch/storefront/page/search/layout/leftFilterLayout.html.twig' %}
         {% else %}
