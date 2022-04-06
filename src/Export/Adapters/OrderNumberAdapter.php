@@ -12,7 +12,7 @@ class OrderNumberAdapter
 {
     public function adapt(ProductEntity $product): array
     {
-        return array_merge($this->getParentItemOrderNumber($product), $this->getChildrenProductsOrderNumbers($product));
+        return $this->getParentItemOrderNumber($product);
     }
 
     private function getParentItemOrderNumber(ProductEntity $product): array
@@ -20,27 +20,11 @@ class OrderNumberAdapter
         $orderNumbers = [];
         $orderNumber = $this->getOrderNumber($product);
 
-        if (null === $orderNumber) {
+        if ($orderNumber === null) {
            return [];
         }
 
         $orderNumbers[] = $orderNumber;
-
-        return $orderNumbers;
-    }
-
-    private function getChildrenProductsOrderNumbers(ProductEntity $product): array
-    {
-        $orderNumbers = [];
-
-        foreach ($product->getChildren() as $productEntity) {
-            $orderNumber = $this->getOrderNumber($productEntity);
-            if (null === $orderNumber) {
-                continue;
-            }
-
-            $orderNumbers[] = $orderNumber;
-        }
 
         return $orderNumbers;
     }

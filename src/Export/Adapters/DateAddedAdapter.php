@@ -13,7 +13,7 @@ class DateAddedAdapter
     {
         $releaseDate = $product->getReleaseDate();
 
-        if (null === $releaseDate) {
+        if (!$releaseDate) {
             return null;
         }
 

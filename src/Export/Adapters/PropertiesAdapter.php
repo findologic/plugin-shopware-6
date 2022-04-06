@@ -13,9 +13,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PropertiesAdapter
 {
-    /** @var array  */
-    private $properties = [];
-
     /** @var SalesChannelContext $salesChannelContext */
     private $salesChannelContext;
 
@@ -32,74 +29,76 @@ class PropertiesAdapter
 
     public function adapt(ProductEntity $product): array
     {
+        $properties = [];
+
         if ($product->getTax()) {
             $value = (string)$product->getTax()->getTaxRate();
-            $this->addProperty('tax', $value);
+            $properties[] = $this->getProperty('tax', $value);
         }
 
         if ($product->getDeliveryDate()->getLatest()) {
             $value = $product->getDeliveryDate()->getLatest()->format(DATE_ATOM);
-            $this->addProperty('latestdeliverydate', $value);
+            $properties[] = $this->getProperty('latestdeliverydate', $value);
         }
 
         if ($product->getDeliveryDate()->getEarliest()) {
             $value = $product->getDeliveryDate()->getEarliest()->format(DATE_ATOM);
-            $this->addProperty('earliestdeliverydate', $value);
+            $properties[] = $this->getProperty('earliestdeliverydate', $value);
         }
 
         if ($product->getPurchaseUnit()) {
             $value = (string)$product->getPurchaseUnit();
-            $this->addProperty('purchaseunit', $value);
+            $properties[] = $this->getProperty('purchaseunit', $value);
         }
 
         if ($product->getReferenceUnit()) {
             $value = (string)$product->getReferenceUnit();
-            $this->addProperty('referenceunit', $value);
+            $properties[] = $this->getProperty('referenceunit', $value);
         }
 
         if ($product->getPackUnit()) {
             $value = (string)$product->getPackUnit();
-            $this->addProperty('packunit', $value);
+            $properties[] = $this->getProperty('packunit', $value);
         }
 
         if ($product->getStock()) {
             $value = (string)$product->getStock();
-            $this->addProperty('stock', $value);
+            $properties[] = $this->getProperty('stock', $value);
         }
 
         if ($product->getAvailableStock()) {
             $value = (string)$product->getAvailableStock();
-            $this->addProperty('availableStock', $value);
+            $properties[] = $this->getProperty('availableStock', $value);
         }
 
         if ($product->getWeight()) {
             $value = (string)$product->getWeight();
-            $this->addProperty('weight', $value);
+            $properties[] = $this->getProperty('weight', $value);
         }
 
         if ($product->getWidth()) {
             $value = (string)$product->getWidth();
-            $this->addProperty('width', $value);
+            $properties[] = $this->getProperty('width', $value);
         }
 
         if ($product->getHeight()) {
             $value = (string)$product->getHeight();
-            $this->addProperty('height', $value);
+            $properties[] = $this->getProperty('height', $value);
         }
 
         if ($product->getLength()) {
             $value = (string)$product->getLength();
-            $this->addProperty('length', $value);
+            $properties[] =  $this->getProperty('length', $value);
         }
 
         if ($product->getReleaseDate()) {
             $value = $product->getReleaseDate()->format(DATE_ATOM);
-            $this->addProperty('releasedate', $value);
+            $properties[] = $this->getProperty('releasedate', $value);
         }
 
         if ($product->getManufacturer() && $product->getManufacturer()->getMedia()) {
             $value = $product->getManufacturer()->getMedia()->getUrl();
-            $this->addProperty('vendorlogo', $value);
+            $properties[] = $this->getProperty('vendorlogo', $value);
         }
 
         if ($product->getPrice()) {
@@ -109,8 +108,8 @@ class PropertiesAdapter
                 /** @var ProductPrice $listPrice */
                 $listPrice = $price->getListPrice();
                 if ($listPrice) {
-                    $this->addProperty('old_price', (string)$listPrice->getGross());
-                    $this->addProperty('old_price_net', (string)$listPrice->getNet());
+                    $properties[] = $this->getProperty('old_price', (string)$listPrice->getGross());
+                    $properties[] = $this->getProperty('old_price_net', (string)$listPrice->getNet());
                 }
             }
         }
@@ -118,24 +117,25 @@ class PropertiesAdapter
         if (method_exists($product, 'getMarkAsTopseller')) {
             $isMarkedAsTopseller = $product->getMarkAsTopseller() ?? false;
             $translated = $this->translateBooleanValue($isMarkedAsTopseller);
-            $this->addProperty('product_promotion', $translated);
+            $properties[] = $this->getProperty('product_promotion', $translated);
         }
 
-        return $this->properties;
+        return $properties;
     }
 
-    protected function addProperty(string $name, $value): void
+    protected function getProperty(string $name, $value): ?Property
     {
         if (Utils::isEmpty($value)) {
-            return;
+            return null;
         }
 
         $property = new Property($name);
         $property->addValue($value);
-        $this->properties[] = $property;
+
+        return $property;
     }
 
-    protected function translateBooleanValue(bool $value)
+    protected function translateBooleanValue(bool $value): string
     {
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
 
