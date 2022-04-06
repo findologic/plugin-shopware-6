@@ -54,7 +54,7 @@ class XmlExportTest extends TestCase
 
     public function testWrapsItemProperly(): void
     {
-        $product = $this->createVisibleTestProduct();
+        $product = $this->createTestProduct();
 
         $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
         $this->assertCount(1, $items);
@@ -63,7 +63,7 @@ class XmlExportTest extends TestCase
 
     public function testManuallyAssignedProductsInCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
     {
-        $product = $this->createVisibleTestProduct();
+        $product = $this->createTestProduct();
 
         $category = $product->getCategories()->first();
         $this->crossSellCategories = [$category->getId()];
@@ -73,7 +73,7 @@ class XmlExportTest extends TestCase
 
     public function testProductsInDynamicProductGroupCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
     {
-        $product = $this->createVisibleTestProduct();
+        $product = $this->createTestProduct();
 
         $category = $this->createTestCategory();
         $this->crossSellCategories = [$category->getId()];
