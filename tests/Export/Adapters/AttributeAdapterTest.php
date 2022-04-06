@@ -23,7 +23,6 @@ class AttributeAdapterTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
     use AttributeHelper;
-    use CategoryHelper;
 
     /** @var SalesChannelContext */
     protected $salesChannelContext;
