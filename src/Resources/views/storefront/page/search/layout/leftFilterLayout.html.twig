@@ -1,6 +1,6 @@
 {#
-Override product/filter columns in case the theme differs. Columns will only be used in case the filter position
-is configured on the left side.
+    Override product/filter columns in case the theme differs.
+    'filterColumns' will be used inside of 'cms-element-sidebar-filter'.
 #}
 {% if filterColumns is not defined %}
     {% set filterColumns = 'col-lg-4 col-xl-3' %}
