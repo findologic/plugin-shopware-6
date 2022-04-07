@@ -11,16 +11,10 @@ is configured on the left side.
 {% endif %}
 
 <div class="row">
-    <div class="cms-element-sidebar-filter {{ filterColumns }}">
-        <div id="filter-panel-wrapper"
-             class="filter-panel-wrapper"
-             data-offcanvas-filter-content="true">
-            {% sw_include '@Storefront/storefront/component/listing/filter-panel.html.twig' with {
-                listing: page.listing,
-                sidebar: true
-            } %}
-        </div>
-    </div>
+    {% sw_include '@Storefront/storefront/element/cms-element-sidebar-filter.html.twig' with {
+        listing: page.listing,
+        sidebar: 1
+    } %}
     <div class="{{ productColumns }}">
         {% sw_include '@Storefront/storefront/component/product/listing.html.twig' with {
             searchResult: page.listing,
