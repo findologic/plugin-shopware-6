@@ -1,7 +1,5 @@
 {% sw_extends '@Storefront/storefront/page/search/search-pagelet.html.twig' %}
 
-{% set listingColumns = 'col-sm-6 col-lg-4 col-xl-3' %}
-
 {% block element_product_listing_wrapper %}
     {% if not context.context.extensions.findologicService.enabled %}
         {{ parent() }}
