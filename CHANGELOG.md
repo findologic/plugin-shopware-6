@@ -1,5 +1,6 @@
 # NEXT
 - [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.
+- [SW-707] Our internal test runner now only runs on Node 14 if the Shopware version is not compatible with Node 16.
 
 # 2.8.0
 - [SW-695] The plugin configuration now offers selection of cross-selling categories for more than 500 categories.
