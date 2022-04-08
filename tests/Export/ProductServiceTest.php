@@ -640,7 +640,7 @@ class ProductServiceTest extends TestCase
 
     public function testProductIsNotSkippedWhenExportedMainVariantIsNotAvailable(): void
     {
-        if (Utils::versionLowerThan('6.4.4.0', $this->getContainer()->getParameter('kernel.shopware_version'))) {
+        if (Utils::versionLowerThan('6.4.4')) {
             $this->markTestSkipped('Main variant id logic only exists since newer Shopware versions');
         }
 
