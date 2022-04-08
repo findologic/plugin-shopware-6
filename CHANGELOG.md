@@ -1,12 +1,8 @@
 # NEXT
 - [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.
-<<<<<<< HEAD
-
-=======
 - [SW-708] Fixed a bug that caused products with same create time being sorted inconsistently during export.
 - [SW-709] Fixed a bug that caused the filter button not being shown on mobile.
 - [SW-707] Our internal test runner runs on Node 14 when the Shopware version isn't compatible with Node 16.
->>>>>>> SW-703_product_listing_filter_container
 
 # 2.8.0
 - [SW-695] The plugin configuration now offers selection of cross-selling categories for more than 500 categories.
