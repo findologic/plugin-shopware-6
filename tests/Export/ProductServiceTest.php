@@ -621,7 +621,7 @@ class ProductServiceTest extends TestCase
      */
     public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
     {
-        if (Utils::versionGreaterOrEqual('6.4.4.0')) {
+        if (Utils::versionLowerThan('6.4.4.0')) {
             $this->markTestSkipped('Main variant id logic only exists since newer Shopware versions');
         }
 
