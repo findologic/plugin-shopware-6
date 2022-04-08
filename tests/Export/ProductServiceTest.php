@@ -689,6 +689,50 @@ class ProductServiceTest extends TestCase
         $this->assertCount(1, $elements);
     }
 
+    public function testProductsAreSortedByCreateDateAndId(): void
+    {
+        $beforeId = '503c73e48f4d4d8092265296191d5c5a';
+        $productId1 = 'ee37428996b7495880ea677d110961f6';
+        $productId2 = '6ac33a527a454b9ead9384e84f17d98f';
+        $productId3 = '8e86114cafeb43fab70d77b7c1a7baf7';
+        $productId4 = '3b10a796c9044658ac41ff564dec62d3';
+        $productId5 = '2f2aa85d87cc4d0390a5213c1bdffae5';
+        $sameDateIds = [$productId1, $productId2, $productId3, $productId4, $productId5];
+        $afterId = 'e6a13c9d4a06472ab5bd7b6053e6e422';
+
+        $before = '2022-04-07 08:34:05.605';
+        $now = '2022-04-07 09:34:05.605';
+        $after = '2022-04-07 10:34:05.605';
+
+        $this->createVisibleTestProduct(['id' => $beforeId, 'productNumber' => $beforeId]);
+        $this->createVisibleTestProduct(['id' => $afterId, 'productNumber' => $afterId]);
+        $this->setCreatedAtValue($beforeId, $before);
+        $this->setCreatedAtValue($afterId, $after);
+
+        foreach ($sameDateIds as $sameDateId) {
+            $this->createVisibleTestProduct(['id' => $sameDateId, 'productNumber' => $sameDateId]);
+            $this->setCreatedAtValue($sameDateId, $now);
+        }
+
+        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $productsKeyed = array_keys($products->getElements());
+
+        $this->assertEquals($beforeId, $productsKeyed[0]);
+        $this->assertEquals($productId5, $productsKeyed[1]);
+        $this->assertEquals($productId4, $productsKeyed[2]);
+        $this->assertEquals($productId2, $productsKeyed[3]);
+        $this->assertEquals($productId3, $productsKeyed[4]);
+        $this->assertEquals($productId1, $productsKeyed[5]);
+        $this->assertEquals($afterId, $productsKeyed[6]);
+    }
+
+    private function setCreatedAtValue($productNumber, $created_at): void
+    {
+        $connection = $this->getKernel()->getConnection();
+
+        $connection->update('product', ['created_at' => $created_at], ['product_number' => $productNumber]);
+    }
+
     private function createProductWithMultipleVariants(
         string $parentId,
         string $expectedFirstVariantId,
