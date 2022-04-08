@@ -621,10 +621,6 @@ class ProductServiceTest extends TestCase
      */
     public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
     {
-        if (Utils::versionLowerThan('6.4.4.0')) {
-            $this->markTestSkipped('Main variant id logic only exists since newer Shopware versions');
-        }
-
         $parentId = Uuid::randomHex();
         $this->createVisibleTestProduct(['id' => $parentId]);
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
@@ -644,6 +640,10 @@ class ProductServiceTest extends TestCase
 
     public function testProductIsNotSkippedWhenExportedMainVariantIsNotAvailable(): void
     {
+        if (Utils::versionLowerThan('6.4.4.0')) {
+            $this->markTestSkipped('Main variant id logic only exists since newer Shopware versions');
+        }
+
         $parentId = Uuid::randomHex();
         $expectedFirstVariantId = Uuid::randomHex();
         $expectedSecondVariantId = Uuid::randomHex();
