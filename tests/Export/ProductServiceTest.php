@@ -436,6 +436,7 @@ class ProductServiceTest extends TestCase
             'parentId' => $expectedParentId,
             'productNumber' => 'FINDOLOGIC001.1',
             'name' => 'FINDOLOGIC VARIANT 1',
+            'active' => false,
             'options' => [
                 ['id' => $firstOptionId]
             ],
