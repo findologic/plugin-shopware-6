@@ -1,5 +1,6 @@
 # NEXT
 - [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.
+- [SW-709] Ein Fehler wurde behoben, wodurch der Filter Button in der mobilen Ansicht nicht dargestellt wurde.
 
 # 2.8.0
 - [SW-695] The plugin configuration now offers selection of cross-selling categories for more than 500 categories.
