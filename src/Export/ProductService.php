@@ -162,7 +162,7 @@ class ProductService
         );
         $this->addVisibilityFilter($childrenCriteria);
         $this->handleAvailableStock($childrenCriteria);
-        $this->addHasPriceFilter($childrenCriteria);
+        $this->addPriceZeroFilter($childrenCriteria);
 
         $this->addProductAssociations($criteria);
 
@@ -182,7 +182,7 @@ class ProductService
     {
         $criteria = $this->buildProductCriteria($limit, $offset);
         $this->addVisibilityFilter($criteria);
-        $this->addHasPriceFilter($criteria);
+        $this->addPriceZeroFilter($criteria);
 
         return $criteria;
     }
@@ -217,7 +217,7 @@ class ProductService
         );
     }
 
-    protected function addHasPriceFilter(Criteria $criteria): void
+    protected function addPriceZeroFilter(Criteria $criteria): void
     {
         $criteria->addFilter(
             new RangeFilter('price', [
