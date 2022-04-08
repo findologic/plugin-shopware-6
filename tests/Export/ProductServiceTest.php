@@ -93,7 +93,7 @@ class ProductServiceTest extends TestCase
         $this->assertSame($this->salesChannelContext, $productService->getSalesChannelContext());
     }
 
-    public function testIgnoresProductsWithoutPrice(): void
+    public function testIgnoresProductsWithPriceZero(): void
     {
         $this->createVisibleTestProduct(
             ['price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 0, 'net' => 0, 'linked' => false]]]
