@@ -1,5 +1,6 @@
 # NEXT
 - [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.
+- [SW-708] Fixed a bug that caused products with same create time being sorted inconsistently during export.
 
 # 2.8.0
 - [SW-695] The plugin configuration now offers selection of cross-selling categories for more than 500 categories.
