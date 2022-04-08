@@ -182,7 +182,7 @@ class ProductService
     {
         $criteria = $this->buildProductCriteria($limit, $offset);
         $this->addVisibilityFilter($criteria);
-        $this->addHasPriceFilter($criteria);
+        $this->addPriceZeroFilter($criteria);
 
         return $criteria;
     }
