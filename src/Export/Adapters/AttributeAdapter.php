@@ -12,6 +12,7 @@ use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
@@ -52,6 +53,10 @@ class AttributeAdapter
         $this->salesChannelContext = $salesChannelContext;
         $this->urlBuilderService = $urlBuilderService;
         $this->exportContext = $exportContext;
+
+        if (!$this->config->isInitialized()) {
+            $this->config->initializeBySalesChannel($this->salesChannelContext);
+        }
     }
 
     /**
@@ -141,13 +146,17 @@ class AttributeAdapter
                 $categories = array_merge($categories, [$categoryPath]);
             }
 
-            // Only export `cat_url`s recursively if integration type is Direct Integration.
-            if ($this->config->isIntegrationTypeDirectIntegration()) {
-                $catUrls = array_merge(
-                    $catUrls,
-                    $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
-                );
+            if (!$this->config->isIntegrationTypeDirectIntegration()) {
+                continue;
             }
+
+            // Only export `cat_url`s recursively if integration type is Direct Integration.
+            $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
+
+            $catUrls = array_merge(
+                $catUrls,
+                $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
+            );
         }
     }
 
