@@ -6,6 +6,10 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\XML\XMLItem;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
@@ -25,6 +29,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Adapter\Translation\Translator;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -85,14 +90,7 @@ class AttributeAdapterTest extends TestCase
     ): void {
         $config = $this->getMockedConfig($integrationType);
 
-        $adapter = new AttributeAdapter(
-            $config,
-            $this->getContainer()->get('fin_search.dynamic_product_group'),
-            $this->getContainer()->get(Translator::class),
-            $this->getContainer()->get('fin_search.sales_channel_context'),
-            $this->getContainer()->get(UrlBuilderService::class),
-            $this->getContainer()->get('fin_search.export_context'),
-        );
+        $adapter = $this->getAttributeAdapter($config);
 
         $productEntity = $this->createTestProduct(
             [
@@ -127,6 +125,203 @@ class AttributeAdapterTest extends TestCase
         );
     }
 
+    /**
+     * @dataProvider multiSelectCustomFieldsProvider
+     */
+    public function testProductWithMultiSelectCustomFields(
+        array $customFields,
+        array $expectedCustomFieldAttributes
+    ): void {
+        $data['customFields'] = ['long_value' => str_repeat('und wieder, ', 20000)];
+        $productEntity = $this->createTestProduct($data, true);
+        $adapter = $this->getContainer()->get(AttributeAdapter::class);
+        $attributes = $adapter->adapt($productEntity);
+
+        foreach ($attributes as $attribute) {
+            if ($attribute->getKey() !== 'multi') {
+                continue;
+            }
+
+            $this->assertEquals($expectedCustomFieldAttributes[$attribute->getKey()], $attribute->getValues());
+        }
+    }
+
+    public function testProductWithLongCustomFieldValuesAreIgnored(): void
+    {
+        $data['customFields'] = ['long_value' => str_repeat('und wieder, ', 20000)];
+        $productEntity = $this->createTestProduct($data, true);
+        $adapter = $this->getContainer()->get(AttributeAdapter::class);
+        $attributes = $adapter->adapt($productEntity);
+        $customFieldAttributes = $this->getCustomFields($attributes, $data);
+
+        $this->assertEmpty($customFieldAttributes);
+    }
+
+    /**
+     * @dataProvider ratingProvider
+     *
+     * @param float[] $ratings
+    */
+    public function testProductRatings(array $ratings, float $expectedRating): void
+    {
+        $adapter = $this->getContainer()->get(AttributeAdapter::class);
+        $productEntity = $this->createTestProduct();
+
+        foreach ($ratings as $rating) {
+            $reviewAId = Uuid::randomHex();
+            $this->createProductReview($reviewAId, $rating, $productEntity->getId(), true);
+        }
+
+        $criteria = new Criteria([$productEntity->getId()]);
+        $criteria = Utils::addProductAssociations($criteria);
+
+        $productEntity = $this->getContainer()->get('product.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->get($productEntity->getId());
+
+        $attributes = $adapter->adapt($productEntity);
+
+        $ratingAttribute = end($attributes);
+        $this->assertSame('rating', $ratingAttribute->getKey());
+        $this->assertEquals($expectedRating, current($ratingAttribute->getValues()));
+    }
+
+    /**
+     * @dataProvider emptyAttributeNameProvider
+     */
+    public function testEmptyAttributeNamesAreSkipped(?string $value): void
+    {
+        $data = [
+            'description' => 'Really interesting',
+            'referenceunit' => 'cm',
+            'customFields' => [$value => 'something']
+        ];
+
+        $productEntity = $this->createTestProduct($data);
+        $config = $this->getMockedConfig('API');
+        $adapter = $this->getAttributeAdapter($config);
+        $attributes = $adapter->adapt($productEntity);
+        $customFieldAttributes = $this->getCustomFields($attributes, $data);
+
+        $this->assertEmpty($customFieldAttributes);
+    }
+
+    /**
+     * @dataProvider categoryAndCatUrlWithIntegrationTypeProvider
+     */
+    public function testCategoryAndCatUrlExportBasedOnIntegrationType(
+        ?string $integrationType,
+        array $categories,
+        array $expectedCategories,
+        array $expectedCatUrls
+    ): void {
+        foreach ($categories as $key => $category) {
+            $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+            $categories[$key]['parentId'] = $navigationCategoryId;
+        }
+
+        $productEntity = $this->createTestProduct(['categories' => $categories]);
+        $config = $this->getMockedConfig($integrationType);
+        $adapter = $this->getAttributeAdapter($config);
+        $attributes = $adapter->adapt($productEntity);
+
+        if (count($expectedCatUrls) > 0) {
+            $this->assertSame('cat_url', $attributes[0]->getKey());
+            $this->assertSameSize($expectedCatUrls, $attributes[0]->getValues());
+            $this->assertSame($expectedCatUrls, $attributes[0]->getValues());
+
+            $this->assertSame('cat', $attributes[1]->getKey());
+            $this->assertSameSize($expectedCategories, $attributes[1]->getValues());
+            $this->assertSame($expectedCategories, $attributes[1]->getValues());
+        } else {
+            $this->assertSame('cat', $attributes[0]->getKey());
+            $this->assertSameSize($expectedCategories, $attributes[0]->getValues());
+            $this->assertSame($expectedCategories, $attributes[0]->getValues());
+        }
+    }
+
+    public function testAttributesAreHtmlEntityEncoded(): void
+    {
+        $expectedAttributeValue = '>80';
+        $data['customFields'] = ['length' => '&gt;80'];
+
+        $productEntity = $this->createTestProduct($data, true);
+        $adapter = $this->getContainer()->get(AttributeAdapter::class);
+
+        $attributes = $adapter->adapt($productEntity);
+        $relatedAttributes = $this->getCustomFields($attributes, $data);
+
+        $this->assertCount(1, $relatedAttributes);
+        $this->assertSame($expectedAttributeValue, $relatedAttributes[0]->getValues()[0]);
+    }
+
+    public function testProductWithCustomFields(): void
+    {
+        $data = [
+            'customFields' => [
+                'findologic_size' => 100,
+                'findologic_color' => 'yellow'
+            ]
+        ];
+        $productEntity = $this->createTestProduct($data, true);
+        $productFields = $productEntity->getCustomFields();
+        $adapter = $this->getContainer()->get(AttributeAdapter::class);
+        $attributes = $adapter->adapt($productEntity);
+        $customAttributes = $this->getCustomFields($attributes, $data);
+
+        $this->assertCount(2, $customAttributes);
+        foreach ($customAttributes as $attribute) {
+            $this->assertEquals($productFields[$attribute->getKey()], current($attribute->getValues()));
+        }
+    }
+
+    public function testMultiDimensionalCustomFieldsAreIgnored(): void
+    {
+        $data = [
+            'customFields' => [
+                'multidimensional' => [
+                    ['interesting' => 'this is some multidimensional data wow!']
+                ]
+            ]
+        ];
+        $productEntity = $this->createTestProduct($data, true);
+        $adapter = $this->getContainer()->get(AttributeAdapter::class);
+        $attributes = $adapter->adapt($productEntity);
+        $customAttributes = $this->getCustomFields($attributes, $data);
+
+        $this->assertEmpty($customAttributes);
+    }
+
+    public function testCustomFieldsContainingZeroAsStringAreProperlyExported(): void
+    {
+        $data['customFields'] = ['nice' => "0\n"];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $adapter = $this->getContainer()->get(AttributeAdapter::class);
+        $attributes = $adapter->adapt($productEntity);
+        $customAttributes = $this->getCustomFields($attributes, $data);
+
+        $this->assertCount(1, $customAttributes);
+        $this->assertSame(['0'], $customAttributes[0]->getValues());
+    }
+
+    /**
+     * @dataProvider emptyValuesProvider
+     */
+    public function testEmptyAttributeValuesAreSkipped(?string $value): void
+    {
+        $data = [
+            'customFields' => [$value => 100, 'findologic_color' => $value]
+        ];
+
+        $productEntity = $this->createTestProduct($data);
+        $adapter = $this->getContainer()->get(AttributeAdapter::class);
+        $attributes = $adapter->adapt($productEntity);
+        $customAttributes = $this->getCustomFields($attributes, $data);
+
+        $this->assertEmpty($customAttributes);
+    }
+
     private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
     {
         $override = [
@@ -135,6 +330,36 @@ class AttributeAdapterTest extends TestCase
         ];
 
         return $this->getFindologicConfig($override, $integrationType === 'Direct Integration');
+    }
+
+    private function getAttributeAdapter(Config $config): AttributeAdapter
+    {
+        return new AttributeAdapter(
+            $config,
+            $this->getContainer()->get('fin_search.dynamic_product_group'),
+            $this->getContainer()->get(Translator::class),
+            $this->getContainer()->get('fin_search.sales_channel_context'),
+            $this->getContainer()->get(UrlBuilderService::class),
+            $this->getContainer()->get('fin_search.export_context'),
+        );
+    }
+
+    /**
+     * @param Attribute[] $attributes
+     * @param array<string, string> $customFields
+     * @return array
+     */
+    public function getCustomFields(array $attributes, array $customFields): array
+    {
+        $customFieldAttributes = [];
+
+        foreach ($attributes as $attribute) {
+            if (array_key_exists($attribute->getKey(), $customFields['customFields'])) {
+                $customFieldAttributes[] = $attribute;
+            }
+        }
+
+        return $customFieldAttributes;
     }
 
     public function attributeProvider(): array
@@ -189,6 +414,203 @@ class AttributeAdapterTest extends TestCase
                 'integrationType' => 'Direct Integration',
                 'attributeName' => 'Umläüts äre cööl',
                 'expectedName' => 'Umläüts äre cööl'
+            ],
+        ];
+    }
+
+    public function multiSelectCustomFieldsProvider(): array
+    {
+        return [
+            'multiple values' => [
+                'customFields' => [
+                    'multi' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+                'expectedCustomFieldAttributes' => [
+                    'multi' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+            ],
+            'multiple values with one null value' => [
+                'customFields' => [
+                    'multiWithNull' => [
+                        'one value',
+                        'another value',
+                        'even a third one!',
+                        null
+                    ],
+                ],
+                'expectedCustomFieldAttributes' => [
+                    'multiWithNull' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+            ],
+            'multiple values with one empty value' => [
+                'customFields' => [
+                    'multiWithEmptyValue' => [
+                        'one value',
+                        'another value',
+                        'even a third one!',
+                        ''
+                    ],
+                ],
+                'expectedCustomFieldAttributes' => [
+                    'multiWithEmptyValue' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+            ]
+        ];
+    }
+
+    public function ratingProvider(): array
+    {
+        $multipleRatings = [2.0, 4.0, 5.0, 1.0];
+        $average = array_sum($multipleRatings) / count($multipleRatings);
+
+        return [
+            'No rating is provided' => ['ratings' => [], 'expectedRating' => 0.0],
+            'Single rating is provided' => ['ratings' => [2.0], 'expectedRating' => 2.0],
+            'Multiple ratings is provided' => ['ratings' => $multipleRatings, 'expectedRating' => $average]
+        ];
+    }
+
+    public function emptyAttributeNameProvider(): array
+    {
+        return [
+            'Attribute name is null' => ['value' => null],
+            'Attribute name is an empty string' => ['value' => ''],
+            'Attribute name only contains empty spaces' => ['value' => '    '],
+            'Attribute name only containing special characters' => ['value' => '$$$$%'],
+        ];
+    }
+
+    public function emptyValuesProvider(): array
+    {
+        return [
+            'null values provided' => ['value' => null],
+            'empty string values provided' => ['value' => ''],
+            'values containing empty spaces provided' => ['value' => '    '],
+        ];
+    }
+
+    public function categoryAndCatUrlWithIntegrationTypeProvider(): array
+    {
+        return [
+            'Integration type is API and category is at first level' => [
+                'integrationType' => 'API',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1'
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is API with nested categories' => [
+                'integrationType' => 'API',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1',
+                        'children' => [
+                            [
+                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                                'name' => 'Category2'
+                            ]
+                        ]
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1_Category2'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is DI and category is at first level' => [
+                'integrationType' => 'Direct Integration',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1'
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1'
+                ],
+                'expectedCatUrls' => [
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
+            ],
+            'Integration type is DI with nested categories' => [
+                'integrationType' => 'Direct Integration',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1',
+                        'children' => [
+                            [
+                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                                'name' => 'Category2'
+                            ]
+                        ]
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1_Category2',
+                ],
+                'expectedCatUrls' => [
+                    '/Category1/Category2/',
+                    '/navigation/f03d845e0abf31e72409cf7c5c704a2e',
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
+            ],
+            'Integration type is unknown and category is at first level' => [
+                'integrationType' => 'Unknown',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1'
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is unknown with nested categories' => [
+                'integrationType' => 'Unknown',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1',
+                        'children' => [
+                            [
+                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                                'name' => 'Category2'
+                            ]
+                        ]
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1_Category2'
+                ],
+                'expectedCatUrls' => [],
             ],
         ];
     }

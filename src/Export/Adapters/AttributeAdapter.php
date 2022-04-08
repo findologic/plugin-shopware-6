@@ -102,13 +102,13 @@ class AttributeAdapter
         $attributes = [];
         if ($this->config->isIntegrationTypeDirectIntegration() && !Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
-            $catUrlAttribute->setValues(Utils::flat($catUrls));
+            $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flattenWithUnique($catUrls)));
             $attributes[] = $catUrlAttribute;
         }
 
         if (!Utils::isEmpty($categories)) {
             $categoryAttribute = new Attribute('cat');
-            $categoryAttribute->setValues(array_unique($categories));
+            $categoryAttribute->setValues($this->decodeHtmlEntities(array_unique($categories)));
             $attributes[] = $categoryAttribute;
         }
 
@@ -259,12 +259,37 @@ class AttributeAdapter
                 }
 
                 // Filter null, false and empty strings, but not "0". See: https://stackoverflow.com/a/27501297/6281648
-                $customFieldAttribute = new Attribute($key, array_filter((array)$cleanedValue, 'strlen'));
+                $customFieldAttribute = new Attribute(
+                    $key,
+                    $this->decodeHtmlEntities(array_filter((array)$cleanedValue, 'strlen'))
+                );
                 $attributes[] = $customFieldAttribute;
             }
         }
 
         return $attributes;
+    }
+
+    protected function decodeHtmlEntities(array $values): array
+    {
+        foreach ($values as $key => $value) {
+            $values[$key] = $this->decodeHtmlEntity($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param mixed $value
+     * @return string|mixed
+     */
+    protected function decodeHtmlEntity($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        return html_entity_decode($value);
     }
 
     /**
