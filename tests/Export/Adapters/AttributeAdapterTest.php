@@ -340,7 +340,7 @@ class AttributeAdapterTest extends TestCase
             $this->getContainer()->get(Translator::class),
             $this->getContainer()->get('fin_search.sales_channel_context'),
             $this->getContainer()->get(UrlBuilderService::class),
-            $this->getContainer()->get('fin_search.export_context'),
+            $this->getContainer()->get('fin_search.export_context')
         );
     }
 
