@@ -10,6 +10,13 @@
     {% set productColumns = 'col-lg-8 col-xl-9' %}
 {% endif %}
 
+{# This value is explicitely checked for versions <6.4.4.0, instead of using the sidebar value #}
+{% if block is not defined %}
+    {% set block = { sectionPosition: 'sidebar' } %}
+{% else %}
+    {% set block = block|merge({ sectionPosition: 'sidebar' }) %}
+{% endif %}
+
 <div class="row">
     {% sw_include '@Storefront/storefront/element/cms-element-sidebar-filter.html.twig' with {
         listing: page.listing,
