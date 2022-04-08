@@ -1,6 +1,8 @@
 # NEXT
 - [SW-701] Ein Fehler wurde behoben, wodurch nicht verfügbare Filterwerte nicht deaktiviert wurden.
-- [SW-709] Fixed a bug that caused the filter button not being shown on mobile.
+- [SW-708] Ein Fehler wurde behoben, wodurch es beim Export von Produkten mit gleichen Erstelldatum zu inkosistenter Sortierung kam.
+- [SW-709] Ein Fehler wurde behoben, wodurch der Filter Button in der mobilen Ansicht nicht dargestellt wurde.
+- [SW-707] Der interne Test-Runner läuft auf Node 14, wenn die Shopware Version nicht kompatibel mit Node 16 ist.
 
 # 2.8.0
 - [SW-695] Die Plugin-Konfiguration für Cross-Selling Kategorien erlaubt die Selektierung von mehr als 500 Kategorien.
