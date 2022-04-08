@@ -1,6 +1,7 @@
 # NEXT
 - [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.
 - [SW-708] Fixed a bug that caused products with same create time being sorted inconsistently during export.
+- [SW-709] Fixed a bug that caused the filter button not being shown on mobile.
 - [SW-707] Our internal test runner runs on Node 14 when the Shopware version isn't compatible with Node 16.
 
 # 2.8.0

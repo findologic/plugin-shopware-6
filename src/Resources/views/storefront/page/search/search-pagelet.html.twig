@@ -16,7 +16,8 @@
         {% if page.header.extensions.flConfig.filterPosition is constant('\\FINDOLOGIC\\FinSearch\\Findologic\\FilterPosition::LEFT') %}
             {% sw_include '@FinSearch/storefront/page/search/layout/leftFilterLayout.html.twig' %}
         {% else %}
-            {% sw_include '@FinSearch/storefront/page/search/layout/topFilterLayout.html.twig' %}
+            {# The top layout is the Shopware default #}
+            {{ parent() }}
         {% endif %}
     {% endif %}
 {% endblock %}
