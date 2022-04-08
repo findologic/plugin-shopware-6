@@ -188,6 +188,7 @@ class ProductService
     {
         $criteria = new Criteria();
         $criteria->addSorting(new FieldSorting('createdAt'));
+        $criteria->addSorting(new FieldSorting('id'));
 
         $this->addGrouping($criteria);
         $this->handleAvailableStock($criteria);
