@@ -28,7 +28,7 @@ class DateAddedAdapterTest extends TestCase
         $this->salesChannelContext = $this->buildSalesChannelContext();
     }
 
-    public function testDateAddedContainsTheDateAddedOfTheProduct(): void
+    public function testDateAddedIsBasedOnReleaseDate(): void
     {
         $releaseDate = DateTime::createFromFormat(DATE_ATOM, '2021-11-09T16:00:00+00:00');
         $adapter = $this->getContainer()->get(DateAddedAdapter::class);

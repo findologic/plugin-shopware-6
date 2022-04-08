@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use DateTimeImmutable;
+use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter;
+use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
@@ -13,10 +15,13 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Test\TestDataCollection;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class SalesFrequencyAdapterTest extends TestCase
 {
@@ -60,5 +65,82 @@ class SalesFrequencyAdapterTest extends TestCase
         $salesFrequency = $adapter->adapt($product);
 
         $this->assertSame(1, $salesFrequency->getValues()['']);
+    }
+
+    public function testUsesMemoryEfficientWayToFetchSalesFrequency(): void
+    {
+        $expectedSalesFrequency = 1337;
+
+        $productEntity = $this->createTestProduct();
+
+        $orderLineItemRepositoryMock = $this->getMockBuilder(EntityRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $searchResultMock = $this->getMockBuilder(IdSearchResult::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // Ensure only memory efficient calls are being made.
+        $orderLineItemRepositoryMock->expects($this->once())->method('searchIds')
+            ->willReturn($searchResultMock);
+        $orderLineItemRepositoryMock->expects($this->never())->method('search');
+        $searchResultMock->expects($this->once())->method('getTotal')->willReturn($expectedSalesFrequency);
+
+        $adapter = new SalesFrequencyAdapter(
+            $orderLineItemRepositoryMock,
+            $this->salesChannelContext
+        );
+
+        $actualSalesFrequency = $adapter->adapt($productEntity);
+
+        $this->assertSame($expectedSalesFrequency, $actualSalesFrequency->getValues()['']);
+    }
+
+    /**
+     * @dataProvider salesFrequencyProvider
+     */
+    public function testSalesFrequencyIsBasedOnPreviousMonthsOrder(
+        ?string $orderDateTime,
+        int $expectedSalesFrequency
+    ): void {
+        $productEntity = $this->createTestProduct([
+            'productNumber' => 'test'
+        ]);
+
+        $adapter = $this->getContainer()->get(SalesFrequencyAdapter::class);
+
+        $customerId = Uuid::randomHex();
+        if ($orderDateTime !== null) {
+            $this->createCustomer($customerId);
+            $this->createOrder(
+                $customerId,
+                [
+                    'orderDateTime' => $orderDateTime,
+                    'lineItems' => [
+                        $this->buildOrderLineItem(['productId' => $productEntity->getId()])
+                    ],
+                ]
+            );
+        }
+
+        $actualSalesFrequency = $adapter->adapt($productEntity);
+
+        $this->assertSame($expectedSalesFrequency, $actualSalesFrequency->getValues()['']);
+    }
+
+    public function salesFrequencyProvider(): array
+    {
+        return [
+            'Product with order in the last 30 days' => [
+                'orderDateTime' => (new DateTimeImmutable())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
+                'expectedSalesFrequency' => 1
+            ],
+            'Product with no orders' => ['orderDate' => null, 'expectedSalesFrequency' => 0],
+            'Product with order older than 30 days' => [
+                'orderDateTime' => (new DateTimeImmutable('2020-01-01'))->format(Defaults::STORAGE_DATE_TIME_FORMAT),
+                'expectedSalesFrequency' => 0
+            ],
+        ];
     }
 }
