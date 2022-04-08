@@ -9,10 +9,12 @@ use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\AssertionFailedError;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -434,6 +436,7 @@ class ProductServiceTest extends TestCase
             'parentId' => $expectedParentId,
             'productNumber' => 'FINDOLOGIC001.1',
             'name' => 'FINDOLOGIC VARIANT 1',
+            'active' => false,
             'options' => [
                 ['id' => $firstOptionId]
             ],
@@ -634,6 +637,57 @@ class ProductServiceTest extends TestCase
         // If there are no variants, the main product will always be exported as the main variant, irrespective
         // of the export configuration.
         $this->assertSame($parentId, $mainVariant->getId());
+    }
+
+    public function testProductIsNotSkippedWhenExportedMainVariantIsNotAvailable(): void
+    {
+        if (Utils::versionLowerThan('6.4.4')) {
+            $this->markTestSkipped('Main variant id logic only exists since newer Shopware versions');
+        }
+
+        $parentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+        $expectedSecondVariantId = Uuid::randomHex();
+        $expectedThirdVariantId = Uuid::randomHex();
+
+        $this->createProductWithDifferentPriceVariants(
+            $parentId,
+            100,
+            $expectedFirstVariantId,
+            20,
+            $expectedSecondVariantId,
+            40,
+            $expectedThirdVariantId,
+            60
+        );
+
+        $this->getContainer()->get('product.repository')->update([
+            [
+                'id' => $parentId,
+                'active' => false
+            ],
+            [
+                'id' => $expectedFirstVariantId,
+                'mainVariantId' => $parentId,
+            ],
+            [
+                'id' => $expectedSecondVariantId,
+                'mainVariantId' => $parentId
+            ],
+            [
+                'id' => $expectedThirdVariantId,
+                'mainVariantId' => $parentId
+            ]
+        ], Context::createDefaultContext());
+
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'cheapest']);
+        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
+
+        $this->defaultProductService->setConfig($mockedConfig);
+        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $elements = $result->getElements();
+
+        $this->assertCount(1, $elements);
     }
 
     public function testProductsAreSortedByCreateDateAndId(): void

@@ -1,4 +1,5 @@
 # NEXT
+- [SW-689] Ein Fehler wurde behoben, wodurch verfügbare Varianten nicht exportiert wurden weil das Haupt-Produkt nicht verfügbar ist.
 - [SW-701] Ein Fehler wurde behoben, wodurch nicht verfügbare Filterwerte nicht deaktiviert wurden.
 - [SW-703] Ein Fehler wurde behoben, wodurch Filter in der Sidebar anders dargestellt wurden als im Shopware Standard.
 - [SW-708] Ein Fehler wurde behoben, wodurch es beim Export von Produkten mit gleichen Erstelldatum zu inkosistenter Sortierung kam.

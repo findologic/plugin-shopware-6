@@ -296,8 +296,9 @@ class ProductService
         /** @var ProductEntity $product */
         foreach ($result->getEntities() as $product) {
             if ($product->getMainVariantId() !== null) {
-                if (!$product = $this->getRealMainProductWithVariants($product->getMainVariantId())) {
-                    continue;
+                $mainProduct = $this->getRealMainProductWithVariants($product->getMainVariantId());
+                if ($mainProduct) {
+                    $product = $mainProduct;
                 }
             }
 

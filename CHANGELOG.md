@@ -1,4 +1,5 @@
 # NEXT
+- [SW-689] Fixed a bug that caused available variants not being exported because the main product is not available.
 - [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.
 - [SW-703] Fixed a bug that caused sidebar filters being displayed differently to Shopware default.
 - [SW-708] Fixed a bug that caused products with same create time being sorted inconsistently during export.
