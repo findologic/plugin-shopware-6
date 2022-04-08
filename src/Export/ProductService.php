@@ -162,7 +162,7 @@ class ProductService
         );
         $this->addVisibilityFilter($childrenCriteria);
         $this->handleAvailableStock($childrenCriteria);
-        $this->addHasPriceFilter($childrenCriteria);
+        $this->addPriceZeroFilter($childrenCriteria);
 
         $this->addProductAssociations($criteria);
 
@@ -216,7 +216,7 @@ class ProductService
         );
     }
 
-    protected function addHasPriceFilter(Criteria $criteria): void
+    protected function addPriceZeroFilter(Criteria $criteria): void
     {
         $criteria->addFilter(
             new RangeFilter('price', [
