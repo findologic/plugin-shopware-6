@@ -1,5 +1,6 @@
 # NEXT
 - [SW-701] Ein Fehler wurde behoben, wodurch nicht verfügbare Filterwerte nicht deaktiviert wurden.
+- [SW-703] Ein Fehler wurde behoben, wodurch Filter in der Sidebar anders dargestellt wurden als im Shopware Standard.
 - [SW-708] Ein Fehler wurde behoben, wodurch es beim Export von Produkten mit gleichen Erstelldatum zu inkosistenter Sortierung kam.
 - [SW-709] Ein Fehler wurde behoben, wodurch der Filter Button in der mobilen Ansicht nicht dargestellt wurde.
 - [SW-707] Der interne Test-Runner läuft auf Node 14, wenn die Shopware Version nicht kompatibel mit Node 16 ist.
