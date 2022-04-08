@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\AssertionFailedError;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
@@ -620,6 +621,10 @@ class ProductServiceTest extends TestCase
      */
     public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
     {
+        if (Utils::versionGreaterOrEqual('6.4.4.0')) {
+            $this->markTestSkipped('Main variant id logic only exists since newer Shopware versions');
+        }
+
         $parentId = Uuid::randomHex();
         $this->createVisibleTestProduct(['id' => $parentId]);
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
