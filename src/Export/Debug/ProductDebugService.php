@@ -45,7 +45,8 @@ class ProductDebugService extends ProductService
         parent::__construct($container, $salesChannelContext, $config);
     }
 
-    public function initialize(string $productId, string $shopkey, ExportErrors $exportErrors): void {
+    public function initialize(string $productId, string $shopkey, ExportErrors $exportErrors): void
+    {
         $this->productId = $productId;
         $this->shopkey = $shopkey;
         $this->exportErrors = $exportErrors;
