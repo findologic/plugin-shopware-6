@@ -15,6 +15,7 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
+use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
@@ -47,10 +48,10 @@ class ExportController extends AbstractController
     /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
     private $salesChannelContextFactory;
 
-    /** @var SalesChannelContext */
+    /** @var ?SalesChannelContext */
     private $salesChannelContext;
 
-    /** @var ExportConfiguration */
+    /** @var ExportConfigurationBase */
     private $exportConfig;
 
     /** @var ProductService */
@@ -270,23 +271,23 @@ class ExportController extends AbstractController
     /**
      * @return SalesChannelContext
      */
-    public function getSalesChannelContext(): SalesChannelContext
+    public function getSalesChannelContext(): ?SalesChannelContext
     {
         return $this->salesChannelContext;
     }
 
     /**
-     * @return ExportConfiguration
+     * @return ExportConfigurationBase
      */
-    public function getExportConfig(): ExportConfiguration
+    public function getExportConfig(): ExportConfigurationBase
     {
         return $this->exportConfig;
     }
 
     /**
-     * @param ExportConfiguration $exportConfig
+     * @param ExportConfigurationBase $exportConfig
      */
-    public function setExportConfig(ExportConfiguration $exportConfig): void
+    public function setExportConfig(ExportConfigurationBase $exportConfig): void
     {
         $this->exportConfig = $exportConfig;
     }

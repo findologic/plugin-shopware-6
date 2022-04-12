@@ -7,7 +7,7 @@ namespace FINDOLOGIC\FinSearch\Validators;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class ExportConfiguration
+class ExportConfiguration extends ExportConfigurationBase
 {
     public const DEFAULT_START_PARAM = 0;
     public const DEFAULT_COUNT_PARAM = 20;

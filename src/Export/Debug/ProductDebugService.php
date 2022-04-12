@@ -22,9 +22,6 @@ class ProductDebugService extends ProductService
     /** @var string */
     private $productId;
 
-    /** @var $shopkey */
-    private $shopkey;
-
     /** @var ExportErrors */
     private $exportErrors;
 
@@ -48,7 +45,6 @@ class ProductDebugService extends ProductService
     public function initialize(string $productId, string $shopkey, ExportErrors $exportErrors): void
     {
         $this->productId = $productId;
-        $this->shopkey = $shopkey;
         $this->exportErrors = $exportErrors;
         $this->product = $this->fetchProduct();
         $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
