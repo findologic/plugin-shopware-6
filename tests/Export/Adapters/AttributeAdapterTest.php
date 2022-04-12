@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\Export\Data\Attribute;
+use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
@@ -27,13 +28,17 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Adapter\Translation\Translator;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 
 class AttributeAdapterTest extends TestCase
 {
@@ -322,6 +327,144 @@ class AttributeAdapterTest extends TestCase
         $this->assertEmpty($customAttributes);
     }
 
+    /**
+     * @dataProvider categorySeoProvider
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
+     */
+    public function testProductCategoriesUrlWithoutSeoOrEmptyPath(array $data, string $categoryId): void
+    {
+        $categoryData['categories'] = $data;
+        $productEntity = $this->createTestProduct($categoryData);
+
+        $config = $this->getMockedConfig();
+        $adapter = $this->getAttributeAdapter($config);
+        $attributes = $adapter->adapt($productEntity);
+
+        $attribute = current($attributes);
+        $this->assertSame('cat_url', $attribute->getKey());
+        $this->assertNotContains('/Additional Main', $attribute->getValues());
+        $this->assertContains(sprintf('/navigation/%s', $categoryId), $attribute->getValues());
+    }
+
+    /**
+     * @throws AccessEmptyPropertyException
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoNameException
+     * @throws ProductHasNoPricesException
+     */
+    public function testProductCategoriesSeoUrl(): void
+    {
+        $productEntity = $this->createTestProduct();
+        $config = $this->getMockedConfig();
+        $adapter = $this->getAttributeAdapter($config);
+        $attributes = $adapter->adapt($productEntity);
+
+        $attribute = current($attributes);
+        $this->assertSame('cat_url', $attribute->getKey());
+        $this->assertContains('/FINDOLOGIC-Category/', $attribute->getValues());
+    }
+
+    public function testEmptyCategoryNameShouldStillExportCategory(): void
+    {
+        $mainCatId = $this->getContainer()->get('category.repository')
+            ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
+
+        $categoryId = Uuid::randomHex();
+        $pathInfo = 'navigation/' . $categoryId;
+        $seoPathInfo = '/FINDOLOGIC-Category/';
+        $expectedCatUrl = '/' . $pathInfo;
+
+        $productEntity = $this->createTestProduct(
+            [
+                'categories' => [
+                    [
+                        'parentId' => $mainCatId,
+                        'id' => $categoryId,
+                        'name' => ' ',
+                        'seoUrls' => [
+                            [
+                                'pathInfo' => $pathInfo,
+                                'seoPathInfo' => $seoPathInfo,
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page',
+                            ]
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+        $config = $this->getMockedConfig();
+        $adapter = $this->getAttributeAdapter($config);
+        $attributes = $adapter->adapt($productEntity);
+
+        $this->assertCount(6, $attributes);
+        $this->assertSame('cat_url', $attributes[0]->getKey());
+
+        $catUrls = $attributes[0]->getValues();
+        $this->assertCount(1, $catUrls);
+        $this->assertSame([$expectedCatUrl], $catUrls);
+    }
+
+    public function testCatUrlsContainDomainPathAsPrefix(): void
+    {
+        $expectedPath = '/staging/public';
+        $fullDomain = 'http://test.de' . $expectedPath;
+        $domainRepo = $this->getContainer()->get('sales_channel_domain.repository');
+        $catUrlWithoutSeoUrlPrefix = '/navigation';
+
+        $domainRepo->create([
+            [
+                'url' => $fullDomain,
+                'salesChannelId' => Defaults::SALES_CHANNEL,
+                'currencyId' => Defaults::CURRENCY,
+                'snippetSet' => [
+                    'name' => 'oof',
+                    'baseFile' => 'de.json',
+                    'iso' => 'de_AT'
+                ]
+            ]
+        ], Context::createDefaultContext());
+
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('url', $fullDomain));
+
+        // Wait until the domain entity has been created, since DAL works with events and these events
+        // run asynchronously on a different thread.
+        do {
+            $result = $domainRepo->search($criteria, Context::createDefaultContext());
+        } while ($result->getTotal() <= 0);
+
+        // The sales channel should use the newly generated URL instead of the default domain.
+        $this->salesChannelContext->getSalesChannel()->setLanguageId($result->getEntities()->first()->getLanguageId());
+        $this->salesChannelContext->getSalesChannel()->setDomains($result->getEntities());
+
+        $productEntity = $this->createTestProduct();
+
+        $config = $this->getMockedConfig();
+        $adapter = $this->getAttributeAdapter($config);
+        $attributes = $adapter->adapt($productEntity);
+
+        $hasSeoCatUrls = false;
+        foreach ($attributes as $attribute) {
+            if ($attribute->getKey() === 'cat_url') {
+                foreach ($attribute->getValues() as $value) {
+                    // We only care about SEO URLs of categories. Non-SEO categories are automatically generated
+                    // by the Shopware router.
+                    if (!(strpos($value, $catUrlWithoutSeoUrlPrefix) === 0)) {
+                        $hasSeoCatUrls = true;
+                        $this->assertStringStartsWith($expectedPath, $value);
+                    }
+                }
+            }
+        }
+
+        $this->assertTrue($hasSeoCatUrls);
+    }
+
     private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
     {
         $override = [
@@ -361,6 +504,76 @@ class AttributeAdapterTest extends TestCase
 
         return $customFieldAttributes;
     }
+
+    public function categorySeoProvider(): array
+    {
+        $categoryId = Uuid::randomHex();
+
+        $contextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
+        /** @var SalesChannelContext $salesChannelContext */
+        $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
+        $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+
+        $repos = $this->getContainer()->get('sales_channel.repository');
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('typeId', Defaults::SALES_CHANNEL_TYPE_STOREFRONT));
+
+        $result = $repos->search($criteria, $salesChannelContext->getContext());
+        /** @var SalesChannelEntity $additionalSalesChannel */
+        $additionalSalesChannel = $result->first();
+
+        $additionalSalesChannelId = $additionalSalesChannel->getId();
+
+        return [
+            'Category does not have SEO path assigned' => [
+                'data' => [
+                    [
+                        'parentId' => $navigationCategoryId,
+                        'id' => $categoryId,
+                        'name' => 'FINDOLOGIC Category',
+                        'seoUrls' => [
+                            [
+                                'id' => Uuid::randomHex(),
+                                'salesChannelId' => Defaults::SALES_CHANNEL,
+                                'pathInfo' => 'navigation/' . $categoryId,
+                                'seoPathInfo' => 'Main',
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page'
+                            ],
+                            [
+                                'id' => Uuid::randomHex(),
+                                'salesChannelId' => $additionalSalesChannelId,
+                                'pathInfo' => 'navigation/' . $categoryId,
+                                'seoPathInfo' => 'Additional Main',
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page'
+                            ]
+                        ]
+                    ]
+                ],
+                'categoryId' => $categoryId
+            ],
+            'Category have a pseudo empty SEO path assigned' => [
+                'data' => [
+                    [
+                        'parentId' => $navigationCategoryId,
+                        'id' => $categoryId,
+                        'name' => 'FINDOLOGIC Category',
+                        'seoUrls' => [
+                            [
+                                'pathInfo' => 'navigation/' . $categoryId,
+                                'seoPathInfo' => ' ',
+                                'isCanonical' => true,
+                                'routeName' => 'frontend.navigation.page'
+                            ]
+                        ]
+                    ]
+                ],
+                'categoryId' => $categoryId
+            ]
+        ];
+    }
+
 
     public function attributeProvider(): array
     {
