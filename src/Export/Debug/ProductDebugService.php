@@ -2,13 +2,17 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export;
+namespace FINDOLOGIC\FinSearch\Export\Debug;
 
 use FINDOLOGIC\FinSearch\Export\Errors\ExportErrors;
+use FINDOLOGIC\FinSearch\Export\ProductService;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ProductDebugService extends ProductService
@@ -30,14 +34,28 @@ class ProductDebugService extends ProductService
     /** @var string[] */
     private $reasons = [];
 
-    public function getDebugInformation(string $productId, string $shopkey, ExportErrors $exportErrors): JsonResponse
-    {
+    /** @var DebugUrlBuilder */
+    private $debugUrlBuilder;
+
+    public function __construct(
+        ContainerInterface $container,
+        ?SalesChannelContext $salesChannelContext = null,
+        ?Config $config = null
+    ) {
+        parent::__construct($container, $salesChannelContext, $config);
+    }
+
+    public function initialize(string $productId, string $shopkey, ExportErrors $exportErrors): void {
         $this->productId = $productId;
         $this->shopkey = $shopkey;
         $this->exportErrors = $exportErrors;
-
-        /** @var ProductEntity $item */
         $this->product = $this->fetchProduct();
+        $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
+    }
+
+    public function getDebugInformation(string $productId, string $shopkey, ExportErrors $exportErrors): JsonResponse
+    {
+        $this->initialize($productId, $shopkey, $exportErrors);
 
         if (!$this->product) {
             $this->exportErrors->addGeneralError(
@@ -65,8 +83,8 @@ class ProductDebugService extends ProductService
                 'reasons' => array_merge($this->parseExportErrors(), $this->reasons)
             ],
             'debugLinks' => [
-                'exportUrl' => $this->buildExportUrl($exportedMainProductId),
-                'debugUrl' => $this->buildDebugUrl($exportedMainProductId)
+                'exportUrl' => $this->debugUrlBuilder->buildExportUrl($exportedMainProductId),
+                'debugUrl' => $this->debugUrlBuilder->buildDebugUrl($exportedMainProductId),
             ],
             'data' => [
                 'isExportedMainVariant' => $exportedMainProductId === $this->product->getId(),
@@ -120,33 +138,48 @@ class ProductDebugService extends ProductService
 
     private function isExported(): bool
     {
+        if ($isVisible = $this->isVisible()) {
+            return $this->isExportedVariant();
+        }
+
+        return $isVisible;
+    }
+
+    private function isVisible(): bool
+    {
         $result = $this->searchVisibleProducts(1, 0, $this->productId);
 
-        if ($result->count() === 1) {
-            if ($result->first()->getId() === $this->productId) {
-                return true;
-            } else {
-                $this->reasons[] = 'Different variant is used in the export.';
-            }
-        } else {
+        if (!$isVisible = $result->count() === 1) {
             $this->reasons[] = 'Product could not be found or is not available for search.';
         }
 
-        return false;
+        return $isVisible;
+    }
+
+    private function isExportedVariant(): bool
+    {
+        $result = $this->searchVisibleProducts(1, 0, $this->productId);
+
+        if (!$isExportedVariant = $result->first()->getId() === $this->productId) {
+            $this->reasons[] = 'Product could not be found or is not available for search.';
+        }
+
+        return $isExportedVariant;
     }
 
     private function checkExportCriteria(): void
     {
-        $criteriaFunctions = [
+        $criteriaMethods = [
             'addGrouping' => 'No display group set',
             'handleAvailableStock' => 'Closeout product is out of stock',
-            'addVisibilityFilter' => 'Product is not visible for search'
+            'addVisibilityFilter' => 'Product is not visible for search',
+            'addPriceZeroFilter' => 'Product has a price of 0',
         ];
 
-        foreach ($criteriaFunctions as $function => $errorMessage) {
+        foreach ($criteriaMethods as $method => $errorMessage) {
             $criteria = $this->buildCriteria($this->productId, false);
 
-            $this->$function($criteria);
+            $this->$method($criteria);
 
             if (!$this->searchProduct($criteria)) {
                 $this->reasons[] = $errorMessage;
@@ -170,35 +203,5 @@ class ProductDebugService extends ProductService
         }
 
         return $errors;
-    }
-
-    private function buildExportUrl(string $exportedMainProductId): string
-    {
-        return $this->buildUrlByPath('findologic', $exportedMainProductId);
-    }
-
-    private function buildDebugUrl(string $exportedMainProductId): string
-    {
-        return $this->buildUrlByPath('findologic/debug', $exportedMainProductId);
-    }
-
-    private function buildUrlByPath(string $path, string $exportedMainProductId): string
-    {
-        return sprintf(
-            '%s/%s?shopkey=%s&productId=%s',
-            $this->getShopDomain(),
-            $path,
-            $this->shopkey,
-            $exportedMainProductId
-        );
-    }
-
-    private function getShopDomain(): string
-    {
-        if ($domains = $this->getSalesChannelContext()->getSalesChannel()->getDomains()) {
-            return $domains->first()->getUrl();
-        }
-
-        return '';
     }
 }

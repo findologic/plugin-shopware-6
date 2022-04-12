@@ -36,37 +36,37 @@ use Symfony\Component\Validator\Validation;
 class ExportController extends AbstractController
 {
     /** @var LoggerInterface */
-    protected $logger;
+    private $logger;
 
     /** @var Router */
-    protected $router;
+    private $router;
 
     /** @var HeaderHandler */
-    protected $headerHandler;
+    private $headerHandler;
 
     /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
-    protected $salesChannelContextFactory;
+    private $salesChannelContextFactory;
 
     /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    private $salesChannelContext;
 
     /** @var ExportConfiguration */
-    protected $exportConfig;
+    private $exportConfig;
 
     /** @var ProductService */
-    protected $productService;
+    private $productService;
 
     /** @var Config */
-    protected $pluginConfig;
+    private $pluginConfig;
 
     /** @var Export|XmlExport|ProductIdExport */
-    protected $export;
+    private $export;
 
     /** @var CacheItemPoolInterface */
-    protected $cache;
+    private $cache;
 
     /** @var SalesChannelService|null */
-    protected $salesChannelService;
+    private $salesChannelService;
 
     /**
      * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
@@ -110,7 +110,7 @@ class ExportController extends AbstractController
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
 
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
-        $this->pluginConfig = $this->getPluginConfig();
+        $this->pluginConfig = $this->initializePluginConfig();
 
         $this->productService = $this->getProductServiceInstance();
         $this->export = $this->getExportInstance();
@@ -227,7 +227,7 @@ class ExportController extends AbstractController
         return $messages;
     }
 
-    private function getPluginConfig(): Config
+    private function initializePluginConfig(): Config
     {
         /** @var Config $config */
         $config = $this->container->get(Config::class);
@@ -249,5 +249,69 @@ class ExportController extends AbstractController
         $attributes = $request->attributes->all();
 
         $originalRequest->attributes->replace($attributes);
+    }
+
+    /**
+     * @return LoggerInterface
+     */
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @return Router
+     */
+    public function getRouter()
+    {
+        return $this->router;
+    }
+
+    /**
+     * @return SalesChannelContext
+     */
+    public function getSalesChannelContext(): SalesChannelContext
+    {
+        return $this->salesChannelContext;
+    }
+
+    /**
+     * @return ExportConfiguration
+     */
+    public function getExportConfig(): ExportConfiguration
+    {
+        return $this->exportConfig;
+    }
+
+    /**
+     * @param ExportConfiguration $exportConfig
+     */
+    public function setExportConfig(ExportConfiguration $exportConfig): void
+    {
+        $this->exportConfig = $exportConfig;
+    }
+
+    /**
+     * @return ProductService
+     */
+    public function getProductService(): ProductService
+    {
+        return $this->productService;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getPluginConfig(): Config
+    {
+        return $this->pluginConfig;
+    }
+
+    /**
+     * @return Export|ProductIdExport|XmlExport
+     */
+    public function getExport()
+    {
+        return $this->export;
     }
 }

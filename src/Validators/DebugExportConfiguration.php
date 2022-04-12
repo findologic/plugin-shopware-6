@@ -7,7 +7,7 @@ namespace FINDOLOGIC\FinSearch\Validators;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class DebugExportConfiguration
+class DebugExportConfiguration extends ExportConfiguration
 {
     /**
      * @Assert\NotBlank
@@ -31,7 +31,7 @@ class DebugExportConfiguration
 
     private $count = 1;
 
-    public static function getInstance(Request $request): DebugExportConfiguration
+    public static function getInstance(Request $request): ExportConfiguration
     {
         return new DebugExportConfiguration(
             $request->query->get('shopkey', ''),

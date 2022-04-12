@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\FinSearch\Export\Export;
-use FINDOLOGIC\FinSearch\Export\ProductDebugService;
+use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
 use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Validators\DebugExportConfiguration;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,12 +19,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ProductDebugController extends ExportController
 {
-    /** @var DebugExportConfiguration */
-    protected $exportConfig;
-
-    /** @var ProductDebugService */
-    protected $productService;
-
     /**
      * @Route("/findologic/debug", name="frontend.findologic.debug", options={"seo"="false"}, methods={"GET"})
      */
@@ -42,15 +35,15 @@ class ProductDebugController extends ExportController
     {
         parent::initialize($request, $context);
 
-        $this->exportConfig = DebugExportConfiguration::getInstance($request);
+        $this->setExportConfig(DebugExportConfiguration::getInstance($request));
     }
 
     protected function getProductServiceInstance(): ProductService
     {
         return ProductDebugService::getInstance(
             $this->container,
-            $this->salesChannelContext,
-            $this->pluginConfig
+            $this->getSalesChannelContext(),
+            $this->getPluginConfig()
         );
     }
 
@@ -58,10 +51,10 @@ class ProductDebugController extends ExportController
     {
         return Export::getInstance(
             Export::TYPE_PRODUCT_ID,
-            $this->router,
+            $this->getRouter(),
             $this->container,
-            $this->logger,
-            $this->pluginConfig->getCrossSellingCategories()
+            $this->getLogger(),
+            $this->getPluginConfig()->getCrossSellingCategories()
         );
     }
 
@@ -69,17 +62,17 @@ class ProductDebugController extends ExportController
     {
         $this->warmUpDynamicProductGroups();
 
-        $product = $this->productService->fetchProduct($this->exportConfig->getProductId(), true);
-        $this->export->buildItems(
+        $product = $this->getProductService()->fetchProduct($this->getExportConfig()->getProductId(), true);
+        $this->getExport()->buildItems(
             $product ? [$product] : [],
-            $this->exportConfig->getShopkey(),
-            $this->productService->getAllCustomerGroups()
+            $this->getExportConfig()->getShopkey(),
+            $this->getProductService()->getAllCustomerGroups()
         );
 
-        return $this->productService->getDebugInformation(
-            $this->exportConfig->getProductId(),
-            $this->exportConfig->getShopkey(),
-            $this->export->getErrorHandler()->getExportErrors()
+        return $this->getProductService()->getDebugInformation(
+            $this->getExportConfig()->getProductId(),
+            $this->getExportConfig()->getShopkey(),
+            $this->getExport()->getErrorHandler()->getExportErrors()
         );
     }
 }
