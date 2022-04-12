@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Storefront\Controller;
 
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Cms\Exception\PageNotFoundException;
@@ -40,16 +43,26 @@ class CmsController extends StorefrontController
     /** @var FindologicSearchService */
     private $findologicSearchService;
 
+    /** @var ServiceConfigResource */
+    private $serviceConfigResource;
+
+    /** @var Config */
+    private $config;
+
     public function __construct(
         ShopwareCmsController $decorated,
         FilterHandler $filterHandler,
         ContainerInterface $container,
-        FindologicSearchService $findologicSearchService
+        FindologicSearchService $findologicSearchService,
+        ServiceConfigResource $serviceConfigResource,
+        FindologicConfigService $findologicConfigService
     ) {
         $this->container = $container;
         $this->decorated = $decorated;
         $this->filterHandler = $filterHandler;
         $this->findologicSearchService = $findologicSearchService;
+        $this->serviceConfigResource = $serviceConfigResource;
+        $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 
     /**
@@ -107,18 +120,26 @@ class CmsController extends StorefrontController
      *
      * @throws MissingRequestParameterException
      */
-    public function filter(string $navigationId, Request $request, SalesChannelContext $context): Response
+    public function filter(string $navigationId, Request $request, SalesChannelContext $salesChannelContext): Response
     {
-        if (!Utils::isFindologicEnabled($context)) {
-            return $this->decorated->filter($navigationId, $request, $context);
+        $this->config->initializeBySalesChannel($salesChannelContext);
+        if (
+            !Utils::shouldHandleRequest(
+                $request,
+                $salesChannelContext->getContext(),
+                $this->serviceConfigResource,
+                $this->config
+            )
+        ) {
+            return $this->decorated->filter($navigationId, $request, $salesChannelContext);
         }
 
-        $event = new ProductListingCriteriaEvent($request, new Criteria(), $context);
+        $event = new ProductListingCriteriaEvent($request, new Criteria(), $salesChannelContext);
         $this->findologicSearchService->doFilter($event);
 
         $result = $this->filterHandler->handleAvailableFilters($event);
         if (!$event->getCriteria()->hasExtension('flAvailableFilters')) {
-            return $this->decorated->filter($navigationId, $request, $context);
+            return $this->decorated->filter($navigationId, $request, $salesChannelContext);
         }
 
         return new JsonResponse($result);
