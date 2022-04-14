@@ -1,4 +1,4 @@
-# NEXT
+# 2.8.1
 - [SW-689] Fixed a bug that caused available variants not being exported because the main product is not available.
 - [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.
 - [SW-702] Fixed a bug that caused variants with price zero to be considered as cheapest variant during export.

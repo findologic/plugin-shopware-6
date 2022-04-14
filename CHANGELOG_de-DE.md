@@ -1,4 +1,4 @@
-# NEXT
+# 2.8.1
 - [SW-689] Ein Fehler wurde behoben, wodurch verfügbare Varianten nicht exportiert wurden weil das Haupt-Produkt nicht verfügbar ist.
 - [SW-701] Ein Fehler wurde behoben, wodurch nicht verfügbare Filterwerte nicht deaktiviert wurden.
 - [SW-702] Ein Fehler wurde behoben, wodurch eine Variante mit Preis null als günstigste Variante im Export angesehen wurde.
