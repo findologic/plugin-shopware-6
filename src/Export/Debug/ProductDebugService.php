@@ -28,9 +28,6 @@ class ProductDebugService extends ProductService
     /** @var ProductEntity */
     private $product;
 
-    /** @var string[] */
-    private $reasons = [];
-
     /** @var DebugUrlBuilder */
     private $debugUrlBuilder;
 
@@ -40,14 +37,6 @@ class ProductDebugService extends ProductService
         ?Config $config = null
     ) {
         parent::__construct($container, $salesChannelContext, $config);
-    }
-
-    public function initialize(string $productId, string $shopkey, ExportErrors $exportErrors): void
-    {
-        $this->productId = $productId;
-        $this->exportErrors = $exportErrors;
-        $this->product = $this->fetchProduct();
-        $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
     }
 
     public function getDebugInformation(string $productId, string $shopkey, ExportErrors $exportErrors): JsonResponse
@@ -77,7 +66,7 @@ class ProductDebugService extends ProductService
                 'productId' => $this->product->getId(),
                 'exportedMainProductId' => $exportedMainProductId,
                 'isExported' => $isExported,
-                'reasons' => array_merge($this->parseExportErrors(), $this->reasons)
+                'reasons' => $this->parseExportErrors()
             ],
             'debugLinks' => [
                 'exportUrl' => $this->debugUrlBuilder->buildExportUrl($exportedMainProductId),
@@ -90,6 +79,14 @@ class ProductDebugService extends ProductService
                 'associations' => $this->buildCriteria()->getAssociations(),
             ]
         ]);
+    }
+
+    private function initialize(string $productId, string $shopkey, ExportErrors $exportErrors): void
+    {
+        $this->productId = $productId;
+        $this->exportErrors = $exportErrors;
+        $this->product = $this->fetchProduct();
+        $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
     }
 
     public function fetchProduct(?string $productId = null, ?bool $withVariantInformation = false): ?ProductEntity
@@ -147,7 +144,7 @@ class ProductDebugService extends ProductService
         $result = $this->searchVisibleProducts(1, 0, $this->productId);
 
         if (!$isVisible = $result->count() === 1) {
-            $this->reasons[] = 'Product could not be found or is not available for search.';
+            $this->exportErrors->addGeneralError('Product could not be found or is not available for search.');
         }
 
         return $isVisible;
@@ -158,7 +155,7 @@ class ProductDebugService extends ProductService
         $result = $this->searchVisibleProducts(1, 0, $this->productId);
 
         if (!$isExportedVariant = $result->first()->getId() === $this->productId) {
-            $this->reasons[] = 'Product could not be found or is not available for search.';
+            $this->exportErrors->addGeneralError('Product is not the exported variant.');
         }
 
         return $isExportedVariant;
@@ -179,7 +176,7 @@ class ProductDebugService extends ProductService
             $this->$method($criteria);
 
             if (!$this->searchProduct($criteria)) {
-                $this->reasons[] = $errorMessage;
+                $this->exportErrors->addGeneralError($errorMessage);
             }
         }
     }
