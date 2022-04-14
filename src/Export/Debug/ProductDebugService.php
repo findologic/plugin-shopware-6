@@ -127,8 +127,11 @@ class ProductDebugService extends ProductService
         )->first();
     }
 
-    private function buildCriteria(?string $productId = null, ?bool $withAssociations = true, ?bool $withVariantInformation = false): Criteria
-    {
+    private function buildCriteria(
+        ?string $productId = null,
+        ?bool $withAssociations = true,
+        ?bool $withVariantInformation = false
+    ): Criteria {
         $criteria = new Criteria();
 
         $multiFilter = new MultiFilter(MultiFilter::CONNECTION_OR);
