@@ -160,19 +160,21 @@ class ProductService
         return $this->getSiblings($product);
     }
 
-    protected function getSiblings(ProductEntity $product): ?ProductCollection
+    protected function getSiblings(ProductEntity $product, bool $withChildFilters = true): ?ProductCollection
     {
         $productRepository = $this->container->get('product.repository');
         $criteria = new Criteria([$product->getParentId()]);
 
-        // Only get children of the same display group.
-        $childrenCriteria = $criteria->getAssociation('children');
-        $childrenCriteria->addFilter(
-            new EqualsFilter('displayGroup', $product->getDisplayGroup())
-        );
-        $this->addVisibilityFilter($childrenCriteria);
-        $this->handleAvailableStock($childrenCriteria);
-        $this->addPriceZeroFilter($childrenCriteria);
+        if ($withChildFilters) {
+            // Only get children of the same display group.
+            $childrenCriteria = $criteria->getAssociation('children');
+            $childrenCriteria->addFilter(
+                new EqualsFilter('displayGroup', $product->getDisplayGroup())
+            );
+            $this->addVisibilityFilter($childrenCriteria);
+            $this->handleAvailableStock($childrenCriteria);
+            $this->addPriceZeroFilter($childrenCriteria);
+        }
 
         $this->addProductAssociations($criteria);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
+use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
 use FINDOLOGIC\FinSearch\Export\ProductService;
@@ -63,7 +64,9 @@ class ProductDebugController extends ExportController
         $this->warmUpDynamicProductGroups();
 
         $product = $this->getProductService()->fetchProduct($this->getExportConfig()->getProductId(), true);
-        $this->getExport()->buildItems(
+
+        /** @var XMLItem[] $xmlProducts */
+        $xmlProducts = $this->getExport()->buildItems(
             $product ? [$product] : [],
             $this->getExportConfig()->getShopkey(),
             $this->getProductService()->getAllCustomerGroups()
@@ -72,6 +75,7 @@ class ProductDebugController extends ExportController
         return $this->getProductService()->getDebugInformation(
             $this->getExportConfig()->getProductId(),
             $this->getExportConfig()->getShopkey(),
+            count($xmlProducts) ? $xmlProducts[0] : [],
             $this->getExport()->getErrorHandler()->getExportErrors()
         );
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Debug;
 
+use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Errors\ExportErrors;
 use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Struct\Config;
@@ -12,6 +13,8 @@ use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -28,6 +31,9 @@ class ProductDebugService extends ProductService
     /** @var ProductEntity */
     private $product;
 
+    /** @var ?XMLItem */
+    private $xmlItem;
+
     /** @var DebugUrlBuilder */
     private $debugUrlBuilder;
 
@@ -39,9 +45,13 @@ class ProductDebugService extends ProductService
         parent::__construct($container, $salesChannelContext, $config);
     }
 
-    public function getDebugInformation(string $productId, string $shopkey, ExportErrors $exportErrors): JsonResponse
-    {
-        $this->initialize($productId, $shopkey, $exportErrors);
+    public function getDebugInformation(
+        string $productId,
+        string $shopkey,
+        ?XMLItem $xmlItem,
+        ExportErrors $exportErrors
+    ): JsonResponse {
+        $this->initialize($productId, $shopkey, $xmlItem, $exportErrors);
 
         if (!$this->product) {
             $this->exportErrors->addGeneralError(
@@ -54,7 +64,7 @@ class ProductDebugService extends ProductService
             );
         }
 
-        $exportedMainProductId = $this->exportedMainVariantId();
+        $exportedMainProductId = isset($xmlItem) ? $xmlItem->getId() : null;
         $isExported = $this->isExported() && !$exportErrors->hasErrors();
 
         if (!$isExported) {
@@ -75,23 +85,28 @@ class ProductDebugService extends ProductService
             'data' => [
                 'isExportedMainVariant' => $exportedMainProductId === $this->product->getId(),
                 'product' => $this->product,
-                'siblings' => $this->product->getParentId() ? $this->getSiblings($this->product) : [],
+                'siblings' => $this->product->getParentId() ? $this->getSiblings($this->product, false) : [],
                 'associations' => $this->buildCriteria()->getAssociations(),
             ]
         ]);
     }
 
-    private function initialize(string $productId, string $shopkey, ExportErrors $exportErrors): void
-    {
+    private function initialize(
+        string $productId,
+        string $shopkey,
+        ?XMLItem $xmlItem,
+        ExportErrors $exportErrors
+    ): void {
         $this->productId = $productId;
         $this->exportErrors = $exportErrors;
         $this->product = $this->fetchProduct();
+        $this->xmlItem = $xmlItem;
         $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
     }
 
     public function fetchProduct(?string $productId = null, ?bool $withVariantInformation = false): ?ProductEntity
     {
-        $criteria = $this->buildCriteria($productId);
+        $criteria = $this->buildCriteria($productId, true, $withVariantInformation);
 
         /** @var EntitySearchResult $entityResult */
         $entityResult = $this->getContainer()->get('product.repository')->search(
@@ -112,22 +127,28 @@ class ProductDebugService extends ProductService
         )->first();
     }
 
-    private function buildCriteria(?string $productId = null, ?bool $withAssociations = true): Criteria
+    private function buildCriteria(?string $productId = null, ?bool $withAssociations = true, ?bool $withVariantInformation = false): Criteria
     {
-        $criteria = new Criteria([$productId ?? $this->productId]);
+        $criteria = new Criteria();
+
+        $multiFilter = new MultiFilter(MultiFilter::CONNECTION_OR);
+        $multiFilter->addQuery(
+            new EqualsFilter('id', $productId ?? $this->productId)
+        );
+
+        if ($withVariantInformation) {
+            $multiFilter->addQuery(
+                new EqualsFilter('parentId', $productId ?? $this->productId)
+            );
+        }
+
+        $criteria->addFilter($multiFilter);
 
         if ($withAssociations) {
             Utils::addProductAssociations($criteria);
         }
 
         return $criteria;
-    }
-
-    private function exportedMainVariantId(): string
-    {
-        $product = $this->fetchProduct($this->productId, true);
-
-        return $product->getId();
     }
 
     private function isExported(): bool
@@ -141,9 +162,7 @@ class ProductDebugService extends ProductService
 
     private function isVisible(): bool
     {
-        $result = $this->searchVisibleProducts(1, 0, $this->productId);
-
-        if (!$isVisible = $result->count() === 1) {
+        if (!$isVisible = isset($this->xmlItem)) {
             $this->exportErrors->addGeneralError('Product could not be found or is not available for search.');
         }
 
@@ -152,9 +171,7 @@ class ProductDebugService extends ProductService
 
     private function isExportedVariant(): bool
     {
-        $result = $this->searchVisibleProducts(1, 0, $this->productId);
-
-        if (!$isExportedVariant = $result->first()->getId() === $this->productId) {
+        if (!$isExportedVariant = $this->xmlItem->getId() === $this->productId) {
             $this->exportErrors->addGeneralError('Product is not the exported variant.');
         }
 
