@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Export;
+namespace FINDOLOGIC\FinSearch\Tests\Adapters\Export;
 
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
@@ -129,7 +129,7 @@ class AttributeAdapterTest extends TestCase
         array $customFields,
         array $expectedCustomFieldAttributes
     ): void {
-        $data['customFields'] = ['long_value' => str_repeat('und wieder, ', 20000)];
+        $data['customFields'] = $customFields;
         $productEntity = $this->createTestProduct($data, true);
         $adapter = $this->getContainer()->get(AttributeAdapter::class);
         $attributes = $adapter->adapt($productEntity);
@@ -457,6 +457,83 @@ class AttributeAdapterTest extends TestCase
         $this->assertTrue($hasSeoCatUrls);
     }
 
+    public function testProductAndVariantHaveNoCategories(): void
+    {
+        $this->expectException(ProductHasNoCategoriesException::class);
+        $id = Uuid::randomHex();
+        $this->createTestProduct([
+            'id' => $id,
+            'categories' => []
+        ]);
+
+        $this->createTestProduct([
+            'parentId' => $id,
+            'productNumber' => Uuid::randomHex(),
+            'categories' => []
+        ]);
+
+        $criteria = new Criteria([$id]);
+        $criteria = Utils::addProductAssociations($criteria);
+        $criteria->addAssociation('visibilities');
+        $productEntity = $this->getContainer()->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->get($id);
+
+        $adapter = $this->getContainer()->get(AttributeAdapter::class);
+        $adapter->adapt($productEntity);
+    }
+
+    public function testOnlyUniqueCategoriesAreExported(): void
+    {
+        $id = Uuid::randomHex();
+        $mainNavigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+        $categoryOne = [
+            'id' => 'cce80a72bc3481d723c38cccf592d45a',
+            'name' => 'Category1',
+            'parentId' => $mainNavigationCategoryId
+        ];
+
+        $expectedCategories = ['Category1'];
+        $expectedCatUrls = [
+            '/Category1/',
+            '/navigation/cce80a72bc3481d723c38cccf592d45a'
+        ];
+
+        $this->createTestProduct([
+            'id' => $id,
+            'categories' => [$categoryOne]
+        ]);
+
+        $this->createTestProduct([
+            'parentId' => $id,
+            'productNumber' => Uuid::randomHex(),
+            'categories' => [$categoryOne]
+        ]);
+
+        $criteria = new Criteria([$id]);
+        $criteria = Utils::addProductAssociations($criteria);
+        $criteria->addAssociation('visibilities');
+        $productEntity = $this->getContainer()->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->get($id);
+
+        $config = $this->getMockedConfig();
+        $adapter = $this->getAttributeAdapter($config);
+        $attributes = $adapter->adapt($productEntity);
+
+        [$categoryUrlAttribute, $categoryAttribute] = $attributes;
+
+        $this->assertSame('cat_url', $categoryUrlAttribute->getKey());
+        $categoryUrlAttributeValues = $categoryUrlAttribute->getValues();
+        $this->assertSame($expectedCatUrls, $categoryUrlAttributeValues);
+
+        $this->assertSame('cat', $categoryAttribute->getKey());
+        $categoryAttributeValues = $categoryAttribute->getValues();
+        $this->assertSame($expectedCategories, $categoryAttributeValues);
+    }
+
     private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
     {
         $override = [
@@ -481,7 +558,7 @@ class AttributeAdapterTest extends TestCase
 
     /**
      * @param Attribute[] $attributes
-     * @param array<string, string> $customFields
+     * @param array<string, string|array> $customFields
      * @return array
      */
     public function getCustomFields(array $attributes, array $customFields): array

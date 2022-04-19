@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Export;
+namespace FINDOLOGIC\FinSearch\Tests\Adapters\Export;
 
 use FINDOLOGIC\Export\Data\Usergroup;
 use FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter;

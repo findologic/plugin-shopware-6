@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Export;
+namespace FINDOLOGIC\FinSearch\Tests\Adapters\Export;
 
 use FINDOLOGIC\Export\Data\Image;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ImageHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\TestCase;
@@ -20,6 +21,7 @@ class ImagesAdapterTest extends TestCase
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
     use ProductHelper;
+    use ImageHelper;
 
     /** @var SalesChannelContext */
     protected $salesChannelContext;

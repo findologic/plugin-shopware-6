@@ -23,6 +23,7 @@ use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ImageHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
@@ -70,6 +71,7 @@ class FindologicProductTest extends TestCase
     use ConfigHelper;
     use SalesChannelHelper;
     use OrderHelper;
+    use ImageHelper;
 
     /** @var SalesChannelContext */
     private $salesChannelContext;

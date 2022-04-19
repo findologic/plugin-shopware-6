@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Export;
+namespace FINDOLOGIC\FinSearch\Tests\Adapters\Export;
 
 use FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
