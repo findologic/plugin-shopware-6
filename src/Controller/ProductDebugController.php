@@ -63,7 +63,9 @@ class ProductDebugController extends ExportController
     {
         $this->warmUpDynamicProductGroups();
 
-        $product = $this->getProductService()->fetchProduct($this->getExportConfig()->getProductId(), true);
+        $product = $this->getProductService()->fetchProductWithVariantInformation(
+            $this->getExportConfig()->getProductId()
+        );
 
         /** @var XMLItem[] $xmlProducts */
         $xmlProducts = $this->getExport()->buildItems(
