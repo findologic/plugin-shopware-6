@@ -30,12 +30,16 @@ class OrderNumbersAdapterTest extends TestCase
 
     public function testOrderNumberContainsTheOrderNumberOfTheProduct(): void
     {
-        $expectedOrderNumber = new Ordernumber('FINDOLOGIC001');
+        $expectedOrderNumbers = [
+            new Ordernumber('FINDOLOGIC001'),
+            new Ordernumber('FL001'),
+            new Ordernumber('MAN001')
+        ];
         $adapter = $this->getContainer()->get(OrderNumberAdapter::class);
         $product = $this->createTestProduct();
 
-        $orderNumber = $adapter->adapt($product);
+        $orderNumbers = $adapter->adapt($product);
 
-        $this->assertEquals([$expectedOrderNumber], $orderNumber);
+        $this->assertEquals($expectedOrderNumbers, $orderNumbers);
     }
 }
