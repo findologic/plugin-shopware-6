@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Adapters\Export;
 
 use DateTimeImmutable;
-use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter;
-use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
@@ -21,7 +19,6 @@ use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Test\TestDataCollection;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class SalesFrequencyAdapterTest extends TestCase
 {
