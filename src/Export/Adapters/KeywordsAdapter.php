@@ -24,8 +24,10 @@ class KeywordsAdapter
     /**
      * @return Keyword[]
      */
-    protected function getKeywords(?ProductSearchKeywordCollection $keywordsCollection, array $blackListedKeywords): array
-    {
+    protected function getKeywords(
+        ?ProductSearchKeywordCollection $keywordsCollection,
+        array $blackListedKeywords
+    ): array {
         $keywords = [];
 
         if (!$keywordsCollection || $keywordsCollection->count() <= 0) {
