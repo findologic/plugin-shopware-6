@@ -12,7 +12,6 @@ use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;

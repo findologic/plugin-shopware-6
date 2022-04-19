@@ -11,7 +11,7 @@ use Shopware\Core\Content\Product\ProductEntity;
 class ImagesAdapter
 {
     /** @var ProductImageService $productImageService */
-    private $productImageService;
+    protected $productImageService;
 
     public function __construct(
         ProductImageService $productImageService

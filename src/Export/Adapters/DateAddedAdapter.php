@@ -11,9 +11,7 @@ class DateAddedAdapter
 {
     public function adapt(ProductEntity $product): ?DateAdded
     {
-        $releaseDate = $product->getReleaseDate();
-
-        if (!$releaseDate) {
+        if (!$releaseDate = $product->getReleaseDate()) {
             return null;
         }
 

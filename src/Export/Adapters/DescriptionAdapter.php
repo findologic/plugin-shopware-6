@@ -12,16 +12,14 @@ class DescriptionAdapter
 {
     public function adapt(ProductEntity $product): ?Description
     {
-        $value = new Description();
-        $description = $this->getDescription($product);
-
-        if (!$description) {
+        if (!$descriptionValue = $this->getDescription($product)) {
             return null;
         }
 
-        $value->setValue($description);
+        $description = new Description();
+        $description->setValue($descriptionValue);
 
-        return $value;
+        return $description;
     }
 
     private function getDescription(ProductEntity $product): ?string

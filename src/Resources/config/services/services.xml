@@ -140,6 +140,7 @@
             id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"
             class="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"
         >
+            <argument type="service" id="fin_search.export_context"/>
         </service>
 
         <service

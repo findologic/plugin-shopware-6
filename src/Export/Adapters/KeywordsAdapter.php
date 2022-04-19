@@ -8,7 +8,6 @@ use FINDOLOGIC\Export\Data\Keyword;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\System\Tag\TagCollection;
 
 class KeywordsAdapter
 {
@@ -25,7 +24,7 @@ class KeywordsAdapter
     /**
      * @return Keyword[]
      */
-    private function getKeywords(?ProductSearchKeywordCollection $keywordsCollection, array $blackListedKeywords): array
+    protected function getKeywords(?ProductSearchKeywordCollection $keywordsCollection, array $blackListedKeywords): array
     {
         $keywords = [];
 
@@ -50,7 +49,7 @@ class KeywordsAdapter
         return $keywords;
     }
 
-    private function getBlacklistedKeywords(ProductEntity $product): array
+    protected function getBlacklistedKeywords(ProductEntity $product): array
     {
         $blackListedKeywords = [
             $product->getProductNumber(),

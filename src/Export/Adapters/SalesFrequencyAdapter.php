@@ -31,7 +31,7 @@ class SalesFrequencyAdapter
         $this->salesChannelContext = $salesChannelContext;
     }
 
-    public function adapt(ProductEntity $product): SalesFrequency
+    public function adapt(ProductEntity $product): ?SalesFrequency
     {
         $orders = $this->orderLineItemRepository->searchIds(
             $this->buildCriteria($product),
@@ -44,7 +44,7 @@ class SalesFrequencyAdapter
         return $salesFrequency;
     }
 
-    private function buildCriteria(ProductEntity $product): Criteria
+    protected function buildCriteria(ProductEntity $product): Criteria
     {
         $lastMonthDate = new DateTimeImmutable('-1 month');
         $criteria = new Criteria();

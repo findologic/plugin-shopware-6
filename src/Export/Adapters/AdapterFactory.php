@@ -7,19 +7,19 @@ namespace FINDOLOGIC\FinSearch\Export\Adapters;
 class AdapterFactory
 {
     /** @var NameAdapter */
-    protected $nameAdapter;
+    private $nameAdapter;
 
     /** @var AttributeAdapter */
-    protected $attributeAdapter;
+    private $attributeAdapter;
 
     /** @var PriceAdapter */
-    protected $priceAdapter;
+    private $priceAdapter;
 
     /** @var UrlAdapter */
-    protected $urlAdapter;
+    private $urlAdapter;
 
     /** @var DescriptionAdapter */
-    protected $descriptionAdapter;
+    private $descriptionAdapter;
 
     /** @var DateAddedAdapter $dateAddedAdapter */
     private $dateAddedAdapter;

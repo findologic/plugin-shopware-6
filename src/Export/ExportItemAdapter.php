@@ -85,9 +85,12 @@ class ExportItemAdapter implements ExportItemAdapterInterface
             $item->addImage($image);
         }
 
-        $item->setSalesFrequency($this->adapterFactory->getSalesFrequencyAdapter()->adapt($product));
+        if ($salesFrequency = $this->adapterFactory->getSalesFrequencyAdapter()->adapt($product)) {
+            $item->setSalesFrequency($salesFrequency);
+        }
 
-        foreach ($this->adapterFactory->getUserGroupsAdapter()->adapt($product, $this->exportContext) as $userGroup) {
+
+        foreach ($this->adapterFactory->getUserGroupsAdapter()->adapt($product) as $userGroup) {
             $item->addUsergroup($userGroup);
         }
 
