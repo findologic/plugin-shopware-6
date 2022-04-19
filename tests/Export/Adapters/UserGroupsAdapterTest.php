@@ -53,7 +53,7 @@ class UserGroupsAdapterTest extends TestCase
         $adapter = $this->getContainer()->get(UserGroupsAdapter::class);
         $product = $this->createTestProduct([]);
 
-        $userGroups = $adapter->adapt($product, $exportContext);
+        $userGroups = $adapter->adapt($product);
 
         $this->assertCount(1, $userGroups);
         $this->assertEquals($expectedUserGroup, $userGroups[0]);
