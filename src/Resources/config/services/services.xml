@@ -170,6 +170,7 @@
         >
             <argument type="service" id="fin_search.sales_channel_context" />
             <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
         </service>
 
         <service

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Adapters\Export;
 
+use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PropertiesHelper;
@@ -11,7 +12,9 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Defaults;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class PropertiesAdapterTest extends TestCase
@@ -116,6 +119,54 @@ class PropertiesAdapterTest extends TestCase
 
         $this->assertSame($isPriceAvailable, $hasListPrice);
         $this->assertSame($isPriceAvailable, $hasListPriceNet);
+    }
+
+    public function testNonFilterablePropertiesAreExportedAsPropertiesInsteadOfAttributes(): void
+    {
+        if (Utils::versionLowerThan('6.2.0')) {
+            $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
+        }
+
+        $expectedPropertyName = 'blub';
+        $expectedPropertyValue = 'some value';
+
+        $productEntity = $this->createTestProduct(
+            [
+                'properties' => [
+                    [
+                        'id' => Uuid::randomHex(),
+                        'name' => $expectedPropertyValue,
+                        'group' => [
+                            'id' => Uuid::randomHex(),
+                            'name' => $expectedPropertyName,
+                            'filterable' => false
+                        ],
+                    ]
+                ]
+            ]
+        );
+
+        $criteria = new Criteria([$productEntity->getId()]);
+        $criteria = Utils::addProductAssociations($criteria);
+
+        $productEntity = $this->getContainer()
+            ->get('product.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->get($productEntity->getId());
+
+        $adapter = $this->getContainer()->get(PropertiesAdapter::class);
+        $properties = $adapter->adapt($productEntity);
+
+        $foundProperties = array_filter(
+            $properties,
+            static function (Property $property) use ($expectedPropertyName) {
+                return $property->getKey() === $expectedPropertyName;
+            }
+        );
+
+        /** @var Property $property */
+        $property = reset($foundProperties);
+        $this->assertEquals($expectedPropertyValue, $property->getAllValues()['']); // '' = Empty usergroup.
     }
 
     public function listPriceProvider(): array
