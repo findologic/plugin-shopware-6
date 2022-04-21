@@ -13,7 +13,7 @@ use Shopware\Core\Content\Product\ProductEntity;
 class UserGroupsAdapter
 {
     /** @var ExportContext $exportContext */
-    private $exportContext;
+    protected $exportContext;
 
     public function __construct(ExportContext $exportContext)
     {

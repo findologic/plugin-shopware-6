@@ -22,7 +22,7 @@ class DescriptionAdapter
         return $description;
     }
 
-    private function getDescription(ProductEntity $product): ?string
+    protected function getDescription(ProductEntity $product): ?string
     {
         $description = $product->getTranslation('description');
 

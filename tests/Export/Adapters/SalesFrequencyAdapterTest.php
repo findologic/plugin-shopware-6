@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Adapters\Export;
+namespace FINDOLOGIC\FinSearch\Tests\Export\Adapters;
 
 use DateTimeImmutable;
 use FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter;

@@ -12,10 +12,10 @@ class OrderNumberAdapter
 {
     public function adapt(ProductEntity $product): array
     {
-        return $this->getOrderNumber($product);
+        return $this->getOrderNumbers($product);
     }
 
-    protected function getOrderNumber(ProductEntity $product): array
+    protected function getOrderNumbers(ProductEntity $product): array
     {
         $orderNumbers = [];
 

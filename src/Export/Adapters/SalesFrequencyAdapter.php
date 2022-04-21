@@ -18,10 +18,10 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 class SalesFrequencyAdapter
 {
     /** @var EntityRepository $orderLineItemRepository */
-    private $orderLineItemRepository;
+    protected $orderLineItemRepository;
 
     /** @var SalesChannelContext $salesChannelContext */
-    private $salesChannelContext;
+    protected $salesChannelContext;
 
     public function __construct(
         EntityRepository $orderLineItemRepository,

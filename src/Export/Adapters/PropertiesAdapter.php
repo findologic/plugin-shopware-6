@@ -17,13 +17,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class PropertiesAdapter
 {
     /** @var SalesChannelContext $salesChannelContext */
-    private $salesChannelContext;
+    protected $salesChannelContext;
 
     /** @var TranslatorInterface $translator */
-    private $translator;
+    protected $translator;
 
     /** @var Config $config */
-    private $config;
+    protected $config;
 
     public function __construct(
         SalesChannelContext $salesChannelContext,

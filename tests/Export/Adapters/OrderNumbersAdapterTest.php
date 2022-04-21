@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Adapters\Export;
+namespace FINDOLOGIC\FinSearch\Tests\Export\Adapters;
 
 use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter;

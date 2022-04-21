@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Adapters\Export;
+namespace FINDOLOGIC\FinSearch\Tests\Export\Adapters;
 
 use DateTime;
 use FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter;
