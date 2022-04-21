@@ -6,8 +6,8 @@ namespace FINDOLOGIC\FinSearch\Export\Adapters;
 
 use FINDOLOGIC\Export\Data\Keyword;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\System\Tag\TagCollection;
 
 class KeywordsAdapter
 {
@@ -16,30 +16,51 @@ class KeywordsAdapter
      */
     public function adapt(ProductEntity $product): array
     {
-        $tags = $product->getTags();
+        $keywords = $product->getSearchKeywords();
 
-        if ($tags === null || $tags->count() <= 0) {
-            return [];
-        }
-
-        return $this->getKeywords($tags);
+        return $this->getKeywords($keywords, $this->getBlacklistedKeywords($product));
     }
 
     /**
      * @return Keyword[]
      */
-    private function getKeywords(TagCollection $tags): array
-    {
+    protected function getKeywords(
+        ?ProductSearchKeywordCollection $keywordsCollection,
+        array $blackListedKeywords
+    ): array {
         $keywords = [];
 
-        foreach ($tags as $tag) {
-            if (Utils::isEmpty($tag->getName())) {
+        if (!$keywordsCollection || $keywordsCollection->count() <= 0) {
+            return [];
+        }
+
+        foreach ($keywordsCollection as $keyword) {
+            $keywordValue = $keyword->getKeyword();
+            if (Utils::isEmpty($keywordValue)) {
                 continue;
             }
 
-            $keywords[] = new Keyword($tag->getName());
+            $isBlackListedKeyword = in_array($keywordValue, $blackListedKeywords);
+            if ($isBlackListedKeyword) {
+                continue;
+            }
+
+            $keywords[] = new Keyword($keywordValue);
         }
 
         return $keywords;
+    }
+
+    protected function getBlacklistedKeywords(ProductEntity $product): array
+    {
+        $blackListedKeywords = [
+            $product->getProductNumber(),
+        ];
+
+        if ($manufacturer = $product->getManufacturer()) {
+            $blackListedKeywords[] = $manufacturer->getTranslation('name');
+        }
+
+        return $blackListedKeywords;
     }
 }

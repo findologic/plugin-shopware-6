@@ -28,26 +28,34 @@ class SortingService
     /** @var TranslatorInterface */
     private $translator;
 
+    /** @var string */
+    private $shopwareVersion;
+
     public function __construct(
         ?ProductListingSortingRegistry $legacySortingRegistry,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        string $shopwareVersion
     ) {
         $this->legacySortingRegistry = $legacySortingRegistry;
         $this->translator = $translator;
+        $this->shopwareVersion = $shopwareVersion;
     }
 
     public function handleRequest(
         ProductListingCriteriaEvent $event,
         SearchNavigationRequestHandler $requestHandler
     ): void {
-        if ($requestHandler instanceof NavigationRequestHandler && !Utils::versionLowerThan('6.3.3.0')) {
+        if (
+            $requestHandler instanceof NavigationRequestHandler &&
+            Utils::versionGreaterOrEqual('6.3.3.0', $this->shopwareVersion)
+        ) {
             $this->addTopResultSorting($event);
         }
     }
 
     public function handleResult(ProductListingResultEvent $event): void
     {
-        if (Utils::versionLowerThan('6.3.3.0')) {
+        if (Utils::versionLowerThan('6.3.3.0', $this->shopwareVersion)) {
             $this->addLegacyTopResultSorting($event);
         }
     }
@@ -120,7 +128,7 @@ class SortingService
     protected function getCurrentLegacySorting(Request $request, string $default): ?string
     {
         $key = $request->get('order', $default);
-        if (Utils::versionLowerThan('6.2')) {
+        if (Utils::versionLowerThan('6.2', $this->shopwareVersion)) {
             $key = $request->get('sort', $default);
         }
 

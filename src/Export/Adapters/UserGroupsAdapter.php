@@ -12,17 +12,25 @@ use Shopware\Core\Content\Product\ProductEntity;
 
 class UserGroupsAdapter
 {
+    /** @var ExportContext $exportContext */
+    protected $exportContext;
+
+    public function __construct(ExportContext $exportContext)
+    {
+        $this->exportContext = $exportContext;
+    }
+
     /**
      * @return Usergroup[]
      */
-    public function adapt(ProductEntity $product, ExportContext $exportContext): array
+    public function adapt(ProductEntity $product): array
     {
         $userGroups = [];
 
         /** @var CustomerGroupEntity $customerGroupEntity */
-        foreach ($exportContext->getCustomerGroups() as $customerGroupEntity) {
+        foreach ($this->exportContext->getCustomerGroups() as $customerGroupEntity) {
             $userGroups[] = new Usergroup(
-                Utils::calculateUserGroupHash($exportContext->getShopkey(), $customerGroupEntity->getId())
+                Utils::calculateUserGroupHash($this->exportContext->getShopkey(), $customerGroupEntity->getId())
             );
         }
 

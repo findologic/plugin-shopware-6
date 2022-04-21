@@ -61,6 +61,22 @@
           "left": {
             "label": "Links"
           }
+        },
+        "export": {
+          "title": "Export"
+        },
+        "mainVariant": {
+          "label": "Exportierte Hauptvariante",
+          "tooltipText": "Wählen um die Variante, die auf Listing-Seiten angezeigt wird, zu ändern.",
+          "default": {
+            "label": "Shopware Standard"
+          },
+          "parent": {
+            "label": "Haupt-/Eltern Produkt"
+          },
+          "cheapest": {
+            "label": "Günstigste Variante"
+          }
         }
       },
       "titleSuccess": "Erfolgreich",

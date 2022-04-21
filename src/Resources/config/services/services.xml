@@ -140,6 +140,7 @@
             id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"
             class="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"
         >
+            <argument type="service" id="fin_search.export_context"/>
         </service>
 
         <service
@@ -169,6 +170,7 @@
         >
             <argument type="service" id="fin_search.sales_channel_context" />
             <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
         </service>
 
         <service
@@ -271,8 +273,17 @@
             <argument type="service" id="FINDOLOGIC\Api\Config" />
         </service>
 
+        <service
+                id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService"
+                class="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService"
+        />
+
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true" />
-        <service id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" autowire="true">
+            <argument type="string" key="$shopwareVersion">%kernel.shopware_version%</argument>
+        </service>
+
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\PaginationService" autowire="true" />
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler" />

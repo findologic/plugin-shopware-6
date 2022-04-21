@@ -37,7 +37,13 @@ Please see [our Shopware 6 documentation](https://docs.findologic.com/doku.php?i
    ```bash
    ./psh.phar docker:ssh
    ```
-8. Install and activate the plugin
+
+8. Refresh plugin list 
+   ```bash
+   bin/console plugin:refresh
+   ```
+
+9. Install and activate the plugin
    ```bash
    bin/console plugin:install FinSearch --activate --clearCache
    ```
@@ -65,6 +71,33 @@ Please see [our Shopware 6 documentation](https://docs.findologic.com/doku.php?i
 Tests can also be run separately within the IDE. Simply ensure to set `phpunit.xml.dist` as configuration file.
 
 ![PHPUnit configuration](docs/images/phpunit_configuration.png)
+
+### Run Storefront Jest tests
+
+#### Prerequisites
+
+* npm
+* node
+* See [Shopware 6 environment requirements](https://developer.shopware.com/docs/guides/installation/overview#environment) minimal required versions.
+
+#### Setup
+
+1. Navigate to the storefront folder
+   ```bash
+   cd src/Resources/app/storefront
+   ```
+2. Install dependencies
+   ```bash
+   npm install
+   ```
+3. Run unit-tests using jest
+   ```bash
+   npm run test
+   ```
+
+After dependency installation all tests can also be run via the IDE without any additional configuration.
+
+![Running Jest test in IDE](docs/images/jest_test_ide.png)
 
 ### Developing custom JavaScript plugins
 

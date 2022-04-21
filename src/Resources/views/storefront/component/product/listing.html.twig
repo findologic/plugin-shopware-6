@@ -12,7 +12,16 @@
             {{ parent() }}
         {% endblock %}
 
-        {% if searchResult.total > 0 %}
+        {% if not (searchResult.criteria.extensions.flPagination) %}
+            {% set paginationTotal = searchResult.total %}
+            {% set paginationLimit = searchResult.limit %}
+        {% else %}
+            {% set paginationTotal = searchResult.criteria.extensions.flPagination.total %}
+            {% set paginationLimit = searchResult.criteria.extensions.flPagination.limit %}
+        {% endif %}
+
+        {% set totalPages = (paginationTotal / paginationLimit)|round(0, 'ceil') %}
+        {% if totalPages > 1 %}
             {% block element_product_listing_pagination_nav_bottom %}
                 {{ parent() }}
             {% endblock %}

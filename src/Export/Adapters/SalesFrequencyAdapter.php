@@ -18,10 +18,10 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 class SalesFrequencyAdapter
 {
     /** @var EntityRepository $orderLineItemRepository */
-    private $orderLineItemRepository;
+    protected $orderLineItemRepository;
 
     /** @var SalesChannelContext $salesChannelContext */
-    private $salesChannelContext;
+    protected $salesChannelContext;
 
     public function __construct(
         EntityRepository $orderLineItemRepository,
@@ -34,7 +34,7 @@ class SalesFrequencyAdapter
     public function adapt(ProductEntity $product): ?SalesFrequency
     {
         $orders = $this->orderLineItemRepository->searchIds(
-            $this->getCriteria($product),
+            $this->buildCriteria($product),
             $this->salesChannelContext->getContext()
         );
 
@@ -44,7 +44,7 @@ class SalesFrequencyAdapter
         return $salesFrequency;
     }
 
-    private function getCriteria(ProductEntity $product): Criteria
+    protected function buildCriteria(ProductEntity $product): Criteria
     {
         $lastMonthDate = new DateTimeImmutable('-1 month');
         $criteria = new Criteria();
