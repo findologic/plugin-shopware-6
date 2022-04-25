@@ -29,7 +29,7 @@ class UrlAdapter
     {
         $rawUrl = $this->urlBuilderService->buildProductUrl($product);
 
-        if (!$rawUrl) {
+        if ($rawUrl === null) {
             return null;
         }
 

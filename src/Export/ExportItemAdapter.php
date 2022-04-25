@@ -88,7 +88,7 @@ class ExportItemAdapter implements ExportItemAdapterInterface
      * @throws ProductHasNoNameException
      * @throws ProductHasNoPricesException
      */
-    private function adaptProduct(Item $item, ProductEntity $product): Item
+    protected function adaptProduct(Item $item, ProductEntity $product): Item
     {
         $item->setName($this->adapterFactory->getNameAdapter()->adapt($product));
 
@@ -118,7 +118,6 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         if ($salesFrequency = $this->adapterFactory->getSalesFrequencyAdapter()->adapt($product)) {
             $item->setSalesFrequency($salesFrequency);
         }
-
 
         foreach ($this->adapterFactory->getUserGroupsAdapter()->adapt($product) as $userGroup) {
             $item->addUsergroup($userGroup);
