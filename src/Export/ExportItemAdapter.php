@@ -45,7 +45,7 @@ class ExportItemAdapter implements ExportItemAdapterInterface
     protected $exportContext;
 
     /** @var LoggerInterface  */
-    private LoggerInterface $logger;
+    private $logger;
 
     public function __construct(
         ContainerInterface $container,

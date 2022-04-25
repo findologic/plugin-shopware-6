@@ -1,16 +1,15 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use Exception;
 use FINDOLOGIC\Export\XML\XMLItem;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductInvalidException;
-use FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter;
+use FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\ExportItemAdapter;
-use FINDOLOGIC\FinSearch\Export\Logger\ExportExceptionLogger;
 use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -147,37 +146,30 @@ class ExportItemAdapterTest extends TestCase
     {
         $xmlItem = new XMLItem('123');
         $id = Uuid::randomHex();
+        $errorMessage = 'This product failed, because it is faulty.';
 
-        $this->createTestProduct([
+        $productEntity = $this->createTestProduct([
             'id' => $id
         ]);
 
-        $criteria = new Criteria([$id]);
-        $criteria = Utils::addProductAssociations($criteria);
-        $criteria->addAssociation('visibilities');
-        $productEntity = $this->getContainer()->get('product.repository')->search(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        )->get($id);
-
         $error = sprintf(
-            'Product "%s" with id "%s" could not be exported.',
+            'Error while exporting the product "%s" with id "%s".',
             $productEntity->getTranslation('name'),
             $productEntity->getId()
         );
-        $reason = 'It appears to have empty values assigned to it.';
         $help = 'If you see this message in your logs, please report this as a bug.';
-        $expectedMessage = implode(' ', [$error, $reason, $help]);
+        $reason = sprintf('Error message: %s', $errorMessage);
+        $expectedMessage = implode(' ', [$error, $help, $reason]);
 
-        $urlBuilderServiceMock = $this->getMockBuilder(UrlBuilderService::class)
+        $nameAdapterMock = $this->getMockBuilder(NameAdapter::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $urlBuilderServiceMock->expects($this->once())
-            ->method('buildProductUrl')
-            ->with(null);
+        $nameAdapterMock->expects($this->once())
+            ->method('adapt')
+            ->willThrowException(new Exception($errorMessage));
 
-        $this->getContainer()->set(UrlBuilderService::class, $urlBuilderServiceMock);
+        $this->getContainer()->set(NameAdapter::class, $nameAdapterMock);
 
         $this->loggerMock->expects($this->exactly(1))
             ->method('warning')
