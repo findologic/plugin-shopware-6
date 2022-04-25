@@ -18,6 +18,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\RangeFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Grouping\FieldGrouping;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
@@ -161,6 +162,7 @@ class ProductService
         );
         $this->addVisibilityFilter($childrenCriteria);
         $this->handleAvailableStock($childrenCriteria);
+        $this->addPriceZeroFilter($childrenCriteria);
 
         $this->addProductAssociations($criteria);
 
@@ -180,6 +182,7 @@ class ProductService
     {
         $criteria = $this->buildProductCriteria($limit, $offset);
         $this->addVisibilityFilter($criteria);
+        $this->addPriceZeroFilter($criteria);
 
         return $criteria;
     }
@@ -188,6 +191,7 @@ class ProductService
     {
         $criteria = new Criteria();
         $criteria->addSorting(new FieldSorting('createdAt'));
+        $criteria->addSorting(new FieldSorting('id'));
 
         $this->addGrouping($criteria);
         $this->handleAvailableStock($criteria);
@@ -210,6 +214,15 @@ class ProductService
                 $this->salesChannelContext->getSalesChannel()->getId(),
                 ProductVisibilityDefinition::VISIBILITY_SEARCH
             )
+        );
+    }
+
+    protected function addPriceZeroFilter(Criteria $criteria): void
+    {
+        $criteria->addFilter(
+            new RangeFilter('price', [
+                RangeFilter::GT => 0
+            ])
         );
     }
 
@@ -295,8 +308,9 @@ class ProductService
         /** @var ProductEntity $product */
         foreach ($result->getEntities() as $product) {
             if ($product->getMainVariantId() !== null) {
-                if (!$product = $this->getRealMainProductWithVariants($product->getMainVariantId())) {
-                    continue;
+                $mainProduct = $this->getRealMainProductWithVariants($product->getMainVariantId());
+                if ($mainProduct) {
+                    $product = $mainProduct;
                 }
             }
 
@@ -383,12 +397,14 @@ class ProductService
         // a cheaper product in its children.
         $cheapestPrice = $parent->getCurrencyPrice($currencyId);
         foreach ($children as $child) {
-            $price = $child->getCurrencyPrice($currencyId);
-            if (!$price) {
+            if (!$price = $child->getCurrencyPrice($currencyId)) {
                 continue;
             }
 
-            if ($price->getGross() < $cheapestPrice->getGross()) {
+            if (
+                $cheapestPrice->getGross() === 0.0 ||
+                $price->getGross() < $cheapestPrice->getGross()
+            ) {
                 $cheapestPrice->setGross($price->getGross());
                 $parent = $child;
             }
