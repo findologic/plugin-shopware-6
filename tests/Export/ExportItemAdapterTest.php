@@ -13,7 +13,6 @@ use FINDOLOGIC\FinSearch\Export\ExportItemAdapter;
 use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryEntity;
@@ -62,24 +61,10 @@ class ExportItemAdapterTest extends TestCase
         $xmlItem = new XMLItem('123');
         $id = Uuid::randomHex();
 
-        $this->createTestProduct([
+        $productEntity = $this->createTestProduct([
             'id' => $id,
             'categories' => []
         ]);
-
-        $this->createTestProduct([
-            'parentId' => $id,
-            'productNumber' => Uuid::randomHex(),
-            'categories' => []
-        ]);
-
-        $criteria = new Criteria([$id]);
-        $criteria = Utils::addProductAssociations($criteria);
-        $criteria->addAssociation('visibilities');
-        $productEntity = $this->getContainer()->get('product.repository')->search(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        )->get($id);
 
         $expectedMessage = sprintf(
             'Product "%s" with id %s was not exported because it has no categories assigned',
@@ -101,17 +86,9 @@ class ExportItemAdapterTest extends TestCase
         $xmlItem = new XMLItem('123');
         $id = Uuid::randomHex();
 
-        $this->createTestProduct([
+        $productEntity = $this->createTestProduct([
             'id' => $id
         ]);
-
-        $criteria = new Criteria([$id]);
-        $criteria = Utils::addProductAssociations($criteria);
-        $criteria->addAssociation('visibilities');
-        $productEntity = $this->getContainer()->get('product.repository')->search(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        )->get($id);
 
         $error = sprintf(
             'Product "%s" with id "%s" could not be exported.',
