@@ -5,21 +5,25 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use Exception;
+use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\XML\XMLItem;
+use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
+use FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory;
 use FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\ExportItemAdapter;
-use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryEntity;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Throwable;
 
 class ExportItemAdapterTest extends TestCase
 {
@@ -58,7 +62,6 @@ class ExportItemAdapterTest extends TestCase
 
     public function testProductInvalidExceptionIsLogged(): void
     {
-        $xmlItem = new XMLItem('123');
         $id = Uuid::randomHex();
 
         $productEntity = $this->createTestProduct([
@@ -72,18 +75,15 @@ class ExportItemAdapterTest extends TestCase
             $productEntity->getId()
         );
 
-        $this->loggerMock->expects($this->exactly(1))
-            ->method('warning')
-            ->with($expectedMessage);
-
-        $adapter = $this->getExportItemAdapter();
-
-        $adapter->adapt($xmlItem, $productEntity);
+        $this->expectAdapterException(
+            $productEntity,
+            new ProductHasNoCategoriesException($productEntity),
+            $expectedMessage
+        );
     }
 
     public function testEmptyValueIsNotAllowedExceptionIsLogged(): void
     {
-        $xmlItem = new XMLItem('123');
         $id = Uuid::randomHex();
 
         $productEntity = $this->createTestProduct([
@@ -99,29 +99,15 @@ class ExportItemAdapterTest extends TestCase
         $help = 'If you see this message in your logs, please report this as a bug.';
         $expectedMessage = implode(' ', [$error, $reason, $help]);
 
-        $urlBuilderServiceMock = $this->getMockBuilder(UrlBuilderService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $urlBuilderServiceMock->expects($this->once())
-            ->method('buildProductUrl')
-            ->with($productEntity)
-            ->willReturn('');
-
-        $this->getContainer()->set(UrlBuilderService::class, $urlBuilderServiceMock);
-
-        $this->loggerMock->expects($this->exactly(1))
-            ->method('warning')
-            ->with($expectedMessage);
-
-        $adapter = $this->getExportItemAdapter();
-
-        $adapter->adapt($xmlItem, $productEntity);
+        $this->expectAdapterException(
+            $productEntity,
+            new EmptyValueNotAllowedException(''),
+            $expectedMessage
+        );
     }
 
     public function testThrowableExceptionIsLogged(): void
     {
-        $xmlItem = new XMLItem('123');
         $id = Uuid::randomHex();
         $errorMessage = 'This product failed, because it is faulty.';
 
@@ -138,36 +124,48 @@ class ExportItemAdapterTest extends TestCase
         $reason = sprintf('Error message: %s', $errorMessage);
         $expectedMessage = implode(' ', [$error, $help, $reason]);
 
-        $nameAdapterMock = $this->getMockBuilder(NameAdapter::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $nameAdapterMock->expects($this->once())
-            ->method('adapt')
-            ->willThrowException(new Exception($errorMessage));
-
-        $this->getContainer()->set(NameAdapter::class, $nameAdapterMock);
-
-        $this->loggerMock->expects($this->exactly(1))
-            ->method('warning')
-            ->with($expectedMessage);
-
-        $adapter = $this->getExportItemAdapter();
-
-        $adapter->adapt($xmlItem, $productEntity);
+        $this->expectAdapterException(
+            $productEntity,
+            new Exception($errorMessage),
+            $expectedMessage
+        );
     }
 
-    private function getExportItemAdapter(): ExportItemAdapter
+    private function getExportItemAdapter(AdapterFactory $adapterFactory): ExportItemAdapter
     {
         return new ExportItemAdapter(
             $this->getContainer()->get('service_container'),
             $this->getContainer()->get('router'),
             $this->getContainer()->get('event_dispatcher'),
             $this->getContainer()->get('FINDOLOGIC\FinSearch\Struct\Config'),
-            $this->getContainer()->get('FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory'),
+            $adapterFactory,
             $this->getContainer()->get('fin_search.export_context'),
             $this->loggerMock
         );
+    }
+
+    public function expectAdapterException(ProductEntity $productEntity, Throwable $throwable, string $message): void
+    {
+        $nameAdapterMock = $this->getMockBuilder(NameAdapter::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $nameAdapterMock->expects($this->once())
+            ->method('adapt')
+            ->willThrowException($throwable);
+
+        $adapterFactoryMock = $this->getMockBuilder(AdapterFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $adapterFactoryMock->expects($this->once())
+            ->method('getNameAdapter')
+            ->willReturn($nameAdapterMock);
+
+        $this->loggerMock->expects($this->exactly(1))
+            ->method('warning')
+            ->with($message);
+
+        $adapter = $this->getExportItemAdapter($adapterFactoryMock);
+        $adapter->adapt(new XMLItem('123'), $productEntity);
     }
 
     public function getCategory(): CategoryEntity
