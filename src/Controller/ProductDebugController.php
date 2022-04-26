@@ -78,6 +78,7 @@ class ProductDebugController extends ExportController
             $this->getExportConfig()->getProductId(),
             $this->getExportConfig()->getShopkey(),
             count($xmlProducts) ? $xmlProducts[0] : null,
+            $product,
             $this->getExport()->getErrorHandler()->getExportErrors()
         );
     }

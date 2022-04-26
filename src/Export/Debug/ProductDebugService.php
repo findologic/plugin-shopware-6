@@ -54,9 +54,10 @@ class ProductDebugService extends ProductService
         string $productId,
         string $shopkey,
         ?XMLItem $xmlItem,
+        ?ProductEntity $exportedMainProduct,
         ExportErrors $exportErrors
     ): JsonResponse {
-        $this->initialize($productId, $shopkey, $xmlItem, $exportErrors);
+        $this->initialize($productId, $shopkey, $xmlItem, $exportedMainProduct, $exportErrors);
 
         if (!$this->requestedProduct) {
             $this->exportErrors->addGeneralError(
@@ -99,6 +100,7 @@ class ProductDebugService extends ProductService
         string $productId,
         string $shopkey,
         ?XMLItem $xmlItem,
+        ?ProductEntity $exportedMainProduct,
         ExportErrors $exportErrors
     ): void {
         $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
@@ -106,7 +108,7 @@ class ProductDebugService extends ProductService
         $this->productId = $productId;
         $this->exportErrors = $exportErrors;
         $this->requestedProduct = $this->debugProductSearch->fetchProductResult($productId)->first();
-        $this->exportedMainProduct = $this->fetchProductWithVariantInformation();
+        $this->exportedMainProduct = $exportedMainProduct;
         $this->xmlItem = $xmlItem;
     }
 
