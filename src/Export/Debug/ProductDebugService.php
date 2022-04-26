@@ -24,7 +24,10 @@ class ProductDebugService extends ProductService
     private $exportErrors;
 
     /** @var ProductEntity */
-    private $product;
+    private $requestedProduct;
+
+    /** @var ProductEntity */
+    private $exportedMainProduct;
 
     /** @var ?XMLItem */
     private $xmlItem;
@@ -41,6 +44,8 @@ class ProductDebugService extends ProductService
         ?Config $config = null
     ) {
         parent::__construct($container, $salesChannelContext, $config);
+
+        $this->debugProductSearch = new DebugProductSearch($this->getContainer(), $this->getSalesChannelContext());
     }
 
     public function getDebugInformation(
@@ -51,7 +56,7 @@ class ProductDebugService extends ProductService
     ): JsonResponse {
         $this->initialize($productId, $shopkey, $xmlItem, $exportErrors);
 
-        if (!$this->product) {
+        if (!$this->requestedProduct) {
             $this->exportErrors->addGeneralError(
                 sprintf('Product or variant with ID %s does not exist.', $this->productId)
             );
@@ -62,7 +67,6 @@ class ProductDebugService extends ProductService
             );
         }
 
-        $exportedMainProductId = isset($xmlItem) ? $xmlItem->getId() : null;
         $isExported = $this->isExported() && !$exportErrors->hasErrors();
 
         if (!$isExported) {
@@ -71,20 +75,20 @@ class ProductDebugService extends ProductService
 
         return new JsonResponse([
             'export' => [
-                'productId' => $this->product->getId(),
-                'exportedMainProductId' => $exportedMainProductId,
+                'productId' => $this->requestedProduct->getId(),
+                'exportedMainProductId' => $this->exportedMainProduct->getId(),
                 'isExported' => $isExported,
                 'reasons' => $this->parseExportErrors()
             ],
             'debugLinks' => [
-                'exportUrl' => $this->debugUrlBuilder->buildExportUrl($exportedMainProductId),
-                'debugUrl' => $this->debugUrlBuilder->buildDebugUrl($exportedMainProductId),
+                'exportUrl' => $this->debugUrlBuilder->buildExportUrl($this->exportedMainProduct->getId()),
+                'debugUrl' => $this->debugUrlBuilder->buildDebugUrl($this->exportedMainProduct->getId()),
             ],
             'data' => [
-                'isExportedMainVariant' => $exportedMainProductId === $this->product->getId(),
-                'product' => $this->product,
-                'siblings' => $this->product->getParentId() ? $this->getSiblings($this->product, false) : [],
-                'associations' => $this->debugProductSearch->buildCriteria($this->product->getId())->getAssociations(),
+                'isExportedMainVariant' => $this->exportedMainProduct->getId() === $this->requestedProduct->getId(),
+                'product' => $this->requestedProduct,
+                'siblings' => $this->requestedProduct->getParentId() ? $this->getSiblings($this->requestedProduct, false) : [],
+                'associations' => $this->debugProductSearch->buildCriteria($this->requestedProduct->getId())->getAssociations(),
             ]
         ]);
     }
@@ -96,11 +100,11 @@ class ProductDebugService extends ProductService
         ExportErrors $exportErrors
     ): void {
         $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
-        $this->debugProductSearch = new DebugProductSearch($this->getContainer(), $this->getSalesChannelContext());
 
         $this->productId = $productId;
         $this->exportErrors = $exportErrors;
-        $this->product = $this->debugProductSearch->fetchProductResult($productId)->first();
+        $this->requestedProduct = $this->debugProductSearch->fetchProductResult($productId)->first();
+        $this->exportedMainProduct = $this->fetchProductWithVariantInformation();
         $this->xmlItem = $xmlItem;
     }
 
@@ -131,7 +135,7 @@ class ProductDebugService extends ProductService
 
     private function isExportedVariant(): bool
     {
-        if (!$isExportedVariant = $this->xmlItem->getId() === $this->productId) {
+        if (!$isExportedVariant = $this->exportedMainProduct->getId() === $this->productId) {
             $this->exportErrors->addGeneralError('Product is not the exported variant.');
         }
 
