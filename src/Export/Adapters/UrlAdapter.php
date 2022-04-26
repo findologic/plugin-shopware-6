@@ -25,7 +25,7 @@ class UrlAdapter
         $this->urlBuilderService = $urlBuilderService;
     }
 
-    public function adapt(ProductEntity $product): Url
+    public function adapt(ProductEntity $product): ?Url
     {
         $rawUrl = $this->urlBuilderService->buildProductUrl($product);
 

@@ -52,6 +52,10 @@ class AttributeAdapter
         $this->salesChannelContext = $salesChannelContext;
         $this->urlBuilderService = $urlBuilderService;
         $this->exportContext = $exportContext;
+
+        if (!$this->config->isInitialized()) {
+            $this->config->initializeBySalesChannel($this->salesChannelContext);
+        }
     }
 
     /**
@@ -77,6 +81,7 @@ class AttributeAdapter
 
     /**
      * @return Attribute[]
+     * @throws ProductHasNoCategoriesException
      */
     protected function getCategoryAndCatUrlAttributes(ProductEntity $product): array
     {
@@ -97,13 +102,13 @@ class AttributeAdapter
         $attributes = [];
         if ($this->config->isIntegrationTypeDirectIntegration() && !Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
-            $catUrlAttribute->setValues(Utils::flat($catUrls));
+            $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flattenWithUnique($catUrls)));
             $attributes[] = $catUrlAttribute;
         }
 
         if (!Utils::isEmpty($categories)) {
             $categoryAttribute = new Attribute('cat');
-            $categoryAttribute->setValues(array_unique($categories));
+            $categoryAttribute->setValues($this->decodeHtmlEntities(array_unique($categories)));
             $attributes[] = $categoryAttribute;
         }
 
@@ -141,13 +146,17 @@ class AttributeAdapter
                 $categories = array_merge($categories, [$categoryPath]);
             }
 
-            // Only export `cat_url`s recursively if integration type is Direct Integration.
-            if ($this->config->isIntegrationTypeDirectIntegration()) {
-                $catUrls = array_merge(
-                    $catUrls,
-                    $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
-                );
+            if (!$this->config->isIntegrationTypeDirectIntegration()) {
+                continue;
             }
+
+            // Only export `cat_url`s recursively if integration type is Direct Integration.
+            $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
+
+            $catUrls = array_merge(
+                $catUrls,
+                $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
+            );
         }
     }
 
@@ -250,12 +259,37 @@ class AttributeAdapter
                 }
 
                 // Filter null, false and empty strings, but not "0". See: https://stackoverflow.com/a/27501297/6281648
-                $customFieldAttribute = new Attribute($key, array_filter((array)$cleanedValue, 'strlen'));
+                $customFieldAttribute = new Attribute(
+                    $key,
+                    $this->decodeHtmlEntities(array_filter((array)$cleanedValue, 'strlen'))
+                );
                 $attributes[] = $customFieldAttribute;
             }
         }
 
         return $attributes;
+    }
+
+    protected function decodeHtmlEntities(array $values): array
+    {
+        foreach ($values as $key => $value) {
+            $values[$key] = $this->decodeHtmlEntity($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param mixed $value
+     * @return string|mixed
+     */
+    protected function decodeHtmlEntity($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        return html_entity_decode($value);
     }
 
     /**

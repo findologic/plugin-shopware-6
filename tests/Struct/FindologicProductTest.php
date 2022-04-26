@@ -23,6 +23,7 @@ use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ImageHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
@@ -70,6 +71,7 @@ class FindologicProductTest extends TestCase
     use ConfigHelper;
     use SalesChannelHelper;
     use OrderHelper;
+    use ImageHelper;
 
     /** @var SalesChannelContext */
     private $salesChannelContext;
@@ -1236,59 +1238,6 @@ class FindologicProductTest extends TestCase
         return $attributes;
     }
 
-    /**
-     * @return Image[]
-     */
-    private function getImages(ProductEntity $productEntity): array
-    {
-        $images = [];
-        if (!$productEntity->getMedia() || !$productEntity->getMedia()->count()) {
-            $fallbackImage = sprintf(
-                '%s/%s',
-                getenv('APP_URL'),
-                'bundles/storefront/assets/icon/default/placeholder.svg'
-            );
-
-            $images[] = new Image($fallbackImage);
-            $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
-
-            return $images;
-        }
-
-        $mediaCollection = $productEntity->getMedia();
-        $media = $mediaCollection->getMedia();
-        $thumbnails = $media->first()->getThumbnails();
-
-        $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
-        $firstThumbnail = $filteredThumbnails->first();
-
-        $image = $firstThumbnail ?? $media->first();
-        $url = $this->getEncodedUrl($image->getUrl());
-        $images[] = new Image($url);
-
-        $imageIds = [];
-        foreach ($thumbnails as $thumbnail) {
-            if (in_array($thumbnail->getMediaId(), $imageIds)) {
-                continue;
-            }
-
-            $url = $this->getEncodedUrl($thumbnail->getUrl());
-            $images[] = new Image($url, Image::TYPE_THUMBNAIL);
-            $imageIds[] = $thumbnail->getMediaId();
-        }
-
-        return $images;
-    }
-
-    protected function getEncodedUrl(string $url): string
-    {
-        $parsedUrl = parse_url($url);
-        $urlPath = explode('/', $parsedUrl['path']);
-        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
-        $parsedUrl['path'] = implode('/', $encodedPath);
-
-        return Utils::buildUrl($parsedUrl);
-    }
 
     public function emptyValuesProvider(): array
     {
@@ -1999,19 +1948,6 @@ class FindologicProductTest extends TestCase
             $this->assertStringContainsString($expectedImage['url'], $actualImages[$key]->getUrl());
             $this->assertSame($expectedImage['type'], $actualImages[$key]->getType());
         }
-    }
-
-    private function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
-    {
-        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
-            return $thumbnail->getWidth() >= 600;
-        });
-
-        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
-            return $a->getWidth() <=> $b->getWidth();
-        });
-
-        return $filteredThumbnails;
     }
 
     /**

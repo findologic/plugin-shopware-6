@@ -7,27 +7,67 @@ namespace FINDOLOGIC\FinSearch\Export\Adapters;
 class AdapterFactory
 {
     /** @var NameAdapter */
-    protected $nameAdapter;
+    private $nameAdapter;
 
     /** @var AttributeAdapter */
-    protected $attributeAdapter;
+    private $attributeAdapter;
 
     /** @var PriceAdapter */
-    protected $priceAdapter;
+    private $priceAdapter;
 
     /** @var UrlAdapter */
-    protected $urlAdapter;
+    private $urlAdapter;
+
+    /** @var DescriptionAdapter */
+    private $descriptionAdapter;
+
+    /** @var DateAddedAdapter $dateAddedAdapter */
+    private $dateAddedAdapter;
+
+    /** @var KeywordsAdapter $keywordsAdapter */
+    private $keywordsAdapter;
+
+    /** @var ImagesAdapter $imagesAdapter */
+    private $imagesAdapter;
+
+    /** @var SalesFrequencyAdapter $salesFrequencyAdapter */
+    private $salesFrequencyAdapter;
+
+    /** @var UserGroupsAdapter $userGroupsAdapter */
+    private $userGroupsAdapter;
+
+    /** @var OrderNumberAdapter $orderNumberAdapter */
+    private $orderNumberAdapter;
+
+    /** @var PropertiesAdapter $propertiesAdapter */
+    private $propertiesAdapter;
 
     public function __construct(
         NameAdapter $itemNameAdapter,
         AttributeAdapter $attributeAdapter,
         PriceAdapter $priceAdapter,
-        UrlAdapter $urlAdapter
+        UrlAdapter $urlAdapter,
+        DescriptionAdapter $descriptionAdapter,
+        DateAddedAdapter $dateAddedAdapter,
+        KeywordsAdapter $keywordsAdapter,
+        ImagesAdapter $imagesAdapter,
+        SalesFrequencyAdapter $salesFrequencyAdapter,
+        UserGroupsAdapter $userGroupsAdapter,
+        OrderNumberAdapter $orderNumberAdapter,
+        PropertiesAdapter $propertiesAdapter
     ) {
         $this->nameAdapter = $itemNameAdapter;
         $this->attributeAdapter = $attributeAdapter;
         $this->priceAdapter = $priceAdapter;
         $this->urlAdapter = $urlAdapter;
+        $this->descriptionAdapter = $descriptionAdapter;
+        $this->dateAddedAdapter = $dateAddedAdapter;
+        $this->keywordsAdapter = $keywordsAdapter;
+        $this->imagesAdapter = $imagesAdapter;
+        $this->salesFrequencyAdapter = $salesFrequencyAdapter;
+        $this->userGroupsAdapter = $userGroupsAdapter;
+        $this->orderNumberAdapter = $orderNumberAdapter;
+        $this->propertiesAdapter = $propertiesAdapter;
     }
 
     public function getNameAdapter(): NameAdapter
@@ -48,5 +88,45 @@ class AdapterFactory
     public function getUrlAdapter(): UrlAdapter
     {
         return $this->urlAdapter;
+    }
+
+    public function getDescriptionAdapter(): DescriptionAdapter
+    {
+        return $this->descriptionAdapter;
+    }
+
+    public function getDateAddedAdapter(): DateAddedAdapter
+    {
+        return $this->dateAddedAdapter;
+    }
+
+    public function getKeywordsAdapter(): KeywordsAdapter
+    {
+        return $this->keywordsAdapter;
+    }
+
+    public function getImagesAdapter(): ImagesAdapter
+    {
+        return $this->imagesAdapter;
+    }
+
+    public function getSalesFrequencyAdapter(): SalesFrequencyAdapter
+    {
+        return $this->salesFrequencyAdapter;
+    }
+
+    public function getUserGroupsAdapter(): UserGroupsAdapter
+    {
+        return $this->userGroupsAdapter;
+    }
+
+    public function getOrderNumbersAdapter(): OrderNumberAdapter
+    {
+        return $this->orderNumberAdapter;
+    }
+
+    public function getPropertiesAdapter(): PropertiesAdapter
+    {
+        return $this->propertiesAdapter;
     }
 }
