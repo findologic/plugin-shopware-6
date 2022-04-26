@@ -37,7 +37,7 @@ trait ProductHelper
         bool $withManufacturer = true
     ): ?ProductEntity {
         $context = Context::createDefaultContext();
-        $id = '29d554327a16fd51350688cfa9930b29';
+        $id = $overrideData['id'] ?? '29d554327a16fd51350688cfa9930b29';
         $categoryId = Uuid::randomHex();
         $newCategoryId = Uuid::randomHex();
         $redId = Uuid::randomHex();
