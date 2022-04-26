@@ -62,12 +62,7 @@ class ExportItemAdapterTest extends TestCase
 
     public function testProductInvalidExceptionIsLogged(): void
     {
-        $id = Uuid::randomHex();
-
-        $productEntity = $this->createTestProduct([
-            'id' => $id,
-            'categories' => []
-        ]);
+        $productEntity = $this->createTestProduct();
 
         $expectedMessage = sprintf(
             'Product "%s" with id %s was not exported because it has no categories assigned',
@@ -84,11 +79,7 @@ class ExportItemAdapterTest extends TestCase
 
     public function testEmptyValueIsNotAllowedExceptionIsLogged(): void
     {
-        $id = Uuid::randomHex();
-
-        $productEntity = $this->createTestProduct([
-            'id' => $id
-        ]);
+        $productEntity = $this->createTestProduct();
 
         $error = sprintf(
             'Product "%s" with id "%s" could not be exported.',
@@ -108,12 +99,8 @@ class ExportItemAdapterTest extends TestCase
 
     public function testThrowableExceptionIsLogged(): void
     {
-        $id = Uuid::randomHex();
         $errorMessage = 'This product failed, because it is faulty.';
-
-        $productEntity = $this->createTestProduct([
-            'id' => $id
-        ]);
+        $productEntity = $this->createTestProduct();
 
         $error = sprintf(
             'Error while exporting the product "%s" with id "%s".',
