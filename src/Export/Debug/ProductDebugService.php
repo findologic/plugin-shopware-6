@@ -45,7 +45,9 @@ class ProductDebugService extends ProductService
     ) {
         parent::__construct($container, $salesChannelContext, $config);
 
-        $this->debugProductSearch = new DebugProductSearch($this->getContainer(), $this->getSalesChannelContext());
+        if($salesChannelContext = $this->getSalesChannelContext()) {
+            $this->debugProductSearch = new DebugProductSearch($this->getContainer(), $salesChannelContext);
+        }
     }
 
     public function getDebugInformation(
