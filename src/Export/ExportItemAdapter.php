@@ -55,14 +55,19 @@ class ExportItemAdapter implements ExportItemAdapterInterface
     {
         $this->eventDispatcher->dispatch(new BeforeItemAdaptEvent($product, $item), BeforeItemAdaptEvent::NAME);
 
-        $item->setName($this->adapterFactory->getNameAdapter()->adapt($product));
+        if ($name = $this->adapterFactory->getNameAdapter()->adapt($product)) {
+            $item->setName($name);
+        }
 
         foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
             $item->addMergedAttribute($attribute);
         }
 
         $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
-        $item->setUrl($this->adapterFactory->getUrlAdapter()->adapt($product));
+
+        if ($url = $this->adapterFactory->getUrlAdapter()->adapt($product)) {
+            $item->setUrl($url);
+        }
 
         if ($description = $this->adapterFactory->getDescriptionAdapter()->adapt($product)) {
             $item->setDescription($description);
@@ -83,7 +88,6 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         if ($salesFrequency = $this->adapterFactory->getSalesFrequencyAdapter()->adapt($product)) {
             $item->setSalesFrequency($salesFrequency);
         }
-
 
         foreach ($this->adapterFactory->getUserGroupsAdapter()->adapt($product) as $userGroup) {
             $item->addUsergroup($userGroup);
