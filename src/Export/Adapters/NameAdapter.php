@@ -22,7 +22,7 @@ class NameAdapter
         return $value;
     }
 
-    protected function getCleanedName(ProductEntity $product): ?string
+    protected function getCleanedName(ProductEntity $product): string
     {
         $name = $product->getTranslation('name');
 
