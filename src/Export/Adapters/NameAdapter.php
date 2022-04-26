@@ -22,6 +22,9 @@ class NameAdapter
         return $value;
     }
 
+    /**
+     * @throws ProductHasNoNameException
+     */
     protected function getCleanedName(ProductEntity $product): string
     {
         $name = $product->getTranslation('name');

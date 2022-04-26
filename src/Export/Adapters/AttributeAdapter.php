@@ -81,6 +81,7 @@ class AttributeAdapter
 
     /**
      * @return Attribute[]
+     * @throws ProductHasNoCategoriesException
      */
     protected function getCategoryAndCatUrlAttributes(ProductEntity $product): array
     {

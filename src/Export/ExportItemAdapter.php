@@ -90,14 +90,19 @@ class ExportItemAdapter implements ExportItemAdapterInterface
      */
     protected function adaptProduct(Item $item, ProductEntity $product): Item
     {
-        $item->setName($this->adapterFactory->getNameAdapter()->adapt($product));
+        if ($name = $this->adapterFactory->getNameAdapter()->adapt($product)) {
+            $item->setName($name);
+        }
 
         foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
             $item->addMergedAttribute($attribute);
         }
 
         $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
-        $item->setUrl($this->adapterFactory->getUrlAdapter()->adapt($product));
+
+        if ($url = $this->adapterFactory->getUrlAdapter()->adapt($product)) {
+            $item->setUrl($url);
+        }
 
         if ($description = $this->adapterFactory->getDescriptionAdapter()->adapt($product)) {
             $item->setDescription($description);
