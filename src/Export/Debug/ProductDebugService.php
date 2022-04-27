@@ -130,7 +130,8 @@ class ProductDebugService extends ProductService
 
     private function isVisible(): bool
     {
-        if (!$isVisible = isset($this->xmlItem)) {
+        $isVisible = isset($this->xmlItem) && $this->requestedProduct->getActive();
+        if (!$isVisible) {
             $this->exportErrors->addGeneralError('Product could not be found or is not available for search.');
         }
 
