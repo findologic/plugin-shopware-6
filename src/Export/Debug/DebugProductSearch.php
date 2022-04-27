@@ -55,18 +55,16 @@ class DebugProductSearch
         ?bool $withVariantInformation = false
     ): Criteria {
         $criteria = new Criteria();
-
-        $multiFilter = new MultiFilter(MultiFilter::CONNECTION_OR);
-        $multiFilter->addQuery(
+        $queries = [
             new EqualsFilter('id', $productId)
-        );
+        ];
 
+        // MultiFilter::addQuery does not exist before v6.3.2.0
         if ($withVariantInformation) {
-            $multiFilter->addQuery(
-                new EqualsFilter('parentId', $productId)
-            );
+            $queries[] = new EqualsFilter('parentId', $productId);
         }
 
+        $multiFilter = new MultiFilter(MultiFilter::CONNECTION_OR, $queries);
         $criteria->addFilter($multiFilter);
 
         if ($withAssociations) {
