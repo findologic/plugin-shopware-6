@@ -45,7 +45,7 @@ class ProductDebugService extends ProductService
     ) {
         parent::__construct($container, $salesChannelContext, $config);
 
-        if($salesChannelContext = $this->getSalesChannelContext()) {
+        if ($salesChannelContext = $this->getSalesChannelContext()) {
             $this->debugProductSearch = new DebugProductSearch($this->getContainer(), $salesChannelContext);
         }
     }
@@ -90,8 +90,12 @@ class ProductDebugService extends ProductService
             'data' => [
                 'isExportedMainVariant' => $this->exportedMainProduct->getId() === $this->requestedProduct->getId(),
                 'product' => $this->requestedProduct,
-                'siblings' => $this->requestedProduct->getParentId() ? $this->getSiblings($this->requestedProduct, false) : [],
-                'associations' => $this->debugProductSearch->buildCriteria($this->requestedProduct->getId())->getAssociations(),
+                'siblings' => $this->requestedProduct->getParentId()
+                    ? $this->getSiblings($this->requestedProduct, false)
+                    : [],
+                'associations' => $this->debugProductSearch
+                    ->buildCriteria($this->requestedProduct->getId())
+                    ->getAssociations(),
             ]
         ]);
     }
