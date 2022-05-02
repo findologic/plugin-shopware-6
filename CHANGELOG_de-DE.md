@@ -1,3 +1,6 @@
+# Next
+- [SW-715] Filter Parameter von anderen Plugins die nicht dem Typ Text entsprechen werden ignoriert.
+
 # 2.8.1
 - [SW-689] Ein Fehler wurde behoben, wodurch verfügbare Varianten nicht exportiert wurden weil das Haupt-Produkt nicht verfügbar ist.
 - [SW-701] Ein Fehler wurde behoben, wodurch nicht verfügbare Filterwerte nicht deaktiviert wurden.

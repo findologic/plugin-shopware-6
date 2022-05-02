@@ -1,3 +1,6 @@
+# Next
+- [SW-715] Ignore non-text filter parameter set by other plugins.
+
 # 2.8.1
 - [SW-689] Fixed a bug that caused available variants not being exported because the main product is not available.
 - [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.
