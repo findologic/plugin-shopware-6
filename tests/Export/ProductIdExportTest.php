@@ -6,17 +6,14 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
+use Shopware\Core\Content\Category\CategoryEntity;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Storefront\Framework\Routing\Router;
 
 class ProductIdExportTest extends XmlExportTest
 {
-    public function testProductsInCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
+    public function buildItemsAndAssertError(ProductEntity $product, CategoryEntity $category)
     {
-        $product = $this->createVisibleTestProduct();
-
-        $category = $product->getCategories()->first();
-        $this->crossSellCategories = [$category->getId()];
-
         $exporter = $this->getExport();
         $items = $exporter->buildItems([$product], self::VALID_SHOPKEY, []);
         $this->assertEmpty($items);

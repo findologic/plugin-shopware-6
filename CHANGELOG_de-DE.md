@@ -1,6 +1,46 @@
-# NEXT
+# Next
+- [SW-715] Filter Parameter von anderen Plugins die nicht dem Typ Text entsprechen werden ignoriert.
+
+# 2.8.1
+- [SW-689] Ein Fehler wurde behoben, wodurch verfügbare Varianten nicht exportiert wurden weil das Haupt-Produkt nicht verfügbar ist.
+- [SW-701] Ein Fehler wurde behoben, wodurch nicht verfügbare Filterwerte nicht deaktiviert wurden.
+- [SW-702] Ein Fehler wurde behoben, wodurch eine Variante mit Preis null als günstigste Variante im Export angesehen wurde.
+- [SW-703] Ein Fehler wurde behoben, wodurch Filter in der Sidebar anders dargestellt wurden als im Shopware Standard.
+- [SW-708] Ein Fehler wurde behoben, wodurch es beim Export von Produkten mit gleichen Erstelldatum zu inkosistenter Sortierung kam.
+- [SW-709] Ein Fehler wurde behoben, wodurch der Filter Button in der mobilen Ansicht nicht dargestellt wurde.
+- [SW-707] Der interne Test-Runner läuft auf Node 14, wenn die Shopware Version nicht kompatibel mit Node 16 ist.
+
+# 2.8.0
+- [SW-695] Die Plugin-Konfiguration für Cross-Selling Kategorien erlaubt die Selektierung von mehr als 500 Kategorien.
+- [SW-694] Ein Fehler wurde behoben, wodurch Dynamische Produktgruppen nicht als Cross-Selling Kategorien gesetzt werden können.
+- [SW-699] Ein Fehler wurde behoben, wodurch unter Umständen keine Cross-Selling Kategorie Vorschläge angezeigt werden.
+- [SW-698] Ein Fehler wurde behoben, wodurch bei einer speziellen Shopware-Installation die Version nicht korrekt erkannt wurde.
+
+# 2.7.1
+- [SW-696] Ein Fehler wurde behoben, wodurch Produkte nicht geladen werden bei Paginierung auf Navigationsseiten.
+
+# 2.7.0
+- [SW-644] Die exportierten Kategorien und cat_urls enthalten nun auch Daten von nicht-Hauptvarianten.
+- [SW-685] Drittanbieter Plugins können nun einfacher die Anfrage an Findologic anhand der gesetzten Sortierung manipulieren.
+- [SW-683] Ein Fehler wurde behoben, wodurch bei Direct Integration auf Kategorieseiten ein flicker-Effekt auftrat, wenn viele JavaScript Ressourcen geladen wurden, bevor die Findologic JavaScript Ressourcen laden konnten.
+- [SW-690] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, die keinen Hersteller zugewiesen hatten.
+- [SW-691] Ein Fehler wurde behoben, wodurch interne Listing-Anfragen blockiert wurden.
+- [SW-693] Ein Fehler wurde behoben, wodurch Daten von inaktiven und ausverkauften Varianten exportiert wurde.
+- [SW-688] Ein Fehler wurde behoben, wodurch bei Findologic deaktivierten Verkaufskanälen bei einigen Routen MySQL anstatt ElasticSearch verwendet wurde.
+- [SW-692] Ein Fehler wurde behoben, wodurch Keine-Ergebnisse auf Kategorie-Listingseiten mit Dynamischen Produktgruppen angezeigt wurden.
+- [SW-687] Shopware 6.4.8.1 wurde zur Test-Matrix hinzugefügt.
+
+# 2.6.1
+- [SW-677] HTML-kodierte Attributswerte, werden nun automatisch im export dekodiert.
+- [SW-569] Die Option für das Aktivieren von Findologic auf Kategorieseiten, wurde in die API Sektion migriert.
+- [SW-678] Ein Fehler wurde behoben, wodurch Fehler in der Konsole auf Direct Integration Seiten ausgegeben wurden, wenn die URL keinen "query" Parameter enthielt.
+- [SW-624] Ein Fehler wurde behoben, wodurch bei fehlendem Shopware ElasticSearch Bundle ein Fehler ausgegeben wurde.
+- [SW-681] Ein Fehler wurde behoben, wodurch unter Umständen bei manchen Shopware-Installationen die Version nicht korrekt erkannt wurde.
+
+# 2.6.0
 - [SW-673] Die Performance auf Kategorieseiten wurde verbessert, indem das Plugin nun einfacher die Information der aktuellen Kategorie erhält.
 - [SW-633] Die exportierten Keywords enthalten nun Shopware "Such-Schlagwörter", anstatt der konfigurierten "Tags".
+- [SW-674] Ein Fehler wurde behoben, wodurch Fehler in der Konsole auf Direct Integration Seiten ausgegeben wurden, die durch Aktualisierungen des Shopware-Listings ausgelöst wurden.
 
 # 2.5.0
 - [SW-613] Die Konfiguration hat nun eine neue "Export" Sektion, wo ausgewählt werden kann, welche Variante als Hauptvariante exportiert werden soll. Auswahlmöglichkeiten sind "Shopware Standard", "Haupt-/Eltern Produkt", "Günstigste Variante".

@@ -1,0 +1,36 @@
+{#
+    Override product/filter columns in case the theme differs.
+    'filterColumns' will be used inside of 'cms-element-sidebar-filter'.
+#}
+{% if filterColumns is not defined %}
+    {% set filterColumns = 'col-lg-4 col-xl-3' %}
+{% endif %}
+
+{% if productColumns is not defined %}
+    {% set productColumns = 'col-lg-8 col-xl-9' %}
+{% endif %}
+
+{# This value is explicitely checked for versions <6.4.4.0, instead of using the sidebar value #}
+{% if block is not defined %}
+    {% set block = { sectionPosition: 'sidebar' } %}
+{% else %}
+    {% set block = block|merge({ sectionPosition: 'sidebar' }) %}
+{% endif %}
+
+<div class="row">
+    {% sw_include '@Storefront/storefront/element/cms-element-sidebar-filter.html.twig' with {
+        listing: page.listing,
+        sidebar: true
+    } %}
+    <div class="{{ productColumns }}">
+        {% sw_include '@Storefront/storefront/component/product/listing.html.twig' with {
+            searchResult: page.listing,
+            dataUrl: dataUrl,
+            filterUrl: filterUrl,
+            params: { search: page.searchTerm },
+            sidebar: true,
+            boxLayout: 'minimal',
+            displayMode: ''
+        } %}
+    </div>
+</div>

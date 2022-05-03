@@ -9,6 +9,8 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Content\Category\CategoryDefinition;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
@@ -17,6 +19,8 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRou
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
+use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -56,6 +60,16 @@ class ProductListingRoute extends AbstractProductListingRoute
     private $productRepository;
 
     /**
+     * @var EntityRepositoryInterface
+     */
+    private $categoryRepository;
+
+    /**
+     * @var ProductStreamBuilderInterface
+     */
+    private $productStreamBuilder;
+
+    /**
      * @var ServiceConfigResource
      */
     private $serviceConfigResource;
@@ -68,6 +82,8 @@ class ProductListingRoute extends AbstractProductListingRoute
     public function __construct(
         AbstractProductListingRoute $decorated,
         SalesChannelRepositoryInterface $productRepository,
+        EntityRepositoryInterface $categoryRepository,
+        ProductStreamBuilderInterface $productStreamBuilder,
         EventDispatcherInterface $eventDispatcher,
         ProductDefinition $definition,
         RequestCriteriaBuilder $criteriaBuilder,
@@ -75,11 +91,13 @@ class ProductListingRoute extends AbstractProductListingRoute
         FindologicConfigService $findologicConfigService,
         ?Config $config = null
     ) {
+        $this->decorated = $decorated;
+        $this->productRepository = $productRepository;
+        $this->categoryRepository = $categoryRepository;
+        $this->productStreamBuilder = $productStreamBuilder;
         $this->eventDispatcher = $eventDispatcher;
         $this->definition = $definition;
         $this->criteriaBuilder = $criteriaBuilder;
-        $this->decorated = $decorated;
-        $this->productRepository = $productRepository;
         $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
@@ -125,23 +143,34 @@ class ProductListingRoute extends AbstractProductListingRoute
             )
         );
 
-        $criteria->addFilter(
-            new EqualsFilter('product.categoriesRo.id', $categoryId)
-        );
+        /** @var CategoryEntity $category */
+        $category = $this->categoryRepository->search(
+            new Criteria([$categoryId]),
+            $salesChannelContext->getContext()
+        )->first();
+
+        $streamId = $this->extendCriteria($salesChannelContext, $criteria, $category);
 
         $this->eventDispatcher->dispatch(
             new ProductListingCriteriaEvent($request, $criteria, $salesChannelContext)
         );
 
         $result = $this->doSearch($criteria, $salesChannelContext);
-        $result = ProductListingResult::createFrom($result);
-        $result->addCurrentFilter('navigationId', $categoryId);
+        /** @var ProductListingResult $productListing */
+        $productListing = ProductListingResult::createFrom($result);
+        $productListing->addCurrentFilter('navigationId', $categoryId);
+
+        // Getter and setter for the stream id were only added in 6.4.0.0
+        // This was added by SW to adapt the cache key
+        if (method_exists($productListing, 'setStreamId')) {
+            $productListing->setStreamId($streamId);
+        }
 
         $this->eventDispatcher->dispatch(
-            new ProductListingResultEvent($request, $result, $salesChannelContext)
+            new ProductListingResultEvent($request, $productListing, $salesChannelContext)
         );
 
-        return new ProductListingRouteResponse($result);
+        return new ProductListingRouteResponse($productListing);
     }
 
     protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
@@ -156,6 +185,10 @@ class ProductListingRoute extends AbstractProductListingRoute
         // top results, we reset it here shortly.
         $preservedSortings = $criteria->getSorting();
         $criteria->resetSorting();
+
+        // Shopware sets the offset during their additional requests
+        // Offset should not be set, when searching for explicit IDs
+        $criteria->setOffset(null);
 
         $result = $this->fetchProducts($criteria, $context);
         foreach ($preservedSortings as $sorting) {
@@ -200,5 +233,33 @@ class ProductListingRoute extends AbstractProductListingRoute
         $path = ltrim($refererPath, $request->getBasePath());
 
         return $path === '' || $path === '/';
+    }
+
+    private function extendCriteria(
+        SalesChannelContext $salesChannelContext,
+        Criteria $criteria,
+        CategoryEntity $category
+    ): ?string {
+        $supportsProductStreams = defined(
+            '\Shopware\Core\Content\Category\CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM'
+        );
+        $isProductStream = $supportsProductStreams &&
+            $category->getProductAssignmentType() === CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM;
+        if ($isProductStream && $category->getProductStreamId() !== null) {
+            $filters = $this->productStreamBuilder->buildFilters(
+                $category->getProductStreamId(),
+                $salesChannelContext->getContext()
+            );
+
+            $criteria->addFilter(...$filters);
+
+            return $category->getProductStreamId();
+        }
+
+        $criteria->addFilter(
+            new EqualsFilter('product.categoriesRo.id', $category->getId())
+        );
+
+        return null;
     }
 }

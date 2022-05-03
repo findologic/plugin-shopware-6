@@ -186,7 +186,7 @@ class DynamicProductGroupService
             /** @var string[] $productIds */
             $productIds = $this->productRepository->searchIds($criteria, $this->context)->getIds();
             foreach ($productIds as $productId) {
-                $products[$productId][] = $categoryEntity->getId();
+                $products[$productId][$categoryEntity->getId()] = $categoryEntity->getId();
             }
         }
 

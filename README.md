@@ -37,7 +37,13 @@ Please see [our Shopware 6 documentation](https://docs.findologic.com/doku.php?i
    ```bash
    ./psh.phar docker:ssh
    ```
-8. Install and activate the plugin
+
+8. Refresh plugin list 
+   ```bash
+   bin/console plugin:refresh
+   ```
+
+9. Install and activate the plugin
    ```bash
    bin/console plugin:install FinSearch --activate --clearCache
    ```

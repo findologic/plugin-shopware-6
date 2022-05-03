@@ -15,6 +15,7 @@ use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Api\PaginationService;
 use FINDOLOGIC\FinSearch\Findologic\Api\SortingService;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
@@ -192,6 +193,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         }
         if (Utils::versionLowerThan('6.4')) {
             $expectedAssign['states'] = [];
+        }
+        if (Utils::versionGreaterOrEqual('6.4.9.0')) {
+            $expectedAssign['fields'] = [];
         }
         $expectedAssign['title'] = null;
 
@@ -574,7 +578,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->getMock();
 
         // Sorting is handled via database since Shopware 6.3.2.
-        if (!Utils::versionLowerThan('6.3.2')) {
+        if (Utils::versionGreaterOrEqual('6.3.2')) {
             $sorting = new ProductSortingEntity();
             $sorting->setId('score');
             $sorting->setKey('score');
@@ -651,8 +655,10 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /**
      * @return ProductListingFeaturesSubscriber
      */
-    private function getProductListingFeaturesSubscriber(array $overrides = [])
-    {
+    private function getProductListingFeaturesSubscriber(
+        array $overrides = [],
+        FindologicSearchService $findologicSearchService = null
+    ) {
         if (isset($overrides[ShopwareProductListingFeaturesSubscriber::class])) {
             $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class];
         } elseif (Utils::versionLowerThan('6.3.2')) {
@@ -684,18 +690,21 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $sortingService = new SortingService(
             $this->productListingSortingRegistry,
-            $this->getContainer()->get('translator')
+            $this->getContainer()->get('translator'),
+            $this->getContainer()->getParameter('kernel.shopware_version')
         );
         $paginationService = new PaginationService();
+        $sortingHandlerService = $this->getContainer()->get(SortingHandlerService::class);
 
-        $findologicSearchService = new FindologicSearchService(
+        $findologicSearchService = $findologicSearchService ?? new FindologicSearchService(
             $this->containerMock,
             $this->apiClientMock,
             $this->apiConfigMock,
             $this->configMock,
             $this->genericPageLoaderMock,
             $sortingService,
-            $paginationService
+            $paginationService,
+            $sortingHandlerService
         );
 
         return new ProductListingFeaturesSubscriber(
@@ -1026,6 +1035,9 @@ XML;
         if (Utils::versionLowerThan('6.4')) {
             $expectedAssign['states'] = [];
         }
+        if (Utils::versionGreaterOrEqual('6.4.9.0')) {
+            $expectedAssign['fields'] = [];
+        }
         $expectedAssign['title'] = null;
         $expectedAssign['limit'] = $expectedLimit;
 
@@ -1105,14 +1117,14 @@ XML;
 
     public function testHandleResultDoesNotThrowExceptionWhenCalledManually(): void
     {
-        if (Utils::versionLowerThan('6.3.3') && !Utils::versionLowerThan('6.3.1')) {
+        if (Utils::versionLowerThan('6.3.3') && Utils::versionGreaterOrEqual('6.3.1')) {
             $this->markTestSkipped('Shopware sorting bug prevents this from properly working.');
         }
 
         $this->initMocks();
 
         $criteria = new Criteria();
-        if (!Utils::versionLowerThan('6.3.2')) {
+        if (Utils::versionGreaterOrEqual('6.3.2')) {
             $criteria->addExtension('sortings', $this->sortingCollection);
         }
 
@@ -1187,14 +1199,21 @@ XML;
 
     public function testMultipleListingEventsWillOnlyHandleTheRequestOnce(): void
     {
+        $findologicSearchServiceMock = $this->getMockBuilder(FindologicSearchService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $findologicSearchServiceMock->expects($this->once())->method('doNavigation');
+
         $decoratedSubscriberMock = $this->getMockBuilder(ShopwareProductListingFeaturesSubscriber::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $decoratedSubscriberMock->expects($this->once())->method('handleListingRequest');
+        // Event is dispatched exactly 4 times in this test
+        $decoratedSubscriberMock->expects($this->exactly(4))->method('handleListingRequest');
 
-        $subscriber = $this->getProductListingFeaturesSubscriber([
-            ShopwareProductListingFeaturesSubscriber::class => $decoratedSubscriberMock
-        ]);
+        $subscriber = $this->getProductListingFeaturesSubscriber(
+            [ShopwareProductListingFeaturesSubscriber::class => $decoratedSubscriberMock],
+            $findologicSearchServiceMock
+        );
         $this->getContainer()->set(ProductListingFeaturesSubscriber::class, $subscriber);
 
         $eventDispatcher = $this->getContainer()->get('event_dispatcher');

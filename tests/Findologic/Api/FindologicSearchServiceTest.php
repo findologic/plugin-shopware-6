@@ -9,6 +9,7 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Api\PaginationService;
 use FINDOLOGIC\FinSearch\Findologic\Api\SortingService;
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config as PluginConfig;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
@@ -164,7 +165,8 @@ class FindologicSearchServiceTest extends TestCase
             $this->pluginConfigMock,
             $this->getContainer()->get(GenericPageLoader::class),
             $this->getContainer()->get(SortingService::class),
-            $this->getContainer()->get(PaginationService::class)
+            $this->getContainer()->get(PaginationService::class),
+            $this->getContainer()->get(SortingHandlerService::class)
         );
 
         $reflector = new ReflectionObject($findologicSearchService);
@@ -187,7 +189,8 @@ class FindologicSearchServiceTest extends TestCase
             $this->pluginConfigMock,
             $genericPageLoaderMock,
             $this->getContainer()->get(SortingService::class),
-            $this->getContainer()->get(PaginationService::class)
+            $this->getContainer()->get(PaginationService::class),
+            $this->getContainer()->get(SortingHandlerService::class)
         );
 
         $this->pluginConfigMock->expects($this->any())->method('isInitialized')->willReturn(true);

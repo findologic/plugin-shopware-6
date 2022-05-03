@@ -221,7 +221,7 @@ class ExportController extends AbstractController
 
     protected function warmUpDynamicProductGroupsAndGetTotal(): int
     {
-        if (Utils::versionLowerThan('6.3.1.0')) {
+        if (Utils::versionLowerThan('6.3.1.0', $this->container->getParameter('kernel.shopware_version'))) {
             return 0;
         }
 

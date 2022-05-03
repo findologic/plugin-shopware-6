@@ -227,18 +227,12 @@ class DynamicProductGroupServiceTest extends TestCase
             $productRepository->upsert($stream, $this->defaultContext);
 
             // Assign each product stream to different categories
-            $this->getContainer()->get('category.repository')->create(
-                [
-                    [
-                        'id' => Uuid::randomHex(),
-                        'productStreamId' => md5($streamId . $i),
-                        'name' => 'Findologic Xtream ' . $i,
-                        'parentId' => $navigationCategoryId,
-                        'productAssignmentType' => 'product_stream'
-                    ]
-                ],
-                Context::createDefaultContext()
-            );
+            $this->createTestCategory([
+                'productStreamId' => md5($streamId . $i),
+                'name' => 'Findologic Xtream ' . $i,
+                'parentId' => $navigationCategoryId,
+                'productAssignmentType' => 'product_stream'
+            ]);
         }
     }
 
