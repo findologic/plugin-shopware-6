@@ -582,8 +582,8 @@ class FindologicProduct extends Struct
                 /** @var ProductPrice $listPrice */
                 $listPrice = $price->getListPrice();
                 if ($listPrice) {
-                    $this->addProperty('old_price', (string)$listPrice->getGross());
-                    $this->addProperty('old_price_net', (string)$listPrice->getNet());
+                    $this->addProperty('old_price', (string)round($listPrice->getGross(), 2));
+                    $this->addProperty('old_price_net', (string)round($listPrice->getNet(), 2));
                 }
             }
         }
@@ -849,16 +849,16 @@ class FindologicProduct extends Struct
             $grossPrice = $currencyPrice->getGross();
             $price = new Price();
             if ($customerGroup->getDisplayGross()) {
-                $price->setValue($grossPrice, $userGroupHash);
+                $price->setValue(round($grossPrice, 2), $userGroupHash);
             } else {
-                $price->setValue($netPrice, $userGroupHash);
+                $price->setValue(round($netPrice, 2), $userGroupHash);
             }
 
             $prices[] = $price;
         }
 
         $price = new Price();
-        $price->setValue($currencyPrice->getGross());
+        $price->setValue(round($currencyPrice->getGross(), 2));
         $prices[] = $price;
 
         return $prices;
