@@ -1753,8 +1753,8 @@ class FindologicProductTest extends TestCase
                         'net' => 40,
                         'linked' => false,
                         'listPrice' => [
-                            'net' => 20,
-                            'gross' => 25,
+                            'net' => 20.17926,
+                            'gross' => 25.1234,
                             'linked' => false,
                         ],
                     ]
@@ -1778,11 +1778,11 @@ class FindologicProductTest extends TestCase
         foreach ($findologicProduct->getProperties() as $property) {
             if ($property->getKey() === 'old_price') {
                 $hasListPrice = true;
-                $this->assertEquals(25, current($property->getAllValues()));
+                $this->assertEquals(25.12, current($property->getAllValues()));
             }
             if ($property->getKey() === 'old_price_net') {
                 $hasListPriceNet = true;
-                $this->assertEquals(20, current($property->getAllValues()));
+                $this->assertEquals(20.18, current($property->getAllValues()));
             }
         }
 
