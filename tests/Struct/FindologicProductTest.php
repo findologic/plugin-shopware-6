@@ -461,7 +461,7 @@ class FindologicProductTest extends TestCase
                 'expectedPrice' => 15.76,
                 'actualPrice' => 15.7591351
             ],
-            'Price that is rounded to an integer' => [
+            'Price that is rounded to a whole number' => [
                 'expectedPrice' => 20.00,
                 'actualPrice' => 19.9997
             ]

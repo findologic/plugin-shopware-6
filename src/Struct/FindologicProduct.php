@@ -582,8 +582,8 @@ class FindologicProduct extends Struct
                 /** @var ProductPrice $listPrice */
                 $listPrice = $price->getListPrice();
                 if ($listPrice) {
-                    $this->addProperty('old_price', (string)round($listPrice->getGross(), 2));
-                    $this->addProperty('old_price_net', (string)round($listPrice->getNet(), 2));
+                    $this->addProperty('old_price', (string) round($listPrice->getGross(), 2));
+                    $this->addProperty('old_price_net', (string) round($listPrice->getNet(), 2));
                 }
             }
         }
