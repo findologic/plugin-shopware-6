@@ -8,16 +8,20 @@ use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\Export\XML\XMLExporter as XmlFileConverter;
 use FINDOLOGIC\Export\XML\XMLItem;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
 class XmlExport extends Export
 {
+    private const MAXIMUM_VARIANTS_COUNT = 30;
+
     /** @var RouterInterface */
     private $router;
 
@@ -134,7 +138,26 @@ class XmlExport extends Export
 
         /** @var ExportItemAdapter $exportItemAdapter */
         $exportItemAdapter = $this->container->get(ExportItemAdapter::class);
+        $pageSize = $this->getPageSize($productEntity);
+        $productService = $this->container->get(ProductServiceSeparateVariants::CONTAINER_ID);
+        $page = 0;
+
+        do {
+            $variantResult = $productService->searchVisibleVariants($productEntity, $pageSize, $page++);
+        } while($variantResult->getCriteria()->getOffset() < $variantResult->getTotal());
+
         return $exportItemAdapter->adapt($this->xmlFileConverter->createItem($productEntity->getId()), $productEntity);
+    }
+
+    private function getPageSize(ProductEntity $productEntity): int
+    {
+        $propertiesCount = count($productEntity->getPropertyIds());
+
+        if ($propertiesCount >= self::MAXIMUM_VARIANTS_COUNT) {
+            return 1;
+        }
+
+        return intval(self::MAXIMUM_VARIANTS_COUNT / $propertiesCount);
     }
 
     private function getConfiguredCrossSellingCategory(ProductEntity $productEntity): ?CategoryEntity

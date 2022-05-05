@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\ProductService;
+use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
@@ -112,7 +113,7 @@ class ExportController extends AbstractController
 
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
-        $this->productService = ProductService::getInstance(
+        $this->productService = ProductServiceSeparateVariants::getInstance(
             $this->container,
             $this->salesChannelContext,
             $this->pluginConfig
