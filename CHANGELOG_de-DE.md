@@ -1,5 +1,8 @@
 # Next
-- [SW-715] Filter Parameter von anderen Plugins die nicht dem Typ Text entsprechen werden ignoriert.
+- [SW-715] Ein Fehler wurde behoben, wodurch inkompatible Filter Werte von anderen Plugins verarbeitet wurden.
+- [SW-716] Ein Fehler wurde behoben, wodurch der Preis Filter automatisch selektiert wurde wenn Produktpreise mit mehr als zwei Nachkommastellen verwendet werden.
+- [SW-720] Ein Fehler wurde behoben, wodurch Varianten Eigenschaften auf Produktlisting Seiten nicht verfügbar waren.
+- [SW-718] Update der Komponenten guzzlehttp/psr7 und minimist.
 
 # 2.8.1
 - [SW-689] Ein Fehler wurde behoben, wodurch verfügbare Varianten nicht exportiert wurden weil das Haupt-Produkt nicht verfügbar ist.
