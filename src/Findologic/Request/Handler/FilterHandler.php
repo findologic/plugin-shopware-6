@@ -40,7 +40,10 @@ class FilterHandler
 
         if ($selectedFilters) {
             foreach ($selectedFilters as $filterName => $filterValues) {
-                if (in_array($filterName, self::IGNORE_LIST, false)) {
+                if (
+                    in_array($filterName, self::IGNORE_LIST, false) ||
+                    !is_string($filterValues)
+                ) {
                     continue;
                 }
                 foreach ($this->getFilterValues($filterValues) as $filterValue) {

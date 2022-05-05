@@ -1,3 +1,9 @@
+# Next
+- [SW-715] Fixed a bug that caused an error due to incompatible filter values being passed by other plugins.
+- [SW-716] Fixed a bug that caused the price filter being selected automatically when having product prices with more than two decimals.
+- [SW-720] Fixed a bug that caused variant properties not being available on product listing pages
+- [SW-718] Update dependencies guzzlehttp/psr7 and minimist
+
 # 2.8.1
 - [SW-689] Fixed a bug that caused available variants not being exported because the main product is not available.
 - [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.

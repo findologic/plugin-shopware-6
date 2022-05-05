@@ -452,6 +452,51 @@ class FindologicProductTest extends TestCase
         }
     }
 
+    public function decimalPriceProvider(): array
+    {
+        return [
+            'Price that is rounded down' => [
+                'expectedPrice' => 15.39,
+                'actualPrice' => 15.3945
+            ],
+            'Price that is rounded up' => [
+                'expectedPrice' => 15.76,
+                'actualPrice' => 15.7591351
+            ],
+            'Price that is rounded to a whole number' => [
+                'expectedPrice' => 20.00,
+                'actualPrice' => 19.9997
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider decimalPriceProvider
+     */
+    public function testProductPriceIsRoundedToTwoDecimals(float $expectedPrice, float $actualPrice): void
+    {
+        $price = new Price();
+        $price->setValue($expectedPrice);
+
+        $productEntity = $this->createTestProduct([
+            'price' => [
+                ['currencyId' => Defaults::CURRENCY, 'gross' => $actualPrice, 'net' => $actualPrice, 'linked' => false]
+            ],
+        ]);
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertEquals($price, current($findologicProduct->getPrices()));
+    }
+
     private function getKeywordEntity(string $keyword): ProductSearchKeywordEntity
     {
         $productSearchKeywordEntity = new ProductSearchKeywordEntity();
@@ -1657,8 +1702,8 @@ class FindologicProductTest extends TestCase
                         'net' => 40,
                         'linked' => false,
                         'listPrice' => [
-                            'net' => 20,
-                            'gross' => 25,
+                            'net' => 20.17926,
+                            'gross' => 25.1234,
                             'linked' => false,
                         ],
                     ]
@@ -1682,11 +1727,11 @@ class FindologicProductTest extends TestCase
         foreach ($findologicProduct->getProperties() as $property) {
             if ($property->getKey() === 'old_price') {
                 $hasListPrice = true;
-                $this->assertEquals(25, current($property->getAllValues()));
+                $this->assertEquals(25.12, current($property->getAllValues()));
             }
             if ($property->getKey() === 'old_price_net') {
                 $hasListPriceNet = true;
-                $this->assertEquals(20, current($property->getAllValues()));
+                $this->assertEquals(20.18, current($property->getAllValues()));
             }
         }
 

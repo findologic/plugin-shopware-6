@@ -298,6 +298,23 @@ abstract class ProductRouteBase extends TestCase
         }
     }
 
+    public function testVariantAssociationsAreAdded(): void
+    {
+        $salesChannelContextMock = $this->getMockedSalesChannelContext(true);
+        $request = Request::create('http://your-shop.de/some-category');
+        $request->setSession($this->getSessionMock());
+
+        $categoryId = Uuid::randomHex();
+        $this->setCategoryMock($categoryId);
+
+        $criteria = new Criteria();
+        $productRoute = $this->getRoute();
+        $this->call($productRoute, $request, $salesChannelContextMock, $categoryId, $criteria);
+
+        $this->assertArrayHasKey('options', $criteria->getAssociations());
+        $this->assertArrayHasKey('group', $criteria->getAssociations()['options']->getAssociations());
+    }
+
     protected function call(
         $productRoute,
         Request $request,
