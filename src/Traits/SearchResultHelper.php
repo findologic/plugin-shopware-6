@@ -44,6 +44,12 @@ trait SearchResultHelper
         }
     }
 
+    protected function addVariantAssociation(Criteria $criteria)
+    {
+        $criteria->addAssociation('options');
+        $criteria->addAssociation('options.group');
+    }
+
     protected function fetchProducts(
         Criteria $criteria,
         SalesChannelContext $context,
