@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionObject;
@@ -25,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 class ProductSearchRouteTest extends ProductRouteBase
 {
     use SalesChannelFunctionalTestBehaviour;
+    use SearchResultHelper;
     use ProductHelper {
         ProductHelper::createCustomer insteadof SalesChannelFunctionalTestBehaviour;
     }
@@ -119,6 +121,7 @@ class ProductSearchRouteTest extends ProductRouteBase
         $variant = $product->getChildren()->get($variantId);
         $context = $this->salesChannelContext->getContext();
         $originalCriteria = (new Criteria())->setIds([$product->getId()]);
+        $this->addOptionsGroupAssociation($originalCriteria);
         $newCriteria = clone $originalCriteria;
         $total = $variant ? 1 : 0;
         $searchResult = Utils::buildEntitySearchResult(
