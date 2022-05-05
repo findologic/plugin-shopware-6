@@ -44,9 +44,8 @@ trait SearchResultHelper
         }
     }
 
-    protected function addVariantAssociation(Criteria $criteria)
+    protected function addOptionsGroupAssociation(Criteria $criteria)
     {
-        $criteria->addAssociation('options');
         $criteria->addAssociation('options.group');
     }
 
