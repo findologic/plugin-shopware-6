@@ -121,7 +121,6 @@ class ProductSearchRouteTest extends ProductRouteBase
         $variant = $product->getChildren()->get($variantId);
         $context = $this->salesChannelContext->getContext();
         $originalCriteria = (new Criteria())->setIds([$product->getId()]);
-        $this->addOptionsGroupAssociation($originalCriteria);
         $newCriteria = clone $originalCriteria;
         $total = $variant ? 1 : 0;
         $searchResult = Utils::buildEntitySearchResult(
@@ -132,6 +131,8 @@ class ProductSearchRouteTest extends ProductRouteBase
             $originalCriteria,
             $context
         );
+
+        $this->addOptionsGroupAssociation($newCriteria);
 
         $variantCriteria = new Criteria();
         $variantCriteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_OR, [
