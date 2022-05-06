@@ -118,6 +118,11 @@ class ExportController extends AbstractController
             $this->salesChannelContext,
             $this->pluginConfig
         );
+//        $this->productService = ProductService::getInstance(
+//            $this->container,
+//            $this->salesChannelContext,
+//            $this->pluginConfig
+//        );
 
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
@@ -152,6 +157,7 @@ class ExportController extends AbstractController
             $this->exportConfig->getStart(),
             $this->exportConfig->getProductId()
         );
+        dd($products);
 
         $exportContext = $this->buildExportContext();
         $this->container->set('fin_search.export_context', $exportContext);

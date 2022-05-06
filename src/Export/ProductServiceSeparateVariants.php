@@ -94,12 +94,9 @@ class ProductServiceSeparateVariants
         ?int $offset = null,
         ?string $productId = null
     ): EntitySearchResult {
-        // THIS SHOULD RETURN PARENT PRODUCTS DEPENDING ON CONFIGURATION
         $result = $this->getVisibleProducts($limit, $offset, $productId);
 
-        dd($result);
-
-        return EntitySearchResult::createFrom($result->getEntities());
+        return $result;
     }
 
     public function searchVisibleVariants(
@@ -127,36 +124,42 @@ class ProductServiceSeparateVariants
         return EntitySearchResult::createFrom($result);
     }
 
-    protected function getCriteriaBasedOnConfiguration(Criteria $criteria): Criteria
+    protected function adaptCriteriaBasedOnConfiguration(Criteria $criteria): void
     {
         $mainVariantConfig = $this->config->getMainVariant();
 
         switch ($mainVariantConfig) {
+            case MainVariant::SHOPWARE_DEFAULT:
+                break;
             case MainVariant::MAIN_PARENT:
-                $criteria = $this->getParentCriteriaByMainProduct($criteria);
+                $this->adaptParentCriteriaByMainProduct($criteria);
                 break;
             case MainVariant::CHEAPEST:
-                $criteria = $this->getParentCriteriaByCheapestVariant($criteria);
+                $this->adaptParentCriteriaByCheapestVariant($criteria);
                 break;
             default:
                 throw new InvalidArgumentException($mainVariantConfig);
         }
-
-       return $criteria;
     }
 
-    protected function getParentCriteriaByMainProduct(Criteria $criteria): Criteria
+    protected function adaptParentCriteriaByMainProduct(Criteria $criteria): void
     {
         $criteria->addFilter(
             new EqualsFilter('parentId', null)
         );
-
-        return $criteria;
     }
 
-    protected function getParentCriteriaByCheapestVariant(Criteria $criteria): Criteria
+    protected function adaptParentCriteriaByCheapestVariant(Criteria $criteria): void
     {
-        return $criteria;
+        $children = $criteria->getAssociation('children');
+        $children->setLimit(1);
+        $children->addSorting(
+            new FieldSorting('price', FieldSorting::ASCENDING)
+        );
+
+        $this->handleAvailableStock($children);
+        $this->addVisibilityFilter($children);
+        $this->addPriceZeroFilter($children);
     }
 
     protected function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria
@@ -167,7 +170,6 @@ class ProductServiceSeparateVariants
 
         return $criteria;
     }
-
 
     protected function buildProductCriteria(?int $limit = null, ?int $offset = null): Criteria
     {
@@ -206,11 +208,23 @@ class ProductServiceSeparateVariants
         );
     }
 
+    public function getTotalProductCount(): int
+    {
+        $criteria = $this->buildProductCriteria();
+
+        /** @var IdSearchResult $result */
+        $result = $this->container->get('product.repository')->searchIds(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        );
+
+        return $result->getTotal();
+    }
+
     protected function addProductAssociations(Criteria $criteria): void
     {
         Utils::addProductAssociations($criteria);
     }
-
 
     protected function addPriceZeroFilter(Criteria $criteria): void
     {
@@ -285,18 +299,49 @@ class ProductServiceSeparateVariants
     protected function getVisibleProducts(?int $limit, ?int $offset, ?string $productId): EntitySearchResult
     {
         $criteria = $this->getCriteriaWithProductVisibility($limit, $offset);
-
-        $criteria->addFilter(
-            new EqualsFilter('parentId', null)
-        );
+        $this->adaptCriteriaBasedOnConfiguration($criteria);
 
         if ($productId) {
             $this->addProductIdFilters($criteria, $productId);
         }
 
-        return $this->container->get('product.repository')->search(
+        $products = $this->container->get('product.repository')->search(
             $criteria,
             $this->salesChannelContext->getContext()
         );
+
+        $mainVariantConfig = $this->config->getMainVariant();
+        if ($mainVariantConfig !== MainVariant::CHEAPEST) {
+            return $products;
+        }
+
+        $mainProducts = $this->getCheapestProducts($products->getEntities());
+
+        return EntitySearchResult::createFrom($mainProducts);
+    }
+
+    protected function getCheapestProducts(ProductCollection $products): ProductCollection
+    {
+        $cheapestVariants = new ProductCollection();
+
+        foreach ($products as $product) {
+            $cheapestVariant = $product->getChildren()->first();
+
+            if ($cheapestVariant === null) {
+                $cheapestVariants->add($product);
+
+                continue;
+            }
+
+            $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+            $productPrice = $product->getCurrencyPrice($currencyId);
+            $cheapestVariantPrice = $cheapestVariant->getCurrencyPrice($currencyId);
+            $realCheapestProduct = $productPrice->getGross() < $cheapestVariantPrice->getGross()
+                ? $product : $cheapestVariant;
+
+            $cheapestVariants->add($realCheapestProduct);
+        }
+
+        return $cheapestVariants;
     }
 }

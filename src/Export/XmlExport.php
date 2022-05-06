@@ -144,6 +144,7 @@ class XmlExport extends Export
 
         do {
             $variantResult = $productService->searchVisibleVariants($productEntity, $pageSize, $page++);
+            //dd($variantResult);
         } while($variantResult->getCriteria()->getOffset() < $variantResult->getTotal());
 
         return $exportItemAdapter->adapt($this->xmlFileConverter->createItem($productEntity->getId()), $productEntity);
