@@ -20,7 +20,7 @@ use Symfony\Component\Routing\RouterInterface;
 
 class XmlExport extends Export
 {
-    private const MAXIMUM_VARIANTS_COUNT = 30;
+    private const MAXIMUM_PROPERTIES_COUNT = 500;
 
     /** @var RouterInterface */
     private $router;
@@ -138,9 +138,11 @@ class XmlExport extends Export
 
         /** @var ExportItemAdapter $exportItemAdapter */
         $exportItemAdapter = $this->container->get(ExportItemAdapter::class);
-        $pageSize = $this->getPageSize($productEntity);
+        /** @var ProductServiceSeparateVariants $productService */
         $productService = $this->container->get(ProductServiceSeparateVariants::CONTAINER_ID);
         $page = 0;
+        $maxPropertiesCount = $productService->getMaxPropertiesCount($productEntity);
+        $pageSize = $this->calculatePageSize($maxPropertiesCount);
 
         do {
             $variantResult = $productService->searchVisibleVariants($productEntity, $pageSize, $page++);
@@ -150,15 +152,13 @@ class XmlExport extends Export
         return $exportItemAdapter->adapt($this->xmlFileConverter->createItem($productEntity->getId()), $productEntity);
     }
 
-    private function getPageSize(ProductEntity $productEntity): int
+    private function calculatePageSize(int $maxPropertiesCount): int
     {
-        $propertiesCount = count($productEntity->getPropertyIds());
-
-        if ($propertiesCount >= self::MAXIMUM_VARIANTS_COUNT) {
+        if ($maxPropertiesCount >= self::MAXIMUM_PROPERTIES_COUNT) {
             return 1;
         }
 
-        return intval(self::MAXIMUM_VARIANTS_COUNT / $propertiesCount);
+        return intval(self::MAXIMUM_PROPERTIES_COUNT / $maxPropertiesCount);
     }
 
     private function getConfiguredCrossSellingCategory(ProductEntity $productEntity): ?CategoryEntity

@@ -14,6 +14,9 @@ use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\TermsAggregation;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\Bucket\TermsResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -219,6 +222,43 @@ class ProductServiceSeparateVariants
         );
 
         return $result->getTotal();
+    }
+
+    public function getMaxPropertiesCount(ProductEntity $productEntity): int
+    {
+        $criteria = new Criteria([$productEntity->getParentId() ?? $productEntity->getId()]);
+        /** @var EntityRepository $productRepository */
+        $productRepository = $this->container->get('product.repository');
+
+        $criteria->addAggregation(
+            new TermsAggregation(
+                'per-children',
+                'children.id',
+                null,
+                null,
+                new TermsAggregation(
+                    'property-ids',
+                    'children.properties.id',
+                    null,
+                    null
+                )
+            )
+        );
+
+        /** @var TermsResult $aggregation */
+        $aggregation = $productRepository
+            ->aggregate($criteria, $this->salesChannelContext->getContext())
+            ->get('per-children');
+
+        $maxCount = count($productEntity->getPropertyIds());
+        foreach ($aggregation->getBuckets() as $bucket)
+        {
+            if ($bucket->getCount() > $maxCount) {
+                $maxCount = $bucket->getCount();
+            }
+        }
+
+        return $maxCount;
     }
 
     protected function addProductAssociations(Criteria $criteria): void
