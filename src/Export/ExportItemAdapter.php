@@ -13,7 +13,9 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductInvalidException;
 use FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory;
 use FINDOLOGIC\FinSearch\Export\Events\AfterItemAdaptEvent;
+use FINDOLOGIC\FinSearch\Export\Events\AfterVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\BeforeItemAdaptEvent;
+use FINDOLOGIC\FinSearch\Export\Events\BeforeVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Logger\ExportExceptionLogger;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use Psr\Container\ContainerInterface;
@@ -81,6 +83,32 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         $this->eventDispatcher->dispatch(new AfterItemAdaptEvent($product, $item), AfterItemAdaptEvent::NAME);
 
         return $item;
+    }
+
+    /**
+     * @throws ProductHasNoCategoriesException
+     * @throws ProductHasNoPricesException
+     */
+    public function adaptVariant(Item $item, ProductEntity $product): void
+    {
+        $this->eventDispatcher->dispatch(new BeforeVariantAdaptEvent($product, $item), BeforeVariantAdaptEvent::NAME);
+
+        foreach ($this->adapterFactory->getOrderNumbersAdapter()->adapt($product) as $orderNumber) {
+            $item->addOrdernumber($orderNumber);
+        }
+
+        foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
+            try {
+                $item->addMergedAttribute($attribute);
+            } catch (Throwable $ex) {
+                continue;
+            }
+
+        }
+
+        $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
+
+        $this->eventDispatcher->dispatch(new AfterVariantAdaptEvent($product, $item), AfterVariantAdaptEvent::NAME);
     }
 
     /**

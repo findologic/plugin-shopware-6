@@ -157,7 +157,7 @@ class ExportController extends AbstractController
             $this->exportConfig->getStart(),
             $this->exportConfig->getProductId()
         );
-        dd($products);
+//        dd($products);
 
         $exportContext = $this->buildExportContext();
         $this->container->set('fin_search.export_context', $exportContext);

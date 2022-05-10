@@ -113,10 +113,7 @@ class ProductServiceSeparateVariants
         $criteria->setLimit($pageSize);
         $criteria->setOffset($page);
 
-        $criteria->addFilter(
-            new EqualsFilter('parentId', $product->getId())
-        );
-
+        $this->addParentIdFilter($product, $criteria);
         $this->addVisibilityFilter($criteria);
         $this->handleAvailableStock($criteria);
         $this->addPriceZeroFilter($criteria);
@@ -125,6 +122,15 @@ class ProductServiceSeparateVariants
         $result = $productRepository->search($criteria, $this->salesChannelContext->getContext());
 
         return EntitySearchResult::createFrom($result);
+    }
+
+    protected function addParentIdFilter(ProductEntity $productEntity, Criteria $criteria): void
+    {
+        $parentId = $productEntity->getParentId() ?: $productEntity->getId();
+
+        $criteria->addFilter(
+            new EqualsFilter('parentId', $parentId)
+        );
     }
 
     protected function adaptCriteriaBasedOnConfiguration(Criteria $criteria): void
@@ -160,10 +166,8 @@ class ProductServiceSeparateVariants
         );
 
         $children = $criteria->getAssociation('children');
-        $children->setLimit(1);
-        $children->addSorting(
-            new FieldSorting('price', FieldSorting::ASCENDING)
-        );
+        //$children->setLimit(1);
+        $children->addSorting(new FieldSorting('price'));
 
         $this->handleAvailableStock($children);
         $this->addPriceZeroFilter($children);
@@ -368,7 +372,6 @@ class ProductServiceSeparateVariants
         $cheapestVariants = new ProductCollection();
 
         foreach ($products as $product) {
-     //       dump($product);
             $cheapestVariant = $product->getChildren()->first();
 
             if ($cheapestVariant === null) {
@@ -376,16 +379,12 @@ class ProductServiceSeparateVariants
 
                 continue;
             }
-         //   dump('cheapest');
-         //   dump($cheapestVariant);
+
             $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
             $productPrice = $product->getCurrencyPrice($currencyId);
             $cheapestVariantPrice = $cheapestVariant->getCurrencyPrice($currencyId);
             $realCheapestProduct = $productPrice->getGross() < $cheapestVariantPrice->getGross()
                 ? $product : $cheapestVariant;
-
-          //  dump('realCheapest');
-          //  dump($realCheapestProduct);
 
             $cheapestVariants->add($realCheapestProduct);
         }

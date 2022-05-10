@@ -10,4 +10,6 @@ use Shopware\Core\Content\Product\ProductEntity;
 interface ExportItemAdapterInterface
 {
     public function adapt(Item $item, ProductEntity $product): ?Item;
+
+    public function adaptVariant(Item $item, ProductEntity $product): void;
 }

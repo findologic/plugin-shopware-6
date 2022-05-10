@@ -143,13 +143,22 @@ class XmlExport extends Export
         $page = 0;
         $maxPropertiesCount = $productService->getMaxPropertiesCount($productEntity);
         $pageSize = $this->calculatePageSize($maxPropertiesCount);
+        $initialItem = $this->xmlFileConverter->createItem($productEntity->getId());
+        $item = $exportItemAdapter->adapt($initialItem, $productEntity);
+
+        if ($item === null) {
+            $item = $initialItem;
+        }
 
         do {
             $variantResult = $productService->searchVisibleVariants($productEntity, $pageSize, $page++);
-            //dd($variantResult);
+
+            foreach ($variantResult->getEntities() as $variant) {
+                $exportItemAdapter->adaptVariant($item, $variant);
+            }
         } while($variantResult->getCriteria()->getOffset() < $variantResult->getTotal());
 
-        return $exportItemAdapter->adapt($this->xmlFileConverter->createItem($productEntity->getId()), $productEntity);
+        return $item;
     }
 
     private function calculatePageSize(int $maxPropertiesCount): int
