@@ -133,6 +133,7 @@ class ProductServiceSeparateVariants
 
         switch ($mainVariantConfig) {
             case MainVariant::SHOPWARE_DEFAULT:
+                $this->addGrouping($criteria);
                 break;
             case MainVariant::MAIN_PARENT:
                 $this->adaptParentCriteriaByMainProduct($criteria);
@@ -154,6 +155,10 @@ class ProductServiceSeparateVariants
 
     protected function adaptParentCriteriaByCheapestVariant(Criteria $criteria): void
     {
+        $criteria->addFilter(
+            new EqualsFilter('parentId', null)
+        );
+
         $children = $criteria->getAssociation('children');
         $children->setLimit(1);
         $children->addSorting(
@@ -161,7 +166,6 @@ class ProductServiceSeparateVariants
         );
 
         $this->handleAvailableStock($children);
-        $this->addVisibilityFilter($children);
         $this->addPriceZeroFilter($children);
     }
 
@@ -180,7 +184,6 @@ class ProductServiceSeparateVariants
         $criteria->addSorting(new FieldSorting('createdAt'));
         $criteria->addSorting(new FieldSorting('id'));
 
-        $this->addGrouping($criteria);
         $this->handleAvailableStock($criteria);
         $this->addProductAssociations($criteria);
 
@@ -365,6 +368,7 @@ class ProductServiceSeparateVariants
         $cheapestVariants = new ProductCollection();
 
         foreach ($products as $product) {
+     //       dump($product);
             $cheapestVariant = $product->getChildren()->first();
 
             if ($cheapestVariant === null) {
@@ -372,12 +376,16 @@ class ProductServiceSeparateVariants
 
                 continue;
             }
-
+         //   dump('cheapest');
+         //   dump($cheapestVariant);
             $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
             $productPrice = $product->getCurrencyPrice($currencyId);
             $cheapestVariantPrice = $cheapestVariant->getCurrencyPrice($currencyId);
             $realCheapestProduct = $productPrice->getGross() < $cheapestVariantPrice->getGross()
                 ? $product : $cheapestVariant;
+
+          //  dump('realCheapest');
+          //  dump($realCheapestProduct);
 
             $cheapestVariants->add($realCheapestProduct);
         }
