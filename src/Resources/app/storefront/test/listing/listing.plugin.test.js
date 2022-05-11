@@ -73,16 +73,19 @@ describe('listing.plugin,js', () => {
   })
 
   test.each([
-    '#navigation:search=&attrib%5Bcat_url%5D%5B0%5D=%2FKids%2F',
-    '#search:search=blub&query=blub',
-    '#suggest:suggest',
-    '#navigation:attrib%5Bcat_url%5D%5B0%5D=%2Fwohnaccessoires%2F&count=24',
-    '#search:count=24',
-  ])('history must not be changed on Direct Integration page %s', (hash) => {
+    { lastHash: '', hash: '#navigation:search=&attrib%5Bcat_url%5D%5B0%5D=%2FKids%2F' },
+    { lastHash: '', hash: '#search:search=blub&query=blub' },
+    { lastHash: '', hash: '#suggest:suggest' },
+    { lastHash: '', hash: '#navigation:attrib%5Bcat_url%5D%5B0%5D=%2Fwohnaccessoires%2F&count=24' },
+    { lastHash: '', hash: '#search:count=24' },
+    { lastHash: '#suggest:suggest', hash: '' },
+    { lastHash: '#search:count=24', hash: '' },
+  ])('history must not be changed on Direct Integration page %s', ({ lastHash, hash }) => {
     setupListingPlugin();
 
     jest.spyOn(listingPlugin, 'refreshRegistry');
     window.location.hash = hash;
+    listingPlugin.lastHash = lastHash;
 
     listingPlugin._onWindowPopstate();
 
