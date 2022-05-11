@@ -63,6 +63,15 @@ describe('listing.plugin,js', () => {
     expect(typeof listingPlugin).toBe('object');
   });
 
+  test('lastHash is set on initialization', () => {
+    const expectedHash = '#initialHash';
+    window.location.hash = '#initialHash';
+
+    setupListingPlugin();
+
+    expect(listingPlugin.lastHash).toBe(expectedHash);
+  })
+
   test.each([
     '#navigation:search=&attrib%5Bcat_url%5D%5B0%5D=%2FKids%2F',
     '#search:search=blub&query=blub',

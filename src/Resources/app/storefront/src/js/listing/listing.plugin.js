@@ -1,6 +1,11 @@
 export default class FlListingPlugin extends window.PluginManager.getPlugin('Listing').get('class') {
 
-export default class FlListingPlugin extends ListingPlugin {
+  init() {
+    this.lastHash = window.location.hash;
+
+    super.init();
+  }
+
   /**
    * @private
    */
@@ -18,12 +23,15 @@ export default class FlListingPlugin extends ListingPlugin {
    * @private
    */
   _isDirectIntegrationPage() {
-    const hash = window.location.hash;
+    const lastHash = this.lastHash;
+    const hash = this.lastHash = window.location.hash;
 
     const isSearchPage = hash.startsWith('#search:');
     const isNavigationPage = hash.startsWith('#navigation:');
     const isMSSOpened = hash.startsWith('#suggest:');
+    const wasMSSOpened = lastHash.startsWith('#suggest:');
+    const browserBackOnMobileSearch = hash.length === 0 && lastHash.startsWith('#search:');
 
-    return isSearchPage || isNavigationPage || isMSSOpened;
+    return isSearchPage || isNavigationPage || isMSSOpened || wasMSSOpened || browserBackOnMobileSearch;
   }
 }
