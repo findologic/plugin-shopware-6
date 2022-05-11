@@ -1,4 +1,4 @@
-import ListingPlugin from 'src/plugin/listing/listing.plugin';
+export default class FlListingPlugin extends window.PluginManager.getPlugin('Listing').get('class') {
 
 export default class FlListingPlugin extends ListingPlugin {
   /**

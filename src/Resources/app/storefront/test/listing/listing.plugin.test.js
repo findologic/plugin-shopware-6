@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import FlListingPlugin from "../../src/js/listing/listing.plugin";
+import ListingPlugin from 'src/plugin/listing/listing.plugin';
 
 describe('listing.plugin,js', () => {
   let listingPlugin = undefined;
@@ -15,6 +15,8 @@ describe('listing.plugin,js', () => {
     cmsElementProductListingWrapper.classList.add('cms-element-product-listing-wrapper');
 
     document.body.append(cmsElementProductListingWrapper);
+
+    const FlListingPlugin = require("../../src/js/listing/listing.plugin").default;
 
     listingPlugin = new FlListingPlugin(mockElement);
   }
@@ -33,7 +35,7 @@ describe('listing.plugin,js', () => {
       },
       getPlugin: () => {
         return {
-          get: () => []
+          get: (value) => value === 'class' ? ListingPlugin : []
         };
       },
       initializePlugins: undefined
@@ -41,6 +43,7 @@ describe('listing.plugin,js', () => {
 
     // mock listing plugins
     const mockElement = document.createElement('div');
+    const FlListingPlugin = require("../../src/js/listing/listing.plugin").default;
     listingPlugin = new FlListingPlugin(mockElement);
     listingPlugin._registry = [];
 
