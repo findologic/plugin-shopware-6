@@ -102,4 +102,17 @@ describe('listing.plugin,js', () => {
 
     expect(listingPlugin.refreshRegistry).toHaveBeenCalled();
   });
+
+  test('lastHash is changed on each check', () => {
+    window.location.hash = '#initialHash';
+
+    setupListingPlugin();
+
+    expect(listingPlugin.lastHash).toBe('#initialHash');
+    window.location.hash = '#newHash';
+
+    listingPlugin._isDirectIntegrationPage();
+
+    expect(listingPlugin.lastHash).toBe('#newHash');
+  });
 });
