@@ -40,13 +40,13 @@ class ExportItemAdapter implements ExportItemAdapterInterface
     /** @var Config */
     protected $config;
 
-    /** @var AdapterFactory */
+    /** @var AdapterFactory  $adapterFactory*/
     protected $adapterFactory;
 
-    /** @var ExportContext */
+    /** @var ExportContext $exportContext*/
     protected $exportContext;
 
-    /** @var LoggerInterface  */
+    /** @var LoggerInterface  $logger*/
     private $logger;
 
     public function __construct(
@@ -85,28 +85,21 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         return $item;
     }
 
-    /**
-     * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoPricesException
-     */
     public function adaptVariant(Item $item, ProductEntity $product): void
     {
         $this->eventDispatcher->dispatch(new BeforeVariantAdaptEvent($product, $item), BeforeVariantAdaptEvent::NAME);
 
-        foreach ($this->adapterFactory->getOrderNumbersAdapter()->adapt($product) as $orderNumber) {
-            $item->addOrdernumber($orderNumber);
-        }
-
-        foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
-            try {
-                $item->addMergedAttribute($attribute);
-            } catch (Throwable $ex) {
-                continue;
+        try {
+            foreach ($this->adapterFactory->getOrderNumbersAdapter()->adapt($product) as $orderNumber) {
+                $item->addOrdernumber($orderNumber);
             }
 
+            foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
+                $item->addMergedAttribute($attribute);
+            }
+        } catch (Throwable $exception) {
+            return;
         }
-
-        $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
 
         $this->eventDispatcher->dispatch(new AfterVariantAdaptEvent($product, $item), AfterVariantAdaptEvent::NAME);
     }

@@ -102,26 +102,19 @@ class ProductServiceSeparateVariants
         return $result;
     }
 
-    public function searchVisibleVariants(
-        ProductEntity $product,
-        int $pageSize,
-        int $page = 0
-    ): EntitySearchResult {
+    public function buildVariantIterator(ProductEntity $product, int $pageSize): RepositoryIterator
+    {
+        $criteria = new Criteria();
         $productRepository = $this->container->get('product.repository');
 
-        $criteria = new Criteria();
         $criteria->setLimit($pageSize);
-        $criteria->setOffset($page);
-
         $this->addParentIdFilter($product, $criteria);
         $this->addVisibilityFilter($criteria);
         $this->handleAvailableStock($criteria);
         $this->addPriceZeroFilter($criteria);
         $this->addProductAssociations($criteria);
 
-        $result = $productRepository->search($criteria, $this->salesChannelContext->getContext());
-
-        return EntitySearchResult::createFrom($result);
+        return new RepositoryIterator($productRepository, $this->salesChannelContext->getContext(), $criteria);
     }
 
     protected function addParentIdFilter(ProductEntity $productEntity, Criteria $criteria): void
@@ -166,9 +159,11 @@ class ProductServiceSeparateVariants
         );
 
         $children = $criteria->getAssociation('children');
+        // TODO: Fix limit setting
         //$children->setLimit(1);
         $children->addSorting(new FieldSorting('price'));
 
+        $this->addProductAssociations($children);
         $this->handleAvailableStock($children);
         $this->addPriceZeroFilter($children);
     }
@@ -258,8 +253,7 @@ class ProductServiceSeparateVariants
             ->get('per-children');
 
         $maxCount = count($productEntity->getPropertyIds());
-        foreach ($aggregation->getBuckets() as $bucket)
-        {
+        foreach ($aggregation->getBuckets() as $bucket) {
             if ($bucket->getCount() > $maxCount) {
                 $maxCount = $bucket->getCount();
             }
@@ -373,7 +367,6 @@ class ProductServiceSeparateVariants
 
         foreach ($products as $product) {
             $cheapestVariant = $product->getChildren()->first();
-
             if ($cheapestVariant === null) {
                 $cheapestVariants->add($product);
 

@@ -140,7 +140,6 @@ class XmlExport extends Export
         $exportItemAdapter = $this->container->get(ExportItemAdapter::class);
         /** @var ProductServiceSeparateVariants $productService */
         $productService = $this->container->get(ProductServiceSeparateVariants::CONTAINER_ID);
-        $page = 0;
         $maxPropertiesCount = $productService->getMaxPropertiesCount($productEntity);
         $pageSize = $this->calculatePageSize($maxPropertiesCount);
         $initialItem = $this->xmlFileConverter->createItem($productEntity->getId());
@@ -150,13 +149,15 @@ class XmlExport extends Export
             $item = $initialItem;
         }
 
-        do {
-            $variantResult = $productService->searchVisibleVariants($productEntity, $pageSize, $page++);
+        $iterator = $productService->buildVariantIterator($productEntity, $pageSize);
 
-            foreach ($variantResult->getEntities() as $variant) {
+        while (($variantsResult = $iterator->fetch()) !== null) {
+            $variants = $variantsResult->getEntities();
+
+            foreach ($variants->getElements() as $variant) {
                 $exportItemAdapter->adaptVariant($item, $variant);
             }
-        } while($variantResult->getCriteria()->getOffset() < $variantResult->getTotal());
+        }
 
         return $item;
     }
