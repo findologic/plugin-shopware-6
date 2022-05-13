@@ -185,18 +185,22 @@ class ProductServiceSeparateVariants
         $this->addPriceZeroFilter($children);
     }
 
-    protected function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria
+    protected function getCriteriaWithProductVisibility(
+        ?int $limit = null,
+        ?int $offset = null,
+        ?array $productIds = null
+    ): Criteria
     {
-        $criteria = $this->buildProductCriteria($limit, $offset);
+        $criteria = $this->buildProductCriteria($limit, $offset, $productIds);
         $this->addVisibilityFilter($criteria);
         $this->addPriceZeroFilter($criteria);
 
         return $criteria;
     }
 
-    protected function buildProductCriteria(?int $limit = null, ?int $offset = null): Criteria
+    protected function buildProductCriteria(?int $limit = null, ?int $offset = null, ?array $productIds = null): Criteria
     {
-        $criteria = new Criteria();
+        $criteria = new Criteria($productIds);
         $criteria->addSorting(new FieldSorting('createdAt'));
         $criteria->addSorting(new FieldSorting('id'));
 
@@ -402,36 +406,28 @@ class ProductServiceSeparateVariants
 
     protected function getConfiguredMainVariants(ProductCollection $products): EntitySearchResult
     {
-        $mainVariants = new ProductCollection();
+        $realProductIds = [];
 
         foreach ($products as $product) {
             if (!$product->getMainVariantId()) {
-                $mainVariants->add($product);
+                $realProductIds[] = $product->getId();
+
                 continue;
             }
 
-            $mainVariant = $this->getRealMainVariant($product->getMainVariantId());
-
-            if (!$mainVariant) {
-                continue;
-            }
-
-            $mainVariants->add($mainVariant);
+            $realProductIds[] = $product->getMainVariantId();
         }
 
-        return EntitySearchResult::createFrom($mainVariants);
+        return $this->getRealMainVariants($realProductIds);
     }
 
-    protected function getRealMainVariant(string $productId): ?ProductEntity
+    protected function getRealMainVariants(array $productIds): EntitySearchResult
     {
-        $criteria = $this->getCriteriaWithProductVisibility();
-        $criteria->addFilter(
-            new EqualsFilter('id', $productId)
-        );
+        $criteria = $this->getCriteriaWithProductVisibility(null, null, $productIds);
 
         return $this->container->get('product.repository')->search(
             $criteria,
             $this->salesChannelContext->getContext()
-        )->first();
+        );
     }
 }
