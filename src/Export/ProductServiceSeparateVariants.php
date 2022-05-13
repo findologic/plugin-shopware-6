@@ -19,6 +19,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\Terms
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\Bucket\TermsResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\AndFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
@@ -119,10 +120,26 @@ class ProductServiceSeparateVariants
 
     protected function addParentIdFilter(ProductEntity $productEntity, Criteria $criteria): void
     {
-        $parentId = $productEntity->getParentId() ?: $productEntity->getId();
+        if (!$productEntity->getParentId()) {
+            $criteria->addFilter(
+                new EqualsFilter('parentId', $productEntity->getId())
+            );
+
+            return;
+        }
 
         $criteria->addFilter(
-            new EqualsFilter('parentId', $parentId)
+            new MultiFilter(
+                MultiFilter::CONNECTION_OR,
+                [
+                    new EqualsFilter('parentId', $productEntity->getParentId()),
+                    new EqualsFilter('id', $productEntity->getParentId())
+                ]
+            )
+        );
+
+        $criteria->addFilter(
+            new NotFilter(NotFilter::CONNECTION_AND,[new EqualsFilter('id', $productEntity->getId())])
         );
     }
 
@@ -352,16 +369,14 @@ class ProductServiceSeparateVariants
         );
 
         $mainVariantConfig = $this->config->getMainVariant();
-        if ($mainVariantConfig !== MainVariant::CHEAPEST) {
-            return $products;
+        if ($mainVariantConfig === MainVariant::CHEAPEST) {
+            return $this->getCheapestProducts($products->getEntities());
         }
 
-        $mainProducts = $this->getCheapestProducts($products->getEntities());
-
-        return EntitySearchResult::createFrom($mainProducts);
+        return $this->getConfiguredMainVariants($products->getEntities());
     }
 
-    protected function getCheapestProducts(ProductCollection $products): ProductCollection
+    protected function getCheapestProducts(ProductCollection $products): EntitySearchResult
     {
         $cheapestVariants = new ProductCollection();
 
@@ -382,6 +397,41 @@ class ProductServiceSeparateVariants
             $cheapestVariants->add($realCheapestProduct);
         }
 
-        return $cheapestVariants;
+        return EntitySearchResult::createFrom($cheapestVariants);
+    }
+
+    protected function getConfiguredMainVariants(ProductCollection $products): EntitySearchResult
+    {
+        $mainVariants = new ProductCollection();
+
+        foreach ($products as $product) {
+            if (!$product->getMainVariantId()) {
+                $mainVariants->add($product);
+                continue;
+            }
+
+            $mainVariant = $this->getRealMainVariant($product->getMainVariantId());
+
+            if (!$mainVariant) {
+                continue;
+            }
+
+            $mainVariants->add($mainVariant);
+        }
+
+        return EntitySearchResult::createFrom($mainVariants);
+    }
+
+    protected function getRealMainVariant(string $productId): ?ProductEntity
+    {
+        $criteria = $this->getCriteriaWithProductVisibility();
+        $criteria->addFilter(
+            new EqualsFilter('id', $productId)
+        );
+
+        return $this->container->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->first();
     }
 }
