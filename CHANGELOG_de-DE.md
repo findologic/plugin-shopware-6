@@ -1,4 +1,4 @@
-# Next
+# 2.8.2
 - [SW-715] Ein Fehler wurde behoben, wodurch inkompatible Filter Werte von anderen Plugins verarbeitet wurden.
 - [SW-716] Ein Fehler wurde behoben, wodurch der Preis Filter automatisch selektiert wurde wenn Produktpreise mit mehr als zwei Nachkommastellen verwendet werden.
 - [SW-720] Ein Fehler wurde behoben, wodurch Varianten Eigenschaften auf Produktlisting Seiten nicht verfügbar waren.
