@@ -111,50 +111,62 @@ class ExportItemAdapter implements ExportItemAdapterInterface
      */
     protected function adaptProduct(Item $item, ProductEntity $product): Item
     {
-        if ($name = $this->adapterFactory->getNameAdapter()->adapt($product)) {
-            $item->setName($name);
-        }
-
         foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
             $item->addMergedAttribute($attribute);
         }
 
-        $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
-
-        if ($url = $this->adapterFactory->getUrlAdapter()->adapt($product)) {
-            $item->setUrl($url);
-        }
-
-        if ($description = $this->adapterFactory->getDescriptionAdapter()->adapt($product)) {
-            $item->setDescription($description);
+        if ($bonus = $this->adapterFactory->getBonusAdapter()->adapt($product)) {
+            $item->setBonus($bonus);
         }
 
         if ($dateAdded = $this->adapterFactory->getDateAddedAdapter()->adapt($product)) {
             $item->setDateAdded($dateAdded);
         }
 
-        foreach ($this->adapterFactory->getKeywordsAdapter()->adapt($product) as $keyword) {
-            $item->addKeyword($keyword);
+        if ($description = $this->adapterFactory->getDescriptionAdapter()->adapt($product)) {
+            $item->setDescription($description);
         }
 
         foreach ($this->adapterFactory->getImagesAdapter()->adapt($product) as $image) {
             $item->addImage($image);
         }
 
-        if ($salesFrequency = $this->adapterFactory->getSalesFrequencyAdapter()->adapt($product)) {
-            $item->setSalesFrequency($salesFrequency);
+        foreach ($this->adapterFactory->getKeywordsAdapter()->adapt($product) as $keyword) {
+            $item->addKeyword($keyword);
         }
 
-        foreach ($this->adapterFactory->getUserGroupsAdapter()->adapt($product) as $userGroup) {
-            $item->addUsergroup($userGroup);
+        if ($name = $this->adapterFactory->getNameAdapter()->adapt($product)) {
+            $item->setName($name);
         }
 
         foreach ($this->adapterFactory->getOrderNumbersAdapter()->adapt($product) as $orderNumber) {
             $item->addOrdernumber($orderNumber);
         }
 
+        $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
+
         foreach ($this->adapterFactory->getPropertiesAdapter()->adapt($product) as $property) {
             $item->addProperty($property);
+        }
+
+        if ($salesFrequency = $this->adapterFactory->getSalesFrequencyAdapter()->adapt($product)) {
+            $item->setSalesFrequency($salesFrequency);
+        }
+
+        if ($sort = $this->adapterFactory->getSortAdapter()->adapt($product)) {
+            $item->setSort($sort);
+        }
+
+        if ($summary = $this->adapterFactory->getSummaryAdapter()->adapt($product)) {
+            $item->setSummary($summary);
+        }
+
+        if ($url = $this->adapterFactory->getUrlAdapter()->adapt($product)) {
+            $item->setUrl($url);
+        }
+
+        foreach ($this->adapterFactory->getUserGroupsAdapter()->adapt($product) as $userGroup) {
+            $item->addUsergroup($userGroup);
         }
 
         return $item;
