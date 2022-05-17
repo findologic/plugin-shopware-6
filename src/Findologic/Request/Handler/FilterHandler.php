@@ -74,13 +74,17 @@ class FilterHandler
         $attributes = $request->get('attrib');
         if ($attributes) {
             foreach ($attributes as $key => $attribute) {
-                foreach ($attribute as $value) {
-                    if (is_array($value)) {
-                        $value = $key . '>' . implode(self::FILTER_DELIMITER, $value);
-                    }
+                $values = [];
 
-                    $mappedParams[$key] = $key . '>' . $value;
+                foreach ($attribute as $attributeValue) {
+                    if ($key === BaseFilter::CAT_FILTER_NAME) {
+                        $values[] = $attributeValue;
+                    } else {
+                        $values[] = $key . '>' . $attributeValue;
+                    }
                 }
+
+                $mappedParams[$key] = implode(self::FILTER_DELIMITER, $values);
             }
 
             unset($queryParams['attrib']);
