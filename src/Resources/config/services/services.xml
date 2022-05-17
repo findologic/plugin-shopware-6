@@ -13,11 +13,11 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchSalesChannelExtension">
-            <tag name="shopware.entity.extension"/>
+            <tag name="shopware.entity.extension" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchLanguageExtension">
-            <tag name="shopware.entity.extension"/>
+            <tag name="shopware.entity.extension" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService">
@@ -25,7 +25,7 @@
             <argument type="service" id="Doctrine\DBAL\Connection" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Struct\Config" class="FINDOLOGIC\FinSearch\Struct\Config" public="true">
+        <service id="FINDOLOGIC\FinSearch\Struct\Config" public="true">
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
         </service>
@@ -45,15 +45,11 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">
-            <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
+            <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating" />
             <argument type="string">findologic_finsearch</argument>
         </service>
 
-        <service
-                class="FINDOLOGIC\FinSearch\Export\FindologicProductFactory"
-                id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory"
-                public="true"
-        />
+        <service id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory" public="true" />
 
         <service id="FINDOLOGIC\FinSearch\Export\HeaderHandler" public="true">
             <argument id="service_container" type="service" />
@@ -64,193 +60,118 @@
             <argument type="service" id="category.repository" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Export\SalesChannelService"
-                class="FINDOLOGIC\FinSearch\Export\SalesChannelService"
-                public="true"
-        >
+        <service id="FINDOLOGIC\FinSearch\Export\SalesChannelService" public="true">
             <argument type="service" id="finsearch_config.repository" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
             <argument type="service" id="Shopware\Core\Framework\Routing\RequestTransformerInterface" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Export\ProductImageService"
-                class="FINDOLOGIC\FinSearch\Export\ProductImageService"
-                public="true"
-        >
-            <argument type="service" id="router"/>
+        <service id="FINDOLOGIC\FinSearch\Export\ProductImageService" public="true">
+            <argument type="service" id="router" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory"
-                class="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory"
-        >
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter"/>
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory">
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\BonusAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SortAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SummaryAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter"
-                class="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter"
-                public="true"
-        >
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config"/>
-            <argument type="service" id="fin_search.dynamic_product_group"/>
-            <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator"/>
-            <argument type="service" id="fin_search.sales_channel_context"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService"/>
-            <argument type="service" id="fin_search.export_context"/>
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter" public="true">
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
+            <argument type="service" id="fin_search.dynamic_product_group" />
+            <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
+            <argument type="service" id="fin_search.sales_channel_context" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" />
+            <argument type="service" id="fin_search.export_context" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter"
-                class="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter"
-                public="true"
-        >
-        </service>
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\BonusAdapter" public="true" />
 
-        <service
-            id="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter"
-            class="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter"
-            public="true"
-        >
-        </service>
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter" public="true" />
 
-        <service
-            id="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter"
-            class="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter"
-            public="true"
-        >
-        </service>
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter" public="true" />
 
-        <service
-            id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter"
-            class="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter"
-            public="true"
-        >
-        </service>
-
-        <service
-            id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"
-            class="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter"
-            public="true"
-        >
-            <argument type="service" id="fin_search.export_context"/>
-        </service>
-
-        <service
-            id="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter"
-            class="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter"
-            public="true"
-        >
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter" public="true">
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\ProductImageService" />
         </service>
 
-        <service
-            id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter"
-            class="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter"
-            public="true"
-        >
-            <argument type="service" id="order_line_item.repository" />
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter" public="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter" public="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter" public="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter" public="true">
             <argument type="service" id="fin_search.sales_channel_context" />
+            <argument type="service" id="fin_search.export_context" />
         </service>
 
-        <service
-            id="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter"
-            class="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter"
-            public="true"
-        >
-        </service>
-
-        <service
-            id="FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter"
-            class="FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter"
-            public="true"
-        >
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter" public="true">
             <argument type="service" id="fin_search.sales_channel_context" />
             <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"
-                class="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"
-                public="true"
-        >
-            <argument type="service" id="fin_search.sales_channel_context"/>
-            <argument type="service" id="fin_search.export_context"/>
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter" public="true">
+            <argument type="service" id="order_line_item.repository" />
+            <argument type="service" id="fin_search.sales_channel_context" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter"
-                class="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter"
-                public="true"
-        >
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService"/>
-            <argument type="service" id="fin_search.sales_channel_context"/>
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\SortAdapter" public="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\SummaryAdapter" public="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter" public="true">
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" />
+            <argument type="service" id="fin_search.sales_channel_context" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Export\ExportItemAdapter"
-                class="FINDOLOGIC\FinSearch\Export\ExportItemAdapter"
-                public="true"
-        >
-            <argument type="service" id="service_container"/>
-            <argument type="service" id="router"/>
-            <argument type="service" id="event_dispatcher"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config"/>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory"/>
-            <argument type="service" id="fin_search.export_context"/>
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter" public="true">
+            <argument type="service" id="fin_search.export_context" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\ExportItemAdapter" public="true">
+            <argument type="service" id="service_container" />
+            <argument type="service" id="router" />
+            <argument type="service" id="event_dispatcher" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory" />
+            <argument type="service" id="fin_search.export_context" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
         </service>
 
-        <service id="fin_search.sales_channel_context" synthetic="true" public="true"/>
-        <service id="fin_search.product_service" synthetic="true" public="true"/>
-        <service id="fin_search.dynamic_product_group" synthetic="true" public="true"/>
-        <service id="fin_search.export_context" synthetic="true" public="true"/>
+        <service id="fin_search.sales_channel_context" synthetic="true" public="true" />
+        <service id="fin_search.product_service" synthetic="true" public="true" />
+        <service id="fin_search.dynamic_product_group" synthetic="true" public="true" />
+        <service id="fin_search.export_context" synthetic="true" public="true" />
 
         <!-- Storefront -->
 
-        <service
-                class="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory"
-                id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory"
-                public="true"
-        />
+        <service id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory" public="true" />
 
-        <service
-                class="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"
-                id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"
-                public="true"
-        >
+        <service id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" public="true">
             <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory" type="service" />
         </service>
 
-        <service
-                class="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
-                id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory"
-                public="true"
-        >
+        <service id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" public="true">
             <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument id="service_container" type="service" />
         </service>
 
-        <service
-                class="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory"
-                id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory"
-                public="true"
-        >
+        <service id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" public="true">
             <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument id="service_container" type="service" />
         </service>
@@ -263,19 +184,11 @@
             <tag name="shopware.snippet.file" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Utils\TwigExtension"
-                class="FINDOLOGIC\FinSearch\Utils\TwigExtension"
-                public="false"
-        >
+        <service id="FINDOLOGIC\FinSearch\Utils\TwigExtension" public="false">
             <tag name="twig.extension" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Struct\SystemAware"
-                class="FINDOLOGIC\FinSearch\Struct\SystemAware"
-                public="true"
-        >
+        <service id="FINDOLOGIC\FinSearch\Struct\SystemAware" public="true">
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
         </service>
 
@@ -285,10 +198,7 @@
             <argument type="service" id="FINDOLOGIC\Api\Config" />
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService"
-                class="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService"
-        />
+        <service id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService" />
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true" />
 
