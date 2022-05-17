@@ -103,6 +103,23 @@ class ProductServiceSeparateVariants
         return $result;
     }
 
+    public function searchAllProducts(
+        ?int $limit = null,
+        ?int $offset = null,
+        ?string $productId = null
+    ): EntitySearchResult {
+        $criteria = $this->buildProductCriteria($limit, $offset);
+
+        if ($productId) {
+            $this->addProductIdFilters($criteria, $productId);
+        }
+
+        return $this->container->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        );
+    }
+
     public function buildVariantIterator(ProductEntity $product, int $pageSize): RepositoryIterator
     {
         $criteria = new Criteria();
