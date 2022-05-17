@@ -237,6 +237,7 @@ class ProductServiceSeparateVariants
     public function getTotalProductCount(): int
     {
         $criteria = $this->buildProductCriteria();
+        $this->addGrouping($criteria);
 
         /** @var IdSearchResult $result */
         $result = $this->container->get('product.repository')->searchIds(

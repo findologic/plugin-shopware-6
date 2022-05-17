@@ -70,16 +70,16 @@ class PriceAdapter
             $grossPrice = $currencyPrice->getGross();
             $price = new Price();
             if ($customerGroup->getDisplayGross()) {
-                $price->setValue($grossPrice, $userGroupHash);
+                $price->setValue(round($grossPrice, 2), $userGroupHash);
             } else {
-                $price->setValue($netPrice, $userGroupHash);
+                $price->setValue(round($netPrice, 2), $userGroupHash);
             }
 
             $prices[] = $price;
         }
 
         $price = new Price();
-        $price->setValue($currencyPrice->getGross());
+        $price->setValue(round($currencyPrice->getGross(), 2));
         $prices[] = $price;
 
         return $prices;
