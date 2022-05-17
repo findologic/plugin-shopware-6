@@ -76,10 +76,10 @@ class FilterHandler
             foreach ($attributes as $key => $attribute) {
                 foreach ($attribute as $value) {
                     if (is_array($value)) {
-                        $value = implode(self::FILTER_DELIMITER, $value);
+                        $value = $key . '>' . implode(self::FILTER_DELIMITER, $value);
                     }
 
-                    $mappedParams[$key] = $value;
+                    $mappedParams[$key] = $key . '>' . $value;
                 }
             }
 

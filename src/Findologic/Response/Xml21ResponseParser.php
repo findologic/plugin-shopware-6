@@ -229,7 +229,7 @@ class Xml21ResponseParser extends ResponseParser
             if ($filter instanceof CategoryFilter) {
                 $hasCategoryFilter = true;
             }
-            if ($filter instanceof VendorImageFilter) {
+            if ($filter->getId() === 'vendor') {
                 $hasVendorFilter = true;
             }
         }
