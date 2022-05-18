@@ -8,6 +8,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
@@ -127,8 +128,12 @@ class Xml21ResponseParser extends ResponseParser
             return $this->buildCategoryQueryInfoMessage($params);
         }
 
-        if ($this->isFilterSet($params, 'vendor')) {
-            return $this->buildVendorQueryInfoMessage($params);
+        $vendorFilterValues = $this->getFilterValues($params, 'vendor');
+        if (
+            $vendorFilterValues &&
+            count($vendorFilterValues) === 1
+        ) {
+            return $this->buildVendorQueryInfoMessage($params, current($vendorFilterValues));
         }
 
         return QueryInfoMessage::buildInstance(QueryInfoMessage::TYPE_DEFAULT);
@@ -180,7 +185,7 @@ class Xml21ResponseParser extends ResponseParser
         return $categoryInfoMessage;
     }
 
-    private function buildVendorQueryInfoMessage(array $params): VendorInfoMessage
+    private function buildVendorQueryInfoMessage(array $params, string $value): VendorInfoMessage
     {
         $filters = array_merge($this->response->getMainFilters(), $this->response->getOtherFilters());
 
@@ -195,7 +200,7 @@ class Xml21ResponseParser extends ResponseParser
             QueryInfoMessage::TYPE_VENDOR,
             null,
             $filterName,
-            $params['vendor']
+            $value
         );
 
         return $vendorInfoMessage;
@@ -216,6 +221,29 @@ class Xml21ResponseParser extends ResponseParser
     private function isFilterSet(array $params, string $name): bool
     {
         return isset($params[$name]) && !empty($params[$name]);
+    }
+
+    /**
+     * @param array $params
+     * @param string $name
+     * @return string[]|null
+     */
+    private function getFilterValues(array $params, string $name): ?array
+    {
+        if (!$this->isFilterSet($params, $name)) {
+            return null;
+        }
+
+        $filterValues = [];
+        $joinedFilterValues = explode(FilterHandler::FILTER_DELIMITER, $params[$name]);
+
+        foreach ($joinedFilterValues as $joinedFilterValue) {
+            $filterValues[] = str_contains($joinedFilterValue, FilterValue::DELIMITER)
+                ? explode(FilterValue::DELIMITER, $joinedFilterValue)[1]
+                : $joinedFilterValue;
+        }
+
+        return $filterValues;
     }
 
     public function getFiltersWithSmartSuggestBlocks(

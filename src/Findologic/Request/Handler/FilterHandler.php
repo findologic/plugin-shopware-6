@@ -22,7 +22,7 @@ use function in_array;
 
 class FilterHandler
 {
-    protected const FILTER_DELIMITER = '|';
+    public const FILTER_DELIMITER = '|';
     protected const MIN_PREFIX = 'min-';
     protected const MAX_PREFIX = 'max-';
     protected const IGNORE_LIST = ['pushAttrib'];
@@ -80,7 +80,7 @@ class FilterHandler
                     if ($key === BaseFilter::CAT_FILTER_NAME) {
                         $values[] = $attributeValue;
                     } else {
-                        $values[] = $key . '>' . $attributeValue;
+                        $values[] = $key . FilterValue::DELIMITER . $attributeValue;
                     }
                 }
 
