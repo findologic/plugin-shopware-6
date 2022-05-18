@@ -1,3 +1,6 @@
+# Next
+- [SW-700] Fixed a bug that caused the manufacturer filter not being shown when previously selecting a manufacturer in the Smart Suggest.
+
 # 2.8.2
 - [SW-715] Fixed a bug that caused an error due to incompatible filter values being passed by other plugins.
 - [SW-716] Fixed a bug that caused the price filter being selected automatically when having product prices with more than two decimals.
