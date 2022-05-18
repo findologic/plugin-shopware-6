@@ -9,6 +9,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\LabelTextFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
@@ -378,6 +379,14 @@ class Xml21ResponseParserTest extends TestCase
                 'expectedInstanceOf' => VendorImageFilter::class,
                 'isHidden' => false
             ],
+            'No smart suggest blocks are sent and text vendor filter is available in response' => [
+                'type' => 'vendor',
+                'demoResponse' => 'demoResponseWithTextVendorFilter.xml',
+                'flBlocks' => [],
+                'expectedFilterName' => 'Hersteller',
+                'expectedInstanceOf' => LabelTextFilter::class,
+                'isHidden' => false
+            ],
         ];
     }
 
@@ -505,11 +514,21 @@ class Xml21ResponseParserTest extends TestCase
                 'response' => new Xml21Response(
                     $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
                 ),
-                'request' => new Request(['vendor' => 'Blubbergurken inc.']),
+                'request' => new Request(['vendor' => 'vendor>Blubbergurken inc.']),
                 'expectedInstance' => VendorInfoMessage::class,
                 'expectedVars' => [
                     'filterName' => 'Hersteller',
                     'filterValue' => 'Blubbergurken inc.',
+                    'extensions' => []
+                ]
+            ],
+            'no search query but 2 selected vendors' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                ),
+                'request' => new Request(['vendor' => 'vendor>Blubbergurken inc.|vendor>Blubbergurken Limited']),
+                'expectedInstance' => DefaultInfoMessage::class,
+                'expectedVars' => [
                     'extensions' => []
                 ]
             ],
