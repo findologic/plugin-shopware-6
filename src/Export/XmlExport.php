@@ -168,7 +168,7 @@ class XmlExport extends Export
             return 1;
         }
 
-        return intval(self::MAXIMUM_PROPERTIES_COUNT / $maxPropertiesCount);
+        return intval(self::MAXIMUM_PROPERTIES_COUNT / max(1, $maxPropertiesCount));
     }
 
     private function getConfiguredCrossSellingCategory(ProductEntity $productEntity): ?CategoryEntity

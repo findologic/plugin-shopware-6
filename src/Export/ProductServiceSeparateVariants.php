@@ -291,7 +291,7 @@ class ProductServiceSeparateVariants
             ->aggregate($criteria, $this->salesChannelContext->getContext())
             ->get('per-children');
 
-        $maxCount = count($productEntity->getPropertyIds());
+        $maxCount = $productEntity->getPropertyIds() ? count($productEntity->getPropertyIds()) : 0;
         foreach ($aggregation->getBuckets() as $bucket) {
             if ($bucket->getCount() > $maxCount) {
                 $maxCount = $bucket->getCount();
