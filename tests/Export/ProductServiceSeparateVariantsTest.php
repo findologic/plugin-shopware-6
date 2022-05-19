@@ -214,6 +214,18 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $expectedFirstVariantId = $variantIds[0];
         $expectedSecondVariantId = $variantIds[1];
         $expectedChildVariantId = $expectedSecondVariantId;
+
+        $childProductIterator = $this->defaultProductService->buildVariantIterator($product,5);
+        $childVariants = [];
+
+        while (($variantsResult = $childProductIterator->fetch()) !== null) {
+            $variants = $variantsResult->getEntities();
+
+            foreach ($variants->getElements() as $variant) {
+                $childVariants[] = $variant;
+            }
+        }
+
         try {
             $this->assertSame($expectedFirstVariantId, $product->getId());
         } catch (AssertionFailedError $e) {
@@ -221,9 +233,9 @@ class ProductServiceSeparateVariantsTest extends TestCase
             $expectedChildVariantId = $expectedFirstVariantId;
         }
 
-        $this->assertCount($expectedChildCount, $product->getChildren());
+        $this->assertCount($expectedChildCount, $childVariants);
 
-        foreach ($product->getChildren() as $child) {
+        foreach ($childVariants as $child) {
             if (!$child->getParentId()) {
                 $this->assertSame($mainProduct['id'], $child->getId());
             } else {
