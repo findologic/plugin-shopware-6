@@ -132,6 +132,9 @@ class ProductServiceSeparateVariants
         $this->addPriceZeroFilter($criteria);
         $this->addProductAssociations($criteria);
 
+        $context = $this->salesChannelContext->getContext();
+        $context->setConsiderInheritance(false);
+
         return new RepositoryIterator($productRepository, $this->salesChannelContext->getContext(), $criteria);
     }
 
