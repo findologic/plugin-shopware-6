@@ -91,7 +91,11 @@ class ProductServiceSeparateVariantsTest extends TestCase
 
         $this->assertNull($productService->getSalesChannelContext());
 
-        $actualProductService = ProductServiceSeparateVariants::getInstance($this->getContainer(), $this->salesChannelContext);
+        $actualProductService = ProductServiceSeparateVariants::getInstance(
+            $this->getContainer(),
+            $this->salesChannelContext
+        );
+
         $this->assertSame($productService, $actualProductService);
         $this->assertInstanceOf(SalesChannelContext::class, $productService->getSalesChannelContext());
         $this->assertSame($this->salesChannelContext, $productService->getSalesChannelContext());
@@ -231,7 +235,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $expectedSecondVariantId = $variantIds[1];
         $expectedChildVariantId = $expectedSecondVariantId;
 
-        $childProductIterator = $this->defaultProductService->buildVariantIterator($product,5);
+        $childProductIterator = $this->defaultProductService->buildVariantIterator($product, 5);
         $childVariants = $this->getChildrenVariants($childProductIterator);
 
         try {

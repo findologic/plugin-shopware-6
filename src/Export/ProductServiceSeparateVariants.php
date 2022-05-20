@@ -180,13 +180,13 @@ class ProductServiceSeparateVariants
         );
 
         $criteria->addFilter(
-            new NotFilter(NotFilter::CONNECTION_AND,[new EqualsFilter('id', $productEntity->getId())])
+            new NotFilter(NotFilter::CONNECTION_AND, [new EqualsFilter('id', $productEntity->getId())])
         );
     }
 
     protected function getVisibilityFilterForRealVariants(): ProductAvailableFilter
     {
-       return new ProductAvailableFilter(
+        return new ProductAvailableFilter(
             $this->salesChannelContext->getSalesChannel()->getId(),
             ProductVisibilityDefinition::VISIBILITY_SEARCH
         );
@@ -198,6 +198,7 @@ class ProductServiceSeparateVariants
 
         switch ($mainVariantConfig) {
             case MainVariant::SHOPWARE_DEFAULT:
+                $this->addVisibilityFilter($criteria);
                 $this->addGrouping($criteria);
                 break;
             case MainVariant::MAIN_PARENT:
@@ -213,8 +214,34 @@ class ProductServiceSeparateVariants
 
     protected function adaptParentCriteriaByMainProduct(Criteria $criteria): void
     {
+        $activeParentFilter =  new MultiFilter(
+            MultiFilter::CONNECTION_AND,
+            [
+                new EqualsFilter('parentId', null),
+                new EqualsFilter('active', true)
+            ]
+        );
+
+        /**
+         * We still need to fetch the product if it is not active, but have children products.
+         */
+        $inactiveParentWithChildsFilter = new MultiFilter(
+            MultiFilter::CONNECTION_AND,
+            [
+                new EqualsFilter('parentId', null),
+                new RangeFilter('childCount', [RangeFilter::GT => 0]),
+                new EqualsFilter('active', false)
+            ]
+        );
+
         $criteria->addFilter(
-            new EqualsFilter('parentId', null)
+            new MultiFilter(
+                MultiFilter::CONNECTION_OR,
+                [
+                    $activeParentFilter,
+                    $inactiveParentWithChildsFilter
+                ]
+            )
         );
     }
 
@@ -234,21 +261,22 @@ class ProductServiceSeparateVariants
         $this->addPriceZeroFilter($children);
     }
 
-    protected function getCriteriaWithProductVisibility(
+    protected function getCriteriaWithPriceZeroFilter(
         ?int $limit = null,
         ?int $offset = null,
         ?array $productIds = null
-    ): Criteria
-    {
+    ): Criteria {
         $criteria = $this->buildProductCriteria($limit, $offset, $productIds);
-        $this->addVisibilityFilter($criteria);
         $this->addPriceZeroFilter($criteria);
 
         return $criteria;
     }
 
-    protected function buildProductCriteria(?int $limit = null, ?int $offset = null, ?array $productIds = null): Criteria
-    {
+    protected function buildProductCriteria(
+        ?int $limit = null,
+        ?int $offset = null,
+        ?array $productIds = null
+    ): Criteria {
         $criteria = new Criteria($productIds);
         $criteria->addSorting(new FieldSorting('createdAt'));
         $criteria->addSorting(new FieldSorting('id'));
@@ -410,7 +438,7 @@ class ProductServiceSeparateVariants
 
     protected function getVisibleProducts(?int $limit, ?int $offset, ?string $productId): EntitySearchResult
     {
-        $criteria = $this->getCriteriaWithProductVisibility($limit, $offset);
+        $criteria = $this->getCriteriaWithPriceZeroFilter($limit, $offset);
         $this->adaptCriteriaBasedOnConfiguration($criteria);
 
         if ($productId) {
@@ -465,6 +493,10 @@ class ProductServiceSeparateVariants
         $realProductIds = [];
 
         foreach ($products as $product) {
+            /**
+             * If product is inactive, try to fetch it's first product.
+             * This is related to main product by parent configuration.
+             */
             if (!$product->getMainVariantId()) {
                 $realProductIds[] = $product->getId();
 
@@ -481,9 +513,23 @@ class ProductServiceSeparateVariants
         return $this->getRealMainVariants($realProductIds);
     }
 
+    protected function getFirstChildren(ProductEntity $product): ?ProductEntity
+    {
+        $criteria = new Criteria();
+
+        $criteria->addFilter(new EqualsFilter('parentId', $product->getId()));
+        $criteria->setLimit(1);
+        $this->addVisibilityFilter($criteria);
+
+        return $this->container->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->first();
+    }
+
     protected function getRealMainVariants(array $productIds): EntitySearchResult
     {
-        $criteria = $this->getCriteriaWithProductVisibility(null, null, $productIds);
+        $criteria = $this->getCriteriaWithPriceZeroFilter(null, null, $productIds);
 
         return $this->container->get('product.repository')->search(
             $criteria,
