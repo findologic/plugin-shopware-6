@@ -521,7 +521,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $expectedFirstVariantId = Uuid::randomHex();
         $expectedSecondVariantId = Uuid::randomHex();
         $expectedThirdVariantId = Uuid::randomHex();
-        $expectedMainVariantId = $parentId;
+        $expectedMainVariantId = $expectedThirdVariantId;
 
         $this->createProductWithMultipleVariants(
             $parentId,

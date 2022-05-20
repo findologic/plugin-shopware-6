@@ -494,11 +494,21 @@ class ProductServiceSeparateVariants
 
         foreach ($products as $product) {
             /**
-             * If product is inactive, try to fetch it's first product.
+             * If product is inactive, try to fetch first variant product.
              * This is related to main product by parent configuration.
              */
-            if (!$product->getMainVariantId()) {
+            if (!$product->getMainVariantId() && $product->getActive()) {
                 $realProductIds[] = $product->getId();
+
+                continue;
+            } else if (!$product->getMainVariantId() && !$product->getActive()) {
+                $childrenProduct = $this->getFirstChildren($product);
+
+                if (!$childrenProduct) {
+                    continue;
+                }
+
+                $realProductIds[] = $childrenProduct->getId();
 
                 continue;
             }
@@ -530,6 +540,7 @@ class ProductServiceSeparateVariants
     protected function getRealMainVariants(array $productIds): EntitySearchResult
     {
         $criteria = $this->getCriteriaWithPriceZeroFilter(null, null, $productIds);
+        $this->addVisibilityFilter($criteria);
 
         return $this->container->get('product.repository')->search(
             $criteria,
