@@ -198,8 +198,7 @@ class ProductServiceSeparateVariants
 
         switch ($mainVariantConfig) {
             case MainVariant::SHOPWARE_DEFAULT:
-                $this->addVisibilityFilter($criteria);
-                $this->addGrouping($criteria);
+                $this->adaptParentCriteriaByShopwareDefault($criteria);
                 break;
             case MainVariant::MAIN_PARENT:
                 $this->adaptParentCriteriaByMainProduct($criteria);
@@ -212,8 +211,17 @@ class ProductServiceSeparateVariants
         }
     }
 
+    protected function adaptParentCriteriaByShopwareDefault(Criteria $criteria): void
+    {
+        $this->addPriceZeroFilter($criteria);
+        $this->addVisibilityFilter($criteria);
+        $this->addGrouping($criteria);
+    }
+
     protected function adaptParentCriteriaByMainProduct(Criteria $criteria): void
     {
+        $this->addPriceZeroFilter($criteria);
+
         $activeParentFilter =  new MultiFilter(
             MultiFilter::CONNECTION_AND,
             [
@@ -259,17 +267,6 @@ class ProductServiceSeparateVariants
         $this->addProductAssociations($children);
         $this->handleAvailableStock($children);
         $this->addPriceZeroFilter($children);
-    }
-
-    protected function getCriteriaWithPriceZeroFilter(
-        ?int $limit = null,
-        ?int $offset = null,
-        ?array $productIds = null
-    ): Criteria {
-        $criteria = $this->buildProductCriteria($limit, $offset, $productIds);
-        $this->addPriceZeroFilter($criteria);
-
-        return $criteria;
     }
 
     protected function buildProductCriteria(
@@ -438,7 +435,7 @@ class ProductServiceSeparateVariants
 
     protected function getVisibleProducts(?int $limit, ?int $offset, ?string $productId): EntitySearchResult
     {
-        $criteria = $this->getCriteriaWithPriceZeroFilter($limit, $offset);
+        $criteria = $this->buildProductCriteria($limit, $offset);
         $this->adaptCriteriaBasedOnConfiguration($criteria);
 
         if ($productId) {
@@ -469,18 +466,26 @@ class ProductServiceSeparateVariants
         $cheapestVariants = new ProductCollection();
 
         foreach ($products as $product) {
+            $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+            $productPrice = $product->getCurrencyPrice($currencyId);
+
             $cheapestVariant = $product->getChildren()->first();
-            if ($cheapestVariant === null) {
+            if ($cheapestVariant === null && $productPrice->getGross() !== 0.0) {
                 $cheapestVariants->add($product);
 
                 continue;
+            } else if ($cheapestVariant === null && $productPrice->getGross() === 0.0) {
+                continue;
             }
 
-            $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
-            $productPrice = $product->getCurrencyPrice($currencyId);
             $cheapestVariantPrice = $cheapestVariant->getCurrencyPrice($currencyId);
-            $realCheapestProduct = $productPrice->getGross() < $cheapestVariantPrice->getGross()
-                ? $product : $cheapestVariant;
+
+            if ($productPrice->getGross() === 0.0) {
+                $realCheapestProduct = $cheapestVariant;
+            } else {
+                $realCheapestProduct = $productPrice->getGross() <= $cheapestVariantPrice->getGross()
+                    ? $product : $cheapestVariant;
+            }
 
             $cheapestVariants->add($realCheapestProduct);
         }
@@ -539,7 +544,7 @@ class ProductServiceSeparateVariants
 
     protected function getRealMainVariants(array $productIds): EntitySearchResult
     {
-        $criteria = $this->getCriteriaWithPriceZeroFilter(null, null, $productIds);
+        $criteria = $this->buildProductCriteria(null, null, $productIds);
         $this->addVisibilityFilter($criteria);
 
         return $this->container->get('product.repository')->search(
