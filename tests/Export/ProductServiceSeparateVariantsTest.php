@@ -15,6 +15,7 @@ use PHPUnit\Framework\AssertionFailedError;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -185,6 +186,21 @@ class ProductServiceSeparateVariantsTest extends TestCase
         ];
     }
 
+    private function getChildrenVariants(RepositoryIterator $childProductIterator): array
+    {
+        $childVariants = [];
+
+        while (($variantsResult = $childProductIterator->fetch()) !== null) {
+            $variants = $variantsResult->getEntities();
+
+            foreach ($variants->getElements() as $variant) {
+                $childVariants[] = $variant;
+            }
+        }
+
+        return $childVariants;
+    }
+
     /**
      * @dataProvider variantProvider
      */
@@ -216,15 +232,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $expectedChildVariantId = $expectedSecondVariantId;
 
         $childProductIterator = $this->defaultProductService->buildVariantIterator($product,5);
-        $childVariants = [];
-
-        while (($variantsResult = $childProductIterator->fetch()) !== null) {
-            $variants = $variantsResult->getEntities();
-
-            foreach ($variants->getElements() as $variant) {
-                $childVariants[] = $variant;
-            }
-        }
+        $childVariants = $this->getChildrenVariants($childProductIterator);
 
         try {
             $this->assertSame($expectedFirstVariantId, $product->getId());
@@ -399,8 +407,11 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $product = $result->first();
         $this->assertSame($expectedMainVariantId, $product->getId());
 
-        $this->assertCount(2, $product->getChildren());
-        foreach ($product->getChildren() as $child) {
+        $childrenIterator = $this->defaultProductService->buildVariantIterator($product, 20);
+        $childrenVariants = $this->getChildrenVariants($childrenIterator);
+
+        $this->assertCount(2, $childrenVariants);
+        foreach ($childrenVariants as $child) {
             if ($child->getParentId() === null) {
                 $this->assertSame($expectedParentId, $child->getId());
             } else {

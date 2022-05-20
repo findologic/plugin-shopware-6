@@ -427,7 +427,13 @@ class ProductServiceSeparateVariants
             return $this->getCheapestProducts($products->getEntities());
         }
 
-        return $this->getConfiguredMainVariants($products->getEntities());
+        $mainVariants = $this->getConfiguredMainVariants($products->getEntities());
+
+        if (!$mainVariants) {
+            return $products;
+        }
+
+        return $mainVariants;
     }
 
     protected function getCheapestProducts(ProductCollection $products): EntitySearchResult
@@ -454,7 +460,7 @@ class ProductServiceSeparateVariants
         return EntitySearchResult::createFrom($cheapestVariants);
     }
 
-    protected function getConfiguredMainVariants(ProductCollection $products): EntitySearchResult
+    protected function getConfiguredMainVariants(ProductCollection $products): ?EntitySearchResult
     {
         $realProductIds = [];
 
@@ -466,6 +472,10 @@ class ProductServiceSeparateVariants
             }
 
             $realProductIds[] = $product->getMainVariantId();
+        }
+
+        if (empty($realProductIds)) {
+            return null;
         }
 
         return $this->getRealMainVariants($realProductIds);
