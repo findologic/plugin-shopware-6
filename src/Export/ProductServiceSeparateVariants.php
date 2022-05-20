@@ -126,8 +126,7 @@ class ProductServiceSeparateVariants
         $productRepository = $this->container->get('product.repository');
 
         $criteria->setLimit($pageSize);
-        $this->addParentIdFilter($product, $criteria);
-        $this->addVisibilityFilter($criteria);
+        $this->addParentIdFilterWithVisibility($product, $criteria);
         $this->handleAvailableStock($criteria);
         $this->addPriceZeroFilter($criteria);
         $this->addProductAssociations($criteria);
@@ -138,21 +137,43 @@ class ProductServiceSeparateVariants
         return new RepositoryIterator($productRepository, $this->salesChannelContext->getContext(), $criteria);
     }
 
-    protected function addParentIdFilter(ProductEntity $productEntity, Criteria $criteria): void
+    protected function addParentIdFilterWithVisibility(ProductEntity $productEntity, Criteria $criteria): void
     {
         if (!$productEntity->getParentId()) {
-            $criteria->addFilter(
-                new EqualsFilter('parentId', $productEntity->getId())
-            );
+            $this->adaptProductIdCriteriaWithParentId($productEntity, $criteria);
 
             return;
         }
 
+        $this->adaptProductIdCriteriaWithoutParentId($productEntity, $criteria);
+    }
+
+    protected function adaptProductIdCriteriaWithParentId(ProductEntity $productEntity, Criteria $criteria): void
+    {
+        $criteria->addFilter(
+            new MultiFilter(
+                MultiFilter::CONNECTION_AND,
+                [
+                    new EqualsFilter('parentId', $productEntity->getId()),
+                    $this->getVisibilityFilterForRealVariants()
+                ]
+            )
+        );
+    }
+
+    protected function adaptProductIdCriteriaWithoutParentId(ProductEntity $productEntity, Criteria $criteria): void
+    {
         $criteria->addFilter(
             new MultiFilter(
                 MultiFilter::CONNECTION_OR,
                 [
-                    new EqualsFilter('parentId', $productEntity->getParentId()),
+                    new MultiFilter(
+                        MultiFilter::CONNECTION_AND,
+                        [
+                            new EqualsFilter('parentId', $productEntity->getParentId()),
+                            $this->getVisibilityFilterForRealVariants()
+                        ]
+                    ),
                     new EqualsFilter('id', $productEntity->getParentId())
                 ]
             )
@@ -160,6 +181,14 @@ class ProductServiceSeparateVariants
 
         $criteria->addFilter(
             new NotFilter(NotFilter::CONNECTION_AND,[new EqualsFilter('id', $productEntity->getId())])
+        );
+    }
+
+    protected function getVisibilityFilterForRealVariants(): ProductAvailableFilter
+    {
+       return new ProductAvailableFilter(
+            $this->salesChannelContext->getSalesChannel()->getId(),
+            ProductVisibilityDefinition::VISIBILITY_SEARCH
         );
     }
 
