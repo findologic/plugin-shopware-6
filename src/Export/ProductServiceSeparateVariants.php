@@ -131,9 +131,6 @@ class ProductServiceSeparateVariants
         $this->addPriceZeroFilter($criteria);
         $this->addProductAssociations($criteria);
 
-        $context = $this->salesChannelContext->getContext();
-        $context->setConsiderInheritance(false);
-
         return new RepositoryIterator($productRepository, $this->salesChannelContext->getContext(), $criteria);
     }
 
@@ -261,12 +258,13 @@ class ProductServiceSeparateVariants
 
         $children = $criteria->getAssociation('children');
         // TODO: Fix limit setting
-        //$children->setLimit(1);
+        $children->setLimit(1);
         $children->addSorting(new FieldSorting('price'));
 
         $this->addProductAssociations($children);
         $this->handleAvailableStock($children);
         $this->addPriceZeroFilter($children);
+        $this->addVisibilityFilter($children);
     }
 
     protected function buildProductCriteria(
@@ -465,16 +463,20 @@ class ProductServiceSeparateVariants
     {
         $cheapestVariants = new ProductCollection();
 
+        /** @var ProductEntity $product */
         foreach ($products as $product) {
             $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
             $productPrice = $product->getCurrencyPrice($currencyId);
 
             $cheapestVariant = $product->getChildren()->first();
-            if ($cheapestVariant === null && $productPrice->getGross() !== 0.0) {
+            if ($cheapestVariant === null && $productPrice->getGross() !== 0.0 && $product->getActive()) {
                 $cheapestVariants->add($product);
 
                 continue;
-            } else if ($cheapestVariant === null && $productPrice->getGross() === 0.0) {
+            } else if (
+                $cheapestVariant === null && $productPrice->getGross() === 0.0 ||
+                $cheapestVariant === null && !$product->getActive()
+            ) {
                 continue;
             }
 
