@@ -535,6 +535,8 @@ class ProductServiceSeparateVariants
         $criteria = new Criteria();
 
         $criteria->addFilter(new EqualsFilter('parentId', $product->getId()));
+        $criteria->addSorting(new FieldSorting('createdAt'));
+        $criteria->addSorting(new FieldSorting('id'));
         $criteria->setLimit(1);
         $this->addVisibilityFilter($criteria);
 
