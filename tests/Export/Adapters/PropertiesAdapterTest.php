@@ -127,18 +127,49 @@ class PropertiesAdapterTest extends TestCase
             $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
         }
 
+        $id = Uuid::randomHex();
+        $variantId = Uuid::randomHex();
         $expectedPropertyName = 'blub';
         $expectedPropertyValue = 'some value';
+        $variantExpectedPropertyName = 'blub1';
+        $variantExpectedPropertyValue = 'some value1';
+        $expectedPropertiesNames = [
+            $expectedPropertyName,
+            $variantExpectedPropertyName
+        ];
+        $expectedPropertiesValues = [
+            $variantExpectedPropertyValue,
+            $expectedPropertyValue,
+            $variantExpectedPropertyValue,
+            $expectedPropertyValue
+        ];
 
         $productEntity = $this->createTestProduct(
             [
                 'properties' => [
                     [
-                        'id' => Uuid::randomHex(),
+                        'id' => $id,
                         'name' => $expectedPropertyValue,
                         'group' => [
                             'id' => Uuid::randomHex(),
                             'name' => $expectedPropertyName,
+                            'filterable' => false
+                        ],
+                    ]
+                ]
+            ]
+        );
+
+        $variant = $this->createTestProduct(
+            [
+                'properties' => [
+                    [
+                        'id' => $variantId,
+                        'parentId' => $id,
+                        'name' => $variantExpectedPropertyValue,
+                        'group' => [
+                            'id' => Uuid::randomHex(),
+                            'name' => $variantExpectedPropertyName,
                             'filterable' => false
                         ],
                     ]
@@ -155,18 +186,25 @@ class PropertiesAdapterTest extends TestCase
             ->get($productEntity->getId());
 
         $adapter = $this->getContainer()->get(PropertiesAdapter::class);
-        $properties = $adapter->adapt($productEntity);
+
+        $properties = array_merge(
+            $adapter->adapt($productEntity),
+            $adapter->adapt($variant)
+        );
 
         $foundProperties = array_filter(
             $properties,
-            static function (Property $property) use ($expectedPropertyName) {
-                return $property->getKey() === $expectedPropertyName;
+            static function (Property $property) use ($expectedPropertiesNames) {
+                return in_array($property->getKey(), $expectedPropertiesNames);
             }
         );
 
-        /** @var Property $property */
-        $property = reset($foundProperties);
-        $this->assertEquals($expectedPropertyValue, $property->getAllValues()['']); // '' = Empty usergroup.
+        $i = 0;
+
+        foreach ($foundProperties as $property) {
+            $this->assertEquals($expectedPropertiesValues[$i++], $property->getAllValues()['']); // '' = Empty usergroup.
+        }
+
     }
 
     public function listPriceProvider(): array

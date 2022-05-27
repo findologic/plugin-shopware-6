@@ -97,6 +97,10 @@ class ExportItemAdapter implements ExportItemAdapterInterface
             foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
                 $item->addMergedAttribute($attribute);
             }
+
+            foreach ($this->adapterFactory->getPropertiesAdapter()->adapt($product) as $property) {
+                $item->addProperty($property);
+            }
         } catch (Throwable $exception) {
             return;
         }

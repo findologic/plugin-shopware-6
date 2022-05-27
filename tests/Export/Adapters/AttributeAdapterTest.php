@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Export\Adapters;
 
 use FINDOLOGIC\Export\Data\Attribute;
+use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
@@ -68,13 +69,33 @@ class AttributeAdapterTest extends TestCase
 
     public function testAttributeContainsAttributeOfTheProduct(): void
     {
+        $id = Uuid::randomHex();
+        $variantId = Uuid::randomHex();
+        $variantProductNumber = Uuid::randomHex();
+
+        $product = $this->createTestProduct([
+            'id' => $id
+        ]);
+
+        $variantProduct = $this->createTestProduct([
+            'id' => $variantId,
+            'parentId' => $id,
+            'productNumber' => $variantProductNumber,
+            'shippingFree' => false
+        ]);
+
         $adapter = $this->getContainer()->get(AttributeAdapter::class);
-        $product = $this->createTestProduct();
-        $expected = $this->getAttributes($product, IntegrationType::API);
+        $expected = array_merge(
+            $this->getAttributes($product, IntegrationType::API),
+            $this->getAttributes($variantProduct, IntegrationType::API),
+        );
 
-        $attribute = $adapter->adapt($product);
+        $attributes = array_merge(
+            $adapter->adapt($product),
+            $adapter->adapt($variantProduct)
+        );
 
-        $this->assertEquals($expected, $attribute);
+        $this->assertEquals($expected, $attributes);
     }
 
     /**
