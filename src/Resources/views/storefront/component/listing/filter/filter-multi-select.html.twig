@@ -1,16 +1,20 @@
 {% sw_extends '@Storefront/storefront/component/listing/filter/filter-multi-select.html.twig' %}
 
 {% block component_filter_multi_select %}
-    <div class="{% if hidden %}d-none {% endif %}filter-multi-select filter-multi-select-{{ name }} filter-panel-item{% if not sidebar %} dropdown{% endif %}"
-         data-{{ pluginSelector }}="true"
-         data-{{ pluginSelector }}-options='{{ dataPluginSelectorOptions|json_encode }}'>
+    {% if not context.context.extensions.findologicService.enabled %}
+        {{ parent() }}
+    {% else %}
+        <div class="{% if hidden %}d-none {% endif %}filter-multi-select filter-multi-select-{{ name }} filter-panel-item{% if not sidebar %} dropdown{% endif %}"
+             data-{{ pluginSelector }}="true"
+             data-{{ pluginSelector }}-options='{{ dataPluginSelectorOptions|json_encode }}'>
 
-        {% block component_filter_multi_select_toggle %}
-            {{ parent() }}
-        {% endblock %}
+            {% block component_filter_multi_select_toggle %}
+                {{ parent() }}
+            {% endblock %}
 
-        {% block component_filter_multi_select_dropdown %}
-            {{ parent() }}
-        {% endblock %}
-    </div>
+            {% block component_filter_multi_select_dropdown %}
+                {{ parent() }}
+            {% endblock %}
+        </div>
+    {% endif %}
 {% endblock %}

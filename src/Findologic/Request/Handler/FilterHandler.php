@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
@@ -17,12 +18,14 @@ use Symfony\Component\HttpFoundation\Request;
 
 use function array_merge;
 use function end;
+use function in_array;
 
 class FilterHandler
 {
-    protected const FILTER_DELIMITER = '|';
+    public const FILTER_DELIMITER = '|';
     protected const MIN_PREFIX = 'min-';
     protected const MAX_PREFIX = 'max-';
+    protected const IGNORE_LIST = ['pushAttrib'];
 
     /**
      * Sets all requested filters to the FINDOLOGIC API request.
@@ -37,6 +40,12 @@ class FilterHandler
 
         if ($selectedFilters) {
             foreach ($selectedFilters as $filterName => $filterValues) {
+                if (
+                    in_array($filterName, self::IGNORE_LIST, false) ||
+                    !is_string($filterValues)
+                ) {
+                    continue;
+                }
                 foreach ($this->getFilterValues($filterValues) as $filterValue) {
                     $this->handleFilter(
                         $filterName,
@@ -65,13 +74,17 @@ class FilterHandler
         $attributes = $request->get('attrib');
         if ($attributes) {
             foreach ($attributes as $key => $attribute) {
-                foreach ($attribute as $value) {
-                    if (is_array($value)) {
-                        $value = implode(self::FILTER_DELIMITER, $value);
-                    }
+                $values = [];
 
-                    $mappedParams[$key] = $value;
+                foreach ($attribute as $attributeValue) {
+                    if ($key === BaseFilter::CAT_FILTER_NAME) {
+                        $values[] = $attributeValue;
+                    } else {
+                        $values[] = $key . FilterValue::DELIMITER . $attributeValue;
+                    }
                 }
+
+                $mappedParams[$key] = implode(self::FILTER_DELIMITER, $values);
             }
 
             unset($queryParams['attrib']);
@@ -125,8 +138,6 @@ class FilterHandler
             } else {
                 $searchNavigationRequest->addAttribute($filterName, $filterValue);
             }
-
-            return;
         }
     }
 
@@ -251,6 +262,11 @@ class FilterHandler
 
                 if ($filter instanceof CategoryFilter) {
                     $this->handleCategoryFilters($values, $filterValues);
+                } elseif ($filter instanceof RangeSliderFilter) {
+                    $filterValues[] = [
+                        'selectedRange' => $filter->getSelectedRange(),
+                        'totalRange' => $filter->getTotalRange(),
+                    ];
                 } else {
                     foreach ($values as $value) {
                         $valueId = $value->getUuid() ?? $value->getId();

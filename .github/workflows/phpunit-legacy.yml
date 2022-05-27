@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         php-versions: ['7.2', '7.3', '7.4']
-        shopware-versions: ['6.2', 'v6.3.5.3']
+        shopware-versions: ['6.2', 'v6.3.2.1', 'v6.3.5.3']
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
     steps:

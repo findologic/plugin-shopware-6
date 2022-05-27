@@ -1,0 +1,28 @@
+{
+  "name": "finsearch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/findologic/plugin-shopware-6.git"
+  },
+  "author": "FINDOLOGIC GmbH",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/findologic/plugin-shopware-6/issues"
+  },
+  "homepage": "https://github.com/findologic/plugin-shopware-6#readme",
+  "devDependencies": {
+    "@babel/core": "^7.16.0",
+    "@babel/preset-env": "^7.16.4",
+    "babel-jest": "^27.4.2",
+    "jest": "^27.4.3"
+  }
+}

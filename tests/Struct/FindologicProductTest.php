@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
+use DateTime;
 use DateTimeImmutable;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\Image;
@@ -18,17 +19,20 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesExcepti
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\FindologicProductFactory;
+use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
+use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
+use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
+use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Shopware\Core\Defaults;
@@ -46,7 +50,6 @@ use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -138,17 +141,48 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    /**
-     * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoNameException
-     * @throws ProductHasNoPricesException
-     */
-    public function testNoProductCategories(): void
+    public function testDateAddedIsBasedOnReleaseDate(): void
     {
-        $this->expectException(ProductHasNoCategoriesException::class);
+        $releaseDate = DateTime::createFromFormat(DATE_ATOM, '2021-11-09T16:00:00+00:00');
 
         $productEntity = $this->createTestProduct();
-        $productEntity->setCategories(new CategoryCollection([]));
+        $productEntity->setReleaseDate($releaseDate);
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertSame($releaseDate->format(DATE_ATOM), $findologicProduct->getDateAdded()->getValues()['']);
+    }
+
+    public function testProductAndVariantHaveNoCategories(): void
+    {
+        $this->expectException(ProductHasNoCategoriesException::class);
+        $id = Uuid::randomHex();
+        $this->createTestProduct([
+            'id' => $id,
+            'categories' => []
+        ]);
+
+        $this->createTestProduct([
+            'parentId' => $id,
+            'productNumber' => Uuid::randomHex(),
+            'categories' => []
+        ]);
+
+        $criteria = new Criteria([$id]);
+        $criteria = Utils::addProductAssociations($criteria);
+        $criteria->addAssociation('visibilities');
+        $productEntity = $this->getContainer()->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->get($id);
 
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProductFactory->buildInstance(
@@ -161,6 +195,86 @@ class FindologicProductTest extends TestCase
         );
     }
 
+    public function parentAndChildrenCategoryProvider(): array
+    {
+        return [
+            'Parent and children have the same categories assigned' => [
+                'isParentAssigned' => true,
+                'isVariantAssigned' => true,
+            ],
+            'Parent has no categories and children have some categories assigned' => [
+                'isParentAssigned' => false,
+                'isVariantAssigned' => true
+            ],
+            'Parent has categories and children have no categories assigned' => [
+                'isParentAssigned' => true,
+                'isVariantAssigned' => false
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider parentAndChildrenCategoryProvider
+     */
+    public function testOnlyUniqueCategoriesAreExported(bool $isParentAssigned, bool $isVariantAssigned): void
+    {
+        $id = Uuid::randomHex();
+        $mainNavigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+        $categoryOne = [
+            'id' => 'cce80a72bc3481d723c38cccf592d45a',
+            'name' => 'Category1',
+            'parentId' => $mainNavigationCategoryId
+        ];
+
+        $expectedCategories = ['Category1'];
+        $expectedCatUrls = [
+            '/Category1/',
+            '/navigation/cce80a72bc3481d723c38cccf592d45a'
+        ];
+
+        $this->createTestProduct([
+            'id' => $id,
+            'categories' => $isParentAssigned ? [$categoryOne] : []
+        ]);
+
+        $this->createTestProduct([
+            'parentId' => $id,
+            'productNumber' => Uuid::randomHex(),
+            'categories' => $isVariantAssigned ? [$categoryOne] : []
+        ]);
+
+        $criteria = new Criteria([$id]);
+        $criteria = Utils::addProductAssociations($criteria);
+        $criteria->addAssociation('visibilities');
+        $productEntity = $this->getContainer()->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->get($id);
+
+        $config = $this->getMockedConfig();
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123'),
+            $config
+        );
+
+        $this->assertTrue($findologicProduct->hasAttributes());
+        [$categoryUrlAttribute, $categoryAttribute] = $findologicProduct->getAttributes();
+
+        $this->assertSame('cat_url', $categoryUrlAttribute->getKey());
+        $categoryUrlAttributeValues = $categoryUrlAttribute->getValues();
+        $this->assertSame($expectedCatUrls, $categoryUrlAttributeValues);
+
+        $this->assertSame('cat', $categoryAttribute->getKey());
+        $categoryAttributeValues = $categoryAttribute->getValues();
+        $this->assertSame($expectedCategories, $categoryAttributeValues);
+    }
+
     public function categorySeoProvider(): array
     {
         $categoryId = Uuid::randomHex();
@@ -170,14 +284,14 @@ class FindologicProductTest extends TestCase
         $salesChannelContext = $contextFactory->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
         $navigationCategoryId = $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
 
-        /** @var SalesChannelRepository $repos */
         $repos = $this->getContainer()->get('sales_channel.repository');
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('name', 'Storefront'));
+        $criteria->addFilter(new EqualsFilter('typeId', Defaults::SALES_CHANNEL_TYPE_STOREFRONT));
 
         $result = $repos->search($criteria, $salesChannelContext->getContext());
         /** @var SalesChannelEntity $additionalSalesChannel */
         $additionalSalesChannel = $result->first();
+
         $additionalSalesChannelId = $additionalSalesChannel->getId();
 
         return [
@@ -242,6 +356,7 @@ class FindologicProductTest extends TestCase
         $categoryData['categories'] = $data;
         $productEntity = $this->createTestProduct($categoryData);
 
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -249,7 +364,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -268,7 +384,7 @@ class FindologicProductTest extends TestCase
     public function testProductCategoriesSeoUrl(): void
     {
         $productEntity = $this->createTestProduct();
-
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -276,13 +392,14 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
         $attribute = current($findologicProduct->getAttributes());
         $this->assertSame('cat_url', $attribute->getKey());
-        $this->assertContains('/Findologic-Category', $attribute->getValues());
+        $this->assertContains('/FINDOLOGIC-Category/', $attribute->getValues());
     }
 
     public function priceProvider(): array
@@ -312,11 +429,10 @@ class FindologicProductTest extends TestCase
         $productEntity = $this->createTestProduct();
 
         if (!$price) {
-            $productEntity->setPrice(new PriceCollection([]));
+            $productEntity->setPrice(new PriceCollection());
         }
 
         $findologicProductFactory = new FindologicProductFactory();
-
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
             $this->router,
@@ -334,18 +450,78 @@ class FindologicProductTest extends TestCase
         }
     }
 
-    /**
-     * @throws AccessEmptyPropertyException
-     * @throws ProductHasNoCategoriesException
-     * @throws ProductHasNoNameException
-     * @throws ProductHasNoPricesException
-     * @throws InconsistentCriteriaIdsException
-     */
-    public function testProduct(): void
+    public function decimalPriceProvider(): array
     {
-        $productEntity = $this->createTestProduct();
+        return [
+            'Price that is rounded down' => [
+                'expectedPrice' => 15.39,
+                'actualPrice' => 15.3945
+            ],
+            'Price that is rounded up' => [
+                'expectedPrice' => 15.76,
+                'actualPrice' => 15.7591351
+            ],
+            'Price that is rounded to a whole number' => [
+                'expectedPrice' => 20.00,
+                'actualPrice' => 19.9997
+            ]
+        ];
+    }
 
-        $productTag = new Keyword('FINDOLOGIC Tag');
+    /**
+     * @dataProvider decimalPriceProvider
+     */
+    public function testProductPriceIsRoundedToTwoDecimals(float $expectedPrice, float $actualPrice): void
+    {
+        $price = new Price();
+        $price->setValue($expectedPrice);
+
+        $productEntity = $this->createTestProduct([
+            'price' => [
+                ['currencyId' => Defaults::CURRENCY, 'gross' => $actualPrice, 'net' => $actualPrice, 'linked' => false]
+            ],
+        ]);
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123')
+        );
+
+        $this->assertEquals($price, current($findologicProduct->getPrices()));
+    }
+
+    private function getKeywordEntity(string $keyword): ProductSearchKeywordEntity
+    {
+        $productSearchKeywordEntity = new ProductSearchKeywordEntity();
+        $productSearchKeywordEntity->setId(Uuid::randomHex());
+        $productSearchKeywordEntity->setKeyword($keyword);
+
+        return $productSearchKeywordEntity;
+    }
+
+    public function hasManufacturerProvider(): array
+    {
+        return [
+            'Product with manufacturer' => [
+                'withManufacturer' => true,
+            ],
+            'Product without manufacturer' => [
+                'withManufacturer' => false,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider hasManufacturerProvider
+     */
+    public function testProduct(bool $withManufacturer): void
+    {
+        $productEntity = $this->createTestProduct([], false, false, $withManufacturer);
         $images = $this->getImages($productEntity);
         $attributes = $this->getAttributes($productEntity);
 
@@ -358,6 +534,11 @@ class FindologicProductTest extends TestCase
         $ordernumbers = $this->getOrdernumber($productEntity);
         $properties = $this->getProperties($productEntity);
 
+        $keywordEntities = [$this->getKeywordEntity('keyword1'), $this->getKeywordEntity('keyword2')];
+        $productSearchKeywordCollection = new ProductSearchKeywordCollection($keywordEntities);
+        $productEntity->setSearchKeywords($productSearchKeywordCollection);
+
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -365,19 +546,35 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domain = $salesChannel->getDomains()->first()->getUrl();
+        $keywords = [new Keyword('keyword1'), new Keyword('keyword2')];
+        $blackListedKeywords = [
+            $productEntity->getProductNumber(),
+        ];
+        if ($manufacturer = $productEntity->getManufacturer()) {
+            $blackListedKeywords[] = $manufacturer->getTranslation('name');
+        }
 
-        $seoUrls = $productEntity->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
-        $seoPath = $seoUrls->first()->getSeoPathInfo();
-        $expectedUrl = sprintf('%s/%s', $domain, $seoPath);
+        $productKeywords = $findologicProduct->getKeywords();
+        $isBlackListedKeyword = false;
+        $this->assertNotEmpty($productKeywords);
+        foreach ($productKeywords as $keyword) {
+            if (in_array($keyword->getValue(), $blackListedKeywords)) {
+                $isBlackListedKeyword = true;
+            }
+        }
 
+        $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
+        $urlBuilderService->setSalesChannelContext($this->salesChannelContext);
+
+        $expectedUrl = $urlBuilderService->buildProductUrl($productEntity);
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
         $this->assertEquals($productEntity->getName(), $findologicProduct->getName());
-        $this->assertEquals([$productTag], $findologicProduct->getKeywords());
+        $this->assertEquals($keywords, $productKeywords);
+        $this->assertFalse($isBlackListedKeyword);
         $this->assertEquals($images, $findologicProduct->getImages());
         $this->assertEquals(0, $findologicProduct->getSalesFrequency());
         $this->assertEqualsCanonicalizing($attributes, $findologicProduct->getAttributes());
@@ -388,38 +585,10 @@ class FindologicProductTest extends TestCase
 
     public function testProductWithCustomFields(): void
     {
-        $data['customFields'] = ['findologic_size' => 100, 'findologic_color' => 'yellow'];
-        $productEntity = $this->createTestProduct($data, true);
-
-        $productFields = $productEntity->getCustomFields();
-        $customerGroupEntities = $this->getContainer()
-            ->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext->getContext())
-            ->getElements();
-
-        $findologicProductFactory = new FindologicProductFactory();
-        $findologicProduct = $findologicProductFactory->buildInstance(
-            $productEntity,
-            $this->router,
-            $this->getContainer(),
-            $this->shopkey,
-            $customerGroupEntities,
-            new XMLItem('123')
-        );
-
-        $attributes = $findologicProduct->getCustomFields();
-        foreach ($attributes as $attribute) {
-            $this->assertEquals($productFields[$attribute->getKey()], current($attribute->getValues()));
-        }
-    }
-
-    public function testProductWithMultiSelectCustomFields(): void
-    {
-        $data['customFields'] = [
-            'multi' => [
-                'one value',
-                'another value',
-                'even a third one!'
+        $data = [
+            'customFields' => [
+                'findologic_size' => 100,
+                'findologic_color' => 'yellow'
             ]
         ];
         $productEntity = $this->createTestProduct($data, true);
@@ -441,8 +610,156 @@ class FindologicProductTest extends TestCase
         );
 
         $attributes = $findologicProduct->getCustomFields();
+
+        $this->assertCount(2, $attributes);
         foreach ($attributes as $attribute) {
-            $this->assertEquals($productFields[$attribute->getKey()], $attribute->getValues());
+            $this->assertEquals($productFields[$attribute->getKey()], current($attribute->getValues()));
+        }
+    }
+
+    public function testMultiDimensionalCustomFieldsAreIgnored(): void
+    {
+        $data = [
+            'customFields' => [
+                'multidimensional' => [
+                    ['interesting' => 'this is some multidimensional data wow!']
+                ]
+            ]
+        ];
+        $productEntity = $this->createTestProduct($data, true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+        $this->assertEmpty($attributes);
+    }
+
+    public function testCustomFieldsContainingZeroAsStringAreProperlyExported(): void
+    {
+        $productEntity = $this->createTestProduct([
+            'customFields' => [
+                'nice' => "0\n"
+            ]
+        ], true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+
+        $this->assertCount(1, $attributes);
+        $this->assertSame(['0'], $attributes[0]->getValues());
+    }
+
+    public function multiSelectCustomFieldsProvider(): array
+    {
+        return [
+            'multiple values' => [
+                'customFields' => [
+                    'multi' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+                'expectedCustomFieldAttributes' => [
+                    'multi' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+            ],
+            'multiple values with one null value' => [
+                'customFields' => [
+                    'multiWithNull' => [
+                        'one value',
+                        'another value',
+                        'even a third one!',
+                        null
+                    ],
+                ],
+                'expectedCustomFieldAttributes' => [
+                    'multiWithNull' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+            ],
+            'multiple values with one empty value' => [
+                'customFields' => [
+                    'multiWithEmptyValue' => [
+                        'one value',
+                        'another value',
+                        'even a third one!',
+                        ''
+                    ],
+                ],
+                'expectedCustomFieldAttributes' => [
+                    'multiWithEmptyValue' => [
+                        'one value',
+                        'another value',
+                        'even a third one!'
+                    ],
+                ],
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider multiSelectCustomFieldsProvider
+     */
+    public function testProductWithMultiSelectCustomFields(
+        array $customFields,
+        array $expectedCustomFieldAttributes
+    ): void {
+        $data['customFields'] = $customFields;
+        $productEntity = $this->createTestProduct($data, true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+        foreach ($attributes as $attribute) {
+            $this->assertEquals($expectedCustomFieldAttributes[$attribute->getKey()], $attribute->getValues());
         }
     }
 
@@ -532,25 +849,55 @@ class FindologicProductTest extends TestCase
     public function attributeProvider(): array
     {
         return [
-            'filter with some special characters' => [
+            'API Integration filter with some special characters' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|',
                 'expectedName' => 'SpecialCharacters'
             ],
-            'filter with brackets' => [
+            'API Integration filter with brackets' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Farbwiedergabe (Ra/CRI)',
                 'expectedName' => 'FarbwiedergabeRaCRI'
             ],
-            'filter with special UTF-8 characters' => [
+            'API Integration filter with special UTF-8 characters' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Ausschnitt D ø (mm)',
                 'expectedName' => 'AusschnittDmm'
             ],
-            'filter dots and dashes' => [
+            'API Integration filter dots and dashes' => [
+                'integrationType' => 'API',
                 'attributeName' => 'free_shipping.. Really Cool--__',
                 'expectedName' => 'free_shippingReallyCool--__'
             ],
-            'filter with umlauts' => [
+            'API Integration filter with umlauts' => [
+                'integrationType' => 'API',
                 'attributeName' => 'Umläüts äre cööl',
                 'expectedName' => 'Umläütsärecööl'
+            ],
+            'Direct Integration filter with some special characters' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|',
+                'expectedName' => 'Special Characters /#+*()()=§(=\'\'!!"$.|'
+            ],
+            'Direct Integration filter with brackets' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Farbwiedergabe (Ra/CRI)',
+                'expectedName' => 'Farbwiedergabe (Ra/CRI)'
+            ],
+            'Direct Integration filter with special UTF-8 characters' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Ausschnitt D ø (mm)',
+                'expectedName' => 'Ausschnitt D ø (mm)'
+            ],
+            'Direct Integration filter dots and dashes' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'free_shipping.. Really Cool--__',
+                'expectedName' => 'free_shipping.. Really Cool--__'
+            ],
+            'Direct Integration filter with umlauts' => [
+                'integrationType' => 'Direct Integration',
+                'attributeName' => 'Umläüts äre cööl',
+                'expectedName' => 'Umläüts äre cööl'
             ],
         ];
     }
@@ -558,8 +905,11 @@ class FindologicProductTest extends TestCase
     /**
      * @dataProvider attributeProvider
      */
-    public function testAttributesAreProperlyEscaped(string $attributeName, string $expectedName): void
-    {
+    public function testAttributesAreProperlyEscaped(
+        string $integrationType,
+        string $attributeName,
+        string $expectedName
+    ): void {
         $productEntity = $this->createTestProduct(
             [
                 'properties' => [
@@ -588,6 +938,7 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
+        $config = $this->getMockedConfig($integrationType);
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -595,7 +946,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $foundAttributes = array_filter(
@@ -843,10 +1195,9 @@ class FindologicProductTest extends TestCase
     /**
      * @return Attribute[]
      */
-    private function getAttributes(ProductEntity $productEntity): array
+    private function getAttributes(ProductEntity $productEntity, string $integrationType = 'Direct Integration'): array
     {
         $catUrl1 = '/FINDOLOGIC-Category/';
-        $catUrl2 = '/Findologic-Category';
         $defaultCatUrl = '';
 
         foreach ($productEntity->getCategories() as $category) {
@@ -856,14 +1207,19 @@ class FindologicProductTest extends TestCase
         }
 
         $attributes = [];
-        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $catUrl2, $defaultCatUrl]);
+        $catUrlAttribute = new Attribute('cat_url', [$catUrl1, $defaultCatUrl]);
         $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
-        $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
 
-        $attributes[] = $catUrlAttribute;
+        if ($productEntity->getManufacturer()) {
+            $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
+            $attributes[] = $vendorAttribute;
+        }
+
+        if ($integrationType === 'Direct Integration') {
+            $attributes[] = $catUrlAttribute;
+        }
+
         $attributes[] = $catAttribute;
-        $attributes[] = $vendorAttribute;
-
         $attributes[] = new Attribute(
             $productEntity->getProperties()
                 ->first()
@@ -1046,6 +1402,7 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
+        $config = $this->getMockedConfig('API');
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1053,7 +1410,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertEmpty($findologicProduct->getCustomFields());
@@ -1185,10 +1543,8 @@ class FindologicProductTest extends TestCase
 
         $categoryId = Uuid::randomHex();
         $pathInfo = 'navigation/' . $categoryId;
-        $seoPathInfo = 'Findologic-Category';
-
-        $expectedFirstCatUrl = '/' . $seoPathInfo;
-        $expectedSecondCatUrl = '/' . $pathInfo;
+        $seoPathInfo = '/FINDOLOGIC-Category/';
+        $expectedCatUrl = '/' . $pathInfo;
 
         $productEntity = $this->createTestProduct(
             [
@@ -1210,6 +1566,7 @@ class FindologicProductTest extends TestCase
             ]
         );
 
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1217,17 +1574,16 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $this->assertCount(6, $findologicProduct->getAttributes());
         $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
 
         $catUrls = $findologicProduct->getAttributes()[0]->getValues();
-        $this->assertCount(2, $catUrls);
-
-        $this->assertSame($expectedFirstCatUrl, $catUrls[0]);
-        $this->assertSame($expectedSecondCatUrl, $catUrls[1]);
+        $this->assertCount(1, $catUrls);
+        $this->assertSame([$expectedCatUrl], $catUrls);
     }
 
     public function testCustomerGroupsAreExportedAsUserGroups(): void
@@ -1378,6 +1734,12 @@ class FindologicProductTest extends TestCase
      */
     public function testProductListPrice(?string $currencyId, bool $isPriceAvailable): void
     {
+        if ($currencyId === null && Utils::versionGreaterOrEqual('6.4.2.0')) {
+            $this->markTestSkipped(
+                'SW >= 6.4.2.0 requires a price to be set for the default currency. Therefore not testable.'
+            );
+        }
+
         if ($currencyId === null) {
             $currencyId = $this->createCurrency();
         }
@@ -1391,8 +1753,8 @@ class FindologicProductTest extends TestCase
                         'net' => 40,
                         'linked' => false,
                         'listPrice' => [
-                            'net' => 20,
-                            'gross' => 25,
+                            'net' => 20.17926,
+                            'gross' => 25.1234,
                             'linked' => false,
                         ],
                     ]
@@ -1416,48 +1778,16 @@ class FindologicProductTest extends TestCase
         foreach ($findologicProduct->getProperties() as $property) {
             if ($property->getKey() === 'old_price') {
                 $hasListPrice = true;
-                $this->assertEquals(25, current($property->getAllValues()));
+                $this->assertEquals(25.12, current($property->getAllValues()));
             }
             if ($property->getKey() === 'old_price_net') {
                 $hasListPriceNet = true;
-                $this->assertEquals(20, current($property->getAllValues()));
+                $this->assertEquals(20.18, current($property->getAllValues()));
             }
         }
 
         $this->assertSame($isPriceAvailable, $hasListPrice);
         $this->assertSame($isPriceAvailable, $hasListPriceNet);
-    }
-
-    private function createCurrency(): string
-    {
-        $currencyId = Uuid::randomHex();
-
-        $cashRoundingConfig = [
-            'decimals' => 2,
-            'interval' => 1,
-            'roundForNet' => false
-        ];
-
-        /** @var EntityRepositoryInterface $currencyRepo */
-        $currencyRepo = $this->getContainer()->get('currency.repository');
-        $currencyRepo->upsert(
-            [
-                [
-                    'id' => $currencyId,
-                    'isoCode' => 'FDL',
-                    'factor' => 1,
-                    'symbol' => 'F',
-                    'decimalPrecision' => 2,
-                    'name' => 'Findologic Currency',
-                    'shortName' => 'FL',
-                    'itemRounding' => $cashRoundingConfig,
-                    'totalRounding' => $cashRoundingConfig,
-                ]
-            ],
-            $this->salesChannelContext->getContext()
-        );
-
-        return $currencyId;
     }
 
     public function testCatUrlsContainDomainPathAsPrefix(): void
@@ -1494,6 +1824,8 @@ class FindologicProductTest extends TestCase
         $this->salesChannelContext->getSalesChannel()->setDomains($result->getEntities());
 
         $productEntity = $this->createTestProduct();
+
+        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1501,7 +1833,8 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $config
         );
 
         $attributes = $findologicProduct->getAttributes();
@@ -1885,5 +2218,199 @@ class FindologicProductTest extends TestCase
         );
 
         $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
+    }
+
+    private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
+    {
+        $override = [
+            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
+            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
+        ];
+
+        return $this->getFindologicConfig($override, $integrationType === 'Direct Integration');
+    }
+
+    public function categoryAndCatUrlWithIntegrationTypeProvider(): array
+    {
+        return [
+            'Integration type is API and category is at first level' => [
+                'integrationType' => 'API',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1'
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is API with nested categories' => [
+                'integrationType' => 'API',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1',
+                        'children' => [
+                            [
+                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                                'name' => 'Category2'
+                            ]
+                        ]
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1_Category2'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is DI and category is at first level' => [
+                'integrationType' => 'Direct Integration',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1'
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1'
+                ],
+                'expectedCatUrls' => [
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
+            ],
+            'Integration type is DI with nested categories' => [
+                'integrationType' => 'Direct Integration',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1',
+                        'children' => [
+                            [
+                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                                'name' => 'Category2'
+                            ]
+                        ]
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1_Category2',
+                ],
+                'expectedCatUrls' => [
+                    '/Category1/Category2/',
+                    '/navigation/f03d845e0abf31e72409cf7c5c704a2e',
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
+            ],
+            'Integration type is unknown and category is at first level' => [
+                'integrationType' => 'Unknown',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1'
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1'
+                ],
+                'expectedCatUrls' => [],
+            ],
+            'Integration type is unknown with nested categories' => [
+                'integrationType' => 'Unknown',
+                'categories' => [
+                    [
+                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                        'name' => 'Category1',
+                        'children' => [
+                            [
+                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                                'name' => 'Category2'
+                            ]
+                        ]
+                    ]
+                ],
+                'expectedCategories' => [
+                    'Category1_Category2'
+                ],
+                'expectedCatUrls' => [],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider categoryAndCatUrlWithIntegrationTypeProvider
+     */
+    public function testCategoryAndCatUrlExportBasedOnIntegrationType(
+        ?string $integrationType,
+        array $categories,
+        array $expectedCategories,
+        array $expectedCatUrls
+    ): void {
+        foreach ($categories as $key => $category) {
+            $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+            $categories[$key]['parentId'] = $navigationCategoryId;
+        }
+
+        $productEntity = $this->createTestProduct(['categories' => $categories]);
+        $config = $this->getMockedConfig($integrationType);
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            [],
+            new XMLItem('123'),
+            $config
+        );
+
+        $this->assertTrue($findologicProduct->hasAttributes());
+        $attributes = $findologicProduct->getAttributes();
+        if (count($expectedCatUrls) > 0) {
+            $this->assertSame('cat_url', $attributes[0]->getKey());
+            $this->assertSameSize($expectedCatUrls, $attributes[0]->getValues());
+            $this->assertSame($expectedCatUrls, $attributes[0]->getValues());
+
+            $this->assertSame('cat', $attributes[1]->getKey());
+            $this->assertSameSize($expectedCategories, $attributes[1]->getValues());
+            $this->assertSame($expectedCategories, $attributes[1]->getValues());
+        } else {
+            $this->assertSame('cat', $attributes[0]->getKey());
+            $this->assertSameSize($expectedCategories, $attributes[0]->getValues());
+            $this->assertSame($expectedCategories, $attributes[0]->getValues());
+        }
+    }
+
+    public function testAttributesAreHtmlEntityEncoded(): void
+    {
+        $expectedAttributeValue = '>80';
+        $productEntity = $this->createTestProduct([
+            'customFields' => [
+                'length' => '&gt;80',
+            ]
+        ], true);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $findologicProductFactory = new FindologicProductFactory();
+        $findologicProduct = $findologicProductFactory->buildInstance(
+            $productEntity,
+            $this->router,
+            $this->getContainer(),
+            $this->shopkey,
+            $customerGroupEntities,
+            new XMLItem('123')
+        );
+
+        $attributes = $findologicProduct->getCustomFields();
+
+        $this->assertCount(1, $attributes);
+        $this->assertSame($expectedAttributeValue, $attributes[0]->getValues()[0]);
     }
 }

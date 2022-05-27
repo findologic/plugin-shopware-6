@@ -46,8 +46,12 @@ class CategoryFilterValue extends FilterValue
         return $this;
     }
 
-    public function setFrequency(int $frequency): CategoryFilterValue
+    public function setFrequency(?int $frequency): CategoryFilterValue
     {
+        if ($frequency === null) {
+            $frequency = 0;
+        }
+
         $this->frequency = $frequency;
 
         return $this;

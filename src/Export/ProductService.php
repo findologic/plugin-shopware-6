@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export;
 
+use FINDOLOGIC\FinSearch\Findologic\MainVariant;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductCollection;
@@ -15,6 +18,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\RangeFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Grouping\FieldGrouping;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
@@ -26,26 +30,34 @@ class ProductService
 {
     public const CONTAINER_ID = 'fin_search.product_service';
 
+    /** @var Config */
+    private $config;
+
     /** @var ContainerInterface */
     private $container;
 
     /** @var SalesChannelContext|null */
     private $salesChannelContext;
 
-    public function __construct(ContainerInterface $container, ?SalesChannelContext $salesChannelContext = null)
-    {
+    public function __construct(
+        ContainerInterface $container,
+        ?SalesChannelContext $salesChannelContext = null,
+        ?Config $config = null
+    ) {
         $this->container = $container;
         $this->salesChannelContext = $salesChannelContext;
+        $this->config = $config ?? $container->get(Config::class);
     }
 
     public static function getInstance(
         ContainerInterface $container,
-        ?SalesChannelContext $salesChannelContext
+        ?SalesChannelContext $salesChannelContext,
+        ?Config $config = null
     ): ProductService {
         if ($container->has(self::CONTAINER_ID)) {
             $productService = $container->get(self::CONTAINER_ID);
         } else {
-            $productService = new ProductService($container, $salesChannelContext);
+            $productService = new ProductService($container, $salesChannelContext, $config);
             $container->set(self::CONTAINER_ID, $productService);
         }
 
@@ -61,9 +73,19 @@ class ProductService
         $this->salesChannelContext = $salesChannelContext;
     }
 
+    public function setConfig(Config $config): void
+    {
+        $this->config = $config;
+    }
+
     public function getSalesChannelContext(): ?SalesChannelContext
     {
         return $this->salesChannelContext;
+    }
+
+    public function getConfig(): ?Config
+    {
+        return $this->config;
     }
 
     public function getTotalProductCount(): int
@@ -84,27 +106,10 @@ class ProductService
         ?int $offset = null,
         ?string $productId = null
     ): EntitySearchResult {
-        $criteria = $this->getCriteriaWithProductVisibility($limit, $offset);
+        $result = $this->getVisibleProducts($limit, $offset, $productId);
+        $products = $this->buildProductsWithVariantInformation($result);
 
-        if ($productId) {
-            $this->addProductIdFilters($criteria, $productId);
-        }
-
-        /** @var EntitySearchResult $result */
-        $result = $this->container->get('product.repository')->search(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        );
-
-        /** @var ProductCollection $products */
-        $products = $result->getEntities();
-        foreach ($products as $product) {
-            $children = $this->getChildrenOrSiblings($product);
-
-            $product->setChildren($children);
-        }
-
-        return $result;
+        return EntitySearchResult::createFrom($products);
     }
 
     public function searchAllProducts(
@@ -155,6 +160,9 @@ class ProductService
         $childrenCriteria->addFilter(
             new EqualsFilter('displayGroup', $product->getDisplayGroup())
         );
+        $this->addVisibilityFilter($childrenCriteria);
+        $this->handleAvailableStock($childrenCriteria);
+        $this->addPriceZeroFilter($childrenCriteria);
 
         $this->addProductAssociations($criteria);
 
@@ -173,19 +181,17 @@ class ProductService
     protected function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria
     {
         $criteria = $this->buildProductCriteria($limit, $offset);
+        $this->addVisibilityFilter($criteria);
+        $this->addPriceZeroFilter($criteria);
 
-        return $criteria->addFilter(
-            new ProductAvailableFilter(
-                $this->salesChannelContext->getSalesChannel()->getId(),
-                ProductVisibilityDefinition::VISIBILITY_SEARCH
-            )
-        );
+        return $criteria;
     }
 
     protected function buildProductCriteria(?int $limit = null, ?int $offset = null): Criteria
     {
         $criteria = new Criteria();
         $criteria->addSorting(new FieldSorting('createdAt'));
+        $criteria->addSorting(new FieldSorting('id'));
 
         $this->addGrouping($criteria);
         $this->handleAvailableStock($criteria);
@@ -199,6 +205,25 @@ class ProductService
         }
 
         return $criteria;
+    }
+
+    protected function addVisibilityFilter(Criteria $criteria): void
+    {
+        $criteria->addFilter(
+            new ProductAvailableFilter(
+                $this->salesChannelContext->getSalesChannel()->getId(),
+                ProductVisibilityDefinition::VISIBILITY_SEARCH
+            )
+        );
+    }
+
+    protected function addPriceZeroFilter(Criteria $criteria): void
+    {
+        $criteria->addFilter(
+            new RangeFilter('price', [
+                RangeFilter::GT => 0
+            ])
+        );
     }
 
     /**
@@ -260,5 +285,138 @@ class ProductService
                 $productFilter
             )
         );
+    }
+
+    protected function getVisibleProducts(?int $limit, ?int $offset, ?string $productId): EntitySearchResult
+    {
+        $criteria = $this->getCriteriaWithProductVisibility($limit, $offset);
+
+        if ($productId) {
+            $this->addProductIdFilters($criteria, $productId);
+        }
+
+        return $this->container->get('product.repository')->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        );
+    }
+
+    protected function buildProductsWithVariantInformation(EntitySearchResult $result): ProductCollection
+    {
+        $products = new ProductCollection();
+
+        /** @var ProductEntity $product */
+        foreach ($result->getEntities() as $product) {
+            if ($product->getMainVariantId() !== null) {
+                $mainProduct = $this->getRealMainProductWithVariants($product->getMainVariantId());
+                if ($mainProduct) {
+                    $product = $mainProduct;
+                }
+            }
+
+            $this->assignChildrenOrSiblings($product);
+            $products->add($product);
+        }
+
+        if ($this->config->getMainVariant() === MainVariant::SHOPWARE_DEFAULT) {
+            return $products;
+        }
+
+        return $this->getProductsByMainVariantBasedOnConfig($products);
+    }
+
+    protected function getProductsByMainVariantBasedOnConfig(ProductCollection $products): ProductCollection
+    {
+        $mainVariantConfig = $this->config->getMainVariant();
+        $variantProducts = new ProductCollection();
+
+        foreach ($products as $product) {
+            switch ($mainVariantConfig) {
+                case MainVariant::MAIN_PARENT:
+                    $parent = $this->getParentByMainProduct($product);
+                    break;
+                case MainVariant::CHEAPEST:
+                    $parent = $this->getParentByCheapestVariant($product);
+                    break;
+                default:
+                    throw new InvalidArgumentException($mainVariantConfig);
+            }
+
+            $variantProducts->add($parent);
+        }
+
+        return $variantProducts;
+    }
+
+    protected function getRealMainProductWithVariants(string $realMainProductId): ?ProductEntity
+    {
+        return $this->getVisibleProducts(1, 0, $realMainProductId)->first();
+    }
+
+    protected function assignChildrenOrSiblings(ProductEntity $product): void
+    {
+        $children = $this->getChildrenOrSiblings($product);
+        $product->setChildren($children);
+    }
+
+    protected function getParentByMainProduct(ProductEntity $product): ProductEntity
+    {
+        $parent = $product;
+        $children = new ProductCollection();
+        foreach ($product->getChildren() as $child) {
+            if ($child->getParentId()) {
+                $children->add($child);
+            } else {
+                $parent = $child;
+            }
+        }
+
+        $parent->setChildren($children);
+
+        return $parent;
+    }
+
+    protected function getParentByCheapestVariant(ProductEntity $product): ProductEntity
+    {
+        $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+        $children = $product->getChildren();
+        // Add the current product in the children collection, so we can include it when
+        // checking for the cheapest price logic in the loop below.
+        $children->add($product);
+        // Get the real parent of the product. If no product is found, it means we
+        // already have the real parent.
+        $parent = $children->filter(static function (ProductEntity $childEntity) {
+            return $childEntity->getParentId() === null;
+        })->first();
+
+        if (!$parent) {
+            $parent = $product;
+        }
+
+        // Consider the current product to have the cheapest price by default, and look for
+        // a cheaper product in its children.
+        $cheapestPrice = $parent->getCurrencyPrice($currencyId);
+        foreach ($children as $child) {
+            if (!$price = $child->getCurrencyPrice($currencyId)) {
+                continue;
+            }
+
+            if (
+                $cheapestPrice->getGross() === 0.0 ||
+                $price->getGross() < $cheapestPrice->getGross()
+            ) {
+                $cheapestPrice->setGross($price->getGross());
+                $parent = $child;
+            }
+        }
+
+        $configuredChildren = $children->filter(static function (ProductEntity $child) use ($parent) {
+            return $child->getId() !== $parent->getId();
+        });
+
+        $parent->setParentId(null);
+        $parent->setChildren($configuredChildren);
+
+        return $parent;
     }
 }

@@ -18,8 +18,17 @@ class RangeSliderFilter extends Filter
     /** @var float|null */
     private $max = null;
 
+    /** @var float|null */
+    private $step = null;
+
     /** @var string */
     private $unit = '€';
+
+    /** @var array */
+    private $totalRange = [];
+
+    /** @var array */
+    private $selectedRange = [];
 
     public function __construct(string $id, string $name, array $values = [])
     {
@@ -72,5 +81,35 @@ class RangeSliderFilter extends Filter
     public function getMax(): ?float
     {
         return $this->max;
+    }
+
+    public function getStep(): ?float
+    {
+        return $this->step;
+    }
+
+    public function setStep(?float $step): void
+    {
+        $this->step = $step;
+    }
+
+    public function setTotalRange(array $totalRange): void
+    {
+        $this->totalRange = $totalRange;
+    }
+
+    public function setSelectedRange(array $selectedRange): void
+    {
+        $this->selectedRange = $selectedRange;
+    }
+
+    public function getTotalRange(): array
+    {
+        return $this->totalRange;
+    }
+
+    public function getSelectedRange(): array
+    {
+        return $this->selectedRange;
     }
 }

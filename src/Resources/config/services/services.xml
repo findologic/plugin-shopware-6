@@ -12,6 +12,14 @@
             <tag name="shopware.entity.definition" entity="finsearch_config" />
         </service>
 
+        <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchSalesChannelExtension">
+            <tag name="shopware.entity.extension"/>
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchLanguageExtension">
+            <tag name="shopware.entity.extension"/>
+        </service>
+
         <service id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService">
             <argument id="finsearch_config.repository" type="service" />
             <argument type="service" id="Doctrine\DBAL\Connection" />
@@ -49,6 +57,11 @@
 
         <service id="FINDOLOGIC\FinSearch\Export\HeaderHandler" public="true">
             <argument id="service_container" type="service" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" public="true">
+            <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
+            <argument type="service" id="category.repository" />
         </service>
 
         <service
@@ -138,8 +151,17 @@
             <argument type="service" id="FINDOLOGIC\Api\Config" />
         </service>
 
+        <service
+                id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService"
+                class="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService"
+        />
+
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true" />
-        <service id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" autowire="true">
+            <argument type="string" key="$shopwareVersion">%kernel.shopware_version%</argument>
+        </service>
+
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\PaginationService" autowire="true" />
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler" />

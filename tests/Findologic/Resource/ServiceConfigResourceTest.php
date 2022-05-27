@@ -18,10 +18,12 @@ use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
+use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 
 class ServiceConfigResourceTest extends TestCase
 {
     use ConfigHelper;
+    use IntegrationTestBehaviour;
 
     public function cacheConfigDataProvider(): array
     {
@@ -56,7 +58,7 @@ class ServiceConfigResourceTest extends TestCase
         array $directIntegration,
         bool $isStagingShop
     ): void {
-        $cacheKey = 'finsearch_serviceconfig';
+        $cacheKey = 'finsearch_serviceconfig_74B87337454200D4D33F80C4663DC5E5';
         $shopkey = $this->getShopkey();
         $serviceConfig = new ServiceConfig();
         $serviceConfig->assign(['directIntegration' => $directIntegration, 'isStagingShop' => $isStagingShop]);
@@ -113,7 +115,7 @@ class ServiceConfigResourceTest extends TestCase
         bool $isStagingShop,
         array $smartSuggestBlocks
     ): void {
-        $cacheKey = 'finsearch_serviceconfig';
+        $cacheKey = 'finsearch_serviceconfig_74B87337454200D4D33F80C4663DC5E5';
         $directIntegrationConfig = $directIntegration ? 'Direct Integration' : 'API';
         $serviceConfig = new ServiceConfig();
         $serviceConfig->assign($this->getConfig());
@@ -186,7 +188,7 @@ class ServiceConfigResourceTest extends TestCase
         $expiredDateTime = $expiredDateTime->modify($expiredTime);
         $directIntegrationConfig = $directIntegration ? 'Direct Integration' : 'API';
         $shopkey = $this->getShopkey();
-        $cacheKey = 'finsearch_serviceconfig';
+        $cacheKey = 'finsearch_serviceconfig_74B87337454200D4D33F80C4663DC5E5';
 
         /** @var ServiceConfig|MockObject $serviceConfig */
         $serviceConfig = $this->getMockBuilder(ServiceConfig::class)
@@ -239,5 +241,36 @@ class ServiceConfigResourceTest extends TestCase
         );
 
         $this->assertSame($directIntegration['enabled'], $serviceConfigResource->isDirectIntegration($shopkey));
+    }
+
+    public function testCachedServiceConfigResourceIsShopkeyAware(): void
+    {
+        $apiShopkey = 'D5EF9A190C9714C8F1E73EEF0FAFBBC9';
+        $diShopkey = '74B87337454200D4D33F80C4663DC5E5';
+
+        $client = new Client(['handler' => $this->getMockHandler([
+            new Response(200, [], $this->getConfig(false)),
+            new Response(200, [], $this->getConfig(false, 'api_config.json')),
+        ])]);
+
+        $serviceConfigResource = new ServiceConfigResource(
+            $this->getContainer()->get('serializer.mapping.cache.symfony'),
+            new ServiceConfigClientFactory(),
+            $client
+        );
+
+        $this->assertTrue($serviceConfigResource->isDirectIntegration($diShopkey));
+        $this->assertFalse($serviceConfigResource->isDirectIntegration($apiShopkey));
+    }
+
+    /**
+     * @param Response[] $responses
+     * @return HandlerStack
+     */
+    private function getMockHandler(array $responses): HandlerStack
+    {
+        $mockHandler = new MockHandler($responses);
+
+        return HandlerStack::create($mockHandler);
     }
 }

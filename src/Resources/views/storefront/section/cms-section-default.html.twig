@@ -2,9 +2,15 @@
 
 {% block page_content_section_default %}
     {% if context.context.extensions.flPromotion %}
-        <a href="{{ context.context.extensions.flPromotion.link }}">
-            <img src="{{ context.context.extensions.flPromotion.image }}" id="fl-promotion" alt="Promotion Image"/>
-        </a>
+        <div class="cms-section-default boxed" id="fl-promotion-container">
+            <div class="cms-block pos-0 cms-block-image-text">
+                <div class="cms-block-container">
+                    <a href="{{ context.context.extensions.flPromotion.link }}" id="fl-promotion-link">
+                        <img src="{{ context.context.extensions.flPromotion.image }}" id="fl-promotion" alt="Promotion Image"/>
+                    </a>
+                </div>
+            </div>
+        </div>
     {% endif %}
 
     {{ parent() }}

@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Content\Category\CategoryEntity;
+use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Defaults;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
@@ -31,14 +36,20 @@ class XmlExportTest extends TestCase
     /** @var SalesChannelContext */
     protected $salesChannelContext;
 
+    /** @var ProductErrorHandler */
+    protected $productErrorHandler;
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->productErrorHandler = new ProductErrorHandler();
         $this->logger = new Logger('fl_test_logger');
         $this->salesChannelContext = $this->buildSalesChannelContext();
-        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->crossSellCategories = [];
+
+        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
+        $this->logger->pushHandler($this->productErrorHandler);
     }
 
     public function testWrapsItemProperly(): void
@@ -50,20 +61,42 @@ class XmlExportTest extends TestCase
         $this->assertSame($product->getId(), $items[0]->getId());
     }
 
-    public function testProductsInCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
+    public function testManuallyAssignedProductsInCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
     {
-        $productErrorHandler = new ProductErrorHandler();
-        $this->logger->pushHandler($productErrorHandler);
-
         $product = $this->createVisibleTestProduct();
 
         $category = $product->getCategories()->first();
         $this->crossSellCategories = [$category->getId()];
 
+        $this->buildItemsAndAssertError($product, $category);
+    }
+
+    public function testProductsInDynamicProductGroupCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
+    {
+        $product = $this->createVisibleTestProduct();
+
+        $category = $this->createTestCategory();
+        $this->crossSellCategories = [$category->getId()];
+
+        $dynamicProductGroupServiceMock = $this->getMockBuilder(DynamicProductGroupService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dynamicProductGroupServiceMock->expects($this->any())
+            ->method('getCategories')
+            ->willReturn([$category->getId() => $category]);
+
+        $this->getContainer()->set('fin_search.dynamic_product_group', $dynamicProductGroupServiceMock);
+
+        $this->buildItemsAndAssertError($product, $category);
+    }
+
+    public function buildItemsAndAssertError(ProductEntity $product, CategoryEntity $category)
+    {
         $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
         $this->assertEmpty($items);
 
-        $errors = $productErrorHandler->getExportErrors()->getProductError($product->getId())->getErrors();
+        $errors = $this->productErrorHandler->getExportErrors()->getProductError($product->getId())->getErrors();
         $this->assertCount(1, $errors);
         $this->assertEquals(
             sprintf(
@@ -97,5 +130,34 @@ class XmlExportTest extends TestCase
             $this->logger,
             $this->crossSellCategories
         );
+    }
+
+    public function testProductPriceWithCurrency(): void
+    {
+        $currencyId = $this->createCurrency();
+        $this->salesChannelContext->getSalesChannel()->setCurrencyId($currencyId);
+        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
+        $testProduct = $this->createTestProduct([
+            'price' => [
+                ['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false],
+                ['currencyId' => $currencyId, 'gross' => 7.5, 'net' => 5, 'linked' => false]
+            ]
+        ]);
+
+        $customerGroupEntities = $this->getContainer()
+            ->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+
+        $items = $this->getExport()->buildItems(
+            [$testProduct],
+            self::VALID_SHOPKEY,
+            $customerGroupEntities
+        );
+
+        $item = $items[0];
+        $price = $item->getPrice();
+        $priceValues = $price->getValues();
+        $this->assertEquals(7.5, current($priceValues));
     }
 }
