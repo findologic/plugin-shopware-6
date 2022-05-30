@@ -59,11 +59,11 @@ class ProductServiceSeparateVariants
         ?SalesChannelContext $salesChannelContext,
         ?Config $config = null
     ): ProductServiceSeparateVariants {
-        if ($container->has(self::CONTAINER_ID)) {
-            $productService = $container->get(self::CONTAINER_ID);
+        if ($container->has(static::CONTAINER_ID)) {
+            $productService = $container->get(static::CONTAINER_ID);
         } else {
-            $productService = new ProductServiceSeparateVariants($container, $salesChannelContext, $config);
-            $container->set(self::CONTAINER_ID, $productService);
+            $productService = new static($container, $salesChannelContext, $config);
+            $container->set(static::CONTAINER_ID, $productService);
         }
 
         if ($salesChannelContext && !$productService->getSalesChannelContext()) {
@@ -91,6 +91,11 @@ class ProductServiceSeparateVariants
     public function getConfig(): ?Config
     {
         return $this->config;
+    }
+
+    public function getContainer(): ?ContainerInterface
+    {
+        return $this->container;
     }
 
     public function searchVisibleProducts(
@@ -468,7 +473,7 @@ class ProductServiceSeparateVariants
             $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
             $productPrice = $product->getCurrencyPrice($currencyId);
 
-            $cheapestVariant = $product->getChildren()->first();
+            $cheapestVariant = $product->getChildren() ? $product->getChildren()->first() : null;
             if ($cheapestVariant === null && $productPrice->getGross() !== 0.0 && $product->getActive()) {
                 $cheapestVariants->add($product);
 
