@@ -33,7 +33,7 @@ trait ExportItemAdapterHelper
             ->disableOriginalConstructor()
             ->getMock();
 
-        $adapterFactoryMock->expects($this->once())
+        $adapterFactoryMock->expects($this->any())
             ->method('getAttributeAdapter')
             ->willReturn($attributeAdapter);
 

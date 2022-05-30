@@ -202,9 +202,11 @@ class PropertiesAdapterTest extends TestCase
         $i = 0;
 
         foreach ($foundProperties as $property) {
-            $this->assertEquals($expectedPropertiesValues[$i++], $property->getAllValues()['']); // '' = Empty usergroup.
+            $this->assertEquals(
+                $expectedPropertiesValues[$i++],
+                $property->getAllValues()['']
+            ); // '' = Empty usergroup.
         }
-
     }
 
     public function listPriceProvider(): array

@@ -24,6 +24,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Adapter\Translation\Translator;
 use Shopware\Core\Framework\Context;
@@ -531,7 +532,6 @@ class AttributeAdapterTest extends TestCase
      */
     public function testOnlyUniqueCategoriesAreExported(bool $isParentAssigned, bool $isVariantAssigned): void
     {
-        $this->markTestSkipped('Shopware sorting bug prevents this from properly working.');
         $id = Uuid::randomHex();
         $mainNavigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
         $categoryOne = [
@@ -554,25 +554,33 @@ class AttributeAdapterTest extends TestCase
         $childEntity = $this->createTestProduct([
             'parentId' => $id,
             'productNumber' => Uuid::randomHex(),
-            'categories' => $isVariantAssigned ? [$categoryOne] : []
+            'categories' => $isVariantAssigned ? [$categoryOne] : [],
+            'shippingFree' => false
         ]);
 
         $config = $this->getMockedConfig();
-        $item = new XMLItem('123');
+        $initialItem = new XMLItem('123');
         $exportItemAdapter = $this->getExportItemAdapter($config);
 
-        $item = $exportItemAdapter->adapt($item, $productEntity);
-        $exportItemAdapter->adaptVariant($item, $childEntity);
+        $item = $exportItemAdapter->adapt($initialItem, $productEntity);
 
-//        [$categoryUrlAttribute, $categoryAttribute] = ;
-//
-//        $this->assertSame('cat_url', $categoryUrlAttribute->getKey());
-//        $categoryUrlAttributeValues = $categoryUrlAttribute->getValues();
-//        $this->assertSame($expectedCatUrls, $categoryUrlAttributeValues);
-//
-//        $this->assertSame('cat', $categoryAttribute->getKey());
-//        $categoryAttributeValues = $categoryAttribute->getValues();
-//        $this->assertSame($expectedCategories, $categoryAttributeValues);
+        if ($item === null) {
+            $item = $initialItem;
+        }
+
+        $exportItemAdapter->adaptVariant($item, $childEntity);
+        $reflector = new ReflectionClass($item);
+        $attributes = $reflector->getProperty('attributes');
+        $attributes->setAccessible(true);
+        $value = $attributes->getValue($item);
+
+        $this->assertArrayHasKey('cat_url', $value);
+        $categoryUrlAttributeValues = $value['cat_url']->getValues();
+        $this->assertSame($expectedCatUrls, $categoryUrlAttributeValues);
+
+        $this->assertArrayHasKey('cat', $value);
+        $categoryAttributeValues = $value['cat']->getValues();
+        $this->assertSame($expectedCategories, $categoryAttributeValues);
     }
 
     private function getMockedConfig(string $integrationType = 'Direct Integration'): Config

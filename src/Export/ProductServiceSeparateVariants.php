@@ -473,7 +473,7 @@ class ProductServiceSeparateVariants
                 $cheapestVariants->add($product);
 
                 continue;
-            } else if (
+            } elseif (
                 $cheapestVariant === null && $productPrice->getGross() === 0.0 ||
                 $cheapestVariant === null && !$product->getActive()
             ) {
@@ -508,7 +508,7 @@ class ProductServiceSeparateVariants
                 $realProductIds[] = $product->getId();
 
                 continue;
-            } else if (!$product->getMainVariantId() && !$product->getActive()) {
+            } elseif (!$product->getMainVariantId() && !$product->getActive()) {
                 $childrenProduct = $this->getFirstChildren($product);
 
                 if (!$childrenProduct) {
