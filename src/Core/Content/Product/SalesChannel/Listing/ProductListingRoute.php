@@ -176,6 +176,7 @@ class ProductListingRoute extends AbstractProductListingRoute
     protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
     {
         $this->assignPaginationToCriteria($criteria);
+        $this->addOptionsGroupAssociation($criteria);
 
         if (empty($criteria->getIds())) {
             return $this->createEmptySearchResult($criteria, $context);

@@ -140,6 +140,8 @@ guide you on how you can customize certain entities, like attributes or properti
 
 ## Deployment and Release
 
+**Use PHP 7.4 to run the release script**
+
 1. Update the changelogs `CHANGELOG.md` and `CHANGELOG_de-DE.md`.
 2. Ensure that all changes, including the changelog changes have been merged into the `develop` branch.
 3. Switch to the `develop` branch locally and pull the most recent changes.
