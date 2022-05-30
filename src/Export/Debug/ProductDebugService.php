@@ -28,18 +28,19 @@ class ProductDebugService extends ProductServiceSeparateVariants
 
     /** @var DebugUrlBuilder */
     private $debugUrlBuilder;
-//
-//    /** @var DebugProductSearch */
-//    private $debugProductSearch;
+
+    /** @var DebugProductSearch */
+    private $debugProductSearch;
 
     public function getDebugInformation(
         string $productId,
         string $shopkey,
         ?XMLItem $xmlItem,
         ?ProductEntity $exportedMainProduct,
-        ExportErrors $exportErrors
+        ExportErrors $exportErrors,
+        DebugProductSearch $debugProductSearch
     ): JsonResponse {
-        $this->initialize($productId, $shopkey, $xmlItem, $exportedMainProduct, $exportErrors);
+        $this->initialize($productId, $shopkey, $xmlItem, $exportedMainProduct, $exportErrors, $debugProductSearch);
 
         if (!$this->requestedProduct) {
             $this->exportErrors->addGeneralError(
@@ -54,9 +55,9 @@ class ProductDebugService extends ProductServiceSeparateVariants
 
         $isExported = $this->isExported() && !$exportErrors->hasErrors();
 
-//        if (!$isExported) {
-//            $this->checkExportCriteria();
-//        }
+        if (!$isExported) {
+            $this->checkExportCriteria();
+        }
 
         return new JsonResponse([
             'export' => [
@@ -72,12 +73,11 @@ class ProductDebugService extends ProductServiceSeparateVariants
             'data' => [
                 'isExportedMainVariant' => $this->exportedMainProduct->getId() === $this->requestedProduct->getId(),
                 'product' => $this->requestedProduct,
-//                'siblings' => $this->requestedProduct->getParentId()
-//                    ? $this->getSiblings($this->requestedProduct, false)
-//                    : [],
-//                'associations' => $this->debugProductSearch
-//                    ->buildCriteria($this->requestedProduct->getId())
-//                    ->getAssociations(),
+                'siblings' => $this->requestedProduct->getParentId()
+                    ? $this->debugProductSearch->getSiblings($this->requestedProduct->getParentId())
+                    : [],
+                'associations' => $this->buildProductCriteria(null, null, [$this->requestedProduct->getId()])
+                    ->getAssociations(),
             ]
         ]);
     }
@@ -87,13 +87,15 @@ class ProductDebugService extends ProductServiceSeparateVariants
         string $shopkey,
         ?XMLItem $xmlItem,
         ?ProductEntity $exportedMainProduct,
-        ExportErrors $exportErrors
+        ExportErrors $exportErrors,
+        DebugProductSearch $debugProductSearch
     ): void {
         $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
+        $this->debugProductSearch = $debugProductSearch;
 
         $this->productId = $productId;
         $this->exportErrors = $exportErrors;
-        $this->requestedProduct = $this->getProductById($productId);
+        $this->requestedProduct = $this->debugProductSearch->getProductById($productId);
         $this->exportedMainProduct = $exportedMainProduct;
         $this->xmlItem = $xmlItem;
     }
@@ -126,25 +128,25 @@ class ProductDebugService extends ProductServiceSeparateVariants
         return $isExportedVariant;
     }
 
-//    private function checkExportCriteria(): void
-//    {
-//        $criteriaMethods = [
-//            'addGrouping' => 'No display group set',
-//            'handleAvailableStock' => 'Closeout product is out of stock',
-//            'addVisibilityFilter' => 'Product is not visible for search',
-//            'addPriceZeroFilter' => 'Product has a price of 0',
-//        ];
-//
-//        foreach ($criteriaMethods as $method => $errorMessage) {
-//            $criteria = $this->debugProductSearch->buildCriteria($this->productId, false);
-//
-//            $this->$method($criteria);
-//
-//            if (!$this->debugProductSearch->searchProduct($criteria)) {
-//                $this->exportErrors->addGeneralError($errorMessage);
-//            }
-//        }
-//    }
+    private function checkExportCriteria(): void
+    {
+        $criteriaMethods = [
+            'addGrouping' => 'No display group set',
+            'handleAvailableStock' => 'Closeout product is out of stock',
+            'addVisibilityFilter' => 'Product is not visible for search',
+            'addPriceZeroFilter' => 'Product has a price of 0',
+        ];
+
+        foreach ($criteriaMethods as $method => $errorMessage) {
+            $criteria = new Criteria([$this->requestedProduct->getId()]);
+
+            $this->$method($criteria);
+
+            if (!$this->debugProductSearch->searchProduct($criteria)) {
+                $this->exportErrors->addGeneralError($errorMessage);
+            }
+        }
+    }
 
     /**
      * @return string[]
@@ -162,23 +164,5 @@ class ProductDebugService extends ProductServiceSeparateVariants
         }
 
         return $errors;
-    }
-
-    public function getMainProductById(string $productId): ProductEntity
-    {
-        /** @var ProductEntity $product */
-        $product = $this->getProductById($productId);
-
-        return $product->getParentId()
-            ? $this->getProductById($product->getParentId())
-            : $product;
-    }
-
-    private function getProductById(string $productId)
-    {
-        return $this->getContainer()->get('product.repository')->search(
-            new Criteria([$productId]),
-            $this->getSalesChannelContext()->getContext()
-        )->first();
     }
 }

@@ -3,6 +3,7 @@
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\Export\XML\XMLItem;
+use FINDOLOGIC\FinSearch\Export\Debug\DebugProductSearch;
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
@@ -18,6 +19,9 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ProductDebugController extends ExportController
 {
+    /** @var DebugProductSearch */
+    private $debugProductSearch;
+
     /**
      * @Route("/findologic/debug", name="frontend.findologic.debug", options={"seo"="false"}, methods={"GET"})
      */
@@ -35,6 +39,7 @@ class ProductDebugController extends ExportController
         parent::initialize($request, $context);
 
         $this->setExportConfig(DebugExportConfiguration::getInstance($request));
+        $this->debugProductSearch = new DebugProductSearch($this->container, $this->getSalesChannelContext());
     }
 
     protected function getProductServiceInstance(): ProductServiceSeparateVariants
@@ -61,7 +66,7 @@ class ProductDebugController extends ExportController
     {
         $this->warmUpDynamicProductGroups();
 
-        $mainProduct = $this->getProductService()->getMainProductById($this->getExportConfig()->getProductId());
+        $mainProduct = $this->debugProductSearch->getMainProductById($this->getExportConfig()->getProductId());
         $product = $this->getProductService()->searchVisibleProducts(
             null,
             null,
@@ -80,7 +85,8 @@ class ProductDebugController extends ExportController
             $this->getExportConfig()->getShopkey(),
             count($xmlProducts) ? $xmlProducts[0] : null,
             $product,
-            $this->getExport()->getErrorHandler()->getExportErrors()
+            $this->getExport()->getErrorHandler()->getExportErrors(),
+            $this->debugProductSearch
         );
     }
 
