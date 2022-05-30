@@ -91,7 +91,7 @@ class AttributeAdapterTest extends TestCase
         $adapter = $this->getContainer()->get(AttributeAdapter::class);
         $expected = array_merge(
             $this->getAttributes($product, IntegrationType::API),
-            $this->getAttributes($variantProduct, IntegrationType::API),
+            $this->getAttributes($variantProduct, IntegrationType::API)
         );
 
         $attributes = array_merge(
