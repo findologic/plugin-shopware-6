@@ -204,10 +204,15 @@ class ExportController extends AbstractController
     {
         $this->warmUpDynamicProductGroups();
 
+        if ($productId = $this->exportConfig->getProductId()) {
+            $mainProduct = $this->getProductSearcher()->getMainProductById($productId);
+            $productId = $mainProduct ? $mainProduct->getId() : $productId;
+        }
+
         $products = $this->productService->searchVisibleProducts(
             $this->exportConfig->getCount(),
             $this->exportConfig->getStart(),
-            $this->exportConfig->getProductId()
+            $productId
         );
 
         $items = $this->export->buildItems(
