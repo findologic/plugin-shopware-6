@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Export\Debug;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Errors\ExportErrors;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
+use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,8 +32,8 @@ class ProductDebugService extends ProductServiceSeparateVariants
     /** @var DebugUrlBuilder */
     private $debugUrlBuilder;
 
-    /** @var DebugProductSearch */
-    private $debugProductSearch;
+    /** @var ProductSearcher */
+    private $productSearcher;
 
     public function getDebugInformation(
         string $productId,
@@ -40,9 +41,9 @@ class ProductDebugService extends ProductServiceSeparateVariants
         ?XMLItem $xmlItem,
         ?ProductEntity $exportedMainProduct,
         ExportErrors $exportErrors,
-        DebugProductSearch $debugProductSearch
+        ProductSearcher $productSearcher
     ): JsonResponse {
-        $this->initialize($productId, $shopkey, $xmlItem, $exportedMainProduct, $exportErrors, $debugProductSearch);
+        $this->initialize($productId, $shopkey, $xmlItem, $exportedMainProduct, $exportErrors, $productSearcher);
 
         if (!$this->requestedProduct) {
             $this->exportErrors->addGeneralError(
@@ -76,7 +77,7 @@ class ProductDebugService extends ProductServiceSeparateVariants
                 'isExportedMainVariant' => $this->exportedMainProduct->getId() === $this->requestedProduct->getId(),
                 'product' => $this->requestedProduct,
                 'siblings' => $this->requestedProduct->getParentId()
-                    ? $this->debugProductSearch->getSiblings($this->requestedProduct->getParentId())
+                    ? $this->productSearcher->getSiblings($this->requestedProduct->getParentId())
                     : [],
                 'associations' => $this->buildProductCriteria(null, null, [$this->requestedProduct->getId()])
                     ->getAssociations(),
@@ -90,14 +91,14 @@ class ProductDebugService extends ProductServiceSeparateVariants
         ?XMLItem $xmlItem,
         ?ProductEntity $exportedMainProduct,
         ExportErrors $exportErrors,
-        DebugProductSearch $debugProductSearch
+        ProductSearcher $productSearcher
     ): void {
         $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
-        $this->debugProductSearch = $debugProductSearch;
+        $this->productSearcher = $productSearcher;
 
         $this->productId = $productId;
         $this->exportErrors = $exportErrors;
-        $this->requestedProduct = $this->debugProductSearch->getProductById($productId);
+        $this->requestedProduct = $this->productSearcher->getProductById($productId);
         $this->exportedMainProduct = $exportedMainProduct;
         $this->xmlItem = $xmlItem;
     }
@@ -144,7 +145,7 @@ class ProductDebugService extends ProductServiceSeparateVariants
 
             $this->$method($criteria);
 
-            if (!$this->debugProductSearch->searchProduct($criteria)) {
+            if (!$this->productSearcher->searchProduct($criteria)) {
                 $this->exportErrors->addGeneralError($errorMessage);
             }
         }

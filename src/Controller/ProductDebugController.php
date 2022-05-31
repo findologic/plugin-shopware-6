@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\Export\XML\XMLItem;
-use FINDOLOGIC\FinSearch\Export\Debug\DebugProductSearch;
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Validators\DebugExportConfiguration;
-use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
@@ -23,25 +21,12 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ProductDebugController extends ExportController
 {
-    /** @var DebugProductSearch */
-    private $debugProductSearch;
-
     /**
      * @Route("/findologic/debug", name="frontend.findologic.debug", options={"seo"="false"}, methods={"GET"})
      */
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
         return parent::export($request, $context);
-    }
-
-    /**
-     * @param Request $request
-     */
-    protected function initializePostValidation(Request $request): void
-    {
-        parent::initializePostValidation($request);
-
-        $this->debugProductSearch = new DebugProductSearch($this->container, $this->getSalesChannelContext());
     }
 
     protected function getProductServiceInstance(): ProductServiceSeparateVariants
@@ -73,7 +58,7 @@ class ProductDebugController extends ExportController
     {
         $this->warmUpDynamicProductGroups();
 
-        $mainProduct = $this->debugProductSearch->getMainProductById($this->getExportConfig()->getProductId());
+        $mainProduct = $this->getProductSearcher()->getMainProductById($this->getExportConfig()->getProductId());
         $product = $this->getProductService()->searchVisibleProducts(
             null,
             null,
@@ -93,7 +78,7 @@ class ProductDebugController extends ExportController
             count($xmlProducts) ? $xmlProducts[0] : null,
             $product,
             $this->getExport()->getErrorHandler()->getExportErrors(),
-            $this->debugProductSearch
+            $this->getProductSearcher()
         );
     }
 

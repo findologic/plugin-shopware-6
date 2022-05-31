@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export\Debug;
+namespace FINDOLOGIC\FinSearch\Export\Search;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
@@ -12,7 +12,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
-class DebugProductSearch
+class ProductSearcher
 {
     /** @var ContainerInterface */
     private $container;
@@ -29,17 +29,16 @@ class DebugProductSearch
         $this->salesChannelContext = $salesChannelContext;
     }
 
-    public function getMainProductById(string $productId): ProductEntity
+    public function getMainProductById(string $productId): ?ProductEntity
     {
-        /** @var ProductEntity $product */
         $product = $this->getProductById($productId);
 
-        return $product->getParentId()
+        return $product && $product->getParentId()
             ? $this->getProductById($product->getParentId())
             : $product;
     }
 
-    public function getProductById(string $productId): ProductEntity
+    public function getProductById(string $productId): ?ProductEntity
     {
         $criteria = new Criteria([$productId]);
 
@@ -80,17 +79,11 @@ class DebugProductSearch
         )->getElements();
     }
 
-    /**
-     * @return ContainerInterface
-     */
     public function getContainer(): ContainerInterface
     {
         return $this->container;
     }
 
-    /**
-     * @return SalesChannelContext|null
-     */
     public function getSalesChannelContext(): ?SalesChannelContext
     {
         return $this->salesChannelContext;

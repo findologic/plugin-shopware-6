@@ -11,6 +11,7 @@ use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
+use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
@@ -55,6 +56,9 @@ class ExportController extends AbstractController
 
     /** @var ProductServiceSeparateVariants */
     private $productService;
+
+    /** @var ProductSearcher */
+    private $productSearcher;
 
     /** @var Config */
     private $pluginConfig;
@@ -120,6 +124,8 @@ class ExportController extends AbstractController
 
         $this->exportContext = $this->buildExportContext();
         $this->container->set('fin_search.export_context', $this->exportContext);
+
+        $this->productSearcher = new ProductSearcher($this->container, $this->getSalesChannelContext());
 
         $this->manipulateRequestWithSalesChannelInformation($request);
     }
@@ -274,65 +280,46 @@ class ExportController extends AbstractController
         );
     }
 
-    /**
-     * @return LoggerInterface
-     */
     public function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
 
-    /**
-     * @return Router
-     */
-    public function getRouter()
+    public function getRouter(): Router
     {
         return $this->router;
     }
 
-    /**
-     * @return SalesChannelContext
-     */
     public function getSalesChannelContext(): ?SalesChannelContext
     {
         return $this->salesChannelContext;
     }
 
-    /**
-     * @return ExportConfigurationBase
-     */
     public function getExportConfig(): ExportConfigurationBase
     {
         return $this->exportConfig;
     }
 
-    /**
-     * @param ExportConfigurationBase $exportConfig
-     */
     public function setExportConfig(ExportConfigurationBase $exportConfig): void
     {
         $this->exportConfig = $exportConfig;
     }
 
-    /**
-     * @return ExportContext
-     */
     public function getExportContext(): ExportContext
     {
         return $this->exportContext;
     }
 
-    /**
-     * @return ProductServiceSeparateVariants
-     */
     public function getProductService(): ProductServiceSeparateVariants
     {
         return $this->productService;
     }
 
-    /**
-     * @return Config
-     */
+    public function getProductSearcher(): ProductSearcher
+    {
+        return $this->productSearcher;
+    }
+
     public function getPluginConfig(): Config
     {
         return $this->pluginConfig;
