@@ -10,6 +10,8 @@ use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Validators\DebugExportConfiguration;
+use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
+use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,13 +36,11 @@ class ProductDebugController extends ExportController
 
     /**
      * @param Request $request
-     * @param SalesChannelContext|null $context
      */
-    protected function initialize(Request $request, ?SalesChannelContext $context): void
+    protected function initializePostValidation(Request $request): void
     {
-        parent::initialize($request, $context);
+        parent::initializePostValidation($request);
 
-        $this->setExportConfig(DebugExportConfiguration::getInstance($request));
         $this->debugProductSearch = new DebugProductSearch($this->container, $this->getSalesChannelContext());
     }
 
@@ -62,6 +62,11 @@ class ProductDebugController extends ExportController
             $this->getLogger(),
             $this->getPluginConfig()->getCrossSellingCategories()
         );
+    }
+
+    protected function getExportConfigInstance(Request $request): ExportConfigurationBase
+    {
+        return DebugExportConfiguration::getInstance($request);
     }
 
     protected function doExport(): Response

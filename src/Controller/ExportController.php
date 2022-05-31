@@ -85,10 +85,11 @@ class ExportController extends AbstractController
      */
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
-        $this->initialize($request, $context);
+        $this->initializePreValidation($request, $context);
         if ($errorResponse = $this->validate()) {
             return $errorResponse;
         }
+        $this->initializePostValidation($request);
 
         return $this->doExport();
     }
@@ -97,17 +98,25 @@ class ExportController extends AbstractController
      * @param Request $request
      * @param SalesChannelContext|null $context
      */
-    protected function initialize(Request $request, ?SalesChannelContext $context): void
+    protected function initializePreValidation(Request $request, ?SalesChannelContext $context): void
     {
-        $this->exportConfig = ExportConfiguration::getInstance($request);
+        $this->exportConfig = $this->getExportConfigInstance($request);
+
         $this->salesChannelService = $context ? $this->container->get(SalesChannelService::class) : null;
         $this->salesChannelContext = $this->salesChannelService ? $this->salesChannelService
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
-
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
+
         $this->pluginConfig = $this->initializePluginConfig();
-        $this->productService = $this->getProductServiceInstance();
         $this->export = $this->getExportInstance();
+    }
+
+    /**
+     * @param Request $request
+     */
+    protected function initializePostValidation(Request $request): void
+    {
+        $this->productService = $this->getProductServiceInstance();
 
         $this->exportContext = $this->buildExportContext();
         $this->container->set('fin_search.export_context', $this->exportContext);
@@ -135,6 +144,11 @@ class ExportController extends AbstractController
         );
     }
 
+    protected function getExportConfigInstance(Request $request): ExportConfigurationBase
+    {
+        return ExportConfiguration::getInstance($request);
+    }
+
     protected function validate(): ?Response
     {
         $messages = $this->validateStateAndGetErrorMessages();
@@ -146,6 +160,38 @@ class ExportController extends AbstractController
         }
 
         return null;
+    }
+
+    protected function validateStateAndGetErrorMessages(): array
+    {
+        $messages = $this->validateExportConfiguration();
+        if (count($messages) > 0) {
+            return $messages;
+        }
+
+        if ($this->salesChannelContext === null) {
+            $messages[] = sprintf(
+                'Shopkey %s is not assigned to any sales channel.',
+                $this->exportConfig->getShopkey()
+            );
+        }
+
+        return $messages;
+    }
+
+    private function validateExportConfiguration(): array
+    {
+        $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
+        $violations = $validator->validate($this->exportConfig);
+
+        $messages = [];
+        if ($violations->count() > 0) {
+            $messages = array_map(function (ConstraintViolation $violation) {
+                return sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage());
+            }, current((array_values((array)$violations))));
+        }
+
+        return $messages;
     }
 
     protected function doExport(): Response
@@ -172,23 +218,6 @@ class ExportController extends AbstractController
         );
     }
 
-    protected function validateStateAndGetErrorMessages(): array
-    {
-        $messages = $this->validateExportConfiguration();
-        if (count($messages) > 0) {
-            return $messages;
-        }
-
-        if ($this->salesChannelContext === null) {
-            $messages[] = sprintf(
-                'Shopkey %s is not assigned to any sales channel.',
-                $this->exportConfig->getShopkey()
-            );
-        }
-
-        return $messages;
-    }
-
     protected function warmUpDynamicProductGroups(): void
     {
         if (Utils::versionLowerThan('6.3.1.0', $this->container->getParameter('kernel.shopware_version'))) {
@@ -207,21 +236,6 @@ class ExportController extends AbstractController
         if (!$dynamicProductGroupService->isWarmedUp()) {
             $dynamicProductGroupService->warmUp();
         }
-    }
-
-    private function validateExportConfiguration(): array
-    {
-        $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
-        $violations = $validator->validate($this->exportConfig);
-
-        $messages = [];
-        if ($violations->count() > 0) {
-            $messages = array_map(function (ConstraintViolation $violation) {
-                return sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage());
-            }, current((array_values((array)$violations))));
-        }
-
-        return $messages;
     }
 
     private function initializePluginConfig(): Config
