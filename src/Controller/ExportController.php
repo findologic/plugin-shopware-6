@@ -7,9 +7,10 @@ namespace FINDOLOGIC\FinSearch\Controller;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
+use FINDOLOGIC\FinSearch\Export\ExportItemAdapter;
+use FINDOLOGIC\FinSearch\Export\ExportItemAdapterInterface;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
-use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
@@ -19,15 +20,11 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
@@ -46,16 +43,19 @@ class ExportController extends AbstractController
     /** @var HeaderHandler */
     private $headerHandler;
 
-    /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
-    private $salesChannelContextFactory;
-
     /** @var SalesChannelContext */
     private $salesChannelContext;
 
     /** @var ExportConfiguration */
     private $exportConfig;
 
-    /** @var ProductService */
+    /** @var ExportContext */
+    private $exportContext;
+
+    /** @var ExportItemAdapterInterface */
+    private $exportItemAdapter;
+
+    /** @var ProductServiceSeparateVariants */
     private $productService;
 
     /** @var Config */
@@ -70,9 +70,9 @@ class ExportController extends AbstractController
     /** @var SalesChannelService|null */
     private $salesChannelService;
 
-    /**
-     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
-     */
+    /** @var ?DynamicProductGroupService */
+    private $dynamicProductGroupService;
+
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
@@ -83,7 +83,6 @@ class ExportController extends AbstractController
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
-        $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->cache = $cache;
     }
 
@@ -113,22 +112,27 @@ class ExportController extends AbstractController
 
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
+
+        /** @var ProductServiceSeparateVariants productService */
         $this->productService = ProductServiceSeparateVariants::getInstance(
             $this->container,
             $this->salesChannelContext,
             $this->pluginConfig
         );
-//        $this->productService = ProductService::getInstance(
-//            $this->container,
-//            $this->salesChannelContext,
-//            $this->pluginConfig
-//        );
+
+        $this->exportContext = $this->buildExportContext();
+        $this->container->set('fin_search.export_context', $this->exportContext);
+        $this->dynamicProductGroupService = $this->getDynamicProductGroupServiceInstance();
+
+        $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
 
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
             $this->router,
             $this->container,
             $this->logger,
+            $this->exportItemAdapter,
+            $this->productService,
             $this->pluginConfig->getCrossSellingCategories()
         );
 
@@ -157,7 +161,6 @@ class ExportController extends AbstractController
             $this->exportConfig->getStart(),
             $this->exportConfig->getProductId()
         );
-//        dd($products);
 
         $exportContext = $this->buildExportContext();
         $this->container->set('fin_search.export_context', $exportContext);
@@ -191,6 +194,25 @@ class ExportController extends AbstractController
         }
 
         return $messages;
+    }
+
+    protected function getDynamicProductGroupServiceInstance(): ?DynamicProductGroupService
+    {
+        if (Utils::versionLowerThan('6.3.1.0', $this->container->getParameter('kernel.shopware_version'))) {
+            return null;
+        }
+
+        $dynamicProductGroupService = DynamicProductGroupService::getInstance(
+          $this->container,
+          $this->cache,
+          $this->salesChannelContext->getContext(),
+          $this->exportConfig->getShopkey(),
+          $this->exportConfig->getStart()
+        );
+
+        $dynamicProductGroupService->setSalesChannel($this->salesChannelContext->getSalesChannel());
+
+        return $dynamicProductGroupService;
     }
 
     protected function warmUpDynamicProductGroups(): void

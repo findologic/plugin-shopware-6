@@ -85,7 +85,7 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         return $item;
     }
 
-    public function adaptVariant(Item $item, ProductEntity $product): void
+    public function adaptVariant(Item $item, ProductEntity $product): ?Item
     {
         $this->eventDispatcher->dispatch(new BeforeVariantAdaptEvent($product, $item), BeforeVariantAdaptEvent::NAME);
 
@@ -102,10 +102,14 @@ class ExportItemAdapter implements ExportItemAdapterInterface
                 $item->addProperty($property);
             }
         } catch (Throwable $exception) {
-            return;
+            $exceptionLogger = new ExportExceptionLogger($this->logger);
+            $exceptionLogger->log($product, $exception);
+            return null;
         }
 
         $this->eventDispatcher->dispatch(new AfterVariantAdaptEvent($product, $item), AfterVariantAdaptEvent::NAME);
+
+        return $item;
     }
 
     /**

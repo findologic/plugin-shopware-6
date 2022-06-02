@@ -139,6 +139,7 @@ class ProductService
     protected function addProductAssociations(Criteria $criteria): void
     {
         Utils::addProductAssociations($criteria);
+        Utils::addChildrenAssociations($criteria);
     }
 
     /**

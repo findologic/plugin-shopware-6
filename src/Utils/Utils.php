@@ -94,27 +94,39 @@ class Utils
                 'properties.productConfiguratorSettings.option',
                 'properties.productConfiguratorSettings.option.group',
                 'properties.productConfiguratorSettings.option.group.translations',
-                //                'children',
-                //                'children.seoUrls',
-                //                'children.categories',
-                //                'children.categories.seoUrls',
-                //                'children.translations',
-                //                'children.tags',
-                //                'children.media',
-                //                'children.manufacturer',
-                //                'children.manufacturer.translations',
-                //                'children.cover',
-                //                'children.properties',
-                //                'children.properties.group',
-                //                'children.categories',
-                //                'children.categories.seoUrls',
-                //                'children.properties.productConfiguratorSettings',
-                //                'children.properties.productConfiguratorSettings.option',
-                //                'children.properties.productConfiguratorSettings.option.group',
-                //                'children.properties.productConfiguratorSettings.option.group.translations',
             ]
         );
     }
+
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
+    public static function addChildrenAssociations(Criteria $criteria): Criteria
+    {
+        return $criteria->addAssociations(
+            [
+                'children',
+                'children.seoUrls',
+                'children.categories',
+                'children.categories.seoUrls',
+                'children.translations',
+                'children.tags',
+                'children.media',
+                'children.manufacturer',
+                'children.manufacturer.translations',
+                'children.cover',
+                'children.properties',
+                'children.properties.group',
+                'children.categories',
+                'children.categories.seoUrls',
+                'children.properties.productConfiguratorSettings',
+                'children.properties.productConfiguratorSettings.option',
+                'children.properties.productConfiguratorSettings.option.group',
+                'children.properties.productConfiguratorSettings.option.group.translations',
+            ]
+        );
+    }
+
 
     public static function multiByteRawUrlEncode(string $string): string
     {

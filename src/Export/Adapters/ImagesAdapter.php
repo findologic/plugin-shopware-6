@@ -24,6 +24,6 @@ class ImagesAdapter
      */
     public function adapt(ProductEntity $product): array
     {
-        return $this->productImageService->getProductImages($product);
+        return $this->productImageService->getProductImages($product, false);
     }
 }

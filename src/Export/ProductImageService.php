@@ -29,16 +29,27 @@ class ProductImageService
     /**
      * @return Image[]
      */
-    public function getProductImages(ProductEntity $product): array
+    public function getProductImages(ProductEntity $product, bool $considerVariants = true): array
     {
         $productHasImages = $this->productHasImages($product);
-        if (!$productHasImages) {
+        $hasVariantWithImages = false;
+
+        if ($considerVariants) {
+            $hasVariantWithImages = $this->hasVariantWithImages($product);
+        }
+
+        if (
+            !$productHasImages && !$considerVariants ||
+            $considerVariants && !$productHasImages && !$hasVariantWithImages
+        ) {
             return $this->getFallbackImages();
         }
 
         $images = new ProductMediaCollection();
         if ($productHasImages) {
             $images = $this->getSortedProductImages($product);
+        } elseif ($considerVariants && $hasVariantWithImages) {
+            $images = $this->getSortedVariantImages($product);
         }
 
         return $this->buildImageUrls($images);
@@ -176,6 +187,19 @@ class ProductImageService
         }
 
         return $images;
+    }
+
+    protected function hasVariantWithImages(ProductEntity $product): bool
+    {
+        $variants = $product->getChildren();
+
+        foreach ($variants as $variant) {
+            if ($this->productHasImages($variant)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
