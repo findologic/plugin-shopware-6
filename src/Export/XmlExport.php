@@ -162,11 +162,11 @@ class XmlExport extends Export
             $variants = $variantsResult->getEntities();
 
             foreach ($variants->getElements() as $variant) {
-               $adaptedItem = $this->exportItemAdapter->adaptVariant($item, $variant);
+                $adaptedItem = $this->exportItemAdapter->adaptVariant($item, $variant);
 
-               if ($adaptedItem !== null) {
-                   $item = $adaptedItem;
-               }
+                if ($adaptedItem !== null) {
+                    $item = $adaptedItem;
+                }
             }
         }
 

@@ -203,11 +203,11 @@ class ExportController extends AbstractController
         }
 
         $dynamicProductGroupService = DynamicProductGroupService::getInstance(
-          $this->container,
-          $this->cache,
-          $this->salesChannelContext->getContext(),
-          $this->exportConfig->getShopkey(),
-          $this->exportConfig->getStart()
+            $this->container,
+            $this->cache,
+            $this->salesChannelContext->getContext(),
+            $this->exportConfig->getShopkey(),
+            $this->exportConfig->getStart()
         );
 
         $dynamicProductGroupService->setSalesChannel($this->salesChannelContext->getSalesChannel());
