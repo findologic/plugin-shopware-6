@@ -45,19 +45,6 @@ class ProductServiceSeparateVariantsTest extends TestCase
         );
     }
 
-    public function testFindsAllProducts(): void
-    {
-        $expectedProduct = $this->createTestProduct();
-
-        $products = $this->defaultProductService->searchAllProducts(20, 0);
-
-        $this->assertCount(1, $products);
-        /** @var ProductEntity $product */
-        $product = $products->first();
-
-        $this->assertSame($expectedProduct->getId(), $product->getId());
-    }
-
     public function testFindsProductsAvailableForSearch(): void
     {
         $expectedProduct = $this->createVisibleTestProduct();

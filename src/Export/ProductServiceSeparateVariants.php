@@ -118,23 +118,6 @@ class ProductServiceSeparateVariants
         return new RepositoryIterator($this->productRepository, $this->salesChannelContext->getContext(), $criteria);
     }
 
-    public function searchAllProducts(
-        ?int $limit = null,
-        ?int $offset = null,
-        ?string $productId = null
-    ): EntitySearchResult {
-        $criteria = $this->buildProductCriteria($limit, $offset);
-
-        if ($productId) {
-            $this->addProductIdFilters($criteria, $productId);
-        }
-
-        return $this->productRepository->search(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        );
-    }
-
     public function getTotalProductCount(): int
     {
         $criteria = $this->buildProductCriteria();

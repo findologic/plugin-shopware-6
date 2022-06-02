@@ -18,6 +18,7 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
+use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
