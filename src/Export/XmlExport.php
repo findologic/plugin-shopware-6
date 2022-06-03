@@ -37,20 +37,10 @@ class XmlExport extends Export
     /** @var XmlFileConverter */
     private $xmlFileConverter;
 
-    /** @var ExportItemAdapterInterface */
-    private $exportItemAdapter;
-
-    /**
-     * @var ProductServiceSeparateVariants
-     */
-    private $productService;
-
     public function __construct(
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
-        ExportItemAdapterInterface $exportItemAdapter,
-        ProductServiceSeparateVariants $productService,
         array $crossSellingCategories = [],
         ?XmlFileConverter $xmlFileConverter = null
     ) {
@@ -59,8 +49,6 @@ class XmlExport extends Export
         $this->logger = $logger;
         $this->crossSellingCategories = $crossSellingCategories;
         $this->xmlFileConverter = $xmlFileConverter ?? Exporter::create(Exporter::TYPE_XML);
-        $this->exportItemAdapter = $exportItemAdapter;
-        $this->productService = $productService;
     }
 
     /**
@@ -148,21 +136,26 @@ class XmlExport extends Export
             return $xmlProduct->getXmlItem();
         }
 
+        /** @var ExportItemAdapter $exportItemAdapter */
+        $exportItemAdapter = $this->container->get(ExportItemAdapter::class);
+        /** @var ProductServiceSeparateVariants $productService */
+        $productService = $this->container->get(ProductServiceSeparateVariants::CONTAINER_ID);
+        $maxPropertiesCount = $productService->getMaxPropertiesCount($productEntity);
         $initialItem = $this->xmlFileConverter->createItem($productEntity->getId());
-        $item = $this->exportItemAdapter->adapt($initialItem, $productEntity);
+        $item = $exportItemAdapter->adapt($initialItem, $productEntity);
 
         if ($item === null) {
             $item = $initialItem;
         }
 
-        $pageSize = $this->calculatePageSize($productEntity);
-        $iterator = $this->productService->buildVariantIterator($productEntity, $pageSize);
+        $pageSize = $this->calculatePageSize($maxPropertiesCount);
+        $iterator = $productService->buildVariantIterator($productEntity, $pageSize);
 
         while (($variantsResult = $iterator->fetch()) !== null) {
             $variants = $variantsResult->getEntities();
 
             foreach ($variants->getElements() as $variant) {
-                $adaptedItem = $this->exportItemAdapter->adaptVariant($item, $variant);
+                $adaptedItem = $exportItemAdapter->adaptVariant($item, $variant);
 
                 if ($adaptedItem !== null) {
                     $item = $adaptedItem;
@@ -173,10 +166,8 @@ class XmlExport extends Export
         return $item;
     }
 
-    private function calculatePageSize(ProductEntity $productEntity): int
+    private function calculatePageSize(int $maxPropertiesCount): int
     {
-        $maxPropertiesCount = $this->productService->getMaxPropertiesCount($productEntity);
-
         if ($maxPropertiesCount >= self::MAXIMUM_PROPERTIES_COUNT) {
             return 1;
         }

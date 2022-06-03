@@ -7,8 +7,6 @@ namespace FINDOLOGIC\FinSearch\Controller;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
-use FINDOLOGIC\FinSearch\Export\ExportItemAdapter;
-use FINDOLOGIC\FinSearch\Export\ExportItemAdapterInterface;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
@@ -51,12 +49,6 @@ class ExportController extends AbstractController
     /** @var ExportConfiguration */
     private $exportConfig;
 
-    /** @var ExportContext */
-    private $exportContext;
-
-    /** @var ExportItemAdapterInterface */
-    private $exportItemAdapter;
-
     /** @var ProductServiceSeparateVariants */
     private $productService;
 
@@ -71,9 +63,6 @@ class ExportController extends AbstractController
 
     /** @var SalesChannelService|null */
     private $salesChannelService;
-
-    /** @var ?DynamicProductGroupService */
-    private $dynamicProductGroupService;
 
     public function __construct(
         LoggerInterface $logger,
@@ -122,19 +111,11 @@ class ExportController extends AbstractController
             $this->pluginConfig
         );
 
-        $this->exportContext = $this->buildExportContext();
-        $this->container->set('fin_search.export_context', $this->exportContext);
-        $this->dynamicProductGroupService = $this->getDynamicProductGroupServiceInstance();
-
-        $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
-
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
             $this->router,
             $this->container,
             $this->logger,
-            $this->exportItemAdapter,
-            $this->productService,
             $this->pluginConfig->getCrossSellingCategories()
         );
 
@@ -196,25 +177,6 @@ class ExportController extends AbstractController
         }
 
         return $messages;
-    }
-
-    protected function getDynamicProductGroupServiceInstance(): ?DynamicProductGroupService
-    {
-        if (Utils::versionLowerThan('6.3.1.0', $this->container->getParameter('kernel.shopware_version'))) {
-            return null;
-        }
-
-        $dynamicProductGroupService = DynamicProductGroupService::getInstance(
-            $this->container,
-            $this->cache,
-            $this->salesChannelContext->getContext(),
-            $this->exportConfig->getShopkey(),
-            $this->exportConfig->getStart()
-        );
-
-        $dynamicProductGroupService->setSalesChannel($this->salesChannelContext->getSalesChannel());
-
-        return $dynamicProductGroupService;
     }
 
     protected function warmUpDynamicProductGroups(): void

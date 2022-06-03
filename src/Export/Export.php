@@ -34,8 +34,6 @@ abstract class Export
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
-        ExportItemAdapterInterface $exportItemAdapter,
-        ProductServiceSeparateVariants $productService,
         array $crossSellingCategories = []
     ): Export {
         switch ($type) {
@@ -44,8 +42,6 @@ abstract class Export
                     $router,
                     $container,
                     $logger,
-                    $exportItemAdapter,
-                    $productService,
                     $crossSellingCategories
                 );
             case self::TYPE_PRODUCT_ID:
