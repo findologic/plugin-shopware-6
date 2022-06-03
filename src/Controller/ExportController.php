@@ -17,6 +17,8 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
+use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
@@ -43,6 +45,9 @@ class ExportController extends AbstractController
     /** @var HeaderHandler */
     private $headerHandler;
 
+    /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
+    private $salesChannelContextFactory;
+
     /** @var SalesChannelContext */
     private $salesChannelContext;
 
@@ -64,6 +69,9 @@ class ExportController extends AbstractController
     /** @var SalesChannelService|null */
     private $salesChannelService;
 
+    /**
+     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
+     */
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
@@ -74,6 +82,7 @@ class ExportController extends AbstractController
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
+        $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->cache = $cache;
     }
 

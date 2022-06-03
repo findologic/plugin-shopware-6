@@ -7,14 +7,20 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
+use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Storefront\Framework\Routing\Router;
 
 class ProductIdExportTest extends XmlExportTest
 {
+    use SalesChannelHelper;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -28,8 +34,26 @@ class ProductIdExportTest extends XmlExportTest
         );
         $this->getContainer()->set(
             'fin_search.export_context',
-            new ExportContext('ABCDABCDABCDABCDABCDABCDABCDABCD')
+            new ExportContext(
+                'ABCDABCDABCDABCDABCDABCDABCDABCD',
+                [],
+                $this->getCategory()
+            ),
         );
+
+        $this->salesChannelContext = $this->buildSalesChannelContext(
+            Defaults::SALES_CHANNEL,
+            'http://test.de'
+        );
+
+        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
+
+        $productService = new ProductServiceSeparateVariants(
+            $this->getContainer(),
+            $this->salesChannelContext
+        );
+
+        $this->getContainer()->set(ProductServiceSeparateVariants::CONTAINER_ID, $productService);
     }
 
     public function buildItemsAndAssertError(ProductEntity $product, CategoryEntity $category): void
@@ -110,5 +134,14 @@ class ProductIdExportTest extends XmlExportTest
             $this->logger,
             $this->crossSellCategories
         );
+    }
+
+    public function getCategory(): CategoryEntity
+    {
+        $categoryRepo = $this->getContainer()->get('category.repository');
+        $categories = $categoryRepo->search(new Criteria(), Context::createDefaultContext());
+
+        /** @var CategoryEntity $expectedCategory */
+        return $categories->first();
     }
 }
