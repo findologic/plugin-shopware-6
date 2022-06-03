@@ -1,7 +1,40 @@
-# NEXT
+# Next
+- [SW-700] Ein Fehler wurde behoben, wodurch der Hersteller-Filter nicht angezeigt wird, wenn zuvor ein Hersteller in der Smart Suggest selektiert wurde.
+
+# 2.8.2
+- [SW-715] Ein Fehler wurde behoben, wodurch inkompatible Filter Werte von anderen Plugins verarbeitet wurden.
+- [SW-716] Ein Fehler wurde behoben, wodurch der Preis Filter automatisch selektiert wurde wenn Produktpreise mit mehr als zwei Nachkommastellen verwendet werden.
+- [SW-720] Ein Fehler wurde behoben, wodurch Varianten Eigenschaften auf Produktlisting Seiten nicht verfügbar waren.
+- [SW-722] Ein Fehler wurde behoben, wodurch Direct Integration auf Navigationsseiten nicht mehr funktionierte nachdem die Smart Suggest auf mobile verwendet wurde.
+- [SW-718] Update der Komponenten guzzlehttp/psr7 und minimist.
+
+# 2.8.1
+- [SW-689] Ein Fehler wurde behoben, wodurch verfügbare Varianten nicht exportiert wurden weil das Haupt-Produkt nicht verfügbar ist.
+- [SW-701] Ein Fehler wurde behoben, wodurch nicht verfügbare Filterwerte nicht deaktiviert wurden.
+- [SW-702] Ein Fehler wurde behoben, wodurch eine Variante mit Preis null als günstigste Variante im Export angesehen wurde.
+- [SW-703] Ein Fehler wurde behoben, wodurch Filter in der Sidebar anders dargestellt wurden als im Shopware Standard.
+- [SW-708] Ein Fehler wurde behoben, wodurch es beim Export von Produkten mit gleichen Erstelldatum zu inkosistenter Sortierung kam.
+- [SW-709] Ein Fehler wurde behoben, wodurch der Filter Button in der mobilen Ansicht nicht dargestellt wurde.
+- [SW-707] Der interne Test-Runner läuft auf Node 14, wenn die Shopware Version nicht kompatibel mit Node 16 ist.
+
+# 2.8.0
+- [SW-695] Die Plugin-Konfiguration für Cross-Selling Kategorien erlaubt die Selektierung von mehr als 500 Kategorien.
+- [SW-694] Ein Fehler wurde behoben, wodurch Dynamische Produktgruppen nicht als Cross-Selling Kategorien gesetzt werden können.
+- [SW-699] Ein Fehler wurde behoben, wodurch unter Umständen keine Cross-Selling Kategorie Vorschläge angezeigt werden.
+- [SW-698] Ein Fehler wurde behoben, wodurch bei einer speziellen Shopware-Installation die Version nicht korrekt erkannt wurde.
+
+# 2.7.1
+- [SW-696] Ein Fehler wurde behoben, wodurch Produkte nicht geladen werden bei Paginierung auf Navigationsseiten.
+
+# 2.7.0
 - [SW-644] Die exportierten Kategorien und cat_urls enthalten nun auch Daten von nicht-Hauptvarianten.
 - [SW-685] Drittanbieter Plugins können nun einfacher die Anfrage an Findologic anhand der gesetzten Sortierung manipulieren.
 - [SW-683] Ein Fehler wurde behoben, wodurch bei Direct Integration auf Kategorieseiten ein flicker-Effekt auftrat, wenn viele JavaScript Ressourcen geladen wurden, bevor die Findologic JavaScript Ressourcen laden konnten.
+- [SW-690] Ein Fehler wurde behoben, wodurch Produkte nicht exportiert wurden, die keinen Hersteller zugewiesen hatten.
+- [SW-691] Ein Fehler wurde behoben, wodurch interne Listing-Anfragen blockiert wurden.
+- [SW-693] Ein Fehler wurde behoben, wodurch Daten von inaktiven und ausverkauften Varianten exportiert wurde.
+- [SW-688] Ein Fehler wurde behoben, wodurch bei Findologic deaktivierten Verkaufskanälen bei einigen Routen MySQL anstatt ElasticSearch verwendet wurde.
+- [SW-692] Ein Fehler wurde behoben, wodurch Keine-Ergebnisse auf Kategorie-Listingseiten mit Dynamischen Produktgruppen angezeigt wurden.
 - [SW-687] Shopware 6.4.8.1 wurde zur Test-Matrix hinzugefügt.
 
 # 2.6.1

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute;
+use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionObject;
@@ -18,10 +20,13 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\SalesChannelFunctionalTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Storefront\Page\GenericPageLoader;
+use Symfony\Component\HttpFoundation\Request;
 
 class ProductSearchRouteTest extends ProductRouteBase
 {
     use SalesChannelFunctionalTestBehaviour;
+    use SearchResultHelper;
     use ProductHelper {
         ProductHelper::createCustomer insteadof SalesChannelFunctionalTestBehaviour;
     }
@@ -52,6 +57,7 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->criteriaBuilder,
             $this->serviceConfigResourceMock,
             $this->findologicConfigServiceMock,
+            $this->getContainer()->getParameter('kernel.shopware_version'),
             $this->configMock
         );
     }
@@ -126,6 +132,8 @@ class ProductSearchRouteTest extends ProductRouteBase
             $context
         );
 
+        $this->addOptionsGroupAssociation($newCriteria);
+
         $variantCriteria = new Criteria();
         $variantCriteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_OR, [
             new EqualsFilter('productNumber', $query),
@@ -174,5 +182,48 @@ class ProductSearchRouteTest extends ProductRouteBase
         /** @var ProductEntity $searchedProduct */
         $searchedProduct = $result->first();
         $this->assertSame($expectedProductNumber, $searchedProduct->getProductNumber());
+    }
+
+    public function testElasticSearchContextIsAddedForShopware64AndGreater(): void
+    {
+        $productSearchRouteMock = $this->getMockBuilder(ProductSearchRoute::class)
+            ->setConstructorArgs([
+                $this->original,
+                $this->productSearchBuilderMock,
+                $this->eventDispatcherMock,
+                $this->productRepositoryMock,
+                $this->productDefinition,
+                $this->criteriaBuilder,
+                $this->serviceConfigResourceMock,
+                $this->findologicConfigServiceMock,
+                $this->getContainer()->getParameter('kernel.shopware_version'),
+                $this->configMock
+            ])
+            ->onlyMethods(['addElasticSearchContext'])
+            ->getMock();
+
+        if (Utils::versionGreaterOrEqual('6.4.0.0')) {
+            $productSearchRouteMock->expects($this->once())->method('addElasticSearchContext');
+        } else {
+            $productSearchRouteMock->expects($this->never())->method('addElasticSearchContext');
+        }
+
+        $salesChannelContextMock = $this->getMockedSalesChannelContext(true);
+        $context = $salesChannelContextMock->getContext();
+
+        $salesChannelContextMock->expects($this->any())->method('getContext')->willReturn($context);
+
+        $request = new Request();
+        $genericPageLoaderMock = $this->getMockBuilder(GenericPageLoader::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $searchPageLoader = new SearchPageLoader(
+            $genericPageLoaderMock,
+            $productSearchRouteMock,
+            $this->eventDispatcherMock
+        );
+
+        $searchPageLoader->load($request, $salesChannelContextMock);
     }
 }

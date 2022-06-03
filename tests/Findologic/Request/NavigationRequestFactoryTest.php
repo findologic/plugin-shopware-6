@@ -34,7 +34,7 @@ class NavigationRequestFactoryTest extends TestCase
         $expectedVersion = '0.1.0';
         $expectedCategoryPath = 'Kids & Music_Computers & Shoes';
         $expectedShopType = 'Shopware6';
-        $expectedShopVersion = Utils::getCleanShopwareVersion();
+        $expectedShopVersion = $this->getContainer()->getParameter('kernel.shopware_version');
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)

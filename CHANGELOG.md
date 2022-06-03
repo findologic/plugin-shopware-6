@@ -1,7 +1,40 @@
-# NEXT
+# Next
+- [SW-700] Fixed a bug that caused the manufacturer filter not being shown when previously selecting a manufacturer in the Smart Suggest.
+
+# 2.8.2
+- [SW-715] Fixed a bug that caused an error due to incompatible filter values being passed by other plugins.
+- [SW-716] Fixed a bug that caused the price filter being selected automatically when having product prices with more than two decimals.
+- [SW-720] Fixed a bug that caused variant properties not being available on product listing pages.
+- [SW-722] Fixed a bug that caused Direct Integration not working on navigation pages after using the mobile Smart Suggest.
+- [SW-718] Update dependencies guzzlehttp/psr7 and minimist.
+
+# 2.8.1
+- [SW-689] Fixed a bug that caused available variants not being exported because the main product is not available.
+- [SW-701] Fixed a bug that caused unavailable filter values not being deactivated.
+- [SW-702] Fixed a bug that caused variants with price zero to be considered as cheapest variant during export.
+- [SW-703] Fixed a bug that caused sidebar filters being displayed differently to Shopware default.
+- [SW-708] Fixed a bug that caused products with same create time being sorted inconsistently during export.
+- [SW-709] Fixed a bug that caused the filter button not being shown on mobile.
+- [SW-707] Our internal test runner runs on Node 14 when the Shopware version isn't compatible with Node 16.
+
+# 2.8.0
+- [SW-695] The plugin configuration now offers selection of cross-selling categories for more than 500 categories.
+- [SW-694] Fixed a bug that caused Dynamic Product Groups not to be excluded by cross-selling category setting.
+- [SW-699] Fixed a bug that caused cross-selling cateogries not being suggested in some cases.
+- [SW-698] Fixed a bug that caused the Shopware version not to be properly detected when using a special Shopware installation.
+
+# 2.7.1
+- [SW-696] Fixed a bug that caused products not to be displayed when using pagination on navigation pages.
+
+# 2.7.0
 - [SW-644] Exported categories and cat_urls now also include data from non-main variants.
 - [SW-685] Third-Party plugins can now easily listen to specific sorting options and can manipulate the requests to the Findologic API accordingly.
 - [SW-683] Fixed a bug that caused flickering on Direct Integration category pages, when many JavaScript resources have been loaded before Findologic JavaScript resources could be loaded.
+- [SW-690] Fixed a bug that caused products not to be exported that didn't have a manufacturer assigned.
+- [SW-691] Fixed a bug that caused internal additional listing requests to be blocked.
+- [SW-693] Fixed a bug that caused data of inactive and variants out-of-stock to be exported.
+- [SW-688] Fixed a bug that caused some routes to use MySQL instead of ElasticSearch for sales channels where Findologic was not active.
+- [SW-692] Fixed a bug that caused a no-result on category listings with Dynamic Product Groups.
 - [SW-687] Added Shopware 6.4.8.1 to the test matrix.
 
 # 2.6.1

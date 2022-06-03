@@ -22,7 +22,7 @@ use function in_array;
 
 class FilterHandler
 {
-    protected const FILTER_DELIMITER = '|';
+    public const FILTER_DELIMITER = '|';
     protected const MIN_PREFIX = 'min-';
     protected const MAX_PREFIX = 'max-';
     protected const IGNORE_LIST = ['pushAttrib'];
@@ -40,7 +40,10 @@ class FilterHandler
 
         if ($selectedFilters) {
             foreach ($selectedFilters as $filterName => $filterValues) {
-                if (in_array($filterName, self::IGNORE_LIST, false)) {
+                if (
+                    in_array($filterName, self::IGNORE_LIST, false) ||
+                    !is_string($filterValues)
+                ) {
                     continue;
                 }
                 foreach ($this->getFilterValues($filterValues) as $filterValue) {
@@ -71,13 +74,17 @@ class FilterHandler
         $attributes = $request->get('attrib');
         if ($attributes) {
             foreach ($attributes as $key => $attribute) {
-                foreach ($attribute as $value) {
-                    if (is_array($value)) {
-                        $value = implode(self::FILTER_DELIMITER, $value);
-                    }
+                $values = [];
 
-                    $mappedParams[$key] = $value;
+                foreach ($attribute as $attributeValue) {
+                    if ($key === BaseFilter::CAT_FILTER_NAME) {
+                        $values[] = $attributeValue;
+                    } else {
+                        $values[] = $key . FilterValue::DELIMITER . $attributeValue;
+                    }
                 }
+
+                $mappedParams[$key] = implode(self::FILTER_DELIMITER, $values);
             }
 
             unset($queryParams['attrib']);

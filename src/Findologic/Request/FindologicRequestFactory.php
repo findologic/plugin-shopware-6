@@ -53,7 +53,7 @@ abstract class FindologicRequestFactory
         $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindologicApiRequest::SET_VALUE);
         $searchNavigationRequest->addIndividualParam(
             'shopVersion',
-            Utils::getCleanShopwareVersion(),
+            $this->container->getParameter('kernel.shopware_version'),
             FindologicApiRequest::SET_VALUE
         );
 
