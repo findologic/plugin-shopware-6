@@ -8,6 +8,7 @@ use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use FINDOLOGIC\FinSearch\Struct\PageInformation;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\InvalidArgumentException;
@@ -78,5 +79,13 @@ class FrontendSubscriber implements EventSubscriberInterface
 
         // Save the snippet for usage in template
         $event->getPagelet()->addExtension('flSnippet', $snippet);
+
+        $request = $event->getRequest();
+        $isSearchPage = $request->query->get('search') !== null && str_contains($request->getRequestUri(), '/search');
+        $isNavigationPage = boolval($request->attributes->get('navigationId'));
+        $pageInformation = new PageInformation($isSearchPage, $isNavigationPage);
+
+        // Prepare pageInformation for usage in template
+        $event->getPagelet()->addExtension('flPageInformation', $pageInformation);
     }
 }
