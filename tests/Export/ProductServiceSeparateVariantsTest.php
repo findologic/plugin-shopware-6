@@ -666,7 +666,9 @@ class ProductServiceSeparateVariantsTest extends TestCase
     public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
     {
         if ($config === 'cheapest') {
-            $this->markTestSkipped('setLimit does not work when sorting child variants by price - Unskip during SW-727');
+            $this->markTestSkipped(
+                'setLimit does not work when sorting child variants by price - Unskip during SW-727'
+            );
         }
 
         $parentId = Uuid::randomHex();
