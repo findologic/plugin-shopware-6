@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
-use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
@@ -16,7 +15,6 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -613,7 +611,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
         float $thirdVariantPrice,
         float $cheapestPrice
     ): void {
-        $this->markTestSkipped('setLimit does not work when sorting child variants by price');
+        $this->markTestSkipped('setLimit does not work when sorting child variants by price - Unskip during SW-727');
 
         $parentId = Uuid::randomHex();
         $expectedFirstVariantId = Uuid::randomHex();
@@ -667,6 +665,10 @@ class ProductServiceSeparateVariantsTest extends TestCase
      */
     public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
     {
+        if ($config === 'cheapest') {
+            $this->markTestSkipped('setLimit does not work when sorting child variants by price - Unskip during SW-727');
+        }
+
         $parentId = Uuid::randomHex();
         $this->createVisibleTestProduct(['id' => $parentId]);
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
