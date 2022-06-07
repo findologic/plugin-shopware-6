@@ -590,8 +590,8 @@ class AttributeAdapterTest extends TestCase
     private function getAttributeAdapter(Config $config): AttributeAdapter
     {
         return new AttributeAdapter(
+            $this->getContainer(),
             $config,
-            $this->getContainer()->get('fin_search.dynamic_product_group'),
             $this->getContainer()->get(Translator::class),
             $this->getContainer()->get('fin_search.sales_channel_context'),
             $this->getContainer()->get(UrlBuilderService::class),
