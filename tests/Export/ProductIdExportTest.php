@@ -38,7 +38,7 @@ class ProductIdExportTest extends XmlExportTest
                 'ABCDABCDABCDABCDABCDABCDABCDABCD',
                 [],
                 $this->getCategory()
-            ),
+            )
         );
 
         $this->salesChannelContext = $this->buildSalesChannelContext(
