@@ -151,8 +151,6 @@ class XmlExportTest extends TestCase
 
         $items = $this->getExport()->buildItems(
             [$testProduct],
-            self::VALID_SHOPKEY,
-            $customerGroupEntities
         );
 
         $item = $items[0];

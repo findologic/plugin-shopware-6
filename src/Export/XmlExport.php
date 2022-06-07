@@ -79,14 +79,10 @@ class XmlExport extends Export
      *
      * @return XMLItem[]
      */
-    public function buildItems(
-        array $productEntities,
-        string $shopkey,
-        array $customerGroups
-    ): array {
+    public function buildItems(array $productEntities): array {
         $items = [];
         foreach ($productEntities as $productEntity) {
-            $item = $this->exportSingleItem($productEntity, $shopkey, $customerGroups);
+            $item = $this->exportSingleItem($productEntity);
             if (!$item) {
                 continue;
             }
@@ -102,11 +98,7 @@ class XmlExport extends Export
         return $this->logger;
     }
 
-    private function exportSingleItem(
-        ProductEntity $productEntity,
-        string $shopkey,
-        array $customerGroups
-    ): ?Item {
+    private function exportSingleItem(ProductEntity $productEntity): ?Item {
         if ($category = $this->getConfiguredCrossSellingCategory($productEntity)) {
             $this->logger->warning(
                 sprintf(
@@ -128,7 +120,7 @@ class XmlExport extends Export
         $productService = $this->container->get(ProductServiceSeparateVariants::CONTAINER_ID);
         $maxPropertiesCount = $productService->getMaxPropertiesCount($productEntity);
         $initialItem = $this->xmlFileConverter->createItem($productEntity->getId());
-        $item = $exportItemAdapter->adapt($initialItem, $productEntity);
+        $item = $exportItemAdapter->adapt($initialItem, $productEntity, $this->logger);
 
         $pageSize = $this->calculatePageSize($maxPropertiesCount);
         $iterator = $productService->buildVariantIterator($productEntity, $pageSize);

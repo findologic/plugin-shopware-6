@@ -69,14 +69,8 @@ abstract class Export
 
     /**
      * @param ProductEntity[] $productEntities
-     * @param string $shopkey Required for generating the user group hash.
-     * @param CustomerGroupEntity[] $customerGroups
      */
-    abstract public function buildItems(
-        array $productEntities,
-        string $shopkey,
-        array $customerGroups
-    ): array;
+    abstract public function buildItems(array $productEntities): array;
 
     /**
      * @param Item[] $items

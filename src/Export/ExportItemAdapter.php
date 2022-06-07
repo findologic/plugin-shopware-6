@@ -67,14 +67,14 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         $this->logger = $logger;
     }
 
-    public function adapt(Item $item, ProductEntity $product): ?Item
+    public function adapt(Item $item, ProductEntity $product, ?LoggerInterface $logger = null): ?Item
     {
         $this->eventDispatcher->dispatch(new BeforeItemAdaptEvent($product, $item), BeforeItemAdaptEvent::NAME);
 
         try {
             $item = $this->adaptProduct($item, $product);
         } catch (Throwable $exception) {
-            $exceptionLogger = new ExportExceptionLogger($this->logger);
+            $exceptionLogger = new ExportExceptionLogger($logger ?: $this->logger);
             $exceptionLogger->log($product, $exception);
 
             return null;
