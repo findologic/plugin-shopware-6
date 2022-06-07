@@ -79,7 +79,8 @@ class XmlExport extends Export
      *
      * @return XMLItem[]
      */
-    public function buildItems(array $productEntities): array {
+    public function buildItems(array $productEntities): array
+    {
         $items = [];
         foreach ($productEntities as $productEntity) {
             $item = $this->exportSingleItem($productEntity);
@@ -98,7 +99,8 @@ class XmlExport extends Export
         return $this->logger;
     }
 
-    private function exportSingleItem(ProductEntity $productEntity): ?Item {
+    private function exportSingleItem(ProductEntity $productEntity): ?Item
+    {
         if ($category = $this->getConfiguredCrossSellingCategory($productEntity)) {
             $this->logger->warning(
                 sprintf(

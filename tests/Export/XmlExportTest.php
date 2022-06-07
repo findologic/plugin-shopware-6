@@ -144,13 +144,8 @@ class XmlExportTest extends TestCase
             ]
         ]);
 
-        $customerGroupEntities = $this->getContainer()
-            ->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext->getContext())
-            ->getElements();
-
         $items = $this->getExport()->buildItems(
-            [$testProduct],
+            [$testProduct]
         );
 
         $item = $items[0];
