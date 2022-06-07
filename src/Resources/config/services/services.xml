@@ -89,8 +89,8 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter" public="true">
+            <argument type="service" id="service_container" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
-            <argument type="service" id="fin_search.dynamic_product_group" />
             <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
             <argument type="service" id="fin_search.sales_channel_context" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" />

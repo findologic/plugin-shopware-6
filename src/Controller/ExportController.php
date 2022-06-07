@@ -19,6 +19,7 @@ use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
@@ -158,9 +159,7 @@ class ExportController extends AbstractController
         $this->container->set('fin_search.export_context', $exportContext);
 
         $items = $this->export->buildItems(
-            $products->getElements(),
-            $this->exportConfig->getShopkey(),
-            $exportContext->getCustomerGroups()
+            $products->getElements()
         );
 
         return $this->export->buildResponse(

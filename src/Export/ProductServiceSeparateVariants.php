@@ -194,7 +194,7 @@ class ProductServiceSeparateVariants
     protected function buildProductCriteria(
         ?int $limit = null,
         ?int $offset = null,
-        ?array $productIds = null
+        ?array $productIds = []
     ): Criteria {
         $criteria = new Criteria($productIds);
         $criteria->addSorting(new FieldSorting('createdAt'));
