@@ -97,6 +97,43 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $this->assertCount(0, $products);
     }
 
+    public function mainVariantDefaultConfigProvider(): array
+    {
+        return [
+            'export shopware default' => ['config' => 'default'],
+            'export main parent' => ['config' => 'parent'],
+            'export cheapest variant' => ['config' => 'cheapest']
+        ];
+    }
+
+    /**
+     * @dataProvider mainVariantDefaultConfigProvider
+     */
+    public function testExportsAvailableVariantForProductsWithPriceZero(string $config): void
+    {
+        $inactiveProduct = $this->createVisibleTestProduct([
+            'active' => true,
+            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 0, 'net' => 0, 'linked' => false]]
+        ]);
+
+        $this->createVisibleTestProduct($this->getBasicVariantData([
+            'id' => Uuid::randomHex(),
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT',
+            'parentId' => $inactiveProduct->getId(),
+            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
+        ]));
+
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
+        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
+
+        $this->defaultProductService->setConfig($mockedConfig);
+
+        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+
+        $this->assertCount(1, $products);
+    }
+
     public function testFindsVariantForInactiveProduct(): void
     {
         // Main product is inactive.
@@ -611,8 +648,6 @@ class ProductServiceSeparateVariantsTest extends TestCase
         float $thirdVariantPrice,
         float $cheapestPrice
     ): void {
-        $this->markTestSkipped('setLimit does not work when sorting child variants by price - Unskip during SW-727');
-
         $parentId = Uuid::randomHex();
         $expectedFirstVariantId = Uuid::randomHex();
         $expectedSecondVariantId = Uuid::randomHex();
@@ -651,26 +686,11 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $this->assertSame($expectedMainVariantId, $mainVariant->getId());
     }
 
-    public function mainVariantDefaultConfigProvider(): array
-    {
-        return [
-            'export shopware default' => ['config' => 'default'],
-            'export main parent' => ['config' => 'parent'],
-            'export cheapest variant' => ['config' => 'cheapest']
-        ];
-    }
-
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
     public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
     {
-        if ($config === 'cheapest') {
-            $this->markTestSkipped(
-                'setLimit does not work when sorting child variants by price - Unskip during SW-727'
-            );
-        }
-
         $parentId = Uuid::randomHex();
         $this->createVisibleTestProduct(['id' => $parentId]);
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
