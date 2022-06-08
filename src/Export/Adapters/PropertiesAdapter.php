@@ -14,7 +14,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class PropertiesAdapter
+class PropertiesAdapter extends ShopwarePropertiesAdapter
 {
     /** @var SalesChannelContext $salesChannelContext */
     protected $salesChannelContext;
@@ -33,6 +33,8 @@ class PropertiesAdapter
         $this->salesChannelContext = $salesChannelContext;
         $this->translator = $translator;
         $this->config = $config;
+
+        parent::__construct($salesChannelContext, $translator, $config);
     }
 
     public function adapt(ProductEntity $product): array
@@ -128,19 +130,10 @@ class PropertiesAdapter
             $properties[] = $this->getProperty('product_promotion', $translated);
         }
 
-        foreach ($product->getProperties() as $propertyGroupOptionEntity) {
-            $group = $propertyGroupOptionEntity->getGroup();
-            // Method getFilterable exists since Shopware 6.2.x.
-            if ($group && method_exists($group, 'getFilterable') && !$group->getFilterable()) {
-                // Non filterable properties should be available in the properties field.
-                $properties = array_merge(
-                    $properties,
-                    $this->getAttributePropertyAsProperty($propertyGroupOptionEntity)
-                );
-            }
-        }
-
-        return $properties;
+        return array_merge(
+            $properties,
+            parent::adapt($product)
+        );
     }
 
     protected function getProperty(string $name, $value): ?Property
@@ -160,58 +153,5 @@ class PropertiesAdapter
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
 
         return $this->translator->trans($translationKey);
-    }
-
-    protected function getAttributePropertyAsProperty(PropertyGroupOptionEntity $propertyGroupOptionEntity): array
-    {
-        $properties = [];
-
-        $group = $propertyGroupOptionEntity->getGroup();
-        if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $groupName = $this->getAttributeKey($group->getTranslation('name'));
-            $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
-            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
-                $propertyGroupProperty = new Property($groupName);
-                $propertyGroupProperty->addValue(Utils::removeControlCharacters($propertyGroupOptionName));
-
-                $properties[] = $propertyGroupProperty;
-            }
-        }
-
-        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-            $settingOption = $setting->getOption();
-            if ($settingOption) {
-                $group = $settingOption->getGroup();
-            }
-
-            if (!$group) {
-                continue;
-            }
-
-            $groupName = $this->getAttributeKey($group->getTranslation('name'));
-            $optionName = $settingOption->getTranslation('name');
-            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                $configProperty = new Property($groupName);
-                $configProperty->addValue(Utils::removeControlCharacters($optionName));
-
-                $properties[] = $configProperty;
-            }
-        }
-
-        return $properties;
-    }
-
-    protected function getAttributeKey(?string $key): ?string
-    {
-        if ($this->isApiIntegration()) {
-            return Utils::removeSpecialChars($key);
-        }
-
-        return $key;
-    }
-
-    protected function isApiIntegration(): bool
-    {
-        return $this->config->getIntegrationType() === IntegrationType::API;
     }
 }

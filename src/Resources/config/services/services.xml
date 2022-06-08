@@ -86,6 +86,7 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SummaryAdapter" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\ShopwarePropertiesAdapter" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter" public="true">
@@ -119,6 +120,12 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\PropertiesAdapter" public="true">
+            <argument type="service" id="fin_search.sales_channel_context" />
+            <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ShopwarePropertiesAdapter" public="true">
             <argument type="service" id="fin_search.sales_channel_context" />
             <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
