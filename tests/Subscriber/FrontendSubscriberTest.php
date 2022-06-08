@@ -9,6 +9,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\PageInformation;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\CategoryHelper;
@@ -82,6 +83,21 @@ class FrontendSubscriberTest extends TestCase
                 $this->callback(
                     function (Snippet $snippet) use ($shopkey) {
                         $this->assertSame($shopkey, $snippet->getShopkey());
+
+                        return true;
+                    }
+                )
+            ], [
+                $this->callback(
+                    function (string $name) {
+                        $this->assertEquals('flPageInformation', $name);
+
+                        return true;
+                    }
+                ),
+                $this->callback(
+                    function (PageInformation $pageInformation) use ($shopkey) {
+                        $this->assertSame($shopkey, $pageInformation->getShopkey());
 
                         return true;
                     }
