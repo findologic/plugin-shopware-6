@@ -13,6 +13,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
+use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Response;
@@ -128,15 +129,10 @@ class XmlExport extends Export
         $iterator = $productService->buildVariantIterator($productEntity, $pageSize);
 
         while (($variantsResult = $iterator->fetch()) !== null) {
-            if ($item === null) {
-                $item = $initialItem;
-            }
+            /** @var ProductCollection $variants */
             $variants = $variantsResult->getEntities();
-
             foreach ($variants->getElements() as $variant) {
-                $adaptedItem = $exportItemAdapter->adaptVariant($item, $variant);
-
-                if ($adaptedItem !== null) {
+                if ($adaptedItem = $exportItemAdapter->adaptVariant($item ?: $initialItem, $variant)) {
                     $item = $adaptedItem;
                 }
             }
