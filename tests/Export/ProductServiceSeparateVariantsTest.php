@@ -41,6 +41,11 @@ class ProductServiceSeparateVariantsTest extends TestCase
             $this->getContainer(),
             $this->salesChannelContext
         );
+
+        // Reset the setting after each test
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'default']);
+        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
+        $this->defaultProductService->setConfig($mockedConfig);
     }
 
     public function testFindsProductsAvailableForSearch(): void
@@ -126,7 +131,6 @@ class ProductServiceSeparateVariantsTest extends TestCase
 
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
         $this->defaultProductService->setConfig($mockedConfig);
 
         $products = $this->defaultProductService->searchVisibleProducts(20, 0);
@@ -134,11 +138,15 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $this->assertCount(1, $products);
     }
 
-    public function testFindsVariantForInactiveProduct(): void
+    /**
+     * @dataProvider mainVariantDefaultConfigProvider
+     */
+    public function testFindsVariantForInactiveProduct(string $config): void
     {
         // Main product is inactive.
         $inactiveProduct = $this->createVisibleTestProduct([
-            'active' => false
+            'active' => false,
+            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
         ]);
 
         $this->createVisibleTestProduct([
@@ -149,8 +157,12 @@ class ProductServiceSeparateVariantsTest extends TestCase
             'active' => true,
             'parentId' => $inactiveProduct->getId(),
             'tax' => ['name' => '9%', 'taxRate' => 9],
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
+            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 10, 'net' => 8, 'linked' => false]]
         ]);
+
+        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
+        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
+        $this->defaultProductService->setConfig($mockedConfig);
 
         $products = $this->defaultProductService->searchVisibleProducts(20, 0);
         $product = $products->first();
