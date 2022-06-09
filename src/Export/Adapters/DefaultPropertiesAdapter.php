@@ -14,27 +14,25 @@ use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class PropertiesAdapter extends ShopwarePropertiesAdapter
+class DefaultPropertiesAdapter
 {
+    /** @var Config $config */
+    protected $config;
+
     /** @var SalesChannelContext $salesChannelContext */
     protected $salesChannelContext;
 
     /** @var TranslatorInterface $translator */
     protected $translator;
 
-    /** @var Config $config */
-    protected $config;
-
     public function __construct(
+        Config $config,
         SalesChannelContext $salesChannelContext,
-        TranslatorInterface $translator,
-        Config $config
+        TranslatorInterface $translator
     ) {
+        $this->config = $config;
         $this->salesChannelContext = $salesChannelContext;
         $this->translator = $translator;
-        $this->config = $config;
-
-        parent::__construct($salesChannelContext, $translator, $config);
     }
 
     public function adapt(ProductEntity $product): array
@@ -130,10 +128,7 @@ class PropertiesAdapter extends ShopwarePropertiesAdapter
             $properties[] = $this->getProperty('product_promotion', $translated);
         }
 
-        return array_merge(
-            $properties,
-            parent::adapt($product)
-        );
+        return $properties;
     }
 
     protected function getProperty(string $name, $value): ?Property

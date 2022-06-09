@@ -153,7 +153,11 @@ class ExportItemAdapter implements ExportItemAdapterInterface
 
         $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
 
-        foreach ($this->adapterFactory->getPropertiesAdapter()->adapt($product) as $property) {
+        foreach ($this->adapterFactory->getDefaultPropertiesAdapter()->adapt($product) as $property) {
+            $item->addProperty($property);
+        }
+
+        foreach ($this->adapterFactory->getShopwarePropertiesAdapter()->adapt($product) as $property) {
             $item->addProperty($property);
         }
 

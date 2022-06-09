@@ -15,23 +15,23 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ShopwarePropertiesAdapter
 {
+    /** @var Config $config */
+    protected $config;
+
     /** @var SalesChannelContext $salesChannelContext */
     protected $salesChannelContext;
 
     /** @var TranslatorInterface $translator */
     protected $translator;
 
-    /** @var Config $config */
-    protected $config;
-
     public function __construct(
+        Config $config,
         SalesChannelContext $salesChannelContext,
-        TranslatorInterface $translator,
-        Config $config
+        TranslatorInterface $translator
     ) {
+        $this->config = $config;
         $this->salesChannelContext = $salesChannelContext;
         $this->translator = $translator;
-        $this->config = $config;
     }
 
     public function adapt(ProductEntity $product): array
