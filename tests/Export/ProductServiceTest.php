@@ -125,7 +125,7 @@ class ProductServiceTest extends TestCase
         $products = $this->defaultProductService->searchVisibleProducts(20, 0);
         $product = $products->first();
 
-        if (Utils::versionGreaterOrEqual('v6.4.11.0')) {
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
             $this->assertSame('FINDOLOGIC VARIANT EN', $product->getName());
         } else {
             $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
