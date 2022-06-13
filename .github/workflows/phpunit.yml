@@ -41,16 +41,6 @@ jobs:
           path: plugin-shopware-6
 
       - name: Setup Node 14
-        if: |
-          matrix.shopware-versions == 'v6.4.0.0' ||
-          matrix.shopware-versions == 'v6.4.1.0' ||
-          matrix.shopware-versions == 'v6.4.2.1' ||
-          matrix.shopware-versions == 'v6.4.3.1' ||
-          matrix.shopware-versions == 'v6.4.4.0' ||
-          matrix.shopware-versions == 'v6.4.5.1' ||
-          matrix.shopware-versions == 'v6.4.6.0' ||
-          matrix.shopware-versions == 'v6.4.7.0' ||
-          matrix.shopware-versions == 'v6.4.8.2'
         uses: actions/setup-node@v3
         with:
           node-version: '14'
