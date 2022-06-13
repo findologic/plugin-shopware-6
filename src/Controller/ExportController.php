@@ -91,7 +91,6 @@ class ExportController extends AbstractController
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
         $this->initialize($request, $context);
-        
         if ($errorResponse = $this->validate()) {
             return $errorResponse;
         }
