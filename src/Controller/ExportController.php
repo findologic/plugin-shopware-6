@@ -9,24 +9,25 @@ use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
-use FINDOLOGIC\FinSearch\Export\ProductService;
+use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
-use Psr\Cache\CacheItemPoolInterface;
-use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
@@ -54,7 +55,7 @@ class ExportController extends AbstractController
     /** @var ExportConfiguration */
     private $exportConfig;
 
-    /** @var ProductService */
+    /** @var ProductServiceSeparateVariants */
     private $productService;
 
     /** @var Config */
@@ -112,7 +113,9 @@ class ExportController extends AbstractController
 
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
-        $this->productService = ProductService::getInstance(
+
+        /** @var ProductServiceSeparateVariants productService */
+        $this->productService = ProductServiceSeparateVariants::getInstance(
             $this->container,
             $this->salesChannelContext,
             $this->pluginConfig
@@ -156,9 +159,7 @@ class ExportController extends AbstractController
         $this->container->set('fin_search.export_context', $exportContext);
 
         $items = $this->export->buildItems(
-            $products->getElements(),
-            $this->exportConfig->getShopkey(),
-            $exportContext->getCustomerGroups()
+            $products->getElements()
         );
 
         return $this->export->buildResponse(

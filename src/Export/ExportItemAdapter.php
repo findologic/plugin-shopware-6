@@ -13,7 +13,9 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductInvalidException;
 use FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory;
 use FINDOLOGIC\FinSearch\Export\Events\AfterItemAdaptEvent;
+use FINDOLOGIC\FinSearch\Export\Events\AfterVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\BeforeItemAdaptEvent;
+use FINDOLOGIC\FinSearch\Export\Events\BeforeVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Logger\ExportExceptionLogger;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use Psr\Container\ContainerInterface;
@@ -38,13 +40,13 @@ class ExportItemAdapter implements ExportItemAdapterInterface
     /** @var Config */
     protected $config;
 
-    /** @var AdapterFactory */
+    /** @var AdapterFactory  $adapterFactory*/
     protected $adapterFactory;
 
-    /** @var ExportContext */
+    /** @var ExportContext $exportContext*/
     protected $exportContext;
 
-    /** @var LoggerInterface  */
+    /** @var LoggerInterface  $logger*/
     private $logger;
 
     public function __construct(
@@ -65,20 +67,47 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         $this->logger = $logger;
     }
 
-    public function adapt(Item $item, ProductEntity $product): ?Item
+    public function adapt(Item $item, ProductEntity $product, ?LoggerInterface $logger = null): ?Item
     {
         $this->eventDispatcher->dispatch(new BeforeItemAdaptEvent($product, $item), BeforeItemAdaptEvent::NAME);
 
         try {
             $item = $this->adaptProduct($item, $product);
         } catch (Throwable $exception) {
-            $exceptionLogger = new ExportExceptionLogger($this->logger);
+            $exceptionLogger = new ExportExceptionLogger($logger ?: $this->logger);
             $exceptionLogger->log($product, $exception);
 
             return null;
         }
 
         $this->eventDispatcher->dispatch(new AfterItemAdaptEvent($product, $item), AfterItemAdaptEvent::NAME);
+
+        return $item;
+    }
+
+    public function adaptVariant(Item $item, ProductEntity $product): ?Item
+    {
+        $this->eventDispatcher->dispatch(new BeforeVariantAdaptEvent($product, $item), BeforeVariantAdaptEvent::NAME);
+
+        try {
+            foreach ($this->adapterFactory->getOrderNumbersAdapter()->adapt($product) as $orderNumber) {
+                $item->addOrdernumber($orderNumber);
+            }
+
+            foreach ($this->adapterFactory->getAttributeAdapter()->adapt($product) as $attribute) {
+                $item->addMergedAttribute($attribute);
+            }
+
+            foreach ($this->adapterFactory->getShopwarePropertiesAdapter()->adapt($product) as $property) {
+                $item->addProperty($property);
+            }
+        } catch (Throwable $exception) {
+            $exceptionLogger = new ExportExceptionLogger($this->logger);
+            $exceptionLogger->log($product, $exception);
+            return null;
+        }
+
+        $this->eventDispatcher->dispatch(new AfterVariantAdaptEvent($product, $item), AfterVariantAdaptEvent::NAME);
 
         return $item;
     }
@@ -124,7 +153,11 @@ class ExportItemAdapter implements ExportItemAdapterInterface
 
         $item->setAllPrices($this->adapterFactory->getPriceAdapter()->adapt($product));
 
-        foreach ($this->adapterFactory->getPropertiesAdapter()->adapt($product) as $property) {
+        foreach ($this->adapterFactory->getDefaultPropertiesAdapter()->adapt($product) as $property) {
+            $item->addProperty($property);
+        }
+
+        foreach ($this->adapterFactory->getShopwarePropertiesAdapter()->adapt($product) as $property) {
             $item->addProperty($property);
         }
 

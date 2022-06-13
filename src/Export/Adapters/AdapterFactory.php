@@ -18,6 +18,9 @@ class AdapterFactory
     /** @var DescriptionAdapter */
     private $descriptionAdapter;
 
+    /** @var DefaultPropertiesAdapter */
+    private $defaultPropertiesAdapter;
+
     /** @var ImagesAdapter */
     private $imagesAdapter;
 
@@ -33,9 +36,6 @@ class AdapterFactory
     /** @var PriceAdapter */
     private $priceAdapter;
 
-    /** @var PropertiesAdapter */
-    private $propertiesAdapter;
-
     /** @var SalesFrequencyAdapter */
     private $salesFrequencyAdapter;
 
@@ -44,6 +44,9 @@ class AdapterFactory
 
     /** @var SummaryAdapter */
     private $summaryAdapter;
+
+    /** @var ShopwarePropertiesAdapter */
+    private $shopwarePropertiesAdapter;
 
     /** @var UrlAdapter */
     private $urlAdapter;
@@ -56,15 +59,16 @@ class AdapterFactory
         BonusAdapter $bonusAdapter,
         DateAddedAdapter $dateAddedAdapter,
         DescriptionAdapter $descriptionAdapter,
+        DefaultPropertiesAdapter $defaultPropertiesAdapter,
         ImagesAdapter $imagesAdapter,
         KeywordsAdapter $keywordsAdapter,
         NameAdapter $itemNameAdapter,
         OrderNumberAdapter $orderNumberAdapter,
         PriceAdapter $priceAdapter,
-        PropertiesAdapter $propertiesAdapter,
         SalesFrequencyAdapter $salesFrequencyAdapter,
         SortAdapter $sortAdapter,
         SummaryAdapter $summaryAdapter,
+        ShopwarePropertiesAdapter $shopwarePropertiesAdapter,
         UrlAdapter $urlAdapter,
         UserGroupsAdapter $userGroupsAdapter
     ) {
@@ -72,15 +76,16 @@ class AdapterFactory
         $this->bonusAdapter = $bonusAdapter;
         $this->dateAddedAdapter = $dateAddedAdapter;
         $this->descriptionAdapter = $descriptionAdapter;
+        $this->defaultPropertiesAdapter = $defaultPropertiesAdapter;
         $this->imagesAdapter = $imagesAdapter;
         $this->keywordsAdapter = $keywordsAdapter;
         $this->nameAdapter = $itemNameAdapter;
         $this->orderNumberAdapter = $orderNumberAdapter;
         $this->priceAdapter = $priceAdapter;
-        $this->propertiesAdapter = $propertiesAdapter;
         $this->salesFrequencyAdapter = $salesFrequencyAdapter;
         $this->sortAdapter = $sortAdapter;
         $this->summaryAdapter = $summaryAdapter;
+        $this->shopwarePropertiesAdapter = $shopwarePropertiesAdapter;
         $this->urlAdapter = $urlAdapter;
         $this->userGroupsAdapter = $userGroupsAdapter;
     }
@@ -103,6 +108,11 @@ class AdapterFactory
     public function getDescriptionAdapter(): DescriptionAdapter
     {
         return $this->descriptionAdapter;
+    }
+
+    public function getDefaultPropertiesAdapter(): DefaultPropertiesAdapter
+    {
+        return $this->defaultPropertiesAdapter;
     }
 
     public function getImagesAdapter(): ImagesAdapter
@@ -130,11 +140,6 @@ class AdapterFactory
         return $this->priceAdapter;
     }
 
-    public function getPropertiesAdapter(): PropertiesAdapter
-    {
-        return $this->propertiesAdapter;
-    }
-
     public function getSalesFrequencyAdapter(): SalesFrequencyAdapter
     {
         return $this->salesFrequencyAdapter;
@@ -148,6 +153,11 @@ class AdapterFactory
     public function getSummaryAdapter(): SummaryAdapter
     {
         return $this->summaryAdapter;
+    }
+
+    public function getShopwarePropertiesAdapter(): ShopwarePropertiesAdapter
+    {
+        return $this->shopwarePropertiesAdapter;
     }
 
     public function getUrlAdapter(): UrlAdapter

@@ -131,33 +131,4 @@ class XmlExportTest extends TestCase
             $this->crossSellCategories
         );
     }
-
-    public function testProductPriceWithCurrency(): void
-    {
-        $currencyId = $this->createCurrency();
-        $this->salesChannelContext->getSalesChannel()->setCurrencyId($currencyId);
-        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
-        $testProduct = $this->createTestProduct([
-            'price' => [
-                ['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false],
-                ['currencyId' => $currencyId, 'gross' => 7.5, 'net' => 5, 'linked' => false]
-            ]
-        ]);
-
-        $customerGroupEntities = $this->getContainer()
-            ->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext->getContext())
-            ->getElements();
-
-        $items = $this->getExport()->buildItems(
-            [$testProduct],
-            self::VALID_SHOPKEY,
-            $customerGroupEntities
-        );
-
-        $item = $items[0];
-        $price = $item->getPrice();
-        $priceValues = $price->getValues();
-        $this->assertEquals(7.5, current($priceValues));
-    }
 }

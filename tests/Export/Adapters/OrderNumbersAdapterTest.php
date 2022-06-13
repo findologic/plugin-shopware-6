@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class OrderNumbersAdapterTest extends TestCase
@@ -30,16 +31,33 @@ class OrderNumbersAdapterTest extends TestCase
 
     public function testOrderNumberContainsTheOrderNumberOfTheProduct(): void
     {
+        $variantProductNumber = Uuid::randomHex();
         $expectedOrderNumbers = [
             new Ordernumber('FINDOLOGIC001'),
             new Ordernumber('FL001'),
-            new Ordernumber('MAN001')
+            new Ordernumber('MAN001'),
+            new Ordernumber($variantProductNumber),
+            new Ordernumber('childEan'),
+            new Ordernumber('MAN002'),
         ];
+
+        $product = $this->createTestProduct([
+            'id' => Uuid::randomHex()
+        ]);
+
+        $variantProduct = $this->createTestProduct([
+            'id' => Uuid::randomHex(),
+            'parentId' => $product->getId(),
+            'productNumber' => $variantProductNumber,
+            'ean' => 'childEan',
+            'manufacturerNumber' => 'MAN002'
+        ]);
+
         $adapter = $this->getContainer()->get(OrderNumberAdapter::class);
-        $product = $this->createTestProduct();
+        $parentOrderNumbers = $adapter->adapt($product);
+        $variantOrderNumbers = $adapter->adapt($variantProduct);
 
-        $orderNumbers = $adapter->adapt($product);
-
+        $orderNumbers = array_merge($parentOrderNumbers, $variantOrderNumbers);
         $this->assertEquals($expectedOrderNumbers, $orderNumbers);
     }
 }

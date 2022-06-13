@@ -94,6 +94,17 @@ class Utils
                 'properties.productConfiguratorSettings.option',
                 'properties.productConfiguratorSettings.option.group',
                 'properties.productConfiguratorSettings.option.group.translations',
+            ]
+        );
+    }
+
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
+    public static function addChildrenAssociations(Criteria $criteria): Criteria
+    {
+        return $criteria->addAssociations(
+            [
                 'children',
                 'children.seoUrls',
                 'children.categories',
@@ -115,6 +126,7 @@ class Utils
             ]
         );
     }
+
 
     public static function multiByteRawUrlEncode(string $string): string
     {

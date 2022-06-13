@@ -180,6 +180,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$id]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
         $criteria->addAssociation('visibilities');
         $productEntity = $this->getContainer()->get('product.repository')->search(
             $criteria,
@@ -247,6 +248,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$id]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
         $criteria->addAssociation('visibilities');
         $productEntity = $this->getContainer()->get('product.repository')->search(
             $criteria,
@@ -822,6 +824,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
 
         $productEntity = $this->getContainer()->get('product.repository')
             ->search($criteria, $this->salesChannelContext->getContext())
@@ -929,6 +932,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
 
         $productEntity = $this->getContainer()
             ->get('product.repository')
@@ -995,6 +999,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
 
         $productEntity = $this->getContainer()
             ->get('product.repository')

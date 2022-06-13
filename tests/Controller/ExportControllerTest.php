@@ -218,7 +218,7 @@ class ExportControllerTest extends TestCase
 
         // Reset it here otherwise it will fetch the same service instance from the container
         // @see \FINDOLOGIC\FinSearch\Export\ProductService::getInstance
-        $this->getContainer()->set('fin_search.product_service', null);
+        $this->getContainer()->set('fin_search.product_service_separate_variants', null);
 
         $salesChannelContext = $this->buildSalesChannelContext(
             Defaults::SALES_CHANNEL,

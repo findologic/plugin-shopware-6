@@ -215,6 +215,7 @@ trait ProductHelper
         try {
             $criteria = new Criteria([$id]);
             $criteria = Utils::addProductAssociations($criteria);
+            $criteria = Utils::addChildrenAssociations($criteria);
             $criteria->addAssociation('visibilities');
 
             return $container->get('product.repository')->search($criteria, $context)->get($id);

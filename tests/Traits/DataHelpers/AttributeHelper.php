@@ -81,18 +81,6 @@ trait AttributeHelper
             }
         }
 
-        foreach ($productEntity->getChildren() as $variant) {
-            $productFields = $variant->getCustomFields();
-            if ($productFields) {
-                foreach ($productFields as $key => $value) {
-                    if (is_bool($value)) {
-                        $value = $this->translateBooleanValue($value);
-                    }
-                    $attributes[] = new Attribute(Utils::removeSpecialChars($key), [$value]);
-                }
-            }
-        }
-
         return $attributes;
     }
 

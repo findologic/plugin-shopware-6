@@ -33,13 +33,13 @@ class ProductIdExport extends XmlExport
         return $this->errorHandler;
     }
 
-    public function buildItems(array $productEntities, string $shopkey, array $customerGroups): array
+    public function buildItems(array $productEntities): array
     {
         if (count($productEntities) === 0) {
             $this->getLogger()->warning('Product could not be found or is not available for search.');
         }
 
-        return parent::buildItems($productEntities, $shopkey, $customerGroups);
+        return parent::buildItems($productEntities);
     }
 
     public function buildResponse(array $items, int $start, int $total, array $headers = []): Response
