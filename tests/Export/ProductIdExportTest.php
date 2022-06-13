@@ -53,7 +53,6 @@ class ProductIdExportTest extends XmlExportTest
         $items = $export->buildItems([$product], self::VALID_SHOPKEY, []);
         $response = $export->buildResponse($items, 0, 200);
 
-        var_dump($response->getContent());
         $this->assertSame(422, $response->getStatusCode());
         $this->assertSame('application/json', $response->headers->get('content-type'));
         $errors = json_decode($response->getContent(), true);
