@@ -9,7 +9,9 @@ use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
+
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Content\Category\CategoryEntity;
@@ -96,7 +98,7 @@ class ProductIdExportTest extends XmlExportTest
     public function testProductCanNotBeExported(): void
     {
         $export = $this->getExport();
-        $product = $this->createTestProduct(['name' => ' ']);
+        $product = $this->createTestProduct(['categories' => []]);
 
         $items = $export->buildItems([$product], self::VALID_SHOPKEY, []);
         $response = $export->buildResponse($items, 0, 200);
@@ -105,13 +107,20 @@ class ProductIdExportTest extends XmlExportTest
         $this->assertSame('application/json', $response->headers->get('content-type'));
         $errors = json_decode($response->getContent(), true);
 
+        $expectedName = Utils::versionGreaterOrEqual('6.4.11.0')
+            ? 'FINDOLOGIC Product EN'
+            : 'FINDOLOGIC Product';
         $expectedErrors = [
             'general' => [],
             'products' => [
                 [
                     'id' => $product->getId(),
                     'errors' => [
-                        sprintf('Product with id %s was not exported because it has no name set', $product->getId())
+                        sprintf(
+                            'Product "%s" with id %s was not exported because it has no categories assigned',
+                            $expectedName,
+                            $product->getId()
+                        )
                     ]
                 ]
             ]
