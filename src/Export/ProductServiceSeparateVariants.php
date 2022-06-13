@@ -279,7 +279,7 @@ class ProductServiceSeparateVariants
 
     protected function adaptParentCriteriaByMainOrCheapestProduct(Criteria $criteria): void
     {
-        $notActiveOrPriceZero = new MultiFilter(
+        $notActiveOrPriceZeroFilter = new MultiFilter(
             MultiFilter::CONNECTION_OR,
             [
                 new EqualsFilter('active', false),
@@ -304,7 +304,7 @@ class ProductServiceSeparateVariants
             [
                 new EqualsFilter('parentId', null),
                 new RangeFilter('childCount', [RangeFilter::GT => 0]),
-                $notActiveOrPriceZero
+                $notActiveOrPriceZeroFilter
             ]
         );
 
@@ -380,6 +380,7 @@ class ProductServiceSeparateVariants
         foreach ($products as $product) {
             if ($mainVariantId = $product->getMainVariantId()) {
                 $realProductIds[] = $mainVariantId;
+
                 continue;
             }
 
