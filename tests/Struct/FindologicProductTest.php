@@ -294,7 +294,7 @@ class FindologicProductTest extends TestCase
 
         $additionalSalesChannelId = $additionalSalesChannel->getId();
 
-        return [
+        $noSeoPath = [
             'Category does not have SEO path assigned' => [
                 'data' => [
                     [
@@ -322,7 +322,10 @@ class FindologicProductTest extends TestCase
                     ]
                 ],
                 'categoryId' => $categoryId
-            ],
+            ]
+        ];
+
+        $emptySeoPath = [
             'Category have a pseudo empty SEO path assigned' => [
                 'data' => [
                     [
@@ -342,6 +345,11 @@ class FindologicProductTest extends TestCase
                 'categoryId' => $categoryId
             ]
         ];
+
+        // Empty SEO path does not pass the validation of the product builder
+        return Utils::versionGreaterOrEqual('6.4.11.0')
+            ? $noSeoPath
+            : array_merge($noSeoPath, $emptySeoPath);
     }
 
     /**
@@ -1538,6 +1546,10 @@ class FindologicProductTest extends TestCase
 
     public function testEmptyCategoryNameShouldStillExportCategory(): void
     {
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->markTestSkipped('Empty category name does not pass validation of product builder');
+        }
+
         $mainCatId = $this->getContainer()->get('category.repository')
             ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
 
