@@ -186,9 +186,7 @@ class ProductServiceSeparateVariants
             return $this->getCheapestProducts($products->getEntities());
         }
 
-        $mainVariants = $this->getConfiguredMainVariants($products->getEntities());
-
-        return $mainVariants ?: $products;
+        return $this->getConfiguredMainVariants($products->getEntities()) ?: $products;
     }
 
     protected function buildProductCriteria(
@@ -208,6 +206,24 @@ class ProductServiceSeparateVariants
         }
         if ($limit !== null) {
             $criteria->setLimit($limit);
+        }
+
+        return $criteria;
+    }
+
+    protected function buildChildCriteria(string $parentId, ?bool $withAssociations = true): Criteria
+    {
+        $criteria = new Criteria();
+
+        $criteria->addFilter(new EqualsFilter('parentId', $parentId));
+        $criteria->setLimit(1);
+
+        $this->handleAvailableStock($criteria);
+        $this->addPriceZeroFilter($criteria);
+        $this->addVisibilityFilter($criteria);
+
+        if ($withAssociations) {
+            $this->addProductAssociations($criteria);
         }
 
         return $criteria;
@@ -246,10 +262,8 @@ class ProductServiceSeparateVariants
                 $this->adaptParentCriteriaByShopwareDefault($criteria);
                 break;
             case MainVariant::MAIN_PARENT:
-                $this->adaptParentCriteriaByMainProduct($criteria);
-                break;
             case MainVariant::CHEAPEST:
-                $this->adaptParentCriteriaByCheapestVariant($criteria);
+                $this->adaptParentCriteriaByMainOrCheapestProduct($criteria);
                 break;
             default:
                 throw new InvalidArgumentException($mainVariantConfig);
@@ -263,27 +277,34 @@ class ProductServiceSeparateVariants
         $this->addGrouping($criteria);
     }
 
-    protected function adaptParentCriteriaByMainProduct(Criteria $criteria): void
+    protected function adaptParentCriteriaByMainOrCheapestProduct(Criteria $criteria): void
     {
-        $this->addPriceZeroFilter($criteria);
+        $notActiveOrPriceZeroFilter = new MultiFilter(
+            MultiFilter::CONNECTION_OR,
+            [
+                new EqualsFilter('active', false),
+                new EqualsFilter('price', 0)
+            ]
+        );
 
         $activeParentFilter =  new MultiFilter(
             MultiFilter::CONNECTION_AND,
             [
                 new EqualsFilter('parentId', null),
-                new EqualsFilter('active', true)
+                new EqualsFilter('active', true),
+                new RangeFilter('price', [RangeFilter::GT => 0])
             ]
         );
 
         /**
-         * We still need to fetch the product if it is not active, but have children products.
+         * We still need to fetch the product if it is not active, but has child products.
          */
         $inactiveParentWithChildrenFilter = new MultiFilter(
             MultiFilter::CONNECTION_AND,
             [
                 new EqualsFilter('parentId', null),
                 new RangeFilter('childCount', [RangeFilter::GT => 0]),
-                new EqualsFilter('active', false)
+                $notActiveOrPriceZeroFilter
             ]
         );
 
@@ -324,20 +345,15 @@ class ProductServiceSeparateVariants
     {
         $cheapestVariants = new ProductCollection();
 
-        /** @var ProductEntity $product */
         foreach ($products as $product) {
             $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
             $productPrice = $product->getCurrencyPrice($currencyId);
 
-            $cheapestVariant = $product->getChildren()->first();
-            if ($cheapestVariant === null && $productPrice->getGross() !== 0.0 && $product->getActive()) {
-                $cheapestVariants->add($product);
+            if (!$cheapestVariant = $this->getCheapestChild($product->getId())) {
+                if ($productPrice->getGross() > 0.0 && $product->getActive()) {
+                    $cheapestVariants->add($product);
+                }
 
-                continue;
-            } elseif (
-                $cheapestVariant === null && $productPrice->getGross() === 0.0 ||
-                $cheapestVariant === null && !$product->getActive()
-            ) {
                 continue;
             }
 
@@ -362,27 +378,21 @@ class ProductServiceSeparateVariants
         $realProductIds = [];
 
         foreach ($products as $product) {
-            /**
-             * If product is inactive, try to fetch first variant product.
-             * This is related to main product by parent configuration.
-             */
-            if (!$product->getMainVariantId() && $product->getActive()) {
-                $realProductIds[] = $product->getId();
-
-                continue;
-            } elseif (!$product->getMainVariantId() && !$product->getActive()) {
-                $childrenProduct = $this->getFirstChild($product);
-
-                if (!$childrenProduct) {
-                    continue;
-                }
-
-                $realProductIds[] = $childrenProduct->getId();
+            if ($mainVariantId = $product->getMainVariantId()) {
+                $realProductIds[] = $mainVariantId;
 
                 continue;
             }
 
-            $realProductIds[] = $product->getMainVariantId();
+            /**
+             * If product is inactive, try to fetch first variant product.
+             * This is related to main product by parent configuration.
+             */
+            if ($product->getActive()) {
+                $realProductIds[] = $product->getId();
+            } elseif ($childrenProductId = $this->getFirstVisibleChildId($product)) {
+                $realProductIds[] = $childrenProductId;
+            }
         }
 
         if (empty($realProductIds)) {
@@ -392,15 +402,25 @@ class ProductServiceSeparateVariants
         return $this->getRealMainVariants($realProductIds);
     }
 
-    protected function getFirstChild(ProductEntity $product): ?ProductEntity
+    protected function getFirstVisibleChildId(ProductEntity $product): ?string
     {
-        $criteria = new Criteria();
+        $criteria = $this->buildChildCriteria($product->getId(), false);
 
-        $criteria->addFilter(new EqualsFilter('parentId', $product->getId()));
         $criteria->addSorting(new FieldSorting('createdAt'));
         $criteria->addSorting(new FieldSorting('id'));
-        $criteria->setLimit(1);
-        $this->addVisibilityFilter($criteria);
+
+        return $this->productRepository->searchIds(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        )->firstId();
+    }
+
+    protected function getCheapestChild(string $productId): ?ProductEntity
+    {
+        $criteria = $this->buildChildCriteria($productId);
+
+        $criteria->addSorting(new FieldSorting('price'));
+        $criteria->addSorting(new FieldSorting('createdAt'));
 
         return $this->productRepository->search(
             $criteria,
@@ -472,23 +492,6 @@ class ProductServiceSeparateVariants
             $this->salesChannelContext->getSalesChannel()->getId(),
             ProductVisibilityDefinition::VISIBILITY_SEARCH
         );
-    }
-
-    protected function adaptParentCriteriaByCheapestVariant(Criteria $criteria): void
-    {
-        $criteria->addFilter(
-            new EqualsFilter('parentId', null)
-        );
-
-        $children = $criteria->getAssociation('children');
-        // TODO: Fix limit setting
-        $children->setLimit(1);
-        $children->addSorting(new FieldSorting('price'));
-
-        $this->addProductAssociations($children);
-        $this->handleAvailableStock($children);
-        $this->addPriceZeroFilter($children);
-        $this->addVisibilityFilter($children);
     }
 
     public function getAllCustomerGroups(): array
