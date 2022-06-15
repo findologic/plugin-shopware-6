@@ -48,13 +48,6 @@ class ProductIdExportTest extends XmlExportTest
         );
 
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
-
-        $productService = new ProductServiceSeparateVariants(
-            $this->getContainer(),
-            $this->salesChannelContext
-        );
-
-        $this->getContainer()->set(ProductServiceSeparateVariants::CONTAINER_ID, $productService);
     }
 
     public function buildItemsAndAssertError(ProductEntity $product, CategoryEntity $category): void
