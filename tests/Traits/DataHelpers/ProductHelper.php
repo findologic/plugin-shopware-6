@@ -108,7 +108,10 @@ trait ProductHelper
             ];
         }
         $productData = [];
-        $productData = array_merge($productData, $this->getNameValues('FINDOLOGIC Product'));
+        $productData = array_merge(
+            $productData,
+            $this->getNameValues($overrideData['name'] ?? 'FINDOLOGIC Product')
+        );
 
         $productData = array_merge($productData, [
             'id' => $id,

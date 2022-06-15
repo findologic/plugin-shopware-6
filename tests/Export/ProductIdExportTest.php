@@ -65,7 +65,7 @@ class ProductIdExportTest extends XmlExportTest
         $this->crossSellCategories = [$category->getId()];
 
         $exporter = $this->getExport();
-        $items = $exporter->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $exporter->buildItems([$product]);
         $this->assertEmpty($items);
 
         $errors = $exporter->getErrorHandler()->getExportErrors()->getProductError($product->getId())->getErrors();
@@ -86,7 +86,7 @@ class ProductIdExportTest extends XmlExportTest
     {
         $export = $this->getExport();
 
-        $items = $export->buildItems([], self::VALID_SHOPKEY, []);
+        $items = $export->buildItems([]);
         $this->assertEmpty($items);
 
         $errors = $export->getErrorHandler()->getExportErrors()->getGeneralErrors();
@@ -99,7 +99,7 @@ class ProductIdExportTest extends XmlExportTest
         $export = $this->getExport();
         $product = $this->createTestProduct(['categories' => []]);
 
-        $items = $export->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $export->buildItems([$product]);
         $response = $export->buildResponse($items, 0, 200);
 
         $this->assertSame(422, $response->getStatusCode());

@@ -381,6 +381,10 @@ class AttributeAdapterTest extends TestCase
 
     public function testEmptyCategoryNameShouldStillExportCategory(): void
     {
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->markTestSkipped('Empty category name does not pass validation of product builder');
+        }
+
         $mainCatId = $this->getContainer()->get('category.repository')
             ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
 

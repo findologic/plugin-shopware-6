@@ -246,7 +246,13 @@ class ExportControllerTest extends TestCase
         $parsedResponse = new SimpleXMLElement($response->getContent());
 
         $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
-        $this->assertSame('FINDOLOGIC Product DE', $parsedResponse->items->item->names->name->__toString());
+
+        // They started to return the correct translation, instead of the defined product name
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->assertSame('FINDOLOGIC Product EN', $parsedResponse->items->item->names->name->__toString());
+        } else {
+            $this->assertSame('FINDOLOGIC Product', $parsedResponse->items->item->names->name->__toString());
+        }
     }
 
     /**
