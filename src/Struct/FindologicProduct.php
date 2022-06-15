@@ -43,6 +43,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function method_exists;
 
+/**
+ * @deprecated FindologicProduct class will be removed in plugin version 4.0
+ */
 class FindologicProduct extends Struct
 {
     /** @var ProductEntity */
@@ -181,6 +184,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws AccessEmptyPropertyException
      */
     public function getName(): string
@@ -193,6 +197,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoNameException
      */
     protected function setName(): void
@@ -205,12 +210,16 @@ class FindologicProduct extends Struct
         $this->name = Utils::removeControlCharacters($name);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasName(): bool
     {
         return !Utils::isEmpty($this->name);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Attribute[]
      * @throws AccessEmptyPropertyException
      */
@@ -224,6 +233,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoCategoriesException
      */
     protected function setAttributes(): void
@@ -235,12 +245,16 @@ class FindologicProduct extends Struct
         $this->setAdditionalAttributes();
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasAttributes(): bool
     {
         return !Utils::isEmpty($this->attributes);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Price[]
      * @throws AccessEmptyPropertyException
      */
@@ -254,6 +268,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoPricesException
      */
     protected function setPrices(): void
@@ -262,12 +277,16 @@ class FindologicProduct extends Struct
         $this->setProductPrices();
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasPrices(): bool
     {
         return !Utils::isEmpty($this->prices);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws AccessEmptyPropertyException
      */
     public function getDescription(): string
@@ -279,6 +298,9 @@ class FindologicProduct extends Struct
         return $this->description;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setDescription(): void
     {
         $description = $this->product->getTranslation('description');
@@ -287,12 +309,17 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @return bool
+     */
     public function hasDescription(): bool
     {
         return !Utils::isEmpty($this->description);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws AccessEmptyPropertyException
      */
     public function getDateAdded(): DateAdded
@@ -304,6 +331,10 @@ class FindologicProduct extends Struct
         return $this->dateAdded;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     *
+     */
     protected function setDateAdded(): void
     {
         $releaseDate = $this->product->getReleaseDate();
@@ -314,12 +345,16 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasDateAdded(): bool
     {
         return $this->dateAdded && !empty($this->dateAdded);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws AccessEmptyPropertyException
      */
     public function getUrl(): string
@@ -331,17 +366,24 @@ class FindologicProduct extends Struct
         return $this->url;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setUrl(): void
     {
         $this->url = $this->urlBuilderService->buildProductUrl($this->product);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasUrl(): bool
     {
         return $this->url && !Utils::isEmpty($this->url);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Keyword[]
      * @throws AccessEmptyPropertyException
      */
@@ -354,6 +396,9 @@ class FindologicProduct extends Struct
         return $this->keywords;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setKeywords(): void
     {
         $blackListedKeywords = [
@@ -378,12 +423,16 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasKeywords(): bool
     {
         return $this->keywords && !empty($this->keywords);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Image[]
      * @throws AccessEmptyPropertyException
      */
@@ -396,21 +445,36 @@ class FindologicProduct extends Struct
         return $this->images;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setImages(): void
     {
         $this->images = $this->productImageService->getProductImages($this->product);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasImages(): bool
     {
         return $this->images && !empty($this->images);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function getSalesFrequency(): int
     {
         return $this->salesFrequency;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @return void
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface\
+     */
     protected function setSalesFrequency(): void
     {
         $lastMonthDate = new DateTimeImmutable('-1 month');
@@ -431,6 +495,9 @@ class FindologicProduct extends Struct
         $this->salesFrequency = $orders->getTotal();
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasSalesFrequency(): bool
     {
         // In case a product has no sales, it's sales frequency would still be 0.
@@ -438,6 +505,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Usergroup[]
      * @throws AccessEmptyPropertyException
      */
@@ -450,6 +518,9 @@ class FindologicProduct extends Struct
         return $this->userGroups;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setUserGroups(): void
     {
         foreach ($this->customerGroups as $customerGroupEntity) {
@@ -459,12 +530,16 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasUserGroups(): bool
     {
         return $this->userGroups && !empty($this->userGroups);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Ordernumber[]
      * @throws AccessEmptyPropertyException
      */
@@ -477,6 +552,9 @@ class FindologicProduct extends Struct
         return $this->ordernumbers;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setOrdernumbers(): void
     {
         $this->setOrdernumberByProduct($this->product);
@@ -485,12 +563,16 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasOrdernumbers(): bool
     {
         return $this->ordernumbers && !empty($this->ordernumbers);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Property[]
      * @throws AccessEmptyPropertyException
      */
@@ -503,6 +585,9 @@ class FindologicProduct extends Struct
         return $this->properties;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setProperties(): void
     {
         if ($this->product->getTax()) {
@@ -595,11 +680,17 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasProperties(): bool
     {
         return $this->properties && !empty($this->properties);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setVendors(): void
     {
         $manufacturer = $this->product->getManufacturer();
@@ -616,6 +707,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Attribute[]
      */
     protected function getAttributeProperties(ProductEntity $productEntity): array
@@ -642,6 +734,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Property[]
      */
     protected function getAttributePropertyAsProperty(PropertyGroupOptionEntity $propertyGroupOptionEntity): array
@@ -684,6 +777,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Attribute[]
      */
     protected function getAttributePropertyAsAttribute(PropertyGroupOptionEntity $propertyGroupOptionEntity): array
@@ -727,6 +821,9 @@ class FindologicProduct extends Struct
         return $attributes;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setAttributeProperties(): void
     {
         $this->attributes = array_merge($this->attributes, $this->getAttributeProperties($this->product));
@@ -735,6 +832,9 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setAdditionalAttributes(): void
     {
         $shippingFree = $this->translateBooleanValue($this->product->getShippingFree());
@@ -746,6 +846,9 @@ class FindologicProduct extends Struct
         $this->attributes = array_merge($this->attributes, $this->customFields);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setOrdernumberByProduct(ProductEntity $product): void
     {
         if (!Utils::isEmpty($product->getProductNumber())) {
@@ -760,6 +863,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoCategoriesException
      */
     protected function setCategoriesAndCatUrls(): void
@@ -805,6 +909,9 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setVariantPrices(): void
     {
         if ($this->product->getChildCount() === 0) {
@@ -821,6 +928,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Price[]
      */
     protected function getPricesFromProduct(ProductEntity $product): array
@@ -865,6 +973,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoPricesException
      */
     protected function setProductPrices(): void
@@ -876,6 +985,9 @@ class FindologicProduct extends Struct
         $this->prices = array_merge($this->prices, $prices);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setCustomFieldAttributes(): void
     {
         $this->customFields = array_merge($this->customFields, $this->getCustomFieldProperties($this->product));
@@ -887,6 +999,9 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function getCustomFieldProperties(ProductEntity $product): array
     {
         $attributes = [];
@@ -920,6 +1035,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Attribute[]
      */
     public function getCustomFields(): array
@@ -928,6 +1044,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @param array<string, int, bool>|string|int|bool $value
      *
      * @return array<string, int, bool>|string|int|bool
@@ -958,6 +1075,9 @@ class FindologicProduct extends Struct
         return $value;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function translateBooleanValue(bool $value)
     {
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
@@ -965,6 +1085,9 @@ class FindologicProduct extends Struct
         return $this->translator->trans($translationKey);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function addProperty(string $name, $value): void
     {
         if (!Utils::isEmpty($value)) {
@@ -974,6 +1097,9 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function parseCategoryAttributes(
         array $categoryCollection,
         array &$catUrls,
@@ -1018,6 +1144,9 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function isDirectIntegration(): bool
     {
         return $this->config->getIntegrationType() === IntegrationType::DI;
@@ -1029,6 +1158,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * For API Integrations, we have to remove special characters from the attribute key as a requirement for
      * sending data via API.
      */
@@ -1041,6 +1171,9 @@ class FindologicProduct extends Struct
         return $key;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function decodeHtmlEntities(array $values): array
     {
         foreach ($values as $key => $value) {
@@ -1051,6 +1184,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @param mixed $value
      * @return string|mixed
      */
@@ -1064,6 +1198,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * Checks if the product, or any of its children has any category assigned.
      */
     protected function hasCategories(): bool

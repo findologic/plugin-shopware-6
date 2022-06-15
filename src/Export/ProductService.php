@@ -26,6 +26,9 @@ use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
+/**
+ * @deprecated ProductService class will be removed in plugin version 4.0
+ */
 class ProductService
 {
     public const CONTAINER_ID = 'fin_search.product_service';
@@ -49,6 +52,9 @@ class ProductService
         $this->config = $config ?? $container->get(Config::class);
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     public static function getInstance(
         ContainerInterface $container,
         ?SalesChannelContext $salesChannelContext,
@@ -68,26 +74,41 @@ class ProductService
         return $productService;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     public function setSalesChannelContext(SalesChannelContext $salesChannelContext): void
     {
         $this->salesChannelContext = $salesChannelContext;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     public function setConfig(Config $config): void
     {
         $this->config = $config;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     public function getSalesChannelContext(): ?SalesChannelContext
     {
         return $this->salesChannelContext;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     public function getConfig(): ?Config
     {
         return $this->config;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     public function getTotalProductCount(): int
     {
         $criteria = $this->buildProductCriteria();
@@ -101,6 +122,9 @@ class ProductService
         return $result->getTotal();
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     public function searchVisibleProducts(
         ?int $limit = null,
         ?int $offset = null,
@@ -112,6 +136,9 @@ class ProductService
         return EntitySearchResult::createFrom($products);
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     public function searchAllProducts(
         ?int $limit = null,
         ?int $offset = null,
@@ -129,6 +156,9 @@ class ProductService
         );
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     public function getAllCustomerGroups(): array
     {
         return $this->container->get('customer_group.repository')
@@ -136,6 +166,9 @@ class ProductService
             ->getElements();
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function addProductAssociations(Criteria $criteria): void
     {
         Utils::addProductAssociations($criteria);
@@ -143,6 +176,7 @@ class ProductService
     }
 
     /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
      * If the given product is a parent product, returns all children of the product.
      * In case the given product already is a child, all siblings and the parent are returned. The siblings
      * do not include the given product itself.
@@ -179,6 +213,9 @@ class ProductService
         return $children;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function getCriteriaWithProductVisibility(?int $limit = null, ?int $offset = null): Criteria
     {
         $criteria = $this->buildProductCriteria($limit, $offset);
@@ -188,6 +225,9 @@ class ProductService
         return $criteria;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function buildProductCriteria(?int $limit = null, ?int $offset = null): Criteria
     {
         $criteria = new Criteria();
@@ -208,6 +248,9 @@ class ProductService
         return $criteria;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function addVisibilityFilter(Criteria $criteria): void
     {
         $criteria->addFilter(
@@ -218,6 +261,9 @@ class ProductService
         );
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function addPriceZeroFilter(Criteria $criteria): void
     {
         $criteria->addFilter(
@@ -228,6 +274,7 @@ class ProductService
     }
 
     /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
      * @see \Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingLoader::addGrouping()
      */
     protected function addGrouping(Criteria $criteria): void
@@ -243,6 +290,7 @@ class ProductService
     }
 
     /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
      * @see \Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingLoader::handleAvailableStock()
      */
     protected function handleAvailableStock(Criteria $criteria): void
@@ -266,6 +314,9 @@ class ProductService
         );
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function addProductIdFilters(Criteria $criteria, string $productId): void
     {
         $productFilter = [
@@ -288,6 +339,9 @@ class ProductService
         );
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function getVisibleProducts(?int $limit, ?int $offset, ?string $productId): EntitySearchResult
     {
         $criteria = $this->getCriteriaWithProductVisibility($limit, $offset);
@@ -302,6 +356,9 @@ class ProductService
         );
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function buildProductsWithVariantInformation(EntitySearchResult $result): ProductCollection
     {
         $products = new ProductCollection();
@@ -326,6 +383,9 @@ class ProductService
         return $this->getProductsByMainVariantBasedOnConfig($products);
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function getProductsByMainVariantBasedOnConfig(ProductCollection $products): ProductCollection
     {
         $mainVariantConfig = $this->config->getMainVariant();
@@ -349,17 +409,26 @@ class ProductService
         return $variantProducts;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function getRealMainProductWithVariants(string $realMainProductId): ?ProductEntity
     {
         return $this->getVisibleProducts(1, 0, $realMainProductId)->first();
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function assignChildrenOrSiblings(ProductEntity $product): void
     {
         $children = $this->getChildrenOrSiblings($product);
         $product->setChildren($children);
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function getParentByMainProduct(ProductEntity $product): ProductEntity
     {
         $parent = $product;
@@ -377,6 +446,9 @@ class ProductService
         return $parent;
     }
 
+    /**
+     * @deprecated ProductService class will be removed in plugin version 4.0
+     */
     protected function getParentByCheapestVariant(ProductEntity $product): ProductEntity
     {
         $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();

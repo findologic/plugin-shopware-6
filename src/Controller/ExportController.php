@@ -9,9 +9,11 @@ use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
+use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
+use FINDOLOGIC\FinSearch\Helper\StaticHelper;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -114,12 +116,7 @@ class ExportController extends AbstractController
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
 
-        /** @var ProductServiceSeparateVariants productService */
-        $this->productService = ProductServiceSeparateVariants::getInstance(
-            $this->container,
-            $this->salesChannelContext,
-            $this->pluginConfig
-        );
+        $this->initializeProductService();
 
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
@@ -130,6 +127,23 @@ class ExportController extends AbstractController
         );
 
         $this->manipulateRequestWithSalesChannelInformation($request);
+    }
+
+    protected function initializeProductService(): void
+    {
+        if (StaticHelper::legacyExtensionInstalled()) {
+            $this->productService = ProductService::getInstance(
+                $this->container,
+                $this->salesChannelContext,
+                $this->pluginConfig
+            );
+        } else {
+            $this->productService = ProductServiceSeparateVariants::getInstance(
+                $this->container,
+                $this->salesChannelContext,
+                $this->pluginConfig
+            );
+        }
     }
 
     protected function validate(): ?Response
