@@ -16,6 +16,7 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
@@ -49,6 +50,12 @@ class ExportController extends AbstractController
     /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
     private $salesChannelContextFactory;
 
+    /** @var CacheItemPoolInterface */
+    private $cache;
+
+    /** @var EntityRepository */
+    private $customerGroupRepository;
+
     /** @var SalesChannelContext */
     private $salesChannelContext;
 
@@ -58,14 +65,8 @@ class ExportController extends AbstractController
     /** @var ProductSearcher */
     private $productSearcher;
 
-    /** @var Config */
-    private $pluginConfig;
-
     /** @var Export|XmlExport|ProductIdExport */
     private $export;
-
-    /** @var CacheItemPoolInterface */
-    private $cache;
 
     /** @var SalesChannelService|null */
     private $salesChannelService;
@@ -78,13 +79,15 @@ class ExportController extends AbstractController
         RouterInterface $router,
         HeaderHandler $headerHandler,
         $salesChannelContextFactory,
-        CacheItemPoolInterface $cache
+        CacheItemPoolInterface $cache,
+        EntityRepository $customerGroupRepository
     ) {
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->cache = $cache;
+        $this->customerGroupRepository = $customerGroupRepository;
     }
 
     /**
@@ -112,14 +115,13 @@ class ExportController extends AbstractController
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
 
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
-        $this->pluginConfig = $this->getPluginConfig();
 
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
             $this->router,
             $this->container,
             $this->logger,
-            $this->pluginConfig->getCrossSellingCategories()
+            $this->getPluginConfig()->getCrossSellingCategories()
         );
 
         // No need to initialize components relying on the sales channel context.
@@ -261,7 +263,7 @@ class ExportController extends AbstractController
 
     private function getAllCustomerGroups(): array
     {
-        return $this->container->get('customer_group.repository')
+        return $this->customerGroupRepository
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
     }
