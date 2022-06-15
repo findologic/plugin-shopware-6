@@ -348,6 +348,10 @@ class AttributeAdapterTest extends TestCase
      */
     public function testProductCategoriesUrlWithoutSeoOrEmptyPath(array $data, string $categoryId): void
     {
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->markTestSkipped('Empty category name does not pass validation of product builder');
+        }
+
         $categoryData['categories'] = $data;
         $productEntity = $this->createTestProduct($categoryData);
 
@@ -640,7 +644,7 @@ class AttributeAdapterTest extends TestCase
 
         $additionalSalesChannelId = $additionalSalesChannel->getId();
 
-        return [
+        $noSeoPath = [
             'Category does not have SEO path assigned' => [
                 'data' => [
                     [
@@ -668,7 +672,10 @@ class AttributeAdapterTest extends TestCase
                     ]
                 ],
                 'categoryId' => $categoryId
-            ],
+            ]
+        ];
+
+        $emptySeoPath = [
             'Category have a pseudo empty SEO path assigned' => [
                 'data' => [
                     [
@@ -688,6 +695,11 @@ class AttributeAdapterTest extends TestCase
                 'categoryId' => $categoryId
             ]
         ];
+
+        // Empty SEO path does not pass the validation of the product builder
+        return Utils::versionGreaterOrEqual('6.4.11.0')
+            ? $noSeoPath
+            : array_merge($noSeoPath, $emptySeoPath);
     }
 
 
