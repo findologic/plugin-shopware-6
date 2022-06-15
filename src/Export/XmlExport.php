@@ -8,14 +8,14 @@ use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\Export\XML\XMLExporter as XmlFileConverter;
 use FINDOLOGIC\Export\XML\XMLItem;
-use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
+use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -119,14 +119,14 @@ class XmlExport extends Export
 
         /** @var ExportItemAdapter $exportItemAdapter */
         $exportItemAdapter = $this->container->get(ExportItemAdapter::class);
-        /** @var ProductServiceSeparateVariants $productService */
-        $productService = $this->container->get(ProductServiceSeparateVariants::CONTAINER_ID);
-        $maxPropertiesCount = $productService->getMaxPropertiesCount($productEntity);
+        /** @var ProductSearcher $productService */
+        $productSearcher = $this->container->get(ProductSearcher::class);
+        $maxPropertiesCount = $productSearcher->findMaxPropertiesCount($productEntity);
         $initialItem = $this->xmlFileConverter->createItem($productEntity->getId());
         $item = $exportItemAdapter->adapt($initialItem, $productEntity, $this->logger);
 
         $pageSize = $this->calculatePageSize($maxPropertiesCount);
-        $iterator = $productService->buildVariantIterator($productEntity, $pageSize);
+        $iterator = $productSearcher->buildVariantIterator($productEntity, $pageSize);
 
         while (($variantsResult = $iterator->fetch()) !== null) {
             /** @var ProductCollection $variants */

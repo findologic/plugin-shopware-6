@@ -108,26 +108,28 @@ class ProductServiceTest extends TestCase
 
     public function testFindsVariantForInactiveProduct(): void
     {
-        // Main product is inactive.
-        $inactiveProduct = $this->createVisibleTestProduct([
-            'active' => false
-        ]);
-
-        $this->createVisibleTestProduct([
+        $variantInfo = array_merge([
             'id' => Uuid::randomHex(),
             'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT',
             'stock' => 10,
             'active' => true,
-            'parentId' => $inactiveProduct->getId(),
             'tax' => ['name' => '9%', 'taxRate' => 9],
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
-        ]);
+        ], $this->getNameValues('FINDOLOGIC VARIANT'));
+
+        // Main product is inactive.
+        $this->createVisibleTestProductWithCustomVariants([
+            'active' => false
+        ], [$variantInfo]);
 
         $products = $this->defaultProductService->searchVisibleProducts(20, 0);
         $product = $products->first();
 
-        $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->assertSame('FINDOLOGIC VARIANT EN', $product->getName());
+        } else {
+            $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
+        }
     }
 
     public function variantProvider(): array
@@ -192,15 +194,14 @@ class ProductServiceTest extends TestCase
         array $variants,
         int $expectedChildCount
     ): void {
-        $this->createVisibleTestProduct($mainProduct);
-
         $variantIds = [];
+        $customVariants = [];
         foreach ($variants as $variant) {
             $variantIds[] = $variant['id'];
-            $this->createVisibleTestProduct(
-                $this->getBasicVariantData($variant)
-            );
+            $customVariants[] = $this->getBasicVariantData($variant);
         }
+
+        $this->createVisibleTestProductWithCustomVariants($mainProduct, $customVariants);
 
         $products = $this->defaultProductService->searchVisibleProducts(20, 0);
         /** @var ProductEntity $product */
@@ -241,7 +242,28 @@ class ProductServiceTest extends TestCase
         $secondOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
-        $this->createVisibleTestProduct([
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ]
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ]
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
             'id' => $expectedParentId,
             'active' => false,
             'configuratorSettings' => [
@@ -273,27 +295,7 @@ class ProductServiceTest extends TestCase
                     'representation' => 'box'
                 ]
             ]
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'options' => [
-                ['id' => $firstOptionId]
-            ]
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'options' => [
-                ['id' => $secondOptionId]
-            ]
-        ]));
+        ], $variants);
 
         $result = $this->defaultProductService->searchVisibleProducts(20, 0);
         $this->assertCount(2, $result->getElements());
@@ -773,7 +775,38 @@ class ProductServiceTest extends TestCase
         $thirdOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
-        $this->createVisibleTestProduct([
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedThirdVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.3',
+            'name' => 'FINDOLOGIC VARIANT 3',
+            'options' => [
+                ['id' => $thirdOptionId]
+            ],
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
             'id' => $parentId,
             'active' => false,
             'configuratorSettings' => [
@@ -808,37 +841,7 @@ class ProductServiceTest extends TestCase
                     ],
                 ],
             ]
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'options' => [
-                ['id' => $firstOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'options' => [
-                ['id' => $secondOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedThirdVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.3',
-            'name' => 'FINDOLOGIC VARIANT 3',
-            'options' => [
-                ['id' => $thirdOptionId]
-            ],
-        ]));
+        ], $variants);
     }
 
     private function createProductWithDifferentPriceVariants(
@@ -856,7 +859,62 @@ class ProductServiceTest extends TestCase
         $thirdOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
-        $this->createVisibleTestProduct([
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $firstVariantPrice,
+                    'net' => $firstVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $secondVariantPrice,
+                    'net' => $secondVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedThirdVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.3',
+            'name' => 'FINDOLOGIC VARIANT 3',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $thirdVariantPrice,
+                    'net' => $thirdVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $thirdOptionId]
+            ],
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
             'id' => $parentId,
             'active' => false,
             'price' => [
@@ -899,60 +957,6 @@ class ProductServiceTest extends TestCase
                     ],
                 ],
             ]
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'price' => [
-                [
-                    'currencyId' => Defaults::CURRENCY,
-                    'gross' => $firstVariantPrice,
-                    'net' => $firstVariantPrice,
-                    'linked' => false
-                ]
-            ],
-            'options' => [
-                ['id' => $firstOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'price' => [
-                [
-                    'currencyId' => Defaults::CURRENCY,
-                    'gross' => $secondVariantPrice,
-                    'net' => $secondVariantPrice,
-                    'linked' => false
-                ]
-            ],
-            'options' => [
-                ['id' => $secondOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedThirdVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.3',
-            'name' => 'FINDOLOGIC VARIANT 3',
-            'price' => [
-                [
-                    'currencyId' => Defaults::CURRENCY,
-                    'gross' => $thirdVariantPrice,
-                    'net' => $thirdVariantPrice,
-                    'linked' => false
-                ]
-            ],
-            'options' => [
-                ['id' => $thirdOptionId]
-            ],
-        ]));
+        ], $variants);
     }
 }

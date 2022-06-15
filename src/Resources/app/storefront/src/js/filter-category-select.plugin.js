@@ -339,12 +339,26 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         const entities = properties.entities;
         if (entities.length === 0) {
             this._disableAll();
+            this.disableFilter();
             return;
         }
         const property = entities.find(entity => entity.translated.name === this.options.name);
         if (property) {
             activeItems.push(...property.options);
+        } else {
+            this.disableFilter();
+            return;
         }
+
+        const actualValues = this.getValues();
+
+        if (activeItems.length < 1 && actualValues[this.options.name].length === 0) {
+            this.disableFilter()
+            return;
+        } else {
+            this.enableFilter();
+        }
+
         this._disableInactiveFilterOptions(activeItems.map(entity => entity.id));
     }
 

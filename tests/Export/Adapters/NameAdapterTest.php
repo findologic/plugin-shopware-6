@@ -8,7 +8,9 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Content\Product\Aggregate\ProductTranslation\ProductTranslationCollection;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
@@ -33,20 +35,25 @@ class NameAdapterTest extends TestCase
         $this->expectException(ProductHasNoNameException::class);
 
         $adapter = $this->getContainer()->get(NameAdapter::class);
-        $product = $this->createTestProduct([
-            'name' => "\n\t\n\t\r"
-        ]);
+        $product = $this->createTestProduct();
+
+        // Setting an empty name does not pass the builder validation
+        $product->setName(null);
+        $product->setTranslated([]);
 
         $adapter->adapt($product);
     }
 
     public function testNameContainsTheNameOfTheProduct(): void
     {
-        $expectedName = 'Best product that has ever existed';
+        $productName = 'Best product that has ever existed';
+        $expectedName = Utils::versionGreaterOrEqual('6.4.11.0')
+            ? 'Best product that has ever existed EN'
+            : 'Best product that has ever existed';
 
         $adapter = $this->getContainer()->get(NameAdapter::class);
         $product = $this->createTestProduct([
-            'name' => $expectedName
+            'name' => $productName
         ]);
 
         $name = $adapter->adapt($product);
