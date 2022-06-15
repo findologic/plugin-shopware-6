@@ -114,8 +114,6 @@ class ExportController extends AbstractController
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
 
-        $this->productSearcher = $this->container->get(ProductSearcher::class);
-
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
             $this->router,
@@ -123,6 +121,14 @@ class ExportController extends AbstractController
             $this->logger,
             $this->pluginConfig->getCrossSellingCategories()
         );
+
+        // No need to initialize components relying on the sales channel context.
+        // Export will not continue anyway
+        if (!$this->salesChannelContext) {
+            return;
+        }
+
+        $this->productSearcher = $this->container->get(ProductSearcher::class);
 
         $this->manipulateRequestWithSalesChannelInformation($request);
     }
