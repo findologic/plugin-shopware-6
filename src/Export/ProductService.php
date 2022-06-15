@@ -177,6 +177,7 @@ class ProductService
 
     /**
      * @deprecated ProductService class will be removed in plugin version 4.0
+     *
      * If the given product is a parent product, returns all children of the product.
      * In case the given product already is a child, all siblings and the parent are returned. The siblings
      * do not include the given product itself.
@@ -275,6 +276,7 @@ class ProductService
 
     /**
      * @deprecated ProductService class will be removed in plugin version 4.0
+     *
      * @see \Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingLoader::addGrouping()
      */
     protected function addGrouping(Criteria $criteria): void
@@ -291,6 +293,7 @@ class ProductService
 
     /**
      * @deprecated ProductService class will be removed in plugin version 4.0
+     *
      * @see \Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingLoader::handleAvailableStock()
      */
     protected function handleAvailableStock(Criteria $criteria): void
