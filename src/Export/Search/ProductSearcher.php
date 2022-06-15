@@ -51,6 +51,11 @@ class ProductSearcher
         $this->config = $config;
     }
 
+    public function setConfig(Config $config): void
+    {
+        $this->config = $config;
+    }
+
     public function findTotalProductCount(): int
     {
         $criteria = $this->productCriteriaBuilder
