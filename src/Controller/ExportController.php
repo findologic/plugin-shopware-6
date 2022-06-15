@@ -20,6 +20,8 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
@@ -105,7 +107,7 @@ class ExportController extends AbstractController
             return $errorResponse;
         }
 
-        return StaticHelper::legacyExtensionInstalled()
+        return $this->legacyExtensionInstalled()
             ? $this->doLegacyExport()
             : $this->doExport();
     }
@@ -125,13 +127,11 @@ class ExportController extends AbstractController
 
         $pluginConfig = $this->getPluginConfig();
 
-        if (StaticHelper::legacyExtensionInstalled()) {
-            $this->productService = ProductService::getInstance(
-                $this->container,
-                $this->salesChannelContext,
-                $pluginConfig
-            );
-        }
+        $this->productService = ProductService::getInstance(
+            $this->container,
+            $this->salesChannelContext,
+            $pluginConfig
+        );
 
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
@@ -308,5 +308,21 @@ class ExportController extends AbstractController
         return $this->customerGroupRepository
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
+    }
+
+    private function legacyExtensionInstalled(): bool
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
+
+        /** @var PluginEntity $plugin */
+        $plugin = $this->container->get('plugin.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->first();
+        if ($plugin !== null && $plugin->getActive()) {
+            return version_compare($plugin->getVersion(), '3.0.0', '<');
+        }
+
+        return false;
     }
 }
