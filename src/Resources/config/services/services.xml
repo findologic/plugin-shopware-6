@@ -149,7 +149,7 @@
             <argument type="service" id="fin_search.export_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\ExportItemAdapter" public="true">
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter" public="true">
             <argument type="service" id="service_container" />
             <argument type="service" id="router" />
             <argument type="service" id="event_dispatcher" />
