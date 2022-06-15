@@ -105,10 +105,6 @@ class ExportController extends AbstractController
             return $errorResponse;
         }
 
-        if(StaticHelper::legacyExtensionInstalled()) {
-            return $this->doLegacyExport();
-        }
-
         return StaticHelper::legacyExtensionInstalled()
             ? $this->doLegacyExport()
             : $this->doExport();
