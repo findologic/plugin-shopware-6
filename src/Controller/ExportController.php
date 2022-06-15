@@ -9,17 +9,17 @@ use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
-use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
+use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
@@ -55,8 +55,8 @@ class ExportController extends AbstractController
     /** @var ExportConfiguration */
     private $exportConfig;
 
-    /** @var ProductServiceSeparateVariants */
-    private $productService;
+    /** @var ProductSearcher */
+    private $productSearcher;
 
     /** @var Config */
     private $pluginConfig;
@@ -114,12 +114,7 @@ class ExportController extends AbstractController
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->pluginConfig = $this->getPluginConfig();
 
-        /** @var ProductServiceSeparateVariants productService */
-        $this->productService = ProductServiceSeparateVariants::getInstance(
-            $this->container,
-            $this->salesChannelContext,
-            $this->pluginConfig
-        );
+        $this->productSearcher = $this->container->get(ProductSearcher::class);
 
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
@@ -149,7 +144,7 @@ class ExportController extends AbstractController
     {
         $this->warmUpDynamicProductGroups();
 
-        $products = $this->productService->searchVisibleProducts(
+        $products = $this->productSearcher->findVisibleProducts(
             $this->exportConfig->getCount(),
             $this->exportConfig->getStart(),
             $this->exportConfig->getProductId()
@@ -165,7 +160,7 @@ class ExportController extends AbstractController
         return $this->export->buildResponse(
             $items,
             $this->exportConfig->getStart(),
-            $this->productService->getTotalProductCount(),
+            $this->productSearcher->findTotalProductCount(),
             $this->headerHandler->getHeaders()
         );
     }
@@ -250,11 +245,18 @@ class ExportController extends AbstractController
     {
         return new ExportContext(
             $this->exportConfig->getShopkey(),
-            $this->productService->getAllCustomerGroups(),
+            $this->getAllCustomerGroups(),
             Utils::fetchNavigationCategoryFromSalesChannel(
                 $this->container->get('category.repository'),
                 $this->salesChannelContext->getSalesChannel()
             )
         );
+    }
+
+    private function getAllCustomerGroups(): array
+    {
+        return $this->container->get('customer_group.repository')
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
     }
 }

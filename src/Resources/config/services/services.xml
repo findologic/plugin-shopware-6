@@ -159,6 +159,18 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
         </service>
 
+        <service id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" public="true">
+            <argument type="service" id="fin_search.sales_channel_context" />
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Search\ProductSearcher" public="true">
+            <argument type="service" id="fin_search.sales_channel_context" />
+            <argument type="service" id="product.repository" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
+        </service>
+
         <service id="fin_search.sales_channel_context" synthetic="true" public="true" />
         <service id="fin_search.product_service" synthetic="true" public="true" />
         <service id="fin_search.dynamic_product_group" synthetic="true" public="true" />
