@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Export\Adapters;
 use FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -30,7 +31,9 @@ class UrlAdapterTest extends TestCase
 
     public function testUrlContainsTheUrlOfTheProduct(): void
     {
-        $expectedUrl = 'http://test.uk/FINDOLOGIC-Product/FINDOLOGIC001';
+        $expectedUrl = Utils::versionGreaterOrEqual('6.4.11.0')
+            ? 'http://test.uk/FINDOLOGIC-Product-EN/FINDOLOGIC001'
+            : 'http://test.uk/FINDOLOGIC-Product/FINDOLOGIC001';
 
         $adapter = $this->getContainer()->get(UrlAdapter::class);
         $product = $this->createTestProduct();

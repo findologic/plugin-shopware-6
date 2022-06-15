@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
-use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
+use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
+use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
@@ -18,8 +19,9 @@ use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 
-class ProductServiceSeparateVariantsTest extends TestCase
+class ProductSearcherTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
@@ -29,30 +31,37 @@ class ProductServiceSeparateVariantsTest extends TestCase
     /** @var SalesChannelContext */
     private $salesChannelContext;
 
-    /** @var ProductServiceSeparateVariants */
-    private $defaultProductService;
+    /** @var ProductCriteriaBuilder */
+    private $productCriteriaBuilder;
+
+    /** @var ProductSearcher */
+    private $defaultProductSearcher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->salesChannelContext = $this->buildSalesChannelContext();
-        $this->defaultProductService = ProductServiceSeparateVariants::getInstance(
-            $this->getContainer(),
-            $this->salesChannelContext
-        );
-
-        // Reset the setting after each test
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'default']);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-        $this->defaultProductService->setConfig($mockedConfig);
+
+        $this->productCriteriaBuilder = new ProductCriteriaBuilder(
+            $this->salesChannelContext,
+            $this->getContainer()->get(SystemConfigService::class)
+        );
+        $this->defaultProductSearcher = new ProductSearcher(
+            $this->salesChannelContext,
+            $this->getContainer()->get('product.repository'),
+            $this->productCriteriaBuilder,
+            $mockedConfig
+        );
     }
 
     public function testFindsProductsAvailableForSearch(): void
     {
         $expectedProduct = $this->createVisibleTestProduct();
 
-        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
 
         $this->assertCount(1, $products);
         /** @var ProductEntity $product */
@@ -65,7 +74,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
     {
         $expectedProduct = $this->createVisibleTestProduct();
 
-        $products = $this->defaultProductService->searchVisibleProducts(20, 0, $expectedProduct->getId());
+        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0, $expectedProduct->getId());
 
         $this->assertCount(1, $products);
         /** @var ProductEntity $product */
@@ -74,30 +83,13 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $this->assertSame($expectedProduct->getId(), $product->getId());
     }
 
-    public function testGetInstancePopulatesSalesChannelContext(): void
-    {
-        $productService = new ProductServiceSeparateVariants($this->getContainer());
-        $this->getContainer()->set(ProductServiceSeparateVariants::CONTAINER_ID, $productService);
-
-        $this->assertNull($productService->getSalesChannelContext());
-
-        $actualProductService = ProductServiceSeparateVariants::getInstance(
-            $this->getContainer(),
-            $this->salesChannelContext
-        );
-
-        $this->assertSame($productService, $actualProductService);
-        $this->assertInstanceOf(SalesChannelContext::class, $productService->getSalesChannelContext());
-        $this->assertSame($this->salesChannelContext, $productService->getSalesChannelContext());
-    }
-
     public function testIgnoresProductsWithPriceZero(): void
     {
         $this->createVisibleTestProduct(
             ['price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 0, 'net' => 0, 'linked' => false]]]
         );
 
-        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
 
         $this->assertCount(0, $products);
     }
@@ -116,24 +108,25 @@ class ProductServiceSeparateVariantsTest extends TestCase
      */
     public function testExportsAvailableVariantForProductsWithPriceZero(string $config): void
     {
-        $inactiveProduct = $this->createVisibleTestProduct([
+        $variantInfo = array_merge(
+            $this->getBasicVariantData([
+                'id' => Uuid::randomHex(),
+                'productNumber' => 'FINDOLOGIC001.1',
+                'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
+            ]),
+            $this->getNameValues('FINDOLOGIC VARIANT')
+        );
+
+        $this->createVisibleTestProductWithCustomVariants([
             'active' => true,
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 0, 'net' => 0, 'linked' => false]]
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => Uuid::randomHex(),
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT',
-            'parentId' => $inactiveProduct->getId(),
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
-        ]));
+        ], [$variantInfo]);
 
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-        $this->defaultProductService->setConfig($mockedConfig);
+        $this->defaultProductSearcher->setConfig($mockedConfig);
 
-        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
 
         $this->assertCount(1, $products);
     }
@@ -143,31 +136,34 @@ class ProductServiceSeparateVariantsTest extends TestCase
      */
     public function testFindsVariantForInactiveProduct(string $config): void
     {
-        // Main product is inactive.
-        $inactiveProduct = $this->createVisibleTestProduct([
+        $variantInfo = array_merge(
+            $this->getBasicVariantData([
+                'id' => Uuid::randomHex(),
+                'productNumber' => 'FINDOLOGIC001.1',
+                'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 10, 'net' => 8, 'linked' => false]]
+            ]),
+            $this->getNameValues('FINDOLOGIC VARIANT')
+        );
+
+        $this->createVisibleTestProductWithCustomVariants([
             'active' => false,
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
-        ]);
-
-        $this->createVisibleTestProduct([
-            'id' => Uuid::randomHex(),
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT',
-            'stock' => 10,
-            'active' => true,
-            'parentId' => $inactiveProduct->getId(),
-            'tax' => ['name' => '9%', 'taxRate' => 9],
-            'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 10, 'net' => 8, 'linked' => false]]
-        ]);
+        ], [$variantInfo]);
 
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-        $this->defaultProductService->setConfig($mockedConfig);
+        $this->defaultProductSearcher->setConfig($mockedConfig);
 
-        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $product = $products->first();
 
-        $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
+        $this->assertCount(1, $products);
+        // They started to return the correct translation, instead of the defined product name
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->assertSame('FINDOLOGIC VARIANT EN', $product->getName());
+        } else {
+            $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
+        }
     }
 
     public function variantProvider(): array
@@ -247,17 +243,16 @@ class ProductServiceSeparateVariantsTest extends TestCase
         array $variants,
         int $expectedChildCount
     ): void {
-        $this->createVisibleTestProduct($mainProduct);
-
         $variantIds = [];
+        $customVariants = [];
         foreach ($variants as $variant) {
             $variantIds[] = $variant['id'];
-            $this->createVisibleTestProduct(
-                $this->getBasicVariantData($variant)
-            );
+            $customVariants[] = $this->getBasicVariantData($variant);
         }
 
-        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $this->createVisibleTestProductWithCustomVariants($mainProduct, $customVariants);
+
+        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         /** @var ProductEntity $product */
         $product = $products->first();
 
@@ -269,7 +264,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $expectedSecondVariantId = $variantIds[1];
         $expectedChildVariantId = $expectedSecondVariantId;
 
-        $childProductIterator = $this->defaultProductService->buildVariantIterator($product, 5);
+        $childProductIterator = $this->defaultProductSearcher->buildVariantIterator($product, 5);
         $childVariants = $this->getChildrenVariants($childProductIterator);
 
         try {
@@ -300,7 +295,28 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $secondOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
-        $this->createVisibleTestProduct([
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ]
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ]
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
             'id' => $expectedParentId,
             'active' => false,
             'configuratorSettings' => [
@@ -332,29 +348,9 @@ class ProductServiceSeparateVariantsTest extends TestCase
                     'representation' => 'box'
                 ]
             ]
-        ]);
+        ], $variants);
 
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'options' => [
-                ['id' => $firstOptionId]
-            ]
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'options' => [
-                ['id' => $secondOptionId]
-            ]
-        ]));
-
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $this->assertCount(2, $result->getElements());
 
         $products = array_values($result->getElements());
@@ -373,7 +369,28 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $secondOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
-        $this->createVisibleTestProduct([
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
             'id' => $expectedParentId,
             'active' => false,
             'configuratorSettings' => [
@@ -406,27 +423,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
                     'representation' => 'box'
                 ]
             ],
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'options' => [
-                ['id' => $firstOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'options' => [
-                ['id' => $secondOptionId]
-            ],
-        ]));
+        ], $variants);
 
         $this->getContainer()->get('product.repository')->update([
             [
@@ -439,13 +436,13 @@ class ProductServiceSeparateVariantsTest extends TestCase
             ]
         ], Context::createDefaultContext());
 
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $this->assertCount(1, $result->getElements());
 
         $product = $result->first();
         $this->assertSame($expectedMainVariantId, $product->getId());
 
-        $childrenIterator = $this->defaultProductService->buildVariantIterator($product, 20);
+        $childrenIterator = $this->defaultProductSearcher->buildVariantIterator($product, 20);
         $childrenVariants = $this->getChildrenVariants($childrenIterator);
 
         $this->assertCount(2, $childrenVariants);
@@ -469,7 +466,36 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $secondOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
-        $this->createVisibleTestProduct([
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'active' => false,
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+            'visibilities' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'visibility' => 0
+                ]
+            ]
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
             'id' => $expectedParentId,
             'active' => false,
             'configuratorSettings' => [
@@ -502,36 +528,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
                     'representation' => 'box'
                 ]
             ],
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'active' => false,
-            'options' => [
-                ['id' => $firstOptionId]
-            ],
-        ]));
-
-        // Create main variant, but make it not available for the sales channel.
-        $this->createTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $expectedParentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'options' => [
-                ['id' => $secondOptionId]
-            ],
-            'visibilities' => [
-                [
-                    'id' => Uuid::randomHex(),
-                    'salesChannelId' => Defaults::SALES_CHANNEL,
-                    'visibility' => 0
-                ]
-            ]
-        ]));
+        ], $variants);
 
         $this->getContainer()->get('product.repository')->update([
             [
@@ -544,7 +541,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
             ]
         ], Context::createDefaultContext());
 
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
 
         $this->assertEmpty($result->getElements());
     }
@@ -567,8 +564,8 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'parent']);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
 
-        $this->defaultProductService->setConfig($mockedConfig);
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $this->defaultProductSearcher->setConfig($mockedConfig);
+        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
         $this->assertCount(1, $elements);
@@ -595,8 +592,8 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'default']);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
 
-        $this->defaultProductService->setConfig($mockedConfig);
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $this->defaultProductSearcher->setConfig($mockedConfig);
+        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
         $this->assertCount(1, $elements);
@@ -688,8 +685,8 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'cheapest']);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
 
-        $this->defaultProductService->setConfig($mockedConfig);
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $this->defaultProductSearcher->setConfig($mockedConfig);
+        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
         $this->assertCount(1, $elements);
@@ -708,8 +705,8 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
 
-        $this->defaultProductService->setConfig($mockedConfig);
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $this->defaultProductSearcher->setConfig($mockedConfig);
+        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
         $this->assertCount(1, $elements);
@@ -764,8 +761,8 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'cheapest']);
         $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
 
-        $this->defaultProductService->setConfig($mockedConfig);
-        $result = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $this->defaultProductSearcher->setConfig($mockedConfig);
+        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
         $this->assertCount(1, $elements);
@@ -796,7 +793,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
             $this->setCreatedAtValue($sameDateId, $now);
         }
 
-        $products = $this->defaultProductService->searchVisibleProducts(20, 0);
+        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $productsKeyed = array_keys($products->getElements());
 
         $this->assertEquals($beforeId, $productsKeyed[0]);
@@ -826,7 +823,38 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $thirdOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
-        $this->createVisibleTestProduct([
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedThirdVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.3',
+            'name' => 'FINDOLOGIC VARIANT 3',
+            'options' => [
+                ['id' => $thirdOptionId]
+            ],
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
             'id' => $parentId,
             'active' => false,
             'configuratorSettings' => [
@@ -861,37 +889,7 @@ class ProductServiceSeparateVariantsTest extends TestCase
                     ],
                 ],
             ]
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'options' => [
-                ['id' => $firstOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'options' => [
-                ['id' => $secondOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedThirdVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.3',
-            'name' => 'FINDOLOGIC VARIANT 3',
-            'options' => [
-                ['id' => $thirdOptionId]
-            ],
-        ]));
+        ], $variants);
     }
 
     private function createProductWithDifferentPriceVariants(
@@ -909,7 +907,62 @@ class ProductServiceSeparateVariantsTest extends TestCase
         $thirdOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
-        $this->createVisibleTestProduct([
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $firstVariantPrice,
+                    'net' => $firstVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $secondVariantPrice,
+                    'net' => $secondVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedThirdVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.3',
+            'name' => 'FINDOLOGIC VARIANT 3',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $thirdVariantPrice,
+                    'net' => $thirdVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $thirdOptionId]
+            ],
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
             'id' => $parentId,
             'active' => false,
             'price' => [
@@ -952,60 +1005,6 @@ class ProductServiceSeparateVariantsTest extends TestCase
                     ],
                 ],
             ]
-        ]);
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.1',
-            'name' => 'FINDOLOGIC VARIANT 1',
-            'price' => [
-                [
-                    'currencyId' => Defaults::CURRENCY,
-                    'gross' => $firstVariantPrice,
-                    'net' => $firstVariantPrice,
-                    'linked' => false
-                ]
-            ],
-            'options' => [
-                ['id' => $firstOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.2',
-            'name' => 'FINDOLOGIC VARIANT 2',
-            'price' => [
-                [
-                    'currencyId' => Defaults::CURRENCY,
-                    'gross' => $secondVariantPrice,
-                    'net' => $secondVariantPrice,
-                    'linked' => false
-                ]
-            ],
-            'options' => [
-                ['id' => $secondOptionId]
-            ],
-        ]));
-
-        $this->createVisibleTestProduct($this->getBasicVariantData([
-            'id' => $expectedThirdVariantId,
-            'parentId' => $parentId,
-            'productNumber' => 'FINDOLOGIC001.3',
-            'name' => 'FINDOLOGIC VARIANT 3',
-            'price' => [
-                [
-                    'currencyId' => Defaults::CURRENCY,
-                    'gross' => $thirdVariantPrice,
-                    'net' => $thirdVariantPrice,
-                    'linked' => false
-                ]
-            ],
-            'options' => [
-                ['id' => $thirdOptionId]
-            ],
-        ]));
+        ], $variants);
     }
 }

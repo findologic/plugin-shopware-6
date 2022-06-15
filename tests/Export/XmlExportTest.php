@@ -25,8 +25,6 @@ class XmlExportTest extends TestCase
     use SalesChannelHelper;
     use IntegrationTestBehaviour;
 
-    protected const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
-
     /** @var Logger */
     protected $logger;
 
@@ -56,14 +54,14 @@ class XmlExportTest extends TestCase
     {
         $product = $this->createTestProduct();
 
-        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $this->getExport()->buildItems([$product]);
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());
     }
 
     public function testManuallyAssignedProductsInCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
     {
-        $product = $this->createTestProduct();
+        $product = $this->createTestProduct(['productNumber' => 'FINDOLOGIC1']);
 
         $category = $product->getCategories()->first();
         $this->crossSellCategories = [$category->getId()];
@@ -73,7 +71,7 @@ class XmlExportTest extends TestCase
 
     public function testProductsInDynamicProductGroupCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
     {
-        $product = $this->createTestProduct();
+        $product = $this->createTestProduct(['productNumber' => 'FINDOLOGIC1']);
 
         $category = $this->createTestCategory();
         $this->crossSellCategories = [$category->getId()];
@@ -93,7 +91,7 @@ class XmlExportTest extends TestCase
 
     public function buildItemsAndAssertError(ProductEntity $product, CategoryEntity $category)
     {
-        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $this->getExport()->buildItems([$product]);
         $this->assertEmpty($items);
 
         $errors = $this->productErrorHandler->getExportErrors()->getProductError($product->getId())->getErrors();
@@ -113,7 +111,7 @@ class XmlExportTest extends TestCase
     public function testKeywordsAreNotRequired(): void
     {
         $product = $this->createVisibleTestProduct(['tags' => []]);
-        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $this->getExport()->buildItems([$product]);
 
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());

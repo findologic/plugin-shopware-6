@@ -7,9 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
-use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
-
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Defaults;
@@ -49,13 +47,6 @@ class ProductIdExportTest extends XmlExportTest
         );
 
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
-
-        $productService = new ProductServiceSeparateVariants(
-            $this->getContainer(),
-            $this->salesChannelContext
-        );
-
-        $this->getContainer()->set(ProductServiceSeparateVariants::CONTAINER_ID, $productService);
     }
 
     public function buildItemsAndAssertError(ProductEntity $product, CategoryEntity $category): void
@@ -66,7 +57,7 @@ class ProductIdExportTest extends XmlExportTest
         $this->crossSellCategories = [$category->getId()];
 
         $exporter = $this->getExport();
-        $items = $exporter->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $exporter->buildItems([$product]);
         $this->assertEmpty($items);
 
         $errors = $exporter->getErrorHandler()->getExportErrors()->getProductError($product->getId())->getErrors();
@@ -87,7 +78,7 @@ class ProductIdExportTest extends XmlExportTest
     {
         $export = $this->getExport();
 
-        $items = $export->buildItems([], self::VALID_SHOPKEY, []);
+        $items = $export->buildItems([]);
         $this->assertEmpty($items);
 
         $errors = $export->getErrorHandler()->getExportErrors()->getGeneralErrors();
@@ -100,7 +91,7 @@ class ProductIdExportTest extends XmlExportTest
         $export = $this->getExport();
         $product = $this->createTestProduct(['categories' => []]);
 
-        $items = $export->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $export->buildItems([$product]);
         $response = $export->buildResponse($items, 0, 200);
 
         $this->assertSame(422, $response->getStatusCode());

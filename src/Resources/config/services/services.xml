@@ -42,6 +42,7 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
             <argument id="serializer.mapping.cache.symfony" type="service" />
+            <argument id="customer_group.repository" type="service" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">
@@ -149,7 +150,7 @@
             <argument type="service" id="fin_search.export_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\ExportItemAdapter" public="true">
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter" public="true">
             <argument type="service" id="service_container" />
             <argument type="service" id="router" />
             <argument type="service" id="event_dispatcher" />
@@ -157,6 +158,18 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory" />
             <argument type="service" id="fin_search.export_context" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" public="true">
+            <argument type="service" id="fin_search.sales_channel_context" />
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Search\ProductSearcher" public="true">
+            <argument type="service" id="fin_search.sales_channel_context" />
+            <argument type="service" id="product.repository" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
         </service>
 
         <service id="fin_search.sales_channel_context" synthetic="true" public="true" />
