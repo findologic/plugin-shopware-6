@@ -203,8 +203,10 @@ class ExportController extends AbstractController
         $exportContext = $this->buildExportContext();
         $this->container->set('fin_search.export_context', $exportContext);
 
-        $items = $this->export->buildItems(
-            $products->getElements()
+        $items = $this->export->buildItemsLegacy(
+            $products->getElements(),
+            $this->exportConfig->getShopkey(),
+            $exportContext->getCustomerGroups()
         );
 
         return $this->export->buildResponse(

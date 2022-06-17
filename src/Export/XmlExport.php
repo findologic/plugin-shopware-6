@@ -75,8 +75,6 @@ class XmlExport extends Export
      * be returned. Details about why specific products can not be exported, can be found in the logs.
      *
      * @param ProductEntity[] $productEntities
-     * @param string $shopkey Required for generating the user group hash.
-     * @param CustomerGroupEntity[] $customerGroups
      *
      * @return XMLItem[]
      */
@@ -85,6 +83,33 @@ class XmlExport extends Export
         $items = [];
         foreach ($productEntities as $productEntity) {
             $item = $this->exportSingleItem($productEntity);
+            if (!$item) {
+                continue;
+            }
+
+            $items[] = $item;
+        }
+
+        return $items;
+    }
+
+    /**
+     * @deprecated buildItemsLegacy function will be removed in plugin version 4.0
+     *
+     * Converts given product entities to Findologic XML items. In case items can not be exported, they won't
+     * be returned. Details about why specific products can not be exported, can be found in the logs.
+     *
+     * @param ProductEntity[] $productEntities
+     * @param string $shopkey Required for generating the user group hash.
+     * @param CustomerGroupEntity[] $customerGroups
+     *
+     * @return XMLItem[]
+     */
+    public function buildItemsLegacy(array $productEntities, string $shopkey, array $customerGroups): array
+    {
+        $items = [];
+        foreach ($productEntities as $productEntity) {
+            $item = $this->exportSingleItemLegacy($productEntity, $shopkey, $customerGroups);
             if (!$item) {
                 continue;
             }
@@ -139,6 +164,35 @@ class XmlExport extends Export
         }
 
         return $item;
+    }
+
+    private function exportSingleItemLegacy(ProductEntity $productEntity, string $shopkey, array $customerGroups): ?Item
+    {
+        if ($category = $this->getConfiguredCrossSellingCategory($productEntity)) {
+            $this->logger->warning(
+                sprintf(
+                    'Product with id %s (%s) was not exported because it is assigned to cross selling category %s (%s)',
+                    $productEntity->getId(),
+                    $productEntity->getName(),
+                    $category->getId(),
+                    implode(' > ', $category->getBreadcrumb())
+                ),
+                ['product' => $productEntity]
+            );
+
+            return null;
+        }
+
+        $xmlProduct = new XmlProduct(
+            $productEntity,
+            $this->router,
+            $this->container,
+            $shopkey,
+            $customerGroups
+        );
+        $xmlProduct->buildXmlItem($this->logger);
+
+        return $xmlProduct->getXmlItem();
     }
 
     private function calculatePageSize(int $maxPropertiesCount): int
