@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
+use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
@@ -18,6 +19,8 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
@@ -62,6 +65,9 @@ class ExportController extends AbstractController
     /** @var ExportConfiguration */
     private $exportConfig;
 
+    /** @var ProductService */
+    private $productService;
+
     /** @var ProductSearcher */
     private $productSearcher;
 
@@ -100,7 +106,9 @@ class ExportController extends AbstractController
             return $errorResponse;
         }
 
-        return $this->doExport();
+        return $this->legacyExtensionInstalled()
+            ? $this->doLegacyExport()
+            : $this->doExport();
     }
 
     /**
@@ -110,18 +118,26 @@ class ExportController extends AbstractController
     protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
         $this->exportConfig = ExportConfiguration::getInstance($request);
+
         $this->salesChannelService = $context ? $this->container->get(SalesChannelService::class) : null;
         $this->salesChannelContext = $this->salesChannelService ? $this->salesChannelService
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
-
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
+
+        $pluginConfig = $this->getPluginConfig();
+
+        $this->productService = ProductService::getInstance(
+            $this->container,
+            $this->salesChannelContext,
+            $pluginConfig
+        );
 
         $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
             $this->router,
             $this->container,
             $this->logger,
-            $this->getPluginConfig()->getCrossSellingCategories()
+            $pluginConfig->getCrossSellingCategories()
         );
 
         // No need to initialize components relying on the sales channel context.
@@ -169,6 +185,45 @@ class ExportController extends AbstractController
             $items,
             $this->exportConfig->getStart(),
             $this->productSearcher->findTotalProductCount(),
+            $this->headerHandler->getHeaders()
+        );
+    }
+
+    public function doLegacyExport(): Response
+    {
+        if ($this->exportConfig->getStart() === 0) {
+            $this->logger->info(
+                sprintf(
+                    '%s %s %s %s',
+                    'Decorating the FindologicProduct or ProductService class is deprecated since 3.x',
+                    'and will be removed in 4.0! Consider decorating the responsible export adapters in',
+                    'FinSearch/Export/Adapters or the relevant services in FinSearch/Export/Search.',
+                    'Make sure to follow the upgrade guide at FinSearch/UPGRADE-3.0.'
+                )
+            );
+        }
+
+        $this->warmUpDynamicProductGroups();
+
+        $products = $this->productService->searchVisibleProducts(
+            $this->exportConfig->getCount(),
+            $this->exportConfig->getStart(),
+            $this->exportConfig->getProductId()
+        );
+
+        $exportContext = $this->buildExportContext();
+        $this->container->set('fin_search.export_context', $exportContext);
+
+        $items = $this->export->buildItemsLegacy(
+            $products->getElements(),
+            $this->exportConfig->getShopkey(),
+            $exportContext->getCustomerGroups()
+        );
+
+        return $this->export->buildResponse(
+            $items,
+            $this->exportConfig->getStart(),
+            $this->productService->getTotalProductCount(),
             $this->headerHandler->getHeaders()
         );
     }
@@ -266,5 +321,21 @@ class ExportController extends AbstractController
         return $this->customerGroupRepository
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
+    }
+
+    private function legacyExtensionInstalled(): bool
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
+
+        /** @var PluginEntity $plugin */
+        $plugin = $this->container->get('plugin.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->first();
+        if ($plugin !== null && $plugin->getActive()) {
+            return version_compare($plugin->getVersion(), '3.0.0', '<');
+        }
+
+        return false;
     }
 }
