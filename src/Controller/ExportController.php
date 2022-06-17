@@ -13,7 +13,6 @@ use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
-use FINDOLOGIC\FinSearch\Helper\StaticHelper;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -192,6 +191,18 @@ class ExportController extends AbstractController
 
     public function doLegacyExport(): Response
     {
+        if ($this->exportConfig->getStart() === 0) {
+            $this->logger->info(
+                sprintf(
+                    '%s %s %s %s',
+                    'Decorating the FindologicProduct or ProductService class is deprecated since 3.x',
+                    'and will be removed in 4.0! Consider decorating the responsible export adapters in',
+                    'FinSearch/Export/Adapters or the relevant services in FinSearch/Export/Search.',
+                    'Make sure to follow the upgrade guide at FinSearch/UPGRADE-3.0.'
+                )
+            );
+        }
+
         $this->warmUpDynamicProductGroups();
 
         $products = $this->productService->searchVisibleProducts(
