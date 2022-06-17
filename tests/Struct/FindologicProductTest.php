@@ -1527,7 +1527,7 @@ class FindologicProductTest extends TestCase
             $config
         );
 
-        $this->assertCount(6, $findologicProduct->getAttributes());
+        $this->assertCount(5, $findologicProduct->getAttributes());
         $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
 
         $catUrls = $findologicProduct->getAttributes()[0]->getValues();
