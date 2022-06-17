@@ -158,11 +158,10 @@ class XmlExport extends Export
             return null;
         }
 
-        $maxPropertiesCount = $this->productSearcher->findMaxPropertiesCount($productEntity);
         $initialItem = $this->xmlFileConverter->createItem($productEntity->getId());
         $item = $this->exportItemAdapter->adapt($initialItem, $productEntity, $this->logger);
 
-        $pageSize = $this->calculatePageSize($maxPropertiesCount);
+        $pageSize = $this->calculatePageSize($productEntity);
         $iterator = $this->productSearcher->buildVariantIterator($productEntity, $pageSize);
 
         while (($variantsResult = $iterator->fetch()) !== null) {
@@ -207,8 +206,9 @@ class XmlExport extends Export
         return $xmlProduct->getXmlItem();
     }
 
-    private function calculatePageSize(int $maxPropertiesCount): int
+    private function calculatePageSize(ProductEntity $productEntity): int
     {
+        $maxPropertiesCount = $this->productSearcher->findMaxPropertiesCount($productEntity);
         if ($maxPropertiesCount >= self::MAXIMUM_PROPERTIES_COUNT) {
             return 1;
         }

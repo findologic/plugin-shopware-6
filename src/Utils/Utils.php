@@ -92,7 +92,8 @@ class Utils
         );
     }
 
-    public static function addVariantAssociations(Criteria $criteria): Criteria {
+    public static function addVariantAssociations(Criteria $criteria): Criteria
+    {
         return $criteria->addAssociations(
             [
                 'categories',
