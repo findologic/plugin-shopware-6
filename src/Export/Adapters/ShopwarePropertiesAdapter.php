@@ -69,26 +69,6 @@ class ShopwarePropertiesAdapter
             }
         }
 
-        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-            $settingOption = $setting->getOption();
-            if ($settingOption) {
-                $group = $settingOption->getGroup();
-            }
-
-            if (!$group) {
-                continue;
-            }
-
-            $groupName = $this->getAttributeKey($group->getTranslation('name'));
-            $optionName = $settingOption->getTranslation('name');
-            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                $configProperty = new Property($groupName);
-                $configProperty->addValue(Utils::removeControlCharacters($optionName));
-
-                $properties[] = $configProperty;
-            }
-        }
-
         return $properties;
     }
 
