@@ -229,6 +229,13 @@ class ProductCriteriaBuilder
         return $this;
     }
 
+    public function withVariantAssociations(): self
+    {
+        Utils::addVariantAssociations($this->criteria);
+
+        return $this;
+    }
+
     public function withPriceZeroFilter(): self
     {
         $this->criteria->addFilter(

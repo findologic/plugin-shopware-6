@@ -223,26 +223,6 @@ class AttributeAdapter
             }
         }
 
-        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-            $settingOption = $setting->getOption();
-            if ($settingOption) {
-                $group = $settingOption->getGroup();
-            }
-
-            if (!$group) {
-                continue;
-            }
-
-            $groupName = $this->getAttributeKey($group->getTranslation('name'));
-            $optionName = $settingOption->getTranslation('name');
-            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                $configAttrib = new Attribute($groupName);
-                $configAttrib->addValue(Utils::removeControlCharacters($optionName));
-
-                $attributes[] = $configAttrib;
-            }
-        }
-
         return $attributes;
     }
 

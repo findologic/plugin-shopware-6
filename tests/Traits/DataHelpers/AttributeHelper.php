@@ -46,23 +46,6 @@ trait AttributeHelper
                     ->getName()
             ]
         );
-        $attributes[] = new Attribute(
-            $productEntity->getProperties()
-                ->first()
-                ->getProductConfiguratorSettings()
-                ->first()
-                ->getOption()
-                ->getGroup()
-                ->getName(),
-            [
-                $productEntity->getProperties()
-                    ->first()
-                    ->getProductConfiguratorSettings()
-                    ->first()
-                    ->getOption()
-                    ->getName()
-            ]
-        );
 
         $shippingFree = $this->translateBooleanValue($productEntity->getShippingFree());
         $attributes[] = new Attribute('shipping_free', [$shippingFree]);
