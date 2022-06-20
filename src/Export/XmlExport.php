@@ -38,6 +38,12 @@ class XmlExport extends Export
     /** @var XmlFileConverter */
     private $xmlFileConverter;
 
+    /** @var ExportItemAdapter */
+    private $exportItemAdapter;
+
+    /** @var ProductSearcher */
+    private $productSearcher;
+
     public function __construct(
         RouterInterface $router,
         ContainerInterface $container,
@@ -80,6 +86,8 @@ class XmlExport extends Export
      */
     public function buildItems(array $productEntities): array
     {
+        $this->initialize();
+
         $items = [];
         foreach ($productEntities as $productEntity) {
             $item = $this->exportSingleItem($productEntity);
@@ -107,6 +115,8 @@ class XmlExport extends Export
      */
     public function buildItemsLegacy(array $productEntities, string $shopkey, array $customerGroups): array
     {
+        $this->initialize();
+
         $items = [];
         foreach ($productEntities as $productEntity) {
             $item = $this->exportSingleItemLegacy($productEntity, $shopkey, $customerGroups);
@@ -123,6 +133,12 @@ class XmlExport extends Export
     protected function getLogger(): LoggerInterface
     {
         return $this->logger;
+    }
+
+    private function initialize(): void
+    {
+        $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
+        $this->productSearcher = $this->container->get(ProductSearcher::class);
     }
 
     private function exportSingleItem(ProductEntity $productEntity): ?Item
@@ -142,22 +158,17 @@ class XmlExport extends Export
             return null;
         }
 
-        /** @var ExportItemAdapter $exportItemAdapter */
-        $exportItemAdapter = $this->container->get(ExportItemAdapter::class);
-        /** @var ProductSearcher $productService */
-        $productSearcher = $this->container->get(ProductSearcher::class);
-        $maxPropertiesCount = $productSearcher->findMaxPropertiesCount($productEntity);
         $initialItem = $this->xmlFileConverter->createItem($productEntity->getId());
-        $item = $exportItemAdapter->adapt($initialItem, $productEntity, $this->logger);
+        $item = $this->exportItemAdapter->adapt($initialItem, $productEntity, $this->logger);
 
-        $pageSize = $this->calculatePageSize($maxPropertiesCount);
-        $iterator = $productSearcher->buildVariantIterator($productEntity, $pageSize);
+        $pageSize = $this->calculatePageSize($productEntity);
+        $iterator = $this->productSearcher->buildVariantIterator($productEntity, $pageSize);
 
         while (($variantsResult = $iterator->fetch()) !== null) {
             /** @var ProductCollection $variants */
             $variants = $variantsResult->getEntities();
             foreach ($variants->getElements() as $variant) {
-                if ($adaptedItem = $exportItemAdapter->adaptVariant($item ?: $initialItem, $variant)) {
+                if ($adaptedItem = $this->exportItemAdapter->adaptVariant($item ?: $initialItem, $variant)) {
                     $item = $adaptedItem;
                 }
             }
@@ -195,8 +206,9 @@ class XmlExport extends Export
         return $xmlProduct->getXmlItem();
     }
 
-    private function calculatePageSize(int $maxPropertiesCount): int
+    private function calculatePageSize(ProductEntity $productEntity): int
     {
+        $maxPropertiesCount = $this->productSearcher->findMaxPropertiesCount($productEntity);
         if ($maxPropertiesCount >= self::MAXIMUM_PROPERTIES_COUNT) {
             return 1;
         }

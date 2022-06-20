@@ -265,7 +265,7 @@ class ProductSearcher
             ->withParentIdFilterWithVisibility($product)
             ->withOutOfStockFilter()
             ->withPriceZeroFilter()
-            ->withProductAssociations();
+            ->withVariantAssociations();
 
         return new RepositoryIterator(
             $this->productRepository,

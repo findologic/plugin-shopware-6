@@ -77,23 +77,29 @@ class Utils
      */
     public static function addProductAssociations(Criteria $criteria): Criteria
     {
+        self::addVariantAssociations($criteria);
+
         return $criteria->addAssociations(
             [
                 'seoUrls',
-                'categories',
-                'categories.seoUrls',
                 'translations',
                 'searchKeywords',
                 'media',
                 'manufacturer',
                 'manufacturer.translations',
                 'cover',
+            ]
+        );
+    }
+
+    public static function addVariantAssociations(Criteria $criteria): Criteria
+    {
+        return $criteria->addAssociations(
+            [
+                'categories',
+                'categories.seoUrls',
                 'properties',
-                'properties.group',
-                'properties.productConfiguratorSettings',
-                'properties.productConfiguratorSettings.option',
-                'properties.productConfiguratorSettings.option.group',
-                'properties.productConfiguratorSettings.option.group.translations',
+                'properties.group'
             ]
         );
     }

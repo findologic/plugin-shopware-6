@@ -421,7 +421,7 @@ class AttributeAdapterTest extends TestCase
         $adapter = $this->getAttributeAdapter($config);
         $attributes = $adapter->adapt($productEntity);
 
-        $this->assertCount(6, $attributes);
+        $this->assertCount(5, $attributes);
         $this->assertSame('cat_url', $attributes[0]->getKey());
 
         $catUrls = $attributes[0]->getValues();

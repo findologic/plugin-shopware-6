@@ -1246,23 +1246,6 @@ class FindologicProductTest extends TestCase
                     ->getName()
             ]
         );
-        $attributes[] = new Attribute(
-            $productEntity->getProperties()
-                ->first()
-                ->getProductConfiguratorSettings()
-                ->first()
-                ->getOption()
-                ->getGroup()
-                ->getName(),
-            [
-                $productEntity->getProperties()
-                    ->first()
-                    ->getProductConfiguratorSettings()
-                    ->first()
-                    ->getOption()
-                    ->getName()
-            ]
-        );
 
         $shippingFree = $this->translateBooleanValue($productEntity->getShippingFree());
         $attributes[] = new Attribute('shipping_free', [$shippingFree]);
@@ -1544,7 +1527,7 @@ class FindologicProductTest extends TestCase
             $config
         );
 
-        $this->assertCount(6, $findologicProduct->getAttributes());
+        $this->assertCount(5, $findologicProduct->getAttributes());
         $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
 
         $catUrls = $findologicProduct->getAttributes()[0]->getValues();

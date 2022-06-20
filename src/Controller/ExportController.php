@@ -65,6 +65,9 @@ class ExportController extends AbstractController
     /** @var ExportConfiguration */
     private $exportConfig;
 
+    /** @var ExportContext */
+    private $exportContext;
+
     /** @var ProductService */
     private $productService;
 
@@ -146,6 +149,9 @@ class ExportController extends AbstractController
             return;
         }
 
+        $this->exportContext = $this->buildExportContext();
+        $this->container->set('fin_search.export_context', $this->exportContext);
+
         $this->productSearcher = $this->container->get(ProductSearcher::class);
 
         $this->manipulateRequestWithSalesChannelInformation($request);
@@ -173,9 +179,6 @@ class ExportController extends AbstractController
             $this->exportConfig->getStart(),
             $this->exportConfig->getProductId()
         );
-
-        $exportContext = $this->buildExportContext();
-        $this->container->set('fin_search.export_context', $exportContext);
 
         $items = $this->export->buildItems(
             $products->getElements()
@@ -211,13 +214,10 @@ class ExportController extends AbstractController
             $this->exportConfig->getProductId()
         );
 
-        $exportContext = $this->buildExportContext();
-        $this->container->set('fin_search.export_context', $exportContext);
-
         $items = $this->export->buildItemsLegacy(
             $products->getElements(),
             $this->exportConfig->getShopkey(),
-            $exportContext->getCustomerGroups()
+            $this->exportContext->getCustomerGroups()
         );
 
         return $this->export->buildResponse(
