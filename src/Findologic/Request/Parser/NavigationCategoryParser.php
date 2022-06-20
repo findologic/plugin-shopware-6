@@ -11,7 +11,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Storefront\Page\GenericPageLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -20,18 +19,10 @@ class NavigationCategoryParser
     /** @var ContainerInterface */
     private $container;
 
-    /**
-     * @var GenericPageLoader|null
-     * @deprecated tag:v3.0.0 Will be removed without replacement.
-     */
-    private $genericPageLoader;
-
     public function __construct(
-        ContainerInterface $container,
-        ?GenericPageLoader $genericPageLoader = null
+        ContainerInterface $container
     ) {
         $this->container = $container;
-        $this->genericPageLoader = $genericPageLoader;
     }
 
     /**
