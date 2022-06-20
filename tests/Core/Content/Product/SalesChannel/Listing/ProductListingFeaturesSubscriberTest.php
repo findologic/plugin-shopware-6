@@ -104,9 +104,6 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /** @var ServiceConfigResource|MockObject */
     private $serviceConfigResourceMock;
 
-    /** @var GenericPageLoader|MockObject */
-    private $genericPageLoaderMock;
-
     /** @var Container|MockObject */
     private $containerMock;
 
@@ -618,9 +615,6 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->serviceConfigResourceMock = $this->getMockBuilder(ServiceConfigResource::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->genericPageLoaderMock = $this->getMockBuilder(GenericPageLoader::class)
-            ->disableOriginalConstructor()
-            ->getMock();
         $this->containerMock = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
         $this->containerMock->method('getParameter')->with('kernel.shopware_version')->willReturn('6.3');
 
@@ -701,7 +695,6 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             $this->apiClientMock,
             $this->apiConfigMock,
             $this->configMock,
-            $this->genericPageLoaderMock,
             $sortingService,
             $paginationService,
             $sortingHandlerService
@@ -907,7 +900,6 @@ XML;
         $reflectionProperty = $reflection->getProperty('header');
         $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($pageMock, $headerMock);
-        $this->genericPageLoaderMock->expects($this->any())->method('load')->willReturn($pageMock);
 
         $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
         $headerMock->expects($this->any())->method('getNavigation')->willReturn($categoryTreeMock);
