@@ -60,9 +60,6 @@ class SearchNavigationRequestHandlerTest extends TestCase
     /** @var FindologicRequestFactory|MockObject */
     private $findologicRequestFactoryMock;
 
-    /** @var GenericPageLoader|MockObject */
-    private $genericPageLoaderMock;
-
     /** @var SalesChannelContext */
     protected $salesChannelContext;
 
@@ -78,9 +75,6 @@ class SearchNavigationRequestHandlerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->findologicRequestFactoryMock = $this->getMockBuilder(FindologicRequestFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->genericPageLoaderMock = $this->getMockBuilder(GenericPageLoader::class)
             ->disableOriginalConstructor()
             ->getMock();
     }
@@ -153,10 +147,6 @@ class SearchNavigationRequestHandlerTest extends TestCase
             ->method('send')
             ->willReturn(new Xml21Response($this->getMockResponse()));
 
-        $pageMock = $this->getMockBuilder(Page::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $requestHandler = $this->buildNavigationRequestHandler();
         $requestHandler->handleRequest($event);
 
@@ -183,7 +173,6 @@ class SearchNavigationRequestHandlerTest extends TestCase
             $this->configMock,
             $this->apiConfig,
             $this->apiClientMock,
-            $this->genericPageLoaderMock,
             $this->getContainer()->get(SortingHandlerService::class),
             $this->getContainer()
         );
