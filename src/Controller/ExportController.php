@@ -24,7 +24,7 @@ use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
@@ -57,7 +57,7 @@ class ExportController extends AbstractController
     /** @var CacheItemPoolInterface */
     private $cache;
 
-    /** @var EventDispatcher */
+    /** @var EventDispatcherInterface */
     private $eventDispatcher;
 
     /** @var EntityRepository */
@@ -93,7 +93,7 @@ class ExportController extends AbstractController
         HeaderHandler $headerHandler,
         $salesChannelContextFactory,
         CacheItemPoolInterface $cache,
-        EventDispatcher $eventDispatcher,
+        EventDispatcherInterface $eventDispatcher,
         EntityRepository $customerGroupRepository
     ) {
         $this->logger = $logger;

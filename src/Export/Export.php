@@ -9,9 +9,8 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
@@ -35,7 +34,7 @@ abstract class Export
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
-        EventDispatcher $eventDispatcher,
+        EventDispatcherInterface $eventDispatcher,
         array $crossSellingCategories = []
     ): Export {
         switch ($type) {

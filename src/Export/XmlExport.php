@@ -17,7 +17,7 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -34,7 +34,7 @@ class XmlExport extends Export
     /** @var LoggerInterface */
     private $logger;
 
-    /** @var EventDispatcher */
+    /** @var EventDispatcherInterface */
     private $eventDispatcher;
 
     /** @var string[] */
@@ -53,7 +53,7 @@ class XmlExport extends Export
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
-        EventDispatcher $eventDispatcher,
+        EventDispatcherInterface $eventDispatcher,
         array $crossSellingCategories = [],
         ?XmlFileConverter $xmlFileConverter = null
     ) {

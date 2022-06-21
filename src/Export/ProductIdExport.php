@@ -8,7 +8,7 @@ use FINDOLOGIC\Export\XML\XMLExporter;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -21,7 +21,7 @@ class ProductIdExport extends XmlExport
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
-        EventDispatcher $eventDispatcher,
+        EventDispatcherInterface $eventDispatcher,
         array $crossSellingCategories = [],
         ?XMLExporter $xmlFileConverter = null
     ) {
