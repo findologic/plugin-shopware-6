@@ -41,8 +41,9 @@
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
-            <argument id="serializer.mapping.cache.symfony" type="service" />
-            <argument id="customer_group.repository" type="service" />
+            <argument type="service" id="serializer.mapping.cache.symfony" />
+            <argument type="service" id="event_dispatcher" />
+            <argument type="service" id="customer_group.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">

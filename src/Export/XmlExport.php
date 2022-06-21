@@ -9,6 +9,7 @@ use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\Export\XML\XMLExporter as XmlFileConverter;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
+use FINDOLOGIC\FinSearch\Export\Events\AfterItemBuildEvent;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -16,6 +17,7 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -31,6 +33,9 @@ class XmlExport extends Export
 
     /** @var LoggerInterface */
     private $logger;
+
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
 
     /** @var string[] */
     private $crossSellingCategories;
@@ -48,12 +53,14 @@ class XmlExport extends Export
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
+        EventDispatcherInterface $eventDispatcher,
         array $crossSellingCategories = [],
         ?XmlFileConverter $xmlFileConverter = null
     ) {
         $this->router = $router;
         $this->container = $container;
         $this->logger = $logger;
+        $this->eventDispatcher = $eventDispatcher;
         $this->crossSellingCategories = $crossSellingCategories;
         $this->xmlFileConverter = $xmlFileConverter ?? Exporter::create(Exporter::TYPE_XML);
     }
@@ -94,6 +101,8 @@ class XmlExport extends Export
             if (!$item) {
                 continue;
             }
+
+            $this->eventDispatcher->dispatch(new AfterItemBuildEvent($item), AfterItemBuildEvent::NAME);
 
             $items[] = $item;
         }
@@ -139,6 +148,7 @@ class XmlExport extends Export
     {
         $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
         $this->productSearcher = $this->container->get(ProductSearcher::class);
+        $this->eventDispatcher = $this->container->get('event_dispatcher');
     }
 
     private function exportSingleItem(ProductEntity $productEntity): ?Item

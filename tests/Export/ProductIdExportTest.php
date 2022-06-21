@@ -16,6 +16,7 @@ use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Storefront\Framework\Routing\Router;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ProductIdExportTest extends XmlExportTest
 {
@@ -127,11 +128,14 @@ class ProductIdExportTest extends XmlExportTest
     {
         /** @var Router $router */
         $router = $this->getContainer()->get(Router::class);
+        /** @var EventDispatcherInterface $eventDispatcher */
+        $eventDispatcher = $this->getContainer()->get('event_dispatcher');
 
         return new ProductIdExport(
             $router,
             $this->getContainer(),
             $this->logger,
+            $eventDispatcher,
             $this->crossSellCategories
         );
     }

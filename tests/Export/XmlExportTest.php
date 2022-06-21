@@ -18,6 +18,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class XmlExportTest extends TestCase
 {
@@ -121,11 +122,14 @@ class XmlExportTest extends TestCase
     {
         /** @var Router $router */
         $router = $this->getContainer()->get(Router::class);
+        /** @var EventDispatcherInterface $eventDispatcher */
+        $eventDispatcher = $this->getContainer()->get('event_dispatcher');
 
         return new XmlExport(
             $router,
             $this->getContainer(),
             $this->logger,
+            $eventDispatcher,
             $this->crossSellCategories
         );
     }
