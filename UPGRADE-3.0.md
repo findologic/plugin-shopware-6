@@ -55,7 +55,7 @@ The classes relevant to the old export logic are now deprecated and will be remo
 - `FINDOLOGIC\FinSearch\Export\ProductService`
   - Method `addProductAssociations` now includes child associations separately
 - `FINDOLOGIC\FinSearch\Export\XmlExport`
-  - Added new member variables `$exportItemAdapter` and `$productSearcher`
+  - Added new member variables `$exportItemAdapter`, `$productSearcher` and `$eventDispatcher`
   - Changed `buildItems()` to `buildItemsLegacy()`
   - Changed `exportSingleItem()` to `exportSingleItemLegacy()`
   - The signature of method `buildItems()` has been updated to `XmlExport::buildItems(array $productEntities): array`
@@ -77,7 +77,8 @@ The classes relevant to the old export logic are now deprecated and will be remo
   - The adapter services are called for each variant separately
   - The whole export logic from `FINDOLOGIC\FinSearch\Struct\FindologicProduct` was split into the relevant adapters
 - Introduced events at `FINDOLOGIC\FinSearch\Export\Events`
-  - Manipulate the product data in one of the four new events. Before/after adapting a product/variant.
+  - Manipulate the product data in one of the five new events. Before/after adapting a product/variant, or when the item
+    was built successfully.
 - `FINDOLOGIC\FinSearch\Export\ExportContext` includes the relevant information needed across the export
 - `FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder`
   - Responsible to build the criteria for `FINDOLOGIC\FinSearch\Export\Search\ProductSearcher`

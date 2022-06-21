@@ -9,6 +9,7 @@ use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\Export\XML\XMLExporter as XmlFileConverter;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
+use FINDOLOGIC\FinSearch\Export\Events\AfterItemBuildEvent;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -16,6 +17,7 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -43,6 +45,9 @@ class XmlExport extends Export
 
     /** @var ProductSearcher */
     private $productSearcher;
+
+    /** @var EventDispatcher */
+    private $eventDispatcher;
 
     public function __construct(
         RouterInterface $router,
@@ -95,6 +100,8 @@ class XmlExport extends Export
                 continue;
             }
 
+            $this->eventDispatcher->dispatch(new AfterItemBuildEvent($item), AfterItemBuildEvent::NAME);
+
             $items[] = $item;
         }
 
@@ -139,6 +146,7 @@ class XmlExport extends Export
     {
         $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
         $this->productSearcher = $this->container->get(ProductSearcher::class);
+        $this->eventDispatcher = $this->container->get('event_dispatcher');
     }
 
     private function exportSingleItem(ProductEntity $productEntity): ?Item
