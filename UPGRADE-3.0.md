@@ -3,12 +3,12 @@
 Changes: [2.8.2...3.0.0](https://github.com/findologic/plugin-shopware-6/compare/2.8.2...3.0.0)  
 Changelog: [3.0.0 Release](https://github.com/findologic/plugin-shopware-6/releases/tag/3.0.0)
 
-This file is **irrelevant** for you in case you do **not have an extension plugin**.
+This file is **irrelevant** for you in case you do **not have a plugin extension**.
 
 ---
 
 This file should help you upgrade from 2.x to 3.x, by providing you with
-information that you will need, in case you have an extension plugin that
+information that you are going to need, in case you have an extension plugin that
 overrides or implements any classes of the main plugin.  
 Information about private methods won't be preserved.
 
