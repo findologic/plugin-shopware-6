@@ -38,7 +38,7 @@ The classes relevant to the old export logic are now deprecated and will be remo
 ### Controller
 
 - `FINDOLOGIC\FinSearch\Controller\ExportController`
-  - Added new member variables `$customerGroupRepository`, `$exportContext` and `$productSearcher`
+  - Added new member variables `$eventDispatcher`, `$customerGroupRepository`, `$exportContext` and `$productSearcher`
   - Removed member variable `$pluginConfig`
   - Update the export logic to use our new export services
   - Implemented a logic, to still use the legacy export, when an outdated extension is installed
@@ -46,8 +46,10 @@ The classes relevant to the old export logic are now deprecated and will be remo
 ### Export
 
 - `FINDOLOGIC\FinSearch\Export\Export`
+  - The signature of method `getInstance()` has received the argument `EventDispatcherInterface $eventDispatcher`
   - The signature of method `buildItems()` has been updated to `Export::buildItems(array $productEntities): array`
 - `FINDOLOGIC\FinSearch\Export\ProductIdExport`
+  - The signature of the constructor has received the argument `EventDispatcherInterface $eventDispatcher`
   - The signature of method `buildItems()` has been updated to `ProductIdExport::buildItems(array $productEntities): array`
 - `FINDOLOGIC\FinSearch\Export\ProductImageService`
   - The signature of method `getProductImages()` has been updated to 
@@ -56,9 +58,10 @@ The classes relevant to the old export logic are now deprecated and will be remo
   - Method `addProductAssociations` now includes child associations separately
 - `FINDOLOGIC\FinSearch\Export\XmlExport`
   - Added new member variables `$exportItemAdapter`, `$productSearcher` and `$eventDispatcher`
+  - The signature of the constructor has received the argument `EventDispatcherInterface $eventDispatcher`
+  - The signature of method `buildItems()` has been updated to `XmlExport::buildItems(array $productEntities): array`
   - Changed `buildItems()` to `buildItemsLegacy()`
   - Changed `exportSingleItem()` to `exportSingleItemLegacy()`
-  - The signature of method `buildItems()` has been updated to `XmlExport::buildItems(array $productEntities): array`
   - `buildItems()` now uses the new adapter logic and fetches the variants paginated
 
 ### Utils
