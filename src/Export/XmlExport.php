@@ -34,6 +34,9 @@ class XmlExport extends Export
     /** @var LoggerInterface */
     private $logger;
 
+    /** @var EventDispatcher */
+    private $eventDispatcher;
+
     /** @var string[] */
     private $crossSellingCategories;
 
@@ -46,19 +49,18 @@ class XmlExport extends Export
     /** @var ProductSearcher */
     private $productSearcher;
 
-    /** @var EventDispatcher */
-    private $eventDispatcher;
-
     public function __construct(
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
+        EventDispatcher $eventDispatcher,
         array $crossSellingCategories = [],
         ?XmlFileConverter $xmlFileConverter = null
     ) {
         $this->router = $router;
         $this->container = $container;
         $this->logger = $logger;
+        $this->eventDispatcher = $eventDispatcher;
         $this->crossSellingCategories = $crossSellingCategories;
         $this->xmlFileConverter = $xmlFileConverter ?? Exporter::create(Exporter::TYPE_XML);
     }

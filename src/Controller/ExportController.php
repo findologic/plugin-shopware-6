@@ -24,6 +24,7 @@ use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
@@ -55,6 +56,9 @@ class ExportController extends AbstractController
 
     /** @var CacheItemPoolInterface */
     private $cache;
+
+    /** @var EventDispatcher */
+    private $eventDispatcher;
 
     /** @var EntityRepository */
     private $customerGroupRepository;
@@ -89,6 +93,7 @@ class ExportController extends AbstractController
         HeaderHandler $headerHandler,
         $salesChannelContextFactory,
         CacheItemPoolInterface $cache,
+        EventDispatcher $eventDispatcher,
         EntityRepository $customerGroupRepository
     ) {
         $this->logger = $logger;
@@ -96,6 +101,7 @@ class ExportController extends AbstractController
         $this->headerHandler = $headerHandler;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->cache = $cache;
+        $this->eventDispatcher = $eventDispatcher;
         $this->customerGroupRepository = $customerGroupRepository;
     }
 
@@ -140,6 +146,7 @@ class ExportController extends AbstractController
             $this->router,
             $this->container,
             $this->logger,
+            $this->eventDispatcher,
             $pluginConfig->getCrossSellingCategories()
         );
 
