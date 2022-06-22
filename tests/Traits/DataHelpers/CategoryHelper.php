@@ -39,4 +39,13 @@ trait CategoryHelper
 
         return $result->first();
     }
+
+    public function getCategory(): CategoryEntity
+    {
+        $categoryRepo = $this->getContainer()->get('category.repository');
+        $categories = $categoryRepo->search(new Criteria(), Context::createDefaultContext());
+
+        /** @var CategoryEntity $expectedCategory */
+        return $categories->first();
+    }
 }

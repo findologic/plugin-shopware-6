@@ -29,18 +29,26 @@ class ProductImageService
     /**
      * @return Image[]
      */
-    public function getProductImages(ProductEntity $product): array
+    public function getProductImages(ProductEntity $product, bool $considerVariants = true): array
     {
         $productHasImages = $this->productHasImages($product);
-        $hasVariantWithImages = $this->hasVariantWithImages($product);
-        if (!$productHasImages && !$hasVariantWithImages) {
+        $hasVariantWithImages = false;
+
+        if ($considerVariants) {
+            $hasVariantWithImages = $this->hasVariantWithImages($product);
+        }
+
+        if (
+            !$productHasImages && !$considerVariants ||
+            $considerVariants && !$productHasImages && !$hasVariantWithImages
+        ) {
             return $this->getFallbackImages();
         }
 
         $images = new ProductMediaCollection();
         if ($productHasImages) {
             $images = $this->getSortedProductImages($product);
-        } elseif ($hasVariantWithImages) {
+        } elseif ($considerVariants && $hasVariantWithImages) {
             $images = $this->getSortedVariantImages($product);
         }
 

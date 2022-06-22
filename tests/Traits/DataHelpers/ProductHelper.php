@@ -108,7 +108,10 @@ trait ProductHelper
             ];
         }
         $productData = [];
-        $productData = array_merge($productData, $this->getNameValues('FINDOLOGIC Product'));
+        $productData = array_merge(
+            $productData,
+            $this->getNameValues($overrideData['name'] ?? 'FINDOLOGIC Product')
+        );
 
         $productData = array_merge($productData, [
             'id' => $id,
@@ -174,6 +177,7 @@ trait ProductHelper
         try {
             $criteria = new Criteria([$id]);
             $criteria = Utils::addProductAssociations($criteria);
+            $criteria = Utils::addChildrenAssociations($criteria);
             $criteria->addAssociation('visibilities');
 
             return $this->getContainer()->get('product.repository')->search($criteria, $context)->first();
