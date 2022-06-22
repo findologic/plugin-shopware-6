@@ -26,7 +26,6 @@ use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
-use Shopware\Storefront\Page\GenericPageLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class FindologicSearchService
@@ -54,11 +53,6 @@ class FindologicSearchService
     private $pluginConfig;
 
     /**
-     * @var GenericPageLoader
-     */
-    private $genericPageLoader;
-
-    /**
      * @var SortingService
      */
     private $sortingService;
@@ -76,7 +70,6 @@ class FindologicSearchService
         ApiClient $apiClient,
         ApiConfig $apiConfig,
         PluginConfig $pluginConfig,
-        GenericPageLoader $genericPageLoader,
         SortingService $sortingService,
         PaginationService $paginationService,
         SortingHandlerService $sortingHandlerService
@@ -85,7 +78,6 @@ class FindologicSearchService
         $this->apiClient = $apiClient;
         $this->apiConfig = $apiConfig;
         $this->pluginConfig = $pluginConfig;
-        $this->genericPageLoader = $genericPageLoader;
         $this->sortingService = $sortingService;
         $this->paginationService = $paginationService;
         $this->sortingHandlerService = $sortingHandlerService;
@@ -201,7 +193,6 @@ class FindologicSearchService
             $this->pluginConfig,
             $this->apiConfig,
             $this->apiClient,
-            $this->genericPageLoader,
             $this->sortingHandlerService,
             $this->container
         );
