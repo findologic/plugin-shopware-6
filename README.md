@@ -48,6 +48,29 @@ Please see [our Shopware 6 documentation](https://docs.findologic.com/doku.php?i
    bin/console plugin:install FinSearch --activate --clearCache
    ```
 
+### Run linting
+
+### CLI linting
+
+The `Makefile` includes commands for all relevant tasks:
+- `make storefront-lint`
+- `make administration-lint`
+- `make storefront-fix`
+- `make administration-fix`
+
+### PHPStorm linting
+
+There are different configurations for administration and storefront. Depending on the current project, use the
+corresponding configuration.
+
+#### Storefront
+
+![PHPStorm configuration storefront](docs/images/phpstorm_linting_storefront.png)
+
+#### Administration
+
+![PHPStorm configuration administration](docs/images/phpstorm_linting_administration.png)
+
 ### Run PHPUnit tests
 
 #### Prerequisites
