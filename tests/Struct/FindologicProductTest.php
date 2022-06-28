@@ -23,6 +23,7 @@ use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ImageHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
@@ -70,6 +71,7 @@ class FindologicProductTest extends TestCase
     use ConfigHelper;
     use SalesChannelHelper;
     use OrderHelper;
+    use ImageHelper;
 
     /** @var SalesChannelContext */
     private $salesChannelContext;
@@ -178,6 +180,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$id]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
         $criteria->addAssociation('visibilities');
         $productEntity = $this->getContainer()->get('product.repository')->search(
             $criteria,
@@ -245,6 +248,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$id]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
         $criteria->addAssociation('visibilities');
         $productEntity = $this->getContainer()->get('product.repository')->search(
             $criteria,
@@ -294,7 +298,7 @@ class FindologicProductTest extends TestCase
 
         $additionalSalesChannelId = $additionalSalesChannel->getId();
 
-        return [
+        $noSeoPath = [
             'Category does not have SEO path assigned' => [
                 'data' => [
                     [
@@ -322,7 +326,10 @@ class FindologicProductTest extends TestCase
                     ]
                 ],
                 'categoryId' => $categoryId
-            ],
+            ]
+        ];
+
+        $emptySeoPath = [
             'Category have a pseudo empty SEO path assigned' => [
                 'data' => [
                     [
@@ -342,6 +349,11 @@ class FindologicProductTest extends TestCase
                 'categoryId' => $categoryId
             ]
         ];
+
+        // Empty SEO path does not pass the validation of the product builder
+        return Utils::versionGreaterOrEqual('6.4.11.0')
+            ? $noSeoPath
+            : array_merge($noSeoPath, $emptySeoPath);
     }
 
     /**
@@ -820,6 +832,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
 
         $productEntity = $this->getContainer()->get('product.repository')
             ->search($criteria, $this->salesChannelContext->getContext())
@@ -927,6 +940,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
 
         $productEntity = $this->getContainer()
             ->get('product.repository')
@@ -993,6 +1007,7 @@ class FindologicProductTest extends TestCase
 
         $criteria = new Criteria([$productEntity->getId()]);
         $criteria = Utils::addProductAssociations($criteria);
+        $criteria = Utils::addChildrenAssociations($criteria);
 
         $productEntity = $this->getContainer()
             ->get('product.repository')
@@ -1231,23 +1246,6 @@ class FindologicProductTest extends TestCase
                     ->getName()
             ]
         );
-        $attributes[] = new Attribute(
-            $productEntity->getProperties()
-                ->first()
-                ->getProductConfiguratorSettings()
-                ->first()
-                ->getOption()
-                ->getGroup()
-                ->getName(),
-            [
-                $productEntity->getProperties()
-                    ->first()
-                    ->getProductConfiguratorSettings()
-                    ->first()
-                    ->getOption()
-                    ->getName()
-            ]
-        );
 
         $shippingFree = $this->translateBooleanValue($productEntity->getShippingFree());
         $attributes[] = new Attribute('shipping_free', [$shippingFree]);
@@ -1281,59 +1279,6 @@ class FindologicProductTest extends TestCase
         return $attributes;
     }
 
-    /**
-     * @return Image[]
-     */
-    private function getImages(ProductEntity $productEntity): array
-    {
-        $images = [];
-        if (!$productEntity->getMedia() || !$productEntity->getMedia()->count()) {
-            $fallbackImage = sprintf(
-                '%s/%s',
-                getenv('APP_URL'),
-                'bundles/storefront/assets/icon/default/placeholder.svg'
-            );
-
-            $images[] = new Image($fallbackImage);
-            $images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
-
-            return $images;
-        }
-
-        $mediaCollection = $productEntity->getMedia();
-        $media = $mediaCollection->getMedia();
-        $thumbnails = $media->first()->getThumbnails();
-
-        $filteredThumbnails = $this->sortAndFilterThumbnailsByWidth($thumbnails);
-        $firstThumbnail = $filteredThumbnails->first();
-
-        $image = $firstThumbnail ?? $media->first();
-        $url = $this->getEncodedUrl($image->getUrl());
-        $images[] = new Image($url);
-
-        $imageIds = [];
-        foreach ($thumbnails as $thumbnail) {
-            if (in_array($thumbnail->getMediaId(), $imageIds)) {
-                continue;
-            }
-
-            $url = $this->getEncodedUrl($thumbnail->getUrl());
-            $images[] = new Image($url, Image::TYPE_THUMBNAIL);
-            $imageIds[] = $thumbnail->getMediaId();
-        }
-
-        return $images;
-    }
-
-    protected function getEncodedUrl(string $url): string
-    {
-        $parsedUrl = parse_url($url);
-        $urlPath = explode('/', $parsedUrl['path']);
-        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
-        $parsedUrl['path'] = implode('/', $encodedPath);
-
-        return Utils::buildUrl($parsedUrl);
-    }
 
     public function emptyValuesProvider(): array
     {
@@ -1538,6 +1483,10 @@ class FindologicProductTest extends TestCase
 
     public function testEmptyCategoryNameShouldStillExportCategory(): void
     {
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->markTestSkipped('Empty category name does not pass validation of product builder');
+        }
+
         $mainCatId = $this->getContainer()->get('category.repository')
             ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
 
@@ -1578,7 +1527,7 @@ class FindologicProductTest extends TestCase
             $config
         );
 
-        $this->assertCount(6, $findologicProduct->getAttributes());
+        $this->assertCount(5, $findologicProduct->getAttributes());
         $this->assertSame('cat_url', $findologicProduct->getAttributes()[0]->getKey());
 
         $catUrls = $findologicProduct->getAttributes()[0]->getValues();
@@ -2044,19 +1993,6 @@ class FindologicProductTest extends TestCase
             $this->assertStringContainsString($expectedImage['url'], $actualImages[$key]->getUrl());
             $this->assertSame($expectedImage['type'], $actualImages[$key]->getType());
         }
-    }
-
-    private function sortAndFilterThumbnailsByWidth(MediaThumbnailCollection $thumbnails): MediaThumbnailCollection
-    {
-        $filteredThumbnails = $thumbnails->filter(static function ($thumbnail) {
-            return $thumbnail->getWidth() >= 600;
-        });
-
-        $filteredThumbnails->sort(function (MediaThumbnailEntity $a, MediaThumbnailEntity $b) {
-            return $a->getWidth() <=> $b->getWidth();
-        });
-
-        return $filteredThumbnails;
     }
 
     /**

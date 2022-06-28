@@ -9,8 +9,8 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
@@ -34,6 +34,7 @@ abstract class Export
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
+        EventDispatcherInterface $eventDispatcher,
         array $crossSellingCategories = []
     ): Export {
         switch ($type) {
@@ -42,6 +43,7 @@ abstract class Export
                     $router,
                     $container,
                     $logger,
+                    $eventDispatcher,
                     $crossSellingCategories
                 );
             case self::TYPE_PRODUCT_ID:
@@ -49,6 +51,7 @@ abstract class Export
                     $router,
                     $container,
                     $logger,
+                    $eventDispatcher,
                     $crossSellingCategories
                 );
             default:
@@ -69,14 +72,8 @@ abstract class Export
 
     /**
      * @param ProductEntity[] $productEntities
-     * @param string $shopkey Required for generating the user group hash.
-     * @param CustomerGroupEntity[] $customerGroups
      */
-    abstract public function buildItems(
-        array $productEntities,
-        string $shopkey,
-        array $customerGroups
-    ): array;
+    abstract public function buildItems(array $productEntities): array;
 
     /**
      * @param Item[] $items
