@@ -10,17 +10,17 @@ help:
 .PHONY: help
 
 administration-fix: ## Run eslint on the administration files
-	../../../vendor/shopware/platform/src/Administration/Resources/app/administration/node_modules/.bin/eslint --ignore-path .eslintignore --config ../../../vendor/shopware/platform/src/Administration/Resources/app/administration/.eslintrc.js --ext .js,.vue --fix src/Resources/app/administration
+	../../../vendor/shopware/platform/src/Administration/Resources/app/administration/node_modules/.bin/eslint --config .eslintrc-administration.js --ext .js,.vue src/Resources/app/administration --resolve-plugins-relative-to ../../../vendor/shopware/platform/src/Administration/Resources/app/administration --fix
 .PHONY: administration-fix
 
 storefront-fix: ## Run eslint on the storefront files
-	../../../vendor/shopware/platform/src/Administration/Resources/app/administration/node_modules/.bin/eslint --ignore-path .eslintignore --config ../../../vendor/shopware/platform/src/Administration/Resources/app/administration/.eslintrc.js --ext .js,.vue --fix src/Resources/app/storefront
+	../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront/node_modules/.bin/eslint --config .eslintrc-storefront.js --ext .js,.vue src/Resources/app/storefront --resolve-plugins-relative-to ../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront --fix
 .PHONY: storefront-fix
 
 administration-lint: ## Run eslint on the administration files
-	../../../vendor/shopware/platform/src/Administration/Resources/app/administration/node_modules/.bin/eslint --ignore-path .eslintignore --config ../../../vendor/shopware/platform/src/Administration/Resources/app/administration/.eslintrc.js --ext .js,.vue src/Resources/app/administration
+	../../../vendor/shopware/platform/src/Administration/Resources/app/administration/node_modules/.bin/eslint --config .eslintrc-administration.js --ext .js,.vue src/Resources/app/administration --resolve-plugins-relative-to ../../../vendor/shopware/platform/src/Administration/Resources/app/administration
 .PHONY: administration-lint
 
 storefront-lint: ## Run eslint on the storefront files
-	../../../vendor/shopware/platform/src/Administration/Resources/app/administration/node_modules/.bin/eslint --ignore-path .eslintignore --config ../../../vendor/shopware/platform/src/Administration/Resources/app/administration/.eslintrc.js --ext .js,.vue src/Resources/app/storefront
+	../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront/node_modules/.bin/eslint --config .eslintrc-storefront.js --ext .js,.vue src/Resources/app/storefront --resolve-plugins-relative-to ../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront
 .PHONY: storefront-lint
