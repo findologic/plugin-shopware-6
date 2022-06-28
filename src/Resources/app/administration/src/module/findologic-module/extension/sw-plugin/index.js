@@ -4,7 +4,7 @@ import legacyTemplate from './sw-plugin-list.html.twig';
 const { Component, State } = Shopware;
 
 // Shopware >= 6.4
-// eslint-disable-next-line vue/one-component-per-file
+// eslint-disable-next-line
 Component.override('sw-self-maintained-extension-card', {
     template,
     computed: {
@@ -28,7 +28,7 @@ Component.override('sw-self-maintained-extension-card', {
 });
 
 // Shopware < 6.4
-// eslint-disable-next-line vue/one-component-per-file
+// eslint-disable-next-line
 Component.override('sw-plugin-list', {
     template: legacyTemplate,
 });
