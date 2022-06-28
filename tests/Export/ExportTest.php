@@ -13,6 +13,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class ExportTest extends TestCase
@@ -26,6 +28,9 @@ class ExportTest extends TestCase
     /** @var LoggerInterface */
     private $logger;
 
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -37,6 +42,7 @@ class ExportTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->logger = new Logger('fl_test_logger');
+        $this->eventDispatcher = new EventDispatcher();
     }
 
     public function exportProvider(): array
@@ -58,7 +64,13 @@ class ExportTest extends TestCase
      */
     public function testProperInstanceIsCreated(int $type, string $expectedInstance): void
     {
-        $export = Export::getInstance($type, $this->routerMock, $this->containerMock, $this->logger);
+        $export = Export::getInstance(
+            $type,
+            $this->routerMock,
+            $this->containerMock,
+            $this->logger,
+            $this->eventDispatcher
+        );
 
         $this->assertInstanceOf($expectedInstance, $export);
     }
@@ -70,6 +82,12 @@ class ExportTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf('Unknown export type %d.', $unknownExportType));
 
-        Export::getInstance($unknownExportType, $this->routerMock, $this->containerMock, $this->logger);
+        Export::getInstance(
+            $unknownExportType,
+            $this->routerMock,
+            $this->containerMock,
+            $this->logger,
+            $this->eventDispatcher
+        );
     }
 }

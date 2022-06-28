@@ -18,14 +18,13 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class XmlExportTest extends TestCase
 {
     use ProductHelper;
     use SalesChannelHelper;
     use IntegrationTestBehaviour;
-
-    protected const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
     /** @var Logger */
     protected $logger;
@@ -54,16 +53,16 @@ class XmlExportTest extends TestCase
 
     public function testWrapsItemProperly(): void
     {
-        $product = $this->createVisibleTestProduct();
+        $product = $this->createTestProduct();
 
-        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $this->getExport()->buildItems([$product]);
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());
     }
 
     public function testManuallyAssignedProductsInCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
     {
-        $product = $this->createVisibleTestProduct();
+        $product = $this->createTestProduct(['productNumber' => 'FINDOLOGIC1']);
 
         $category = $product->getCategories()->first();
         $this->crossSellCategories = [$category->getId()];
@@ -73,7 +72,7 @@ class XmlExportTest extends TestCase
 
     public function testProductsInDynamicProductGroupCrossSellCategoriesAreNotWrappedAndErrorIsLogged(): void
     {
-        $product = $this->createVisibleTestProduct();
+        $product = $this->createTestProduct(['productNumber' => 'FINDOLOGIC1']);
 
         $category = $this->createTestCategory();
         $this->crossSellCategories = [$category->getId()];
@@ -93,7 +92,7 @@ class XmlExportTest extends TestCase
 
     public function buildItemsAndAssertError(ProductEntity $product, CategoryEntity $category)
     {
-        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $this->getExport()->buildItems([$product]);
         $this->assertEmpty($items);
 
         $errors = $this->productErrorHandler->getExportErrors()->getProductError($product->getId())->getErrors();
@@ -113,7 +112,7 @@ class XmlExportTest extends TestCase
     public function testKeywordsAreNotRequired(): void
     {
         $product = $this->createVisibleTestProduct(['tags' => []]);
-        $items = $this->getExport()->buildItems([$product], self::VALID_SHOPKEY, []);
+        $items = $this->getExport()->buildItems([$product]);
 
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());
@@ -123,41 +122,15 @@ class XmlExportTest extends TestCase
     {
         /** @var Router $router */
         $router = $this->getContainer()->get(Router::class);
+        /** @var EventDispatcherInterface $eventDispatcher */
+        $eventDispatcher = $this->getContainer()->get('event_dispatcher');
 
         return new XmlExport(
             $router,
             $this->getContainer(),
             $this->logger,
+            $eventDispatcher,
             $this->crossSellCategories
         );
-    }
-
-    public function testProductPriceWithCurrency(): void
-    {
-        $currencyId = $this->createCurrency();
-        $this->salesChannelContext->getSalesChannel()->setCurrencyId($currencyId);
-        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
-        $testProduct = $this->createTestProduct([
-            'price' => [
-                ['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false],
-                ['currencyId' => $currencyId, 'gross' => 7.5, 'net' => 5, 'linked' => false]
-            ]
-        ]);
-
-        $customerGroupEntities = $this->getContainer()
-            ->get('customer_group.repository')
-            ->search(new Criteria(), $this->salesChannelContext->getContext())
-            ->getElements();
-
-        $items = $this->getExport()->buildItems(
-            [$testProduct],
-            self::VALID_SHOPKEY,
-            $customerGroupEntities
-        );
-
-        $item = $items[0];
-        $price = $item->getPrice();
-        $priceValues = $price->getValues();
-        $this->assertEquals(7.5, current($priceValues));
     }
 }

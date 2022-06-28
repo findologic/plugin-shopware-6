@@ -8,6 +8,7 @@ use FINDOLOGIC\Export\XML\XMLExporter;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -20,10 +21,11 @@ class ProductIdExport extends XmlExport
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
+        EventDispatcherInterface $eventDispatcher,
         array $crossSellingCategories = [],
         ?XMLExporter $xmlFileConverter = null
     ) {
-        parent::__construct($router, $container, $logger, $crossSellingCategories, $xmlFileConverter);
+        parent::__construct($router, $container, $logger, $eventDispatcher, $crossSellingCategories, $xmlFileConverter);
 
         $this->errorHandler = $this->pushErrorHandler();
     }
@@ -33,13 +35,13 @@ class ProductIdExport extends XmlExport
         return $this->errorHandler;
     }
 
-    public function buildItems(array $productEntities, string $shopkey, array $customerGroups): array
+    public function buildItems(array $productEntities): array
     {
         if (count($productEntities) === 0) {
             $this->getLogger()->warning('Product could not be found or is not available for search.');
         }
 
-        return parent::buildItems($productEntities, $shopkey, $customerGroups);
+        return parent::buildItems($productEntities);
     }
 
     public function buildResponse(array $items, int $start, int $total, array $headers = []): Response
