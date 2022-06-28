@@ -3,56 +3,55 @@ import DomAccess from 'src/helper/dom-access.helper';
 import FilterBasePlugin from 'src/plugin/listing/filter-base.plugin';
 
 export default class FilterSliderRange extends FilterBasePlugin {
-
   static options = deepmerge(FilterBasePlugin.options, {
-    inputMinSelector: '.min-input',
-    inputMaxSelector: '.max-input',
-    inputInvalidCLass: 'is-invalid',
-    inputTimeout: 500,
-    minKey: 'min-price',
-    maxKey: 'max-price',
-    price: {
-      min: 0,
-      max: 1,
-      step: 0.1
-    },
-    errorContainerClass: 'filter-range-error',
-    containerSelector: '.filter-range-container',
-    sliderContainer: '.fl--range-slider',
-    snippets: {
-      filterRangeActiveMinLabel: '',
-      filterRangeActiveMaxLabel: '',
-      filterRangeErrorMessage: ''
-    }
+      inputMinSelector: '.min-input',
+      inputMaxSelector: '.max-input',
+      inputInvalidCLass: 'is-invalid',
+      inputTimeout: 500,
+      minKey: 'min-price',
+      maxKey: 'max-price',
+      price: {
+          min: 0,
+          max: 1,
+          step: 0.1,
+      },
+      errorContainerClass: 'filter-range-error',
+      containerSelector: '.filter-range-container',
+      sliderContainer: '.fl--range-slider',
+      snippets: {
+          filterRangeActiveMinLabel: '',
+          filterRangeActiveMaxLabel: '',
+          filterRangeErrorMessage: '',
+      },
   });
 
   init() {
-    this.resetState();
+      this.resetState();
 
-    this._container = DomAccess.querySelector(this.el, this.options.containerSelector);
-    this._inputMin = DomAccess.querySelector(this.el, this.options.inputMinSelector);
-    this._inputMax = DomAccess.querySelector(this.el, this.options.inputMaxSelector);
-    this._timeout = null;
-    this._hasError = false;
+      this._container = DomAccess.querySelector(this.el, this.options.containerSelector);
+      this._inputMin = DomAccess.querySelector(this.el, this.options.inputMinSelector);
+      this._inputMax = DomAccess.querySelector(this.el, this.options.inputMaxSelector);
+      this._timeout = null;
+      this._hasError = false;
 
-    this.slider = document.createElement('div');
-    this._sliderContainer = DomAccess.querySelector(this.el, this.options.sliderContainer);
-    this._sliderContainer.prepend(this.slider);
+      this.slider = document.createElement('div');
+      this._sliderContainer = DomAccess.querySelector(this.el, this.options.sliderContainer);
+      this._sliderContainer.prepend(this.slider);
 
-    let start = this._inputMin.value.length ? this._inputMin.value : this.options.price.min;
-    let end = this._inputMax.value.length ? this._inputMax.value : this.options.price.max;
+      const start = this._inputMin.value.length ? this._inputMin.value : this.options.price.min;
+      const end = this._inputMax.value.length ? this._inputMax.value : this.options.price.max;
 
-    noUiSlider.create(this.slider, {
-      start: [start, end],
-      connect: true,
-      step: this.options.price.step,
-      range: {
-        'min': this.options.price.min,
-        'max': this.getMax()
-      },
-    });
+      noUiSlider.create(this.slider, {
+          start: [start, end],
+          connect: true,
+          step: this.options.price.step,
+          range: {
+              min: this.options.price.min,
+              max: this.getMax(),
+          },
+      });
 
-    this._registerEvents();
+      this._registerEvents();
   }
 
   /**
@@ -62,29 +61,29 @@ export default class FilterSliderRange extends FilterBasePlugin {
    * @private
    */
   resetState() {
-    DomAccess.querySelector(this.el, this.options.sliderContainer).innerHTML = '';
+      DomAccess.querySelector(this.el, this.options.sliderContainer).innerHTML = '';
   }
 
   /**
    * @private
    */
   _registerEvents() {
-    // Register slider events
-    this.slider.noUiSlider.on('update', this.onUpdateValues.bind(this));
-    this.slider.noUiSlider.on('end', this._onChangeInput.bind(this));
+      // Register slider events
+      this.slider.noUiSlider.on('update', this.onUpdateValues.bind(this));
+      this.slider.noUiSlider.on('end', this._onChangeInput.bind(this));
 
-    this._inputMin.addEventListener('blur', this._onChangeMin.bind(this));
-    this._inputMax.addEventListener('blur', this._onChangeMax.bind(this));
+      this._inputMin.addEventListener('blur', this._onChangeMin.bind(this));
+      this._inputMax.addEventListener('blur', this._onChangeMax.bind(this));
 
-    this._inputMin.addEventListener('keyup', this._onInput.bind(this));
-    this._inputMax.addEventListener('keyup', this._onInput.bind(this));
+      this._inputMin.addEventListener('keyup', this._onInput.bind(this));
+      this._inputMax.addEventListener('keyup', this._onInput.bind(this));
   }
 
   /**
    * @returns {float}
    */
   getMax() {
-    return this.options.price.max === this.options.price.min ? this.options.price.min + 1 : this.options.price.max;
+      return this.options.price.max === this.options.price.min ? this.options.price.min + 1 : this.options.price.max;
   }
 
   /**
@@ -92,20 +91,20 @@ export default class FilterSliderRange extends FilterBasePlugin {
    * @public
    */
   getValues() {
-    const values = {};
+      const values = {};
 
-    this.validateMinInput();
-    this.validateMaxInput();
+      this.validateMinInput();
+      this.validateMaxInput();
 
-    if (this.hasMinValueSet()) {
-      values[this.options.minKey] = this._inputMin.value;
-    }
+      if (this.hasMinValueSet()) {
+          values[this.options.minKey] = this._inputMin.value;
+      }
 
-    if (this.hasMaxValueSet()) {
-      values[this.options.maxKey] = this._inputMax.value;
-    }
+      if (this.hasMaxValueSet()) {
+          values[this.options.maxKey] = this._inputMax.value;
+      }
 
-    return values;
+      return values;
   }
 
   /**
@@ -113,25 +112,25 @@ export default class FilterSliderRange extends FilterBasePlugin {
    * @private
    */
   _onInput(e) {
-    if (e.keyCode === 13) {
-      e.target.blur();
-    }
+      if (e.keyCode === 13) {
+          e.target.blur();
+      }
   }
 
   /**
    * @private
    */
   _onChangeInput() {
-    clearTimeout(this._timeout);
+      clearTimeout(this._timeout);
 
-    this._timeout = setTimeout(() => {
-      if (this._isInputInvalid()) {
-        this._setError();
-      } else {
-        this._removeError();
-      }
-      this.listing.changeListing();
-    }, this.options.inputTimeout);
+      this._timeout = setTimeout(() => {
+          if (this._isInputInvalid()) {
+              this._setError();
+          } else {
+              this._removeError();
+          }
+          this.listing.changeListing();
+      }, this.options.inputTimeout);
   }
 
   /**
@@ -139,7 +138,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
    * @private
    */
   _isInputInvalid() {
-    return parseInt(this._inputMin.value) > parseInt(this._inputMax.value);
+      return parseInt(this._inputMin.value) > parseInt(this._inputMax.value);
   }
 
   /**
@@ -147,37 +146,37 @@ export default class FilterSliderRange extends FilterBasePlugin {
    * @private
    */
   _getErrorMessageTemplate() {
-    return `<div class="${this.options.errorContainerClass}">${this.options.snippets.filterRangeErrorMessage}</div>`;
+      return `<div class="${this.options.errorContainerClass}">${this.options.snippets.filterRangeErrorMessage}</div>`;
   }
 
   /**
    * @private
    */
   _setError() {
-    if (this._hasError) {
-      return;
-    }
+      if (this._hasError) {
+          return;
+      }
 
-    this._inputMin.classList.add(this.options.inputInvalidCLass);
-    this._inputMax.classList.add(this.options.inputInvalidCLass);
-    this._container.insertAdjacentHTML('afterend', this._getErrorMessageTemplate());
-    this._hasError = true;
+      this._inputMin.classList.add(this.options.inputInvalidCLass);
+      this._inputMax.classList.add(this.options.inputInvalidCLass);
+      this._container.insertAdjacentHTML('afterend', this._getErrorMessageTemplate());
+      this._hasError = true;
   }
 
   /**
    * @private
    */
   _removeError() {
-    this._inputMin.classList.remove(this.options.inputInvalidCLass);
-    this._inputMax.classList.remove(this.options.inputInvalidCLass);
+      this._inputMin.classList.remove(this.options.inputInvalidCLass);
+      this._inputMax.classList.remove(this.options.inputInvalidCLass);
 
-    const error = DomAccess.querySelector(this.el, `.${this.options.errorContainerClass}`, false);
+      const error = DomAccess.querySelector(this.el, `.${this.options.errorContainerClass}`, false);
 
-    if (error) {
-      error.remove();
-    }
+      if (error) {
+          error.remove();
+      }
 
-    this._hasError = false;
+      this._hasError = false;
   }
 
   /**
@@ -185,27 +184,27 @@ export default class FilterSliderRange extends FilterBasePlugin {
    * @public
    */
   getLabels() {
-    let labels = [];
+      let labels = [];
 
-    if (this._inputMin.value.length || this._inputMax.value.length) {
-      if (this.hasMinValueSet()) {
-        labels.push({
-          label: `${this.options.snippets.filterRangeActiveMinLabel} ${this._inputMin.value} ${this.options.currencySymbol}`,
-          id: this.options.minKey,
-        });
+      if (this._inputMin.value.length || this._inputMax.value.length) {
+          if (this.hasMinValueSet()) {
+              labels.push({
+                  label: `${this.options.snippets.filterRangeActiveMinLabel} ${this._inputMin.value} ${this.options.currencySymbol}`,
+                  id: this.options.minKey,
+              });
+          }
+
+          if (this.hasMaxValueSet()) {
+              labels.push({
+                  label: `${this.options.snippets.filterRangeActiveMaxLabel} ${this._inputMax.value} ${this.options.currencySymbol}`,
+                  id: this.options.maxKey,
+              });
+          }
+      } else {
+          labels = [];
       }
 
-      if (this.hasMaxValueSet()) {
-        labels.push({
-          label: `${this.options.snippets.filterRangeActiveMaxLabel} ${this._inputMax.value} ${this.options.currencySymbol}`,
-          id: this.options.maxKey,
-        });
-      }
-    } else {
-      labels = [];
-    }
-
-    return labels;
+      return labels;
   }
 
   /**
@@ -214,36 +213,36 @@ export default class FilterSliderRange extends FilterBasePlugin {
    * @return {boolean}
    */
   setValuesFromUrl(params) {
-    let stateChanged = false;
-    Object.keys(params).forEach(key => {
-      if (key === this.options.minKey) {
-        this._inputMin.value = params[key];
-        this.validateMinInput();
-        stateChanged = true;
-      }
-      if (key === this.options.maxKey) {
-        this._inputMax.value = params[key];
-        this.validateMaxInput();
-        stateChanged = true;
-      }
-    });
+      let stateChanged = false;
+      Object.keys(params).forEach(key => {
+          if (key === this.options.minKey) {
+              this._inputMin.value = params[key];
+              this.validateMinInput();
+              stateChanged = true;
+          }
+          if (key === this.options.maxKey) {
+              this._inputMax.value = params[key];
+              this.validateMaxInput();
+              stateChanged = true;
+          }
+      });
 
-    return stateChanged;
+      return stateChanged;
   }
 
   /**
    * @param {Array} values
    */
   onUpdateValues(values) {
-    if (values[0] < this.options.price.min) {
-      values[0] = this.options.price.min;
-    }
-    if (values[1] > this.options.price.max) {
-      values[1] = this.options.price.max;
-    }
+      if (values[0] < this.options.price.min) {
+          values[0] = this.options.price.min;
+      }
+      if (values[1] > this.options.price.max) {
+          values[1] = this.options.price.max;
+      }
 
-    this._inputMin.value = values[0];
-    this._inputMax.value = values[1];
+      this._inputMin.value = values[0];
+      this._inputMax.value = values[1];
   }
 
   /**
@@ -251,87 +250,87 @@ export default class FilterSliderRange extends FilterBasePlugin {
    * @public
    */
   reset(id) {
-    if (id === this.options.minKey) {
-      this.resetMin();
-    }
+      if (id === this.options.minKey) {
+          this.resetMin();
+      }
 
-    if (id === this.options.maxKey) {
-      this.resetMax();
-    }
+      if (id === this.options.maxKey) {
+          this.resetMax();
+      }
 
-    this._removeError();
+      this._removeError();
   }
 
   /**
    * @public
    */
   resetAll() {
-    this.resetMin();
-    this.resetMax();
-    this._removeError();
+      this.resetMin();
+      this.resetMax();
+      this._removeError();
   }
 
   validateMinInput() {
-    if (!this._inputMin.value || this._inputMin.value < this.options.price.min || this._inputMin.value > this.options.price.max) {
-      this.resetMin();
-    } else {
-      this.setMinKnobValue();
-    }
+      if (!this._inputMin.value || this._inputMin.value < this.options.price.min || this._inputMin.value > this.options.price.max) {
+          this.resetMin();
+      } else {
+          this.setMinKnobValue();
+      }
   }
 
   validateMaxInput() {
-    if (!this._inputMax.value || this._inputMax.value > this.options.price.max || this._inputMax.value < this.options.price.min) {
-      this.resetMax();
-    } else {
-      this.setMaxKnobValue();
-    }
+      if (!this._inputMax.value || this._inputMax.value > this.options.price.max || this._inputMax.value < this.options.price.min) {
+          this.resetMax();
+      } else {
+          this.setMaxKnobValue();
+      }
   }
 
   resetMin() {
-    this._inputMin.value = this.options.price.min;
-    this.setMinKnobValue();
+      this._inputMin.value = this.options.price.min;
+      this.setMinKnobValue();
   }
 
   resetMax() {
-    this._inputMax.value = this.options.price.max;
-    this.setMaxKnobValue();
+      this._inputMax.value = this.options.price.max;
+      this.setMaxKnobValue();
   }
 
   /**
    * @private
    */
   _onChangeMin() {
-    this.setMinKnobValue();
-    this._onChangeInput();
+      this.setMinKnobValue();
+      this._onChangeInput();
   }
 
   /**
    * @private
    */
   _onChangeMax() {
-    this.setMaxKnobValue();
-    this._onChangeInput();
+      this.setMaxKnobValue();
+      this._onChangeInput();
   }
 
   hasMinValueSet() {
-    this.validateMinInput();
-    return this._inputMin.value.length && parseFloat(this._inputMin.value) !== this.options.price.min;
+      this.validateMinInput();
+      return this._inputMin.value.length && parseFloat(this._inputMin.value) !== this.options.price.min;
   }
 
   hasMaxValueSet() {
-    this.validateMaxInput();
-    return this._inputMax.value.length && parseFloat(this._inputMax.value) !== this.options.price.max;
+      this.validateMaxInput();
+      return this._inputMax.value.length && parseFloat(this._inputMax.value) !== this.options.price.max;
   }
 
   setMinKnobValue() {
-    if (this.slider) {
-      this.slider.noUiSlider.set([this._inputMin.value, null]);
-    }
+      if (this.slider) {
+          this.slider.noUiSlider.set([this._inputMin.value, null]);
+      }
   }
 
   setMaxKnobValue() {
-    if (this.slider) {
-      this.slider.noUiSlider.set([null, this._inputMax.value]);
-    }
+      if (this.slider) {
+          this.slider.noUiSlider.set([null, this._inputMax.value]);
+      }
   }
 }
