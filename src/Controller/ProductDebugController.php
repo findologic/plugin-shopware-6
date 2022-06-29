@@ -45,7 +45,15 @@ class ProductDebugController extends ExportController
         EntityRepository $customerGroupRepository,
         ProductDebugService $productDebugService
     ) {
-        parent::__construct($logger, $router, $headerHandler, $salesChannelContextFactory, $cache, $eventDispatcher, $customerGroupRepository);
+        parent::__construct(
+            $logger,
+            $router,
+            $headerHandler,
+            $salesChannelContextFactory,
+            $cache,
+            $eventDispatcher,
+            $customerGroupRepository
+        );
 
         $this->productDebugService = $productDebugService;
     }
