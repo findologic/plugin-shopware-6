@@ -13,19 +13,19 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
             state: {
                 openClass: 'open-icon',
                 closedClass: 'closed-icon',
-            }
+            },
         },
         subCategory: {
             state: {
                 openClass: 'show-category-list-item',
                 closedClass: 'hide-category-list-item',
-            }
+            },
         },
         snippets: {
-            disabledFilterText: 'Filter not active'
+            disabledFilterText: 'Filter not active',
         },
         mainFilterButtonSelector: '.filter-panel-item-toggle',
-        filter: []
+        filter: [],
     });
 
     init() {
@@ -99,8 +99,8 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
                 const parentCategoryName = category.value.split('_')[0];
                 labelMap[parentCategoryName] = {
                     label: categoryName,
-                    id: category.id
-                }
+                    id: category.id,
+                };
             }
         });
 
@@ -185,7 +185,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         if (categoryNames.length > 0) {
             let categoryNameAsId = '';
             Iterator.iterate(categoryNames, (name) => {
-                categoryNameAsId += categoryNameAsId === '' ? name : '_' + name;
+                categoryNameAsId += categoryNameAsId === '' ? name : `_${name}`;
                 document.getElementById(categoryNameAsId).checked = true;
             });
         }
@@ -353,11 +353,11 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         const actualValues = this.getValues();
 
         if (activeItems.length < 1 && actualValues[this.options.name].length === 0) {
-            this.disableFilter()
+            this.disableFilter();
             return;
-        } else {
-            this.enableFilter();
         }
+        this.enableFilter();
+
 
         this._disableInactiveFilterOptions(activeItems.map(entity => entity.id));
     }

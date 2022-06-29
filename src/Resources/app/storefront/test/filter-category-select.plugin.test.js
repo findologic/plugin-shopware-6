@@ -269,5 +269,4 @@ describe('filter-category-select.plugin.js', () => {
 
 
     })
-
 });

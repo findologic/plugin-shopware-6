@@ -1,5 +1,8 @@
+# NEXT
+- [SW-442] ESLint für unsere JavaScript Dateien hinzugefügt
+
 # 3.0.0
-- Diese Version ist ein Major Release, und enthält damit brechende Änderungen, wenn ein Erweiterungsplugin installiert ist.
+- Diese Version ist ein Major Release und enthält damit brechende Änderungen, wenn ein Erweiterungsplugin installiert ist.
 - Bevor ein Upgrade durchgeführt wird, beachte den Upgrade-Guide.
 - [SW-619] Ein Performance Problem wurde behoben, für Produkte mit hunderten oder tausenden von Varianten.
 - [SW-664] Neue "adapter" Klassen wurden hinzugefügt.
