@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory;
 use FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter;
-use FINDOLOGIC\FinSearch\Export\ExportItemAdapter;
+use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
 use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use Shopware\Core\Framework\Adapter\Translation\Translator;
@@ -21,8 +21,8 @@ trait ExportItemAdapterHelper
             ->getMock();
 
         $attributeAdapter = new AttributeAdapter(
+            $this->getContainer(),
             $config,
-            $this->getContainer()->get('fin_search.dynamic_product_group'),
             $this->getContainer()->get(Translator::class),
             $this->getContainer()->get('fin_search.sales_channel_context'),
             $this->getContainer()->get(UrlBuilderService::class),

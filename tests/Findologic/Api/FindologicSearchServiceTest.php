@@ -163,7 +163,6 @@ class FindologicSearchServiceTest extends TestCase
             $this->apiClientMock,
             $this->apiConfig,
             $this->pluginConfigMock,
-            $this->getContainer()->get(GenericPageLoader::class),
             $this->getContainer()->get(SortingService::class),
             $this->getContainer()->get(PaginationService::class),
             $this->getContainer()->get(SortingHandlerService::class)
@@ -178,16 +177,11 @@ class FindologicSearchServiceTest extends TestCase
 
     public function testAllowedRequestButUnknownCategoryDisablesFindologic(): void
     {
-        $genericPageLoaderMock = $this->getMockBuilder(GenericPageLoader::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $findologicSearchService = new FindologicSearchService(
             $this->getContainer(),
             $this->apiClientMock,
             $this->apiConfig,
             $this->pluginConfigMock,
-            $genericPageLoaderMock,
             $this->getContainer()->get(SortingService::class),
             $this->getContainer()->get(PaginationService::class),
             $this->getContainer()->get(SortingHandlerService::class)

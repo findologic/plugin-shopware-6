@@ -12,6 +12,7 @@ use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
@@ -20,6 +21,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AttributeAdapter
 {
+    /** @var ContainerInterface */
+    protected $container;
+
     /** @var Config */
     protected $config;
 
@@ -39,15 +43,15 @@ class AttributeAdapter
     protected $exportContext;
 
     public function __construct(
+        ContainerInterface $container,
         Config $config,
-        ?DynamicProductGroupService $dynamicProductGroupService,
         TranslatorInterface $translator,
         SalesChannelContext $salesChannelContext,
         UrlBuilderService $urlBuilderService,
         ExportContext $exportContext
     ) {
+        $this->container = $container;
         $this->config = $config;
-        $this->dynamicProductGroupService = $dynamicProductGroupService;
         $this->translator = $translator;
         $this->salesChannelContext = $salesChannelContext;
         $this->urlBuilderService = $urlBuilderService;
@@ -55,6 +59,10 @@ class AttributeAdapter
 
         if (!$this->config->isInitialized()) {
             $this->config->initializeBySalesChannel($this->salesChannelContext);
+        }
+
+        if ($this->container->has('fin_search.dynamic_product_group')) {
+            $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
         }
     }
 
@@ -212,26 +220,6 @@ class AttributeAdapter
                 $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionName));
 
                 $attributes[] = $properyGroupAttrib;
-            }
-        }
-
-        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-            $settingOption = $setting->getOption();
-            if ($settingOption) {
-                $group = $settingOption->getGroup();
-            }
-
-            if (!$group) {
-                continue;
-            }
-
-            $groupName = $this->getAttributeKey($group->getTranslation('name'));
-            $optionName = $settingOption->getTranslation('name');
-            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                $configAttrib = new Attribute($groupName);
-                $configAttrib->addValue(Utils::removeControlCharacters($optionName));
-
-                $attributes[] = $configAttrib;
             }
         }
 

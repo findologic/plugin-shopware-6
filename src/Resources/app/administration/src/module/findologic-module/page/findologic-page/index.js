@@ -1,8 +1,8 @@
 import template from './findologic-page.html.twig';
 import './findologic-page.scss';
 
-const {Component, Mixin, Application} = Shopware;
-const {Criteria} = Shopware.Data;
+const { Component, Mixin, Application } = Shopware;
+const { Criteria } = Shopware.Data;
 
 Component.register('findologic-page', {
     template,
@@ -10,7 +10,7 @@ Component.register('findologic-page', {
     inject: ['repositoryFactory', 'FinsearchConfigApiService', 'systemConfigApiService'],
 
     mixins: [
-        Mixin.getByName('notification')
+        Mixin.getByName('notification'),
     ],
 
     data() {
@@ -28,46 +28,14 @@ Component.register('findologic-page', {
             salesChannel: [],
             language: [],
             shopkeyErrorState: null,
-            httpClient: Application.getContainer('init').httpClient
+            httpClient: Application.getContainer('init').httpClient,
         };
     },
 
     metaInfo() {
         return {
-            title: this.$createTitle()
+            title: this.$createTitle(),
         };
-    },
-
-    created() {
-        this.createdComponent();
-    },
-
-    beforeMount() {
-        this.updateHeaderBarBackLink();
-    },
-
-    watch: {
-        selectedLanguageId: {
-            handler(languageId) {
-                if (!languageId) {
-                    return;
-                }
-
-                this.createdComponent();
-            }
-        },
-
-        shopkey() {
-            this.shopkeyErrorState = null;
-            if (this.isValidShopkey) {
-                this._isStagingRequest();
-            } else if (this.actualConfigData) {
-                this.actualConfigData['FinSearch.config.active'] = false;
-                this.actualConfigData['FinSearch.config.activeOnCategoryPages'] = false;
-            }
-
-            this._setErrorStates();
-        }
     },
 
     computed: {
@@ -76,7 +44,7 @@ Component.register('findologic-page', {
                 return null;
             }
 
-            return this.selectedSalesChannelId + '-' + this.selectedLanguageId;
+            return `${this.selectedSalesChannelId}-${this.selectedLanguageId}`;
         },
 
         actualConfigData: {
@@ -86,9 +54,9 @@ Component.register('findologic-page', {
             set(config) {
                 this.allConfigs = {
                     ...this.allConfigs,
-                    [this.configKey]: config
+                    [this.configKey]: config,
                 };
-            }
+            },
         },
 
         /**
@@ -120,7 +88,39 @@ Component.register('findologic-page', {
 
         findologicConfigRepository() {
             return this.repositoryFactory.create('finsearch_config');
-        }
+        },
+    },
+
+    watch: {
+        selectedLanguageId: {
+            handler(languageId) {
+                if (!languageId) {
+                    return;
+                }
+
+                this.createdComponent();
+            },
+        },
+
+        shopkey() {
+            this.shopkeyErrorState = null;
+            if (this.isValidShopkey) {
+                this._isStagingRequest();
+            } else if (this.actualConfigData) {
+                this.actualConfigData['FinSearch.config.active'] = false;
+                this.actualConfigData['FinSearch.config.activeOnCategoryPages'] = false;
+            }
+
+            this._setErrorStates();
+        },
+    },
+
+    created() {
+        this.createdComponent();
+    },
+
+    beforeMount() {
+        this.updateHeaderBarBackLink();
     },
 
     methods: {
@@ -142,7 +142,7 @@ Component.register('findologic-page', {
 
             if (!this.salesChannel.length) {
                 this.isLoading = true;
-                let criteria = new Criteria();
+                const criteria = new Criteria(null, null);
                 criteria.addAssociation('languages');
                 criteria.addAssociation('domains');
                 criteria.addFilter(Criteria.equals('active', true));
@@ -179,7 +179,7 @@ Component.register('findologic-page', {
         },
 
         async readAll() {
-            return await this.FinsearchConfigApiService.getValues(this.selectedSalesChannelId, this.selectedLanguageId);
+            return this.FinsearchConfigApiService.getValues(this.selectedSalesChannelId, this.selectedLanguageId);
         },
 
         /**
@@ -236,13 +236,13 @@ Component.register('findologic-page', {
                 this.isSaveSuccessful = true;
                 this.createNotificationSuccess({
                     title: this.$tc('findologic.settingForm.titleSuccess'),
-                    message: this.$tc('findologic.settingForm.configSaved')
+                    message: this.$tc('findologic.settingForm.configSaved'),
                 });
 
                 if (res) {
                     this.actualConfigData = res;
                 }
-            }).catch((e) => {
+            }).catch(() => {
                 this.isSaveSuccessful = false;
                 this.isLoading = false;
                 this.shopkeyExists = true;
@@ -261,17 +261,17 @@ Component.register('findologic-page', {
             } else if (!this.isValidShopkey) {
                 this.shopkeyErrorState = {
                     code: 1,
-                    detail: this.$tc('findologic.invalidShopkey')
+                    detail: this.$tc('findologic.invalidShopkey'),
                 };
             } else if (this.isRegisteredShopkey === false) {
                 this.shopkeyErrorState = {
                     code: 1,
-                    detail: this.$tc('findologic.notRegisteredShopkey')
+                    detail: this.$tc('findologic.notRegisteredShopkey'),
                 };
             } else if (this.shopkeyExists === true) {
                 this.shopkeyErrorState = {
                     code: 1,
-                    detail: this.$tc('findologic.shopkeyExists')
+                    detail: this.$tc('findologic.shopkeyExists'),
                 };
             } else {
                 this.shopkeyExists = false;
@@ -291,22 +291,22 @@ Component.register('findologic-page', {
             if (!this.shopkeyAvailable) {
                 this.createNotificationError({
                     title: this.$tc('findologic.settingForm.titleError'),
-                    message: this.$tc('findologic.fieldRequired')
+                    message: this.$tc('findologic.fieldRequired'),
                 });
             } else if (!this.isValidShopkey) {
                 this.createNotificationError({
                     title: this.$tc('findologic.settingForm.titleError'),
-                    message: this.$tc('findologic.invalidShopkey')
+                    message: this.$tc('findologic.invalidShopkey'),
                 });
             } else if (this.isRegisteredShopkey === false) {
                 this.createNotificationError({
                     title: this.$tc('findologic.settingForm.titleError'),
-                    message: this.$tc('findologic.notRegisteredShopkey')
+                    message: this.$tc('findologic.notRegisteredShopkey'),
                 });
             } else if (this.shopkeyExists === true) {
                 this.createNotificationError({
                     title: this.$tc('findologic.settingForm.titleError'),
-                    message: this.$tc('findologic.shopkeyExists')
+                    message: this.$tc('findologic.shopkeyExists'),
                 });
             }
         },
@@ -341,7 +341,7 @@ Component.register('findologic-page', {
                 return;
             }
 
-            let selectedChannel = this.salesChannel.find(item => item.id === salesChannelId);
+            const selectedChannel = this.salesChannel.find(item => item.id === salesChannelId);
             if (selectedChannel) {
                 this.selectedSalesChannelId = salesChannelId;
                 this.onSelectedLanguage(selectedChannel.languageId);
@@ -352,12 +352,12 @@ Component.register('findologic-page', {
                             this.language.push({
                                 name: language.name,
                                 label: language.name,
-                                value: language.id
+                                value: language.id,
                             });
                         }
                     }
                 });
             }
-        }
-    }
+        },
+    },
 });

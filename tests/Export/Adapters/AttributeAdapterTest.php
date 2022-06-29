@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Export\Adapters;
 
 use FINDOLOGIC\Export\Data\Attribute;
-use FINDOLOGIC\Export\Data\Ordernumber;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
@@ -48,6 +47,9 @@ class AttributeAdapterTest extends TestCase
     /** @var SalesChannelContext */
     protected $salesChannelContext;
 
+    /** @var AttributeAdapter */
+    protected $attributeAdapter;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -69,6 +71,8 @@ class AttributeAdapterTest extends TestCase
                 $this->getCategory()
             )
         );
+
+        $this->attributeAdapter = $this->getContainer()->get(AttributeAdapter::class);
     }
 
     public function testAttributeContainsAttributeOfTheProduct(): void
@@ -88,15 +92,14 @@ class AttributeAdapterTest extends TestCase
             'shippingFree' => false
         ]);
 
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
         $expected = array_merge(
             $this->getAttributes($product, IntegrationType::API),
             $this->getAttributes($variantProduct, IntegrationType::API)
         );
 
         $attributes = array_merge(
-            $adapter->adapt($product),
-            $adapter->adapt($variantProduct)
+            $this->attributeAdapter->adapt($product),
+            $this->attributeAdapter->adapt($variantProduct)
         );
 
         $this->assertEquals($expected, $attributes);
@@ -156,8 +159,7 @@ class AttributeAdapterTest extends TestCase
     ): void {
         $data['customFields'] = $customFields;
         $productEntity = $this->createTestProduct($data, true);
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
-        $attributes = $adapter->adapt($productEntity);
+        $attributes = $this->attributeAdapter->adapt($productEntity);
 
         foreach ($attributes as $attribute) {
             if ($attribute->getKey() !== 'multi') {
@@ -172,8 +174,7 @@ class AttributeAdapterTest extends TestCase
     {
         $data['customFields'] = ['long_value' => str_repeat('und wieder, ', 20000)];
         $productEntity = $this->createTestProduct($data, true);
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
-        $attributes = $adapter->adapt($productEntity);
+        $attributes = $this->attributeAdapter->adapt($productEntity);
         $customFieldAttributes = $this->getCustomFields($attributes, $data);
 
         $this->assertEmpty($customFieldAttributes);
@@ -186,7 +187,6 @@ class AttributeAdapterTest extends TestCase
     */
     public function testProductRatings(array $ratings, float $expectedRating): void
     {
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
         $productEntity = $this->createTestProduct();
 
         foreach ($ratings as $rating) {
@@ -201,7 +201,7 @@ class AttributeAdapterTest extends TestCase
             ->search($criteria, $this->salesChannelContext->getContext())
             ->get($productEntity->getId());
 
-        $attributes = $adapter->adapt($productEntity);
+        $attributes = $this->attributeAdapter->adapt($productEntity);
 
         $ratingAttribute = end($attributes);
         $this->assertSame('rating', $ratingAttribute->getKey());
@@ -268,9 +268,8 @@ class AttributeAdapterTest extends TestCase
         $data['customFields'] = ['length' => '&gt;80'];
 
         $productEntity = $this->createTestProduct($data, true);
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
 
-        $attributes = $adapter->adapt($productEntity);
+        $attributes = $this->attributeAdapter->adapt($productEntity);
         $relatedAttributes = $this->getCustomFields($attributes, $data);
 
         $this->assertCount(1, $relatedAttributes);
@@ -287,8 +286,7 @@ class AttributeAdapterTest extends TestCase
         ];
         $productEntity = $this->createTestProduct($data, true);
         $productFields = $productEntity->getCustomFields();
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
-        $attributes = $adapter->adapt($productEntity);
+        $attributes = $this->attributeAdapter->adapt($productEntity);
         $customAttributes = $this->getCustomFields($attributes, $data);
 
         $this->assertCount(2, $customAttributes);
@@ -307,8 +305,7 @@ class AttributeAdapterTest extends TestCase
             ]
         ];
         $productEntity = $this->createTestProduct($data, true);
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
-        $attributes = $adapter->adapt($productEntity);
+        $attributes = $this->attributeAdapter->adapt($productEntity);
         $customAttributes = $this->getCustomFields($attributes, $data);
 
         $this->assertEmpty($customAttributes);
@@ -319,8 +316,7 @@ class AttributeAdapterTest extends TestCase
         $data['customFields'] = ['nice' => "0\n"];
         $productEntity = $this->createTestProduct($data, true);
 
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
-        $attributes = $adapter->adapt($productEntity);
+        $attributes = $this->attributeAdapter->adapt($productEntity);
         $customAttributes = $this->getCustomFields($attributes, $data);
 
         $this->assertCount(1, $customAttributes);
@@ -337,8 +333,7 @@ class AttributeAdapterTest extends TestCase
         ];
 
         $productEntity = $this->createTestProduct($data);
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
-        $attributes = $adapter->adapt($productEntity);
+        $attributes = $this->attributeAdapter->adapt($productEntity);
         $customAttributes = $this->getCustomFields($attributes, $data);
 
         $this->assertEmpty($customAttributes);
@@ -353,6 +348,10 @@ class AttributeAdapterTest extends TestCase
      */
     public function testProductCategoriesUrlWithoutSeoOrEmptyPath(array $data, string $categoryId): void
     {
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->markTestSkipped('Empty category name does not pass validation of product builder');
+        }
+
         $categoryData['categories'] = $data;
         $productEntity = $this->createTestProduct($categoryData);
 
@@ -386,6 +385,10 @@ class AttributeAdapterTest extends TestCase
 
     public function testEmptyCategoryNameShouldStillExportCategory(): void
     {
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->markTestSkipped('Empty category name does not pass validation of product builder');
+        }
+
         $mainCatId = $this->getContainer()->get('category.repository')
             ->searchIds(new Criteria(), Context::createDefaultContext())->firstId();
 
@@ -418,7 +421,7 @@ class AttributeAdapterTest extends TestCase
         $adapter = $this->getAttributeAdapter($config);
         $attributes = $adapter->adapt($productEntity);
 
-        $this->assertCount(6, $attributes);
+        $this->assertCount(5, $attributes);
         $this->assertSame('cat_url', $attributes[0]->getKey());
 
         $catUrls = $attributes[0]->getValues();
@@ -505,8 +508,7 @@ class AttributeAdapterTest extends TestCase
             $this->salesChannelContext->getContext()
         )->get($id);
 
-        $adapter = $this->getContainer()->get(AttributeAdapter::class);
-        $adapter->adapt($productEntity);
+        $this->attributeAdapter->adapt($productEntity);
     }
 
     public function parentAndChildrenCategoryProvider(): array
@@ -596,8 +598,8 @@ class AttributeAdapterTest extends TestCase
     private function getAttributeAdapter(Config $config): AttributeAdapter
     {
         return new AttributeAdapter(
+            $this->getContainer(),
             $config,
-            $this->getContainer()->get('fin_search.dynamic_product_group'),
             $this->getContainer()->get(Translator::class),
             $this->getContainer()->get('fin_search.sales_channel_context'),
             $this->getContainer()->get(UrlBuilderService::class),
@@ -642,7 +644,7 @@ class AttributeAdapterTest extends TestCase
 
         $additionalSalesChannelId = $additionalSalesChannel->getId();
 
-        return [
+        $noSeoPath = [
             'Category does not have SEO path assigned' => [
                 'data' => [
                     [
@@ -670,7 +672,10 @@ class AttributeAdapterTest extends TestCase
                     ]
                 ],
                 'categoryId' => $categoryId
-            ],
+            ]
+        ];
+
+        $emptySeoPath = [
             'Category have a pseudo empty SEO path assigned' => [
                 'data' => [
                     [
@@ -690,6 +695,11 @@ class AttributeAdapterTest extends TestCase
                 'categoryId' => $categoryId
             ]
         ];
+
+        // Empty SEO path does not pass the validation of the product builder
+        return Utils::versionGreaterOrEqual('6.4.11.0')
+            ? $noSeoPath
+            : array_merge($noSeoPath, $emptySeoPath);
     }
 
 

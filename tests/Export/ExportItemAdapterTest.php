@@ -9,10 +9,10 @@ use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory;
+use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
 use FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
-use FINDOLOGIC\FinSearch\Export\ExportItemAdapter;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use Monolog\Logger;
@@ -22,7 +22,6 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\Framework\Uuid\Uuid;
 use Throwable;
 
 class ExportItemAdapterTest extends TestCase

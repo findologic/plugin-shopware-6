@@ -26,15 +26,11 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Storefront\Page\GenericPageLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class NavigationRequestHandler extends SearchNavigationRequestHandler
 {
-    /** @var GenericPageLoader */
-    private $genericPageLoader;
-
     /** @var ContainerInterface */
     private $container;
 
@@ -44,7 +40,6 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         Config $config,
         ApiConfig $apiConfig,
         ApiClient $apiClient,
-        GenericPageLoader $genericPageLoader,
         SortingHandlerService $sortingHandlerService,
         ContainerInterface $container
     ) {
@@ -57,7 +52,6 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             $sortingHandlerService
         );
 
-        $this->genericPageLoader = $genericPageLoader;
         $this->container = $container;
     }
 
@@ -153,7 +147,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      */
     public function fetchCategoryPath(Request $request, SalesChannelContext $salesChannelContext): ?string
     {
-        $navigationCategoryParser = new NavigationCategoryParser($this->container, $this->genericPageLoader);
+        $navigationCategoryParser = new NavigationCategoryParser($this->container);
         $category = $navigationCategoryParser->parse($request, $salesChannelContext);
 
         if (!$category) {

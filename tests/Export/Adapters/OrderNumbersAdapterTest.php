@@ -31,8 +31,6 @@ class OrderNumbersAdapterTest extends TestCase
 
     public function testOrderNumberContainsTheOrderNumberOfTheProduct(): void
     {
-        $id = Uuid::randomHex();
-        $variantId = Uuid::randomHex();
         $variantProductNumber = Uuid::randomHex();
         $expectedOrderNumbers = [
             new Ordernumber('FINDOLOGIC001'),
@@ -44,12 +42,12 @@ class OrderNumbersAdapterTest extends TestCase
         ];
 
         $product = $this->createTestProduct([
-            'id' => $id
+            'id' => Uuid::randomHex()
         ]);
 
         $variantProduct = $this->createTestProduct([
-           'id' => $variantId,
-            'parentId' => $id,
+            'id' => Uuid::randomHex(),
+            'parentId' => $product->getId(),
             'productNumber' => $variantProductNumber,
             'ean' => 'childEan',
             'manufacturerNumber' => 'MAN002'

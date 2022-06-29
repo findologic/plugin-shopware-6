@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export\Adapters;
 
+use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
@@ -29,6 +30,9 @@ class PriceAdapterTest extends TestCase
     /** @var SalesChannelContext */
     protected $salesChannelContext;
 
+    /** @var ExportContext */
+    protected $exportContext;
+
     /** @var ProductService */
     protected $productService;
 
@@ -37,12 +41,15 @@ class PriceAdapterTest extends TestCase
         parent::setUp();
 
         $this->salesChannelContext = $this->buildSalesChannelContext();
-        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
-        $this->getContainer()->set('fin_search.export_context', new ExportContext(
+        $this->exportContext = new ExportContext(
             'ABCDABCDABCDABCDABCDABCDABCDABCD',
             [],
             $this->salesChannelContext->getSalesChannel()->getNavigationCategory()
-        ));
+        );
+
+        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
+        $this->getContainer()->set('fin_search.export_context', $this->exportContext);
+
         $this->productService = ProductService::getInstance($this->getContainer(), $this->salesChannelContext);
     }
 
@@ -182,5 +189,28 @@ class PriceAdapterTest extends TestCase
             $expectedGroupPrices,
             $actualGroupPrices
         ));
+    }
+
+    public function testProductPriceWithCurrency(): void
+    {
+        $currencyId = $this->createCurrency();
+        $this->salesChannelContext->getSalesChannel()->setCurrencyId($currencyId);
+
+        $adapter = new PriceAdapter(
+            $this->salesChannelContext,
+            $this->exportContext
+        );
+        $testProduct = $this->createTestProduct([
+            'price' => [
+                ['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false],
+                ['currencyId' => $currencyId, 'gross' => 7.5, 'net' => 5, 'linked' => false]
+            ]
+        ]);
+
+        $prices = $adapter->adapt($testProduct);
+        $priceValues = current($prices)->getValues();
+
+        $this->assertEquals(1, count($prices));
+        $this->assertEquals(7.5, current($priceValues));
     }
 }

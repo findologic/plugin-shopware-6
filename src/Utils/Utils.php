@@ -77,49 +77,60 @@ class Utils
      */
     public static function addProductAssociations(Criteria $criteria): Criteria
     {
+        self::addVariantAssociations($criteria);
+
         return $criteria->addAssociations(
             [
                 'seoUrls',
-                'categories',
-                'categories.seoUrls',
                 'translations',
                 'searchKeywords',
                 'media',
                 'manufacturer',
                 'manufacturer.translations',
                 'cover',
-                'properties',
-                'properties.group',
-                'properties.productConfiguratorSettings',
-                'properties.productConfiguratorSettings.option',
-                'properties.productConfiguratorSettings.option.group',
-                'properties.productConfiguratorSettings.option.group.translations',
             ]
         );
     }
 
+    public static function addVariantAssociations(Criteria $criteria): Criteria
+    {
+        return $criteria->addAssociations(
+            [
+                'categories',
+                'categories.seoUrls',
+                'properties',
+                'properties.group'
+            ]
+        );
+    }
+
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
     public static function addChildrenAssociations(Criteria $criteria): Criteria
     {
-        return $criteria->addAssociations([
-            'children',
-            'children.seoUrls',
-            'children.categories',
-            'children.categories.seoUrls',
-            'children.translations',
-            'children.tags',
-            'children.media',
-            'children.manufacturer',
-            'children.manufacturer.translations',
-            'children.cover',
-            'children.properties',
-            'children.properties.group',
-            'children.categories',
-            'children.categories.seoUrls',
-            'children.properties.productConfiguratorSettings',
-            'children.properties.productConfiguratorSettings.option',
-            'children.properties.productConfiguratorSettings.option.group',
-            'children.properties.productConfiguratorSettings.option.group.translations',
-        ]);
+        return $criteria->addAssociations(
+            [
+                'children',
+                'children.seoUrls',
+                'children.categories',
+                'children.categories.seoUrls',
+                'children.translations',
+                'children.tags',
+                'children.media',
+                'children.manufacturer',
+                'children.manufacturer.translations',
+                'children.cover',
+                'children.properties',
+                'children.properties.group',
+                'children.categories',
+                'children.categories.seoUrls',
+                'children.properties.productConfiguratorSettings',
+                'children.properties.productConfiguratorSettings.option',
+                'children.properties.productConfiguratorSettings.option.group',
+                'children.properties.productConfiguratorSettings.option.group.translations',
+            ]
+        );
     }
 
     public static function multiByteRawUrlEncode(string $string): string

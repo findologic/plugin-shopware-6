@@ -8,13 +8,16 @@ use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\Export\XML\XMLExporter as XmlFileConverter;
 use FINDOLOGIC\Export\XML\XMLItem;
-use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
+use FINDOLOGIC\FinSearch\Export\Events\AfterItemBuildEvent;
+use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
+use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -31,22 +34,33 @@ class XmlExport extends Export
     /** @var LoggerInterface */
     private $logger;
 
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
+
     /** @var string[] */
     private $crossSellingCategories;
 
     /** @var XmlFileConverter */
     private $xmlFileConverter;
 
+    /** @var ExportItemAdapter */
+    private $exportItemAdapter;
+
+    /** @var ProductSearcher */
+    private $productSearcher;
+
     public function __construct(
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
+        EventDispatcherInterface $eventDispatcher,
         array $crossSellingCategories = [],
         ?XmlFileConverter $xmlFileConverter = null
     ) {
         $this->router = $router;
         $this->container = $container;
         $this->logger = $logger;
+        $this->eventDispatcher = $eventDispatcher;
         $this->crossSellingCategories = $crossSellingCategories;
         $this->xmlFileConverter = $xmlFileConverter ?? Exporter::create(Exporter::TYPE_XML);
     }
@@ -74,19 +88,47 @@ class XmlExport extends Export
      * be returned. Details about why specific products can not be exported, can be found in the logs.
      *
      * @param ProductEntity[] $productEntities
+     *
+     * @return XMLItem[]
+     */
+    public function buildItems(array $productEntities): array
+    {
+        $this->initialize();
+
+        $items = [];
+        foreach ($productEntities as $productEntity) {
+            $item = $this->exportSingleItem($productEntity);
+            if (!$item) {
+                continue;
+            }
+
+            $this->eventDispatcher->dispatch(new AfterItemBuildEvent($item), AfterItemBuildEvent::NAME);
+
+            $items[] = $item;
+        }
+
+        return $items;
+    }
+
+    /**
+     * @deprecated buildItemsLegacy function will be removed in plugin version 4.0
+     *
+     * Converts given product entities to Findologic XML items. In case items can not be exported, they won't
+     * be returned. Details about why specific products can not be exported, can be found in the logs.
+     *
+     * @param ProductEntity[] $productEntities
      * @param string $shopkey Required for generating the user group hash.
      * @param CustomerGroupEntity[] $customerGroups
      *
      * @return XMLItem[]
      */
-    public function buildItems(
-        array $productEntities,
-        string $shopkey,
-        array $customerGroups
-    ): array {
+    public function buildItemsLegacy(array $productEntities, string $shopkey, array $customerGroups): array
+    {
+        $this->initialize();
+
         $items = [];
         foreach ($productEntities as $productEntity) {
-            $item = $this->exportSingleItem($productEntity, $shopkey, $customerGroups);
+            $item = $this->exportSingleItemLegacy($productEntity, $shopkey, $customerGroups);
             if (!$item) {
                 continue;
             }
@@ -102,11 +144,15 @@ class XmlExport extends Export
         return $this->logger;
     }
 
-    private function exportSingleItem(
-        ProductEntity $productEntity,
-        string $shopkey,
-        array $customerGroups
-    ): ?Item {
+    private function initialize(): void
+    {
+        $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
+        $this->productSearcher = $this->container->get(ProductSearcher::class);
+        $this->eventDispatcher = $this->container->get('event_dispatcher');
+    }
+
+    private function exportSingleItem(ProductEntity $productEntity): ?Item
+    {
         if ($category = $this->getConfiguredCrossSellingCategory($productEntity)) {
             $this->logger->warning(
                 sprintf(
@@ -122,48 +168,57 @@ class XmlExport extends Export
             return null;
         }
 
-        // TODO: This must only be executed when an older version of the extension plugin is installed.
-        if (getenv('APP_ENV') === 'test') {
-            $xmlProduct = new XmlProduct(
-                $productEntity,
-                $this->router,
-                $this->container,
-                $shopkey,
-                $customerGroups
-            );
-            $xmlProduct->buildXmlItem($this->logger);
-
-            return $xmlProduct->getXmlItem();
-        }
-
-        /** @var ExportItemAdapter $exportItemAdapter */
-        $exportItemAdapter = $this->container->get(ExportItemAdapter::class);
-        /** @var ProductServiceSeparateVariants $productService */
-        $productService = $this->container->get(ProductServiceSeparateVariants::CONTAINER_ID);
-        $maxPropertiesCount = $productService->getMaxPropertiesCount($productEntity);
-        $pageSize = $this->calculatePageSize($maxPropertiesCount);
         $initialItem = $this->xmlFileConverter->createItem($productEntity->getId());
-        $item = $exportItemAdapter->adapt($initialItem, $productEntity);
+        $item = $this->exportItemAdapter->adapt($initialItem, $productEntity, $this->logger);
 
-        if ($item === null) {
-            $item = $initialItem;
-        }
-
-        $iterator = $productService->buildVariantIterator($productEntity, $pageSize);
+        $pageSize = $this->calculatePageSize($productEntity);
+        $iterator = $this->productSearcher->buildVariantIterator($productEntity, $pageSize);
 
         while (($variantsResult = $iterator->fetch()) !== null) {
+            /** @var ProductCollection $variants */
             $variants = $variantsResult->getEntities();
-
             foreach ($variants->getElements() as $variant) {
-                $exportItemAdapter->adaptVariant($item, $variant);
+                if ($adaptedItem = $this->exportItemAdapter->adaptVariant($item ?: $initialItem, $variant)) {
+                    $item = $adaptedItem;
+                }
             }
         }
 
         return $item;
     }
 
-    private function calculatePageSize(int $maxPropertiesCount): int
+    private function exportSingleItemLegacy(ProductEntity $productEntity, string $shopkey, array $customerGroups): ?Item
     {
+        if ($category = $this->getConfiguredCrossSellingCategory($productEntity)) {
+            $this->logger->warning(
+                sprintf(
+                    'Product with id %s (%s) was not exported because it is assigned to cross selling category %s (%s)',
+                    $productEntity->getId(),
+                    $productEntity->getName(),
+                    $category->getId(),
+                    implode(' > ', $category->getBreadcrumb())
+                ),
+                ['product' => $productEntity]
+            );
+
+            return null;
+        }
+
+        $xmlProduct = new XmlProduct(
+            $productEntity,
+            $this->router,
+            $this->container,
+            $shopkey,
+            $customerGroups
+        );
+        $xmlProduct->buildXmlItem($this->logger);
+
+        return $xmlProduct->getXmlItem();
+    }
+
+    private function calculatePageSize(ProductEntity $productEntity): int
+    {
+        $maxPropertiesCount = $this->productSearcher->findMaxPropertiesCount($productEntity);
         if ($maxPropertiesCount >= self::MAXIMUM_PROPERTIES_COUNT) {
             return 1;
         }

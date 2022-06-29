@@ -9,7 +9,7 @@ use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductIdExport;
-use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
+use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
@@ -18,15 +18,22 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Plugin\PluginEntity;
+use Shopware\Core\Framework\Routing\Annotation\RouteScope;
+use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
+use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
@@ -45,6 +52,18 @@ class ExportController extends AbstractController
     /** @var HeaderHandler */
     private $headerHandler;
 
+    /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
+    private $salesChannelContextFactory;
+
+    /** @var CacheItemPoolInterface */
+    private $cache;
+
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
+
+    /** @var EntityRepository */
+    private $customerGroupRepository;
+
     /** @var SalesChannelContext */
     private $salesChannelContext;
 
@@ -54,34 +73,40 @@ class ExportController extends AbstractController
     /** @var ExportContext */
     private $exportContext;
 
-    /** @var ProductServiceSeparateVariants */
+    /** @var ProductService */
     private $productService;
 
     /** @var ProductSearcher */
     private $productSearcher;
 
-    /** @var Config */
-    private $pluginConfig;
-
     /** @var Export|XmlExport|ProductIdExport */
     private $export;
-
-    /** @var CacheItemPoolInterface */
-    private $cache;
 
     /** @var SalesChannelService|null */
     private $salesChannelService;
 
+    /** @var Config */
+    private $pluginConfig;
+
+    /**
+     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
+     */
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
         HeaderHandler $headerHandler,
-        CacheItemPoolInterface $cache
+        $salesChannelContextFactory,
+        CacheItemPoolInterface $cache,
+        EventDispatcherInterface $eventDispatcher,
+        EntityRepository $customerGroupRepository
     ) {
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
+        $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->cache = $cache;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->customerGroupRepository = $customerGroupRepository;
     }
 
     /**
@@ -89,70 +114,58 @@ class ExportController extends AbstractController
      */
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
-        $this->initializePreValidation($request, $context);
+        $this->initialize($request, $context);
         if ($errorResponse = $this->validate()) {
             return $errorResponse;
         }
-        $this->initializePostValidation($request);
 
-        return $this->doExport();
+        return $this->legacyExtensionInstalled()
+            ? $this->doLegacyExport()
+            : $this->doExport();
     }
 
     /**
      * @param Request $request
      * @param SalesChannelContext|null $context
      */
-    protected function initializePreValidation(Request $request, ?SalesChannelContext $context): void
+    protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
-        $this->exportConfig = $this->getExportConfigInstance($request);
+        $this->exportConfig = ExportConfiguration::getInstance($request);
 
         $this->salesChannelService = $context ? $this->container->get(SalesChannelService::class) : null;
         $this->salesChannelContext = $this->salesChannelService ? $this->salesChannelService
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
 
-        $this->pluginConfig = $this->initializePluginConfig();
-        $this->export = $this->getExportInstance();
-    }
+        $this->pluginConfig = $this->buildPluginConfig();
 
-    /**
-     * @param Request $request
-     */
-    protected function initializePostValidation(Request $request): void
-    {
-        $this->productService = $this->getProductServiceInstance();
-
-        $this->exportContext = $this->buildExportContext();
-        $this->container->set('fin_search.export_context', $this->exportContext);
-
-        $this->productSearcher = new ProductSearcher($this->container, $this->getSalesChannelContext());
-
-        $this->manipulateRequestWithSalesChannelInformation($request);
-    }
-
-    protected function getProductServiceInstance(): ProductServiceSeparateVariants
-    {
-        return ProductServiceSeparateVariants::getInstance(
+        $this->productService = ProductService::getInstance(
             $this->container,
             $this->salesChannelContext,
             $this->pluginConfig
         );
-    }
 
-    protected function getExportInstance(): Export
-    {
-        return Export::getInstance(
+        $this->export = Export::getInstance(
             $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
             $this->router,
             $this->container,
             $this->logger,
+            $this->eventDispatcher,
             $this->pluginConfig->getCrossSellingCategories()
         );
-    }
 
-    protected function getExportConfigInstance(Request $request): ExportConfigurationBase
-    {
-        return ExportConfiguration::getInstance($request);
+        // No need to initialize components relying on the sales channel context.
+        // Export will not continue anyway
+        if (!$this->salesChannelContext) {
+            return;
+        }
+
+        $this->exportContext = $this->buildExportContext();
+        $this->container->set('fin_search.export_context', $this->exportContext);
+
+        $this->productSearcher = $this->container->get(ProductSearcher::class);
+
+        $this->manipulateRequestWithSalesChannelInformation($request);
     }
 
     protected function validate(): ?Response
@@ -166,6 +179,69 @@ class ExportController extends AbstractController
         }
 
         return null;
+    }
+
+    protected function doExport(): Response
+    {
+        $this->warmUpDynamicProductGroups();
+
+        if ($productId = $this->exportConfig->getProductId()) {
+            $mainProduct = $this->getProductSearcher()->getMainProductById($productId);
+            $productId = $mainProduct ? $mainProduct->getId() : $productId;
+        }
+
+        $products = $this->productSearcher->findVisibleProducts(
+            $this->exportConfig->getCount(),
+            $this->exportConfig->getStart(),
+            $productId
+        );
+
+        $items = $this->export->buildItems(
+            $products->getElements()
+        );
+
+        return $this->export->buildResponse(
+            $items,
+            $this->exportConfig->getStart(),
+            $this->productSearcher->findTotalProductCount(),
+            $this->headerHandler->getHeaders()
+        );
+    }
+
+    public function doLegacyExport(): Response
+    {
+        if ($this->exportConfig->getStart() === 0) {
+            $this->logger->info(
+                sprintf(
+                    '%s %s %s %s',
+                    'Decorating the FindologicProduct or ProductService class is deprecated since 3.x',
+                    'and will be removed in 4.0! Consider decorating the responsible export adapters in',
+                    'FinSearch/Export/Adapters or the relevant services in FinSearch/Export/Search.',
+                    'Make sure to follow the upgrade guide at FinSearch/UPGRADE-3.0.'
+                )
+            );
+        }
+
+        $this->warmUpDynamicProductGroups();
+
+        $products = $this->productService->searchVisibleProducts(
+            $this->exportConfig->getCount(),
+            $this->exportConfig->getStart(),
+            $this->exportConfig->getProductId()
+        );
+
+        $items = $this->export->buildItemsLegacy(
+            $products->getElements(),
+            $this->exportConfig->getShopkey(),
+            $this->exportContext->getCustomerGroups()
+        );
+
+        return $this->export->buildResponse(
+            $items,
+            $this->exportConfig->getStart(),
+            $this->productService->getTotalProductCount(),
+            $this->headerHandler->getHeaders()
+        );
     }
 
     protected function validateStateAndGetErrorMessages(): array
@@ -183,50 +259,6 @@ class ExportController extends AbstractController
         }
 
         return $messages;
-    }
-
-    private function validateExportConfiguration(): array
-    {
-        $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
-        $violations = $validator->validate($this->exportConfig);
-
-        $messages = [];
-        if ($violations->count() > 0) {
-            $messages = array_map(function (ConstraintViolation $violation) {
-                return sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage());
-            }, current((array_values((array)$violations))));
-        }
-
-        return $messages;
-    }
-
-    protected function doExport(): Response
-    {
-        $this->warmUpDynamicProductGroups();
-
-        if ($productId = $this->exportConfig->getProductId()) {
-            $mainProduct = $this->getProductSearcher()->getMainProductById($productId);
-            $productId = $mainProduct ? $mainProduct->getId() : $productId;
-        }
-
-        $products = $this->productService->searchVisibleProducts(
-            $this->exportConfig->getCount(),
-            $this->exportConfig->getStart(),
-            $productId
-        );
-
-        $items = $this->export->buildItems(
-            $products->getElements(),
-            $this->exportConfig->getShopkey(),
-            $this->exportContext->getCustomerGroups()
-        );
-
-        return $this->export->buildResponse(
-            $items,
-            $this->exportConfig->getStart(),
-            $this->productService->getTotalProductCount(),
-            $this->headerHandler->getHeaders()
-        );
     }
 
     protected function warmUpDynamicProductGroups(): void
@@ -249,7 +281,22 @@ class ExportController extends AbstractController
         }
     }
 
-    private function initializePluginConfig(): Config
+    private function validateExportConfiguration(): array
+    {
+        $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
+        $violations = $validator->validate($this->exportConfig);
+
+        $messages = [];
+        if ($violations->count() > 0) {
+            $messages = array_map(function (ConstraintViolation $violation) {
+                return sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage());
+            }, current((array_values((array)$violations))));
+        }
+
+        return $messages;
+    }
+
+    private function buildPluginConfig(): Config
     {
         /** @var Config $config */
         $config = $this->container->get(Config::class);
@@ -277,7 +324,7 @@ class ExportController extends AbstractController
     {
         return new ExportContext(
             $this->exportConfig->getShopkey(),
-            $this->productService->getAllCustomerGroups(),
+            $this->getAllCustomerGroups(),
             Utils::fetchNavigationCategoryFromSalesChannel(
                 $this->container->get('category.repository'),
                 $this->salesChannelContext->getSalesChannel()
@@ -285,49 +332,107 @@ class ExportController extends AbstractController
         );
     }
 
+    private function getAllCustomerGroups(): array
+    {
+        return $this->customerGroupRepository
+            ->search(new Criteria(), $this->salesChannelContext->getContext())
+            ->getElements();
+    }
+
+    private function legacyExtensionInstalled(): bool
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
+
+        /** @var PluginEntity $plugin */
+        $plugin = $this->container->get('plugin.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->first();
+        if ($plugin !== null && $plugin->getActive()) {
+            return version_compare($plugin->getVersion(), '3.0.0', '<');
+        }
+
+        return false;
+    }
+
+    /**
+     * @return LoggerInterface
+     */
     public function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
 
-    public function getRouter(): Router
+    /**
+     * @return Router
+     */
+    public function getRouter()
     {
         return $this->router;
     }
 
-    public function getSalesChannelContext(): ?SalesChannelContext
+    /**
+     * @return HeaderHandler
+     */
+    public function getHeaderHandler(): HeaderHandler
+    {
+        return $this->headerHandler;
+    }
+
+    /**
+     * @return CacheItemPoolInterface
+     */
+    public function getCache(): CacheItemPoolInterface
+    {
+        return $this->cache;
+    }
+
+    /**
+     * @return EventDispatcherInterface
+     */
+    public function getEventDispatcher(): EventDispatcherInterface
+    {
+        return $this->eventDispatcher;
+    }
+
+    /**
+     * @return EntityRepository
+     */
+    public function getCustomerGroupRepository(): EntityRepository
+    {
+        return $this->customerGroupRepository;
+    }
+
+    /**
+     * @return SalesChannelContext
+     */
+    public function getSalesChannelContext(): SalesChannelContext
     {
         return $this->salesChannelContext;
     }
 
+    /**
+     * @return ExportConfigurationBase
+     */
     public function getExportConfig(): ExportConfigurationBase
     {
         return $this->exportConfig;
     }
 
-    public function setExportConfig(ExportConfigurationBase $exportConfig): void
-    {
-        $this->exportConfig = $exportConfig;
-    }
-
+    /**
+     * @return ExportContext
+     */
     public function getExportContext(): ExportContext
     {
         return $this->exportContext;
     }
 
-    public function getProductService(): ProductServiceSeparateVariants
-    {
-        return $this->productService;
-    }
-
+    /**
+     * @return ProductSearcher
+     */
     public function getProductSearcher(): ProductSearcher
     {
         return $this->productSearcher;
-    }
-
-    public function getPluginConfig(): Config
-    {
-        return $this->pluginConfig;
     }
 
     /**
@@ -336,5 +441,13 @@ class ExportController extends AbstractController
     public function getExport()
     {
         return $this->export;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getPluginConfig(): Config
+    {
+        return $this->pluginConfig;
     }
 }
