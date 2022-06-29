@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
-use FINDOLOGIC\FinSearch\Export\DynamicProductGroupCacheHandler;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Export;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
@@ -46,10 +45,7 @@ use Symfony\Component\Validator\Validation;
 class ExportController extends AbstractController
 {
     /** @var LoggerInterface */
-    protected $logger;
-
-    /** @var CacheItemPoolInterface */
-    protected $cache;
+    private $logger;
 
     /** @var Router */
     private $router;
@@ -252,8 +248,6 @@ class ExportController extends AbstractController
                 )
             );
         }
-
-        $this->warmUpDynamicProductGroups();
 
         $products = $this->productService->searchVisibleProducts(
             $this->exportConfig->getCount(),
