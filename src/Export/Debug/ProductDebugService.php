@@ -6,14 +6,22 @@ namespace FINDOLOGIC\FinSearch\Export\Debug;
 
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Errors\ExportErrors;
-use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
-use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
+use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-class ProductDebugService extends ProductServiceSeparateVariants
+class ProductDebugService
 {
+    /** @var SalesChannelContext */
+    private $salesChannelContext;
+
+    /** @var ProductDebugSearcher */
+    private $productDebugSearcher;
+
+    /** @var ProductCriteriaBuilder */
+    private $productCriteriaBuilder;
+
     /** @var string */
     private $productId;
 
@@ -32,18 +40,24 @@ class ProductDebugService extends ProductServiceSeparateVariants
     /** @var DebugUrlBuilder */
     private $debugUrlBuilder;
 
-    /** @var ProductSearcher */
-    private $productSearcher;
+    public function __construct(
+        SalesChannelContext $salesChannelContext,
+        ProductDebugSearcher $productDebugSearcher,
+        ProductCriteriaBuilder $productCriteriaBuilder
+    ) {
+        $this->salesChannelContext = $salesChannelContext;
+        $this->productDebugSearcher = $productDebugSearcher;
+        $this->productCriteriaBuilder = $productCriteriaBuilder;
+    }
 
     public function getDebugInformation(
         string $productId,
         string $shopkey,
         ?XMLItem $xmlItem,
         ?ProductEntity $exportedMainProduct,
-        ExportErrors $exportErrors,
-        ProductSearcher $productSearcher
+        ExportErrors $exportErrors
     ): JsonResponse {
-        $this->initialize($productId, $shopkey, $xmlItem, $exportedMainProduct, $exportErrors, $productSearcher);
+        $this->initialize($productId, $shopkey, $xmlItem, $exportedMainProduct, $exportErrors);
 
         if (!$this->requestedProduct) {
             $this->exportErrors->addGeneralError(
@@ -77,9 +91,10 @@ class ProductDebugService extends ProductServiceSeparateVariants
                 'isExportedMainVariant' => $this->exportedMainProduct->getId() === $this->requestedProduct->getId(),
                 'product' => $this->requestedProduct,
                 'siblings' => $this->requestedProduct->getParentId()
-                    ? $this->productSearcher->getSiblings($this->requestedProduct->getParentId())
+                    ? $this->productDebugSearcher->getSiblings($this->requestedProduct->getParentId(), 100)
                     : [],
-                'associations' => $this->buildProductCriteria(null, null, [$this->requestedProduct->getId()])
+                'associations' => $this->productDebugSearcher
+                    ->buildCriteria()
                     ->getAssociations(),
             ]
         ]);
@@ -90,15 +105,13 @@ class ProductDebugService extends ProductServiceSeparateVariants
         string $shopkey,
         ?XMLItem $xmlItem,
         ?ProductEntity $exportedMainProduct,
-        ExportErrors $exportErrors,
-        ProductSearcher $productSearcher
+        ExportErrors $exportErrors
     ): void {
-        $this->debugUrlBuilder = new DebugUrlBuilder($this->getSalesChannelContext(), $shopkey);
-        $this->productSearcher = $productSearcher;
+        $this->debugUrlBuilder = new DebugUrlBuilder($this->salesChannelContext, $shopkey);
 
         $this->productId = $productId;
         $this->exportErrors = $exportErrors;
-        $this->requestedProduct = $this->productSearcher->getProductById($productId);
+        $this->requestedProduct = $this->productDebugSearcher->getProductById($productId);
         $this->exportedMainProduct = $exportedMainProduct;
         $this->xmlItem = $xmlItem;
     }
@@ -134,18 +147,19 @@ class ProductDebugService extends ProductServiceSeparateVariants
     private function checkExportCriteria(): void
     {
         $criteriaMethods = [
-            'addGrouping' => 'No display group set',
-            'handleAvailableStock' => 'Closeout product is out of stock',
-            'addVisibilityFilter' => 'Product is not visible for search',
-            'addPriceZeroFilter' => 'Product has a price of 0',
+            'withDisplayGroupFilter' => 'No display group set',
+            'withOutOfStockFilter' => 'Closeout product is out of stock',
+            'withVisibilityFilter' => 'Product is not visible for search',
+            'withPriceZeroFilter' => 'Product has a price of 0',
         ];
 
         foreach ($criteriaMethods as $method => $errorMessage) {
-            $criteria = new Criteria([$this->requestedProduct->getId()]);
+            $criteria = $this->productCriteriaBuilder
+                ->withIds([$this->requestedProduct->getId()])
+                ->$method()
+                ->build();
 
-            $this->$method($criteria);
-
-            if (!$this->productSearcher->searchProduct($criteria)) {
+            if (!$this->productDebugSearcher->searchProduct($criteria)) {
                 $this->exportErrors->addGeneralError($errorMessage);
             }
         }

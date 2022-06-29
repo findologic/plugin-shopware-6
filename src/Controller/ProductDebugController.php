@@ -5,58 +5,28 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\Export\XML\XMLItem;
+use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher;
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
 use FINDOLOGIC\FinSearch\Export\Export;
-use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use FINDOLOGIC\FinSearch\Validators\DebugExportConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
-use Psr\Cache\CacheItemPoolInterface;
-use Psr\Log\LoggerInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\RouterInterface;
 
 /**
  * @RouteScope(scopes={"storefront"})
  */
 class ProductDebugController extends ExportController
 {
+    /** @var ProductDebugSearcher */
+    private $productDebugSearcher;
+
     /** @var ProductDebugService */
     private $productDebugService;
-
-    /**
-     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
-     */
-    public function __construct(
-        LoggerInterface $logger,
-        RouterInterface $router,
-        HeaderHandler $headerHandler,
-        $salesChannelContextFactory,
-        CacheItemPoolInterface $cache,
-        EventDispatcherInterface $eventDispatcher,
-        EntityRepository $customerGroupRepository,
-        ProductDebugService $productDebugService
-    ) {
-        parent::__construct(
-            $logger,
-            $router,
-            $headerHandler,
-            $salesChannelContextFactory,
-            $cache,
-            $eventDispatcher,
-            $customerGroupRepository
-        );
-
-        $this->productDebugService = $productDebugService;
-    }
 
     /**
      * @Route("/findologic/debug", name="frontend.findologic.debug", options={"seo"="false"}, methods={"GET"})
@@ -64,6 +34,14 @@ class ProductDebugController extends ExportController
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
         return parent::export($request, $context);
+    }
+
+    protected function initialize(Request $request, ?SalesChannelContext $context): void
+    {
+        parent::initialize($request, $context);
+
+        $this->productDebugSearcher = $this->container->get(ProductDebugSearcher::class);
+        $this->productDebugService = $this->container->get(ProductDebugService::class);
     }
 
     protected function getExportInstance(): Export
@@ -87,11 +65,11 @@ class ProductDebugController extends ExportController
     {
         $this->warmUpDynamicProductGroups();
 
-//        $mainProduct = $this->getProductSearcher()->getMainProductById($this->getExportConfig()->getProductId());
-        $product = $this->getProductSearcher()->findVisibleProducts(
+        $mainProduct = $this->productDebugSearcher->getMainProductById($this->getExportConfig()->getProductId());
+        $product = $this->productDebugSearcher->findVisibleProducts(
             null,
             null,
-            $this->getExportConfig()->getProductId()
+            $mainProduct->getId()
         )->first();
 
         /** @var XMLItem[] $xmlProducts */
@@ -103,7 +81,6 @@ class ProductDebugController extends ExportController
             count($xmlProducts) ? $xmlProducts[0] : null,
             $product,
             $this->getExport()->getErrorHandler()->getExportErrors(),
-            $this->getProductSearcher()
         );
     }
 }

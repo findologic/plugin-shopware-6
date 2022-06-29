@@ -108,11 +108,10 @@ class ProductSearcher
         ?int $offset = null,
         ?string $productId = null
     ): EntitySearchResult {
-        $this->productCriteriaBuilder->withDefaultCriteria($limit, $offset, $productId);
-        $this->adaptCriteriaBasedOnConfiguration();
+        $criteria = $this->buildCriteria($limit, $offset, $productId);
 
         $productResult = $this->productRepository->search(
-            $this->productCriteriaBuilder->build(),
+            $criteria,
             $this->salesChannelContext->getContext()
         );
         /** @var ProductCollection $products */
@@ -124,6 +123,17 @@ class ProductSearcher
         }
 
         return $this->getConfiguredMainVariants($products) ?: $productResult;
+    }
+
+    protected function buildCriteria(
+        ?int $limit = null,
+        ?int $offset = null,
+        ?string $productId = null
+    ): Criteria {
+        $this->productCriteriaBuilder->withDefaultCriteria($limit, $offset, $productId);
+        $this->adaptCriteriaBasedOnConfiguration();
+
+        return $this->productCriteriaBuilder->build();
     }
 
     protected function adaptCriteriaBasedOnConfiguration(): void
