@@ -14,7 +14,7 @@ describe('filter-category-select.plugin.js', () => {
 
     beforeEach(() => {
         window.csrf = {
-            enabled: false
+            enabled: false,
         };
 
         window.router = [];
@@ -44,7 +44,7 @@ describe('filter-category-select.plugin.js', () => {
             },
             getPlugin: () => {
                 return {
-                    get: () => []
+                    get: () => [],
                 };
             },
             getPluginInstanceFromElement: () => {
