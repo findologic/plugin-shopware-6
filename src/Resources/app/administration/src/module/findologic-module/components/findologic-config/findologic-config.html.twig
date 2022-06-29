@@ -40,24 +40,6 @@
                                     </template>
                                 </sw-inherit-wrapper>
 
-                                <sw-inherit-wrapper
-                                        v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
-                                        :inheritedValue="getInheritedValue('FinSearch.config.activeOnCategoryPages')"
-                                        :customInheritationCheckFunction="isBoolean"
-                                >
-                                    <template #content="props">
-                                        <sw-switch-field
-                                                name="FinSearch.config.activeOnCategoryPages"
-                                                :mapInheritance="props"
-                                                :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
-                                                :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
-                                                :disabled="props.isInherited"
-                                                :value="props.currentValue"
-                                                @change="props.updateCurrentValue"
-                                        >
-                                        </sw-switch-field>
-                                    </template>
-                                </sw-inherit-wrapper>
                                 <sw-button
                                         v-show="showTestButton"
                                         :disabled="!selectedLanguageId"
@@ -89,22 +71,27 @@
                 </sw-container>
             </sw-card>
 
-            <sw-card class="sw-card--grid" title="Export">
+            <sw-card class="sw-card--grid" :title="$tc('findologic.settingForm.config.export.title')">
                 <sw-container>
                     <div class="findologic-settings-credentials-fields">
-                        <sw-multi-select
-                                name="FinSearch.config.crossSellingCategories"
-                                :options="categories"
-                                v-model="actualConfigData['FinSearch.config.crossSellingCategories']"
+                        <sw-single-select
+                                v-model="actualConfigData['FinSearch.config.mainVariant']"
+                                :options="mainVariantOptions"
+                                :label="$tc('findologic.settingForm.config.mainVariant.label')"
+                                :placeholder="$tc('findologic.settingForm.config.mainVariant.default.label')"
+                                :helpText="$tc('findologic.settingForm.config.mainVariant.tooltipText')">
+                        </sw-single-select>
+
+                        <sw-category-tree-field
+                                id="crossSellingCategories"
+                                :categories-collection="categoryCollection"
                                 :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
                                 :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
                                 :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                                @selection-add="onCategoryAdd"
+                                @selection-remove="onCategoryRemove"
                         >
-                            <template #selection-label-property="{ item }">
-                                {{ item.name }}
-                            </template>
-
-                        </sw-multi-select>
+                        </sw-category-tree-field>
                     </div>
                 </sw-container>
             </sw-card>
@@ -161,13 +148,33 @@
             <sw-card class="sw-card--grid" v-if="showAPIConfig" :title="$tc('findologic.settingForm.api.title')">
                 <sw-container>
                     <div class="findologic-settings-credentials-fields">
-                        <sw-single-select
+                        {% block findologic_credentials_settings_search_filter_position_container %}
+                            <sw-inherit-wrapper
+                                v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
+                                :inheritedValue="getInheritedValue('FinSearch.config.activeOnCategoryPages')"
+                                :customInheritationCheckFunction="isBoolean"
+                            >
+                                <template #content="props">
+                                    <sw-switch-field
+                                        name="FinSearch.config.activeOnCategoryPages"
+                                        :mapInheritance="props"
+                                        :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
+                                        :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
+                                        :disabled="props.isInherited"
+                                        :value="props.currentValue"
+                                        @change="props.updateCurrentValue"
+                                    >
+                                    </sw-switch-field>
+                                </template>
+                            </sw-inherit-wrapper>
+                            <sw-single-select
                                 :options="filterPositionOptions"
                                 v-model="actualConfigData['FinSearch.config.filterPosition']"
                                 name="FinSearch.config.filterPosition"
                                 :label="$tc('findologic.settingForm.config.filterPosition.label')"
                                 :helpText="$tc('findologic.settingForm.config.filterPosition.tooltipText')">
-                        </sw-single-select>
+                            </sw-single-select>
+                        {% endblock %}
                     </div>
                 </sw-container>
             </sw-card>

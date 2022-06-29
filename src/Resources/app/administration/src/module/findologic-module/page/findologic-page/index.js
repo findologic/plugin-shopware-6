@@ -18,6 +18,7 @@ Component.register('findologic-page', {
             isLoading: false,
             isSaveSuccessful: false,
             isStagingShop: false,
+            shopkeyExists: false,
             isRegisteredShopkey: null,
             isActive: false,
             config: null,
@@ -30,6 +31,7 @@ Component.register('findologic-page', {
             httpClient: Application.getContainer('init').httpClient,
         };
     },
+
     metaInfo() {
         return {
             title: this.$createTitle(),
@@ -38,7 +40,7 @@ Component.register('findologic-page', {
 
     computed: {
         configKey() {
-            if (!this.selectedSalesChannelId) {
+            if (!this.selectedSalesChannelId || !this.selectedLanguageId) {
                 return 'null';
             }
 
@@ -58,9 +60,9 @@ Component.register('findologic-page', {
         },
 
         /**
-     * @returns {String}
-     * @private
-     */
+         * @returns {String}
+         * @private
+         */
         shopkey() {
             return this.actualConfigData ? this.actualConfigData['FinSearch.config.shopkey'] : '';
         },
@@ -104,7 +106,11 @@ Component.register('findologic-page', {
             this.shopkeyErrorState = null;
             if (this.isValidShopkey) {
                 this._isStagingRequest();
+            } else if (this.actualConfigData) {
+                this.actualConfigData['FinSearch.config.active'] = false;
+                this.actualConfigData['FinSearch.config.activeOnCategoryPages'] = false;
             }
+
             this._setErrorStates();
         },
     },
@@ -113,73 +119,114 @@ Component.register('findologic-page', {
         this.createdComponent();
     },
 
+    beforeMount() {
+        this.updateHeaderBarBackLink();
+    },
+
     methods: {
         createdComponent() {
-            this.readAll().then((values) => {
-                if (!values['FinSearch.config.filterPosition']) {
-                    values['FinSearch.config.filterPosition'] = 'top';
-                }
-                this.actualConfigData = values;
-            });
+            if ((this.selectedSalesChannelId && this.selectedLanguageId)) {
+                this.isLoading = true;
+                this.readAll().then((values) => {
+                    if (!values['FinSearch.config.filterPosition']) {
+                        values['FinSearch.config.filterPosition'] = 'top';
+                    }
+                    if (!values['FinSearch.config.mainVariant']) {
+                        values['FinSearch.config.mainVariant'] = 'default';
+                    }
+
+                    this.actualConfigData = values;
+                    this.isLoading = false;
+                });
+            }
 
             if (!this.salesChannel.length) {
-                const criteria = new Criteria();
+                this.isLoading = true;
+                const criteria = new Criteria(null, null);
                 criteria.addAssociation('languages');
                 criteria.addFilter(Criteria.equals('active', true));
 
                 this.salesChannelRepository.search(criteria, Shopware.Context.api).then(res => {
+                    this.isLoading = false;
                     this.salesChannel = res;
                 });
             }
         },
 
-        readAll() {
+        /**
+         * Updates the header bar link, based on the used Shopware version.
+         *
+         * * Shopware >= 6.4 => Extension list.
+         * * Shopware < 6.4 => Settings page.
+         */
+        updateHeaderBarBackLink() {
+            let foundModule = null;
+            Shopware.Module.getModuleRegistry().forEach((module) => {
+                if (foundModule) {
+                    return;
+                }
+                if (module.manifest.title === 'sw-extension-store.title') {
+                    foundModule = module;
+                }
+            });
+            if (foundModule) {
+                this.$route.meta.parentPath = 'sw.extension.my-extensions.listing.app';
+                this.$route.meta.$module = foundModule.manifest;
+            }
+        },
+
+        async readAll() {
             return this.FinsearchConfigApiService.getValues(this.selectedSalesChannelId, this.selectedLanguageId);
         },
 
         /**
-     * @private
-     */
+         * @private
+         */
         _isStagingRequest() {
-            this.httpClient.get(`https://cdn.findologic.com/config/${this.shopkey}/config.json`).then((response) => {
-                if (response.data.isStagingShop) {
-                    this.isStagingShop = true;
-                }
-            }).catch(() => {
-                this.isStagingShop = false;
-            });
+            this.httpClient
+                .get(`https://cdn.findologic.com/config/${this.shopkey}/config.json`)
+                .then((response) => {
+                    if (response.data.isStagingShop) {
+                        this.isStagingShop = true;
+                    }
+                }).catch(() => {
+                    this.isStagingShop = false;
+                });
         },
 
         /**
-     * @public
-     */
+         * @public
+         */
         onSave() {
             // If shopkey available but not according to schema, we do not call the validate service.
             // If shopkey is valid, we will check if it is registered, otherwise we allow empty shopkey to be saved
             if (this.shopkeyAvailable && !this.isValidShopkey) {
                 this._setErrorStates(true);
             } else if (this.shopkeyAvailable) {
-                this._validateShopkeyFromService().then((status) => {
-                    this.isRegisteredShopkey = status;
-                }).then(() => {
-                    if (!this.isRegisteredShopkey) {
-                        this._setErrorStates(true);
-                    } else {
-                        this._save();
-                    }
-                });
+                this._validateShopkeyFromService()
+                    .then((status) => {
+                        this.isRegisteredShopkey = status;
+                    })
+                    .then(() => {
+                        if (!this.isRegisteredShopkey) {
+                            this._setErrorStates(true);
+                        } else {
+                            this._save();
+                        }
+                    });
             } else {
                 this._save();
             }
         },
 
         /**
-     * @private
-     */
+         * @private
+         */
         _save() {
             this.isLoading = true;
             this.isSaveSuccessful = false;
             this.FinsearchConfigApiService.batchSave(this.allConfigs).then((res) => {
+                this.shopkeyExists = false;
                 this.shopkeyErrorState = null;
                 this.isLoading = false;
                 this.isSaveSuccessful = true;
@@ -187,20 +234,22 @@ Component.register('findologic-page', {
                     title: this.$tc('findologic.settingForm.titleSuccess'),
                     message: this.$tc('findologic.settingForm.configSaved'),
                 });
+
+                if (res) {
+                    this.actualConfigData = res;
+                }
             }).catch((e) => {
                 this.isSaveSuccessful = false;
                 this.isLoading = false;
-                this.createNotificationError({
-                    title: this.$tc('findologic.settingForm.titleError'),
-                    message: e.message,
-                });
+                this.shopkeyExists = true;
+                this._setErrorStates(true);
             });
         },
 
         /**
-     * @param {Boolean} withNotification
-     * @private
-     */
+         * @param {Boolean} withNotification
+         * @private
+         */
         _setErrorStates(withNotification = false) {
             this.isLoading = false;
             if (!this.shopkeyAvailable) {
@@ -215,7 +264,14 @@ Component.register('findologic-page', {
                     code: 1,
                     detail: this.$tc('findologic.notRegisteredShopkey'),
                 };
+            } else if (this.shopkeyExists === true) {
+                this.shopkeyErrorState = {
+                    code: 1,
+                    detail: this.$tc('findologic.shopkeyExists'),
+                };
             } else {
+                this.shopkeyExists = false;
+                this.isRegisteredShopkey = true;
                 this.shopkeyErrorState = null;
             }
 
@@ -225,8 +281,8 @@ Component.register('findologic-page', {
         },
 
         /**
-     * @private
-     */
+         * @private
+         */
         _showNotification() {
             if (!this.shopkeyAvailable) {
                 this.createNotificationError({
@@ -243,16 +299,23 @@ Component.register('findologic-page', {
                     title: this.$tc('findologic.settingForm.titleError'),
                     message: this.$tc('findologic.notRegisteredShopkey'),
                 });
+            } else if (this.shopkeyExists === true) {
+                this.createNotificationError({
+                    title: this.$tc('findologic.settingForm.titleError'),
+                    message: this.$tc('findologic.shopkeyExists'),
+                });
             }
         },
 
         /**
-     * @private
-     */
+         * @private
+         */
         _validateShopkeyFromService() {
             this.isLoading = true;
-            return this.httpClient.get(`https://account.findologic.com/api/v1/shopkey/validate/${this.shopkey}`)
+            return this.httpClient
+                .get(`https://account.findologic.com/api/v1/shopkey/validate/${this.shopkey}`)
                 .then((response) => {
+                    this.isLoading = false;
                     const status = String(response.status);
                     return status.startsWith('2');
                 })
@@ -268,16 +331,28 @@ Component.register('findologic-page', {
         },
 
         onSelectedSalesChannel(salesChannelId) {
+            this.language = [];
             if (this.salesChannel === undefined || salesChannelId === null) {
-                this.selectedLanguageId = null;
-                this.language = [];
+                this.onSelectedLanguage(null);
                 return;
             }
-            const selectedChannel = this.salesChannel.find(item => item.id = salesChannelId);
+
+            const selectedChannel = this.salesChannel.find(item => item.id === salesChannelId);
             if (selectedChannel) {
                 this.selectedSalesChannelId = salesChannelId;
-                this.selectedLanguageId = selectedChannel.languageId;
-                this.language = selectedChannel.languages;
+                this.onSelectedLanguage(selectedChannel.languageId);
+                selectedChannel.languages.forEach((language) => {
+                    const domain = selectedChannel.domains.find(item => item.languageId === language.id);
+                    if (domain) {
+                        if (domain.url !== null && domain.url !== '') {
+                            this.language.push({
+                                name: language.name,
+                                label: language.name,
+                                value: language.id,
+                            });
+                        }
+                    }
+                });
             }
         },
     },

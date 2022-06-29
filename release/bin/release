@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use FINDOLOGIC\FinSearch\Release\ShopwarePluginRelease;
+use FINDOLOGIC\FinSearch\Release\Utils;
+
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+require_once __DIR__ . '/../src/ReleaseBundler.php';
+require_once __DIR__ . '/../src/ReleaseTagger.php';
+require_once __DIR__ . '/../src/ShopwarePluginRelease.php';
+require_once __DIR__ . '/../src/Utils.php';
+
+$logger = Utils::buildLogger('release');
+
+$shopwarePluginRelease = new ShopwarePluginRelease($logger);
+$shopwarePluginRelease->updateVersionAndTriggerReleaseJob();
+
+$logger->info('Successfully released!');

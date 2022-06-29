@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Traits;
 
 use FINDOLOGIC\FinSearch\Struct\Pagination;
+use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -18,7 +22,8 @@ trait SearchResultHelper
     {
         // Return an empty response, as Shopware would search for all products if no explicit
         // product ids are submitted.
-        return new EntitySearchResult(
+        return Utils::buildEntitySearchResult(
+            ProductEntity::class,
             0,
             new EntityCollection(),
             new AggregationResultCollection(),
@@ -39,8 +44,20 @@ trait SearchResultHelper
         }
     }
 
-    protected function fetchProducts(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
+    protected function addOptionsGroupAssociation(Criteria $criteria)
     {
+        $criteria->addAssociation('options.group');
+    }
+
+    protected function fetchProducts(
+        Criteria $criteria,
+        SalesChannelContext $context,
+        ?string $query = null
+    ): EntitySearchResult {
+        if ($query !== null && count($criteria->getIds()) === 1) {
+            $this->modifyCriteriaFromQuery($query, $criteria, $context);
+        }
+
         $result = $this->productRepository->search($criteria, $context);
 
         return $this->fixResultOrder($result, $criteria);
@@ -53,6 +70,10 @@ trait SearchResultHelper
      */
     private function fixResultOrder(EntitySearchResult $result, Criteria $criteria): EntitySearchResult
     {
+        if (!$result->count()) {
+            return $result;
+        }
+
         $sortedElements = $this->sortElementsByIdArray($result->getElements(), $criteria->getIds());
         $result->clear();
 
@@ -100,5 +121,26 @@ trait SearchResultHelper
         $page = $this->getPage($request);
 
         return ($page - 1) * $limit;
+    }
+
+    /**
+     * If a specific variant is searched by its product number, we want to modify the criteria
+     * to show that variant instead of the main product.
+     */
+    private function modifyCriteriaFromQuery(
+        string $query,
+        Criteria $criteria,
+        SalesChannelContext $context
+    ): void {
+        $productCriteria = new Criteria();
+        $productCriteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_OR, [
+            new EqualsFilter('productNumber', $query),
+            new EqualsFilter('ean', $query),
+            new EqualsFilter('manufacturerNumber', $query),
+        ]));
+        $product = $this->productRepository->search($productCriteria, $context)->first();
+        if ($product) {
+            $criteria->setIds([$product->getId()]);
+        }
     }
 }

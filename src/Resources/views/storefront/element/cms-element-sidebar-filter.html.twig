@@ -1,0 +1,25 @@
+{% sw_extends '@Storefront/storefront/element/cms-element-sidebar-filter.html.twig' %}
+
+{% block element_sidebar_filter %}
+    {% if not context.context.extensions.findologicService.enabled %}
+        {{ parent() }}
+    {% else %}
+        {# Use values from cms data if context is a cmsPage, otherwise `listing` and `sidebar` must be set manually #}
+        {% if cmsPage is defined %}
+            {% set config = element.fieldConfig.elements %}
+            {% set slot = cmsPage.firstElementOfType('product-listing') %}
+            {% set listing = slot.data.listing %}
+            {% set sidebar = block.sectionPosition == 'sidebar' %}
+        {% endif %}
+
+        <div class="cms-element-sidebar-filter {{ filterColumns }}">
+            {% block element_product_listing_filter_button %}
+                {{ parent() }}
+            {% endblock %}
+
+            {% block element_sidebar_filter_panel %}
+                {{ parent() }}
+            {% endblock %}
+        </div>
+    {% endif %}
+{% endblock %}

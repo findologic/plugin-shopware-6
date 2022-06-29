@@ -20,6 +20,9 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
     /** @var FindologicSearchService */
     protected $findologicSearchService;
 
+    /** @var bool */
+    protected $isListingRequestHandled = false;
+
     public function __construct(
         ShopwareProductListingFeaturesSubscriber $decorated,
         FindologicSearchService $findologicSearchService
@@ -44,9 +47,23 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
         $limit = $event->getCriteria()->getLimit();
         $this->decorated->handleListingRequest($event);
 
-        $limitOverride = $limit ?? $event->getCriteria()->getLimit();
+        if (!$this->shouldHandleListingRequest()) {
+            return;
+        }
 
+        $limitOverride = $limit ?? $event->getCriteria()->getLimit();
         $this->findologicSearchService->doNavigation($event, $limitOverride);
+
+        $this->isListingRequestHandled = true;
+    }
+
+    /**
+     * The ProductListingCriteriaEvent is triggered twice on initial navigation page request. To avoid
+     * multiple requests to Findologic, the event must only be handled on first dispatch.
+     */
+    protected function shouldHandleListingRequest(): bool
+    {
+        return !$this->isListingRequestHandled;
     }
 
     public function handleSearchRequest(ProductSearchCriteriaEvent $event): void

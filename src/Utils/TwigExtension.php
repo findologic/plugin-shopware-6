@@ -9,7 +9,7 @@ use Twig\TwigTest;
 
 class TwigExtension extends AbstractExtension
 {
-    public function getTests()
+    public function getTests(): array
     {
         return [
             new TwigTest('instanceof', null, ['node_class' => InstanceOfTest::class])

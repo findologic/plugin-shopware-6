@@ -8,15 +8,23 @@ use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\Export\XML\XMLExporter as XmlFileConverter;
 use FINDOLOGIC\Export\XML\XMLItem;
+use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
+use FINDOLOGIC\FinSearch\Export\Events\AfterItemBuildEvent;
+use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
+use Shopware\Core\Content\Category\CategoryEntity;
+use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
 class XmlExport extends Export
 {
+    private const MAXIMUM_PROPERTIES_COUNT = 500;
+
     /** @var RouterInterface */
     private $router;
 
@@ -26,22 +34,33 @@ class XmlExport extends Export
     /** @var LoggerInterface */
     private $logger;
 
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
+
     /** @var string[] */
     private $crossSellingCategories;
 
     /** @var XmlFileConverter */
     private $xmlFileConverter;
 
+    /** @var ExportItemAdapter */
+    private $exportItemAdapter;
+
+    /** @var ProductSearcher */
+    private $productSearcher;
+
     public function __construct(
         RouterInterface $router,
         ContainerInterface $container,
         LoggerInterface $logger,
+        EventDispatcherInterface $eventDispatcher,
         array $crossSellingCategories = [],
         ?XmlFileConverter $xmlFileConverter = null
     ) {
         $this->router = $router;
         $this->container = $container;
         $this->logger = $logger;
+        $this->eventDispatcher = $eventDispatcher;
         $this->crossSellingCategories = $crossSellingCategories;
         $this->xmlFileConverter = $xmlFileConverter ?? Exporter::create(Exporter::TYPE_XML);
     }
@@ -69,19 +88,47 @@ class XmlExport extends Export
      * be returned. Details about why specific products can not be exported, can be found in the logs.
      *
      * @param ProductEntity[] $productEntities
+     *
+     * @return XMLItem[]
+     */
+    public function buildItems(array $productEntities): array
+    {
+        $this->initialize();
+
+        $items = [];
+        foreach ($productEntities as $productEntity) {
+            $item = $this->exportSingleItem($productEntity);
+            if (!$item) {
+                continue;
+            }
+
+            $this->eventDispatcher->dispatch(new AfterItemBuildEvent($item), AfterItemBuildEvent::NAME);
+
+            $items[] = $item;
+        }
+
+        return $items;
+    }
+
+    /**
+     * @deprecated buildItemsLegacy function will be removed in plugin version 4.0
+     *
+     * Converts given product entities to Findologic XML items. In case items can not be exported, they won't
+     * be returned. Details about why specific products can not be exported, can be found in the logs.
+     *
+     * @param ProductEntity[] $productEntities
      * @param string $shopkey Required for generating the user group hash.
      * @param CustomerGroupEntity[] $customerGroups
      *
      * @return XMLItem[]
      */
-    public function buildItems(
-        array $productEntities,
-        string $shopkey,
-        array $customerGroups
-    ): array {
+    public function buildItemsLegacy(array $productEntities, string $shopkey, array $customerGroups): array
+    {
+        $this->initialize();
+
         $items = [];
         foreach ($productEntities as $productEntity) {
-            $item = $this->exportSingleItem($productEntity, $shopkey, $customerGroups);
+            $item = $this->exportSingleItemLegacy($productEntity, $shopkey, $customerGroups);
             if (!$item) {
                 continue;
             }
@@ -97,13 +144,52 @@ class XmlExport extends Export
         return $this->logger;
     }
 
-    private function exportSingleItem(
-        ProductEntity $productEntity,
-        string $shopkey,
-        array $customerGroups
-    ): ?Item {
-        if ($this->isProductInCrossSellingCategory($productEntity)) {
-            $category = $productEntity->getCategories()->first();
+    private function initialize(): void
+    {
+        $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
+        $this->productSearcher = $this->container->get(ProductSearcher::class);
+        $this->eventDispatcher = $this->container->get('event_dispatcher');
+    }
+
+    private function exportSingleItem(ProductEntity $productEntity): ?Item
+    {
+        if ($category = $this->getConfiguredCrossSellingCategory($productEntity)) {
+            $this->logger->warning(
+                sprintf(
+                    'Product with id %s (%s) was not exported because it is assigned to cross selling category %s (%s)',
+                    $productEntity->getId(),
+                    $productEntity->getName(),
+                    $category->getId(),
+                    implode(' > ', $category->getBreadcrumb())
+                ),
+                ['product' => $productEntity]
+            );
+
+            return null;
+        }
+
+        $initialItem = $this->xmlFileConverter->createItem($productEntity->getId());
+        $item = $this->exportItemAdapter->adapt($initialItem, $productEntity, $this->logger);
+
+        $pageSize = $this->calculatePageSize($productEntity);
+        $iterator = $this->productSearcher->buildVariantIterator($productEntity, $pageSize);
+
+        while (($variantsResult = $iterator->fetch()) !== null) {
+            /** @var ProductCollection $variants */
+            $variants = $variantsResult->getEntities();
+            foreach ($variants->getElements() as $variant) {
+                if ($adaptedItem = $this->exportItemAdapter->adaptVariant($item ?: $initialItem, $variant)) {
+                    $item = $adaptedItem;
+                }
+            }
+        }
+
+        return $item;
+    }
+
+    private function exportSingleItemLegacy(ProductEntity $productEntity, string $shopkey, array $customerGroups): ?Item
+    {
+        if ($category = $this->getConfiguredCrossSellingCategory($productEntity)) {
             $this->logger->warning(
                 sprintf(
                     'Product with id %s (%s) was not exported because it is assigned to cross selling category %s (%s)',
@@ -122,7 +208,6 @@ class XmlExport extends Export
             $productEntity,
             $this->router,
             $this->container,
-            $this->container->get('fin_search.sales_channel_context')->getContext(),
             $shopkey,
             $customerGroups
         );
@@ -131,16 +216,57 @@ class XmlExport extends Export
         return $xmlProduct->getXmlItem();
     }
 
-    private function isProductInCrossSellingCategory(ProductEntity $productEntity): bool
+    private function calculatePageSize(ProductEntity $productEntity): int
     {
-        if (!empty($this->crossSellingCategories)) {
-            $categories = $productEntity->getCategories();
-            $category = $categories ? $categories->first() : null;
-            $categoryId = $category ? $category->getId() : null;
-
-            return (in_array($categoryId, $this->crossSellingCategories));
+        $maxPropertiesCount = $this->productSearcher->findMaxPropertiesCount($productEntity);
+        if ($maxPropertiesCount >= self::MAXIMUM_PROPERTIES_COUNT) {
+            return 1;
         }
 
-        return false;
+        return intval(self::MAXIMUM_PROPERTIES_COUNT / max(1, $maxPropertiesCount));
+    }
+
+    private function getConfiguredCrossSellingCategory(ProductEntity $productEntity): ?CategoryEntity
+    {
+        if (count($this->crossSellingCategories)) {
+            $categories = array_merge(
+                $this->getAssignedCategories($productEntity),
+                $this->getDynamicProductGroupCategories($productEntity)
+            );
+
+            foreach ($categories as $categoryId => $category) {
+                if (in_array($categoryId, $this->crossSellingCategories)) {
+                    return $category;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param ProductEntity $productEntity
+     * @return CategoryEntity[]
+     */
+    private function getAssignedCategories(ProductEntity $productEntity): array
+    {
+        return $productEntity->getCategories() ? $productEntity->getCategories()->getElements() : [];
+    }
+
+    /**
+     * @param ProductEntity $productEntity
+     * @return CategoryEntity[]
+     */
+    private function getDynamicProductGroupCategories(ProductEntity $productEntity): array
+    {
+        if ($this->container->has('fin_search.dynamic_product_group')) {
+            $dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
+
+            if ($dynamicProductGroupService) {
+                return $dynamicProductGroupService->getCategories($productEntity->getId());
+            }
+        }
+
+        return [];
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use Doctrine\DBAL\Connection;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
@@ -16,11 +17,7 @@ use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/**
- * @method ContainerInterface getContainer()
- */
 trait SalesChannelHelper
 {
     public function buildSalesChannelContext(
@@ -28,7 +25,8 @@ trait SalesChannelHelper
         string $url = 'http://test.uk',
         ?CustomerEntity $customerEntity = null,
         string $languageId = Defaults::LANGUAGE_SYSTEM,
-        array $overrides = []
+        array $overrides = [],
+        string $currencyId = Defaults::CURRENCY
     ): SalesChannelContext {
         $locale = $this->getLocaleOfLanguage($languageId);
         if ($locale) {
@@ -42,7 +40,7 @@ trait SalesChannelHelper
             'domains' => [
                 [
                     'url' => $url,
-                    'currencyId' => Defaults::CURRENCY,
+                    'currencyId' => $currencyId,
                     'languageId' => $languageId,
                     'snippetSetId' => $snippetSet
                 ]
@@ -65,8 +63,10 @@ trait SalesChannelHelper
         );
     }
 
-    private function buildSalesChannelContextFactoryOptions(?CustomerEntity $customerEntity, ?string $languageId): array
-    {
+    private function buildSalesChannelContextFactoryOptions(
+        ?CustomerEntity $customerEntity,
+        ?string $languageId
+    ): array {
         $options = [];
         if ($customerEntity) {
             $options[SalesChannelContextService::CUSTOMER_ID] = $customerEntity->getId();
@@ -133,7 +133,6 @@ trait SalesChannelHelper
         );
     }
 
-
     public function getEnGbLanguageId(): string
     {
         /** @var EntityRepositoryInterface $repository */
@@ -146,5 +145,37 @@ trait SalesChannelHelper
         $language = $repository->search($criteria, Context::createDefaultContext())->first();
 
         return $language->getId();
+    }
+
+    public function createCurrency(array $data = []): string
+    {
+        $currencyId = Uuid::randomHex();
+
+        $cashRoundingConfig = [
+            'decimals' => 2,
+            'interval' => 1,
+            'roundForNet' => false
+        ];
+
+        /** @var EntityRepositoryInterface $currencyRepo */
+        $currencyRepo = $this->getContainer()->get('currency.repository');
+        $currencyRepo->upsert(
+            [
+                array_merge([
+                    'id' => $currencyId,
+                    'isoCode' => 'FDL',
+                    'factor' => 1,
+                    'symbol' => 'F',
+                    'decimalPrecision' => 2,
+                    'name' => 'Findologic Currency',
+                    'shortName' => 'FL',
+                    'itemRounding' => $cashRoundingConfig,
+                    'totalRounding' => $cashRoundingConfig,
+                ], $data)
+            ],
+            Context::createDefaultContext()
+        );
+
+        return $currencyId;
     }
 }

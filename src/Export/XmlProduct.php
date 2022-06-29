@@ -12,22 +12,20 @@ use FINDOLOGIC\Export\Data\Keyword;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\Export\Data\Property;
 use FINDOLOGIC\Export\Data\Usergroup;
-use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\Export\Exporter;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\AccessEmptyPropertyException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoAttributesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductInvalidException;
 use FINDOLOGIC\FinSearch\Export\Definitions\XmlFields;
+use FINDOLOGIC\FinSearch\Export\Logger\ExportExceptionLogger;
 use FINDOLOGIC\FinSearch\Struct\FindologicProduct;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Framework\Context;
 use Symfony\Component\Routing\RouterInterface;
 use Throwable;
 
@@ -40,9 +38,6 @@ class XmlProduct
 
     /** @var RouterInterface */
     private $router;
-
-    /** @var Context */
-    private $context;
 
     /** @var ContainerInterface */
     private $container;
@@ -75,14 +70,12 @@ class XmlProduct
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        Context $context,
         string $shopkey,
         array $customerGroups
     ) {
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
-        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
 
@@ -216,7 +209,6 @@ class XmlProduct
             $this->product,
             $this->router,
             $this->container,
-            $this->context,
             $this->shopkey,
             $this->customerGroups,
             $this->xmlItem
@@ -246,77 +238,12 @@ class XmlProduct
     {
         try {
             $this->build();
-        } catch (ProductInvalidException $e) {
-            $this->logProductInvalidException($logger, $e);
-            $this->xmlItem = null;
-        } catch (EmptyValueNotAllowedException $e) {
-            $message = sprintf(
-                'Product "%s" with id "%s" could not be exported. It appears to have empty values assigned to it. 
-                If you see this message in your logs, please report this as a bug.',
-                $this->product->getTranslation('name'),
-                $this->product->getId()
-            );
-            $logger->warning($message);
-            $this->xmlItem = null;
         } catch (Throwable $e) {
-            $message = sprintf(
-                'Error while exporting the product "%s" with id "%s". If you see this message in your logs, 
-                please report this as a bug. Error message: %s',
-                $this->product->getTranslation('name'),
-                $this->product->getId(),
-                $e->getMessage()
-            );
-            $logger->warning($message);
+            $exceptionLogger = new ExportExceptionLogger($logger);
+
+            $exceptionLogger->log($this->product, $e);
             $this->xmlItem = null;
         }
-    }
-
-    private function logProductInvalidException(LoggerInterface $logger, ProductInvalidException $e): void
-    {
-        switch (get_class($e)) {
-            case AccessEmptyPropertyException::class:
-                $message = sprintf(
-                    'Product "%s" with id %s was not exported because the property does not exist',
-                    $this->product->getTranslation('name'),
-                    $e->getProduct()->getId()
-                );
-                break;
-            case ProductHasNoAttributesException::class:
-                $message = sprintf(
-                    'Product "%s" with id %s was not exported because it has no attributes',
-                    $this->product->getTranslation('name'),
-                    $e->getProduct()->getId()
-                );
-                break;
-            case ProductHasNoNameException::class:
-                $message = sprintf(
-                    'Product with id %s was not exported because it has no name set',
-                    $e->getProduct()->getId()
-                );
-                break;
-            case ProductHasNoPricesException::class:
-                $message = sprintf(
-                    'Product "%s" with id %s was not exported because it has no price associated to it',
-                    $this->product->getTranslation('name'),
-                    $e->getProduct()->getId()
-                );
-                break;
-            case ProductHasNoCategoriesException::class:
-                $message = sprintf(
-                    'Product "%s" with id %s was not exported because it has no categories assigned',
-                    $this->product->getTranslation('name'),
-                    $e->getProduct()->getId()
-                );
-                break;
-            default:
-                $message = sprintf(
-                    'Product "%s" with id %s could not be exported.',
-                    $this->product->getTranslation('name'),
-                    $e->getProduct()->getId()
-                );
-        }
-
-        $logger->warning($message, ['exception' => $e]);
     }
 
     private function setXmlItemFields(): void

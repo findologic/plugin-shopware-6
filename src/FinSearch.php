@@ -5,32 +5,35 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch;
 
 use Composer\Autoload\ClassLoader;
+use Composer\Semver\Comparator;
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\FinSearch\Exceptions\PluginNotCompatibleException;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
+use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+
+use function current;
+use function end;
+use function explode;
+use function file_get_contents;
+use function is_numeric;
+use function json_decode;
+use function ltrim;
+use function method_exists;
 
 class FinSearch extends Plugin
 {
-    public const COMPATIBILITY_PATH = '/Resources/config/compatibility';
-
-    public function build(ContainerBuilder $container): void
+    public function install(InstallContext $installContext): void
     {
-        // For maintaining compatibility with Shopware 6.1.x we load relevant services due to several
-        // breaking changes introduced in Shopware 6.2
-        // @link https://github.com/shopware/platform/blob/master/UPGRADE-6.2.md
-        if ($path = $this->getCompatibilityLayerServicesFilePath()) {
-            $this->loadServiceXml($container, $path);
-        }
+        parent::install($installContext);
 
-        parent::build($container);
+        if (!$this->isCompatible($installContext)) {
+            throw new PluginNotCompatibleException();
+        }
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
@@ -60,29 +63,60 @@ class FinSearch extends Plugin
         $this->deleteFindologicConfig();
     }
 
-    private function getCompatibilityLayerServicesFilePath(): ?string
+    /**
+     * Pass `composerJsonPath` parameter specifically for unit-testing. In a real scenario, this will always be taken
+     * from the plugin's actual `composer.json` file.
+     */
+    public static function isCompatible(InstallContext $installContext, string $composerJsonPath = null): bool
     {
-        if (Utils::versionLowerThan('6.2')) {
-            return self::COMPATIBILITY_PATH . '/shopware61';
+        $currentVersion = $installContext->getCurrentShopwareVersion();
+        if ($composerJsonPath === null) {
+            $composerJsonPath = __DIR__ . '/../composer.json';
         }
 
-        return null;
-    }
+        $composerJsonContents = file_get_contents($composerJsonPath);
+        $parsed = json_decode($composerJsonContents, true);
+        $requiredPackages = $parsed['require'];
 
-    private function loadServiceXml($container, string $filePath): void
-    {
-        $loader = new XmlFileLoader(
-            $container,
-            new FileLocator($this->getPath() . $filePath)
-        );
+        // If Shopware is not required in the json file, we probably are using the plugin's development version, so
+        // the plugin will always be compatible in such a case.
+        if (!isset($requiredPackages['shopware/core'])) {
+            return true;
+        }
 
-        $loader->load('services.xml');
+        $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
+        $isLower = self::isVersionLower($currentVersion, $compatibleVersions);
+        $isHigher = self::isVersionHigher($currentVersion, $compatibleVersions);
+
+        return !($isLower || $isHigher);
     }
 
     private function deleteFindologicConfig(): void
     {
         $connection = $this->container->get(Connection::class);
-        $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
+        if (method_exists($connection, 'executeStatement')) {
+            $connection->executeStatement('DROP TABLE IF EXISTS `finsearch_config`');
+        } else {
+            $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
+        }
+    }
+
+    protected static function isVersionLower(string $currentVersion, array $compatibleVersions): bool
+    {
+        $compatibleVersion = current($compatibleVersions);
+
+        return Comparator::lessThan($currentVersion, $compatibleVersion);
+    }
+
+    protected static function isVersionHigher(string $currentVersion, array $compatibleVersions): bool
+    {
+        $compatibleVersion = end($compatibleVersions);
+        $highestCompatible = ltrim($compatibleVersion, '^');
+        if (is_numeric($highestCompatible)) {
+            $highestCompatible += 0.1;
+        }
+
+        return Comparator::greaterThan($currentVersion, $highestCompatible);
     }
 }
 

@@ -6,6 +6,7 @@
     },
     "fieldRequired": "Shopkey is required.",
     "invalidShopkey": "Invalid Shopkey.",
+    "shopkeyExists": "This shopkey is already configured for another language.",
     "notRegisteredShopkey": "The given shopkey is not associated to any known service.",
     "selectSalesChannel": "Please select a Sales Channel...",
     "settingForm": {
@@ -59,6 +60,22 @@
           },
           "left": {
             "label": "Left"
+          }
+        },
+        "export": {
+          "title": "Export"
+        },
+        "mainVariant": {
+          "label": "Exported main variant",
+          "tooltipText": "Select to change the variant that is shown on listing pages.",
+          "default": {
+            "label": "Shopware default"
+          },
+          "parent": {
+            "label": "Main-/Parent product"
+          },
+          "cheapest": {
+            "label": "Cheapest variant"
           }
         }
       },

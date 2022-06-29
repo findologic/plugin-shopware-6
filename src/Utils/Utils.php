@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Utils;
 
+use Composer\InstalledVersions;
+use Exception;
+use FINDOLOGIC\FinSearch\Definitions\Defaults;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
@@ -11,12 +14,23 @@ use InvalidArgumentException;
 use PackageVersions\Versions;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Kernel;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
+use Throwable;
+
+use function array_unique;
+
+use const SORT_REGULAR;
 
 class Utils
 {
@@ -63,25 +77,54 @@ class Utils
      */
     public static function addProductAssociations(Criteria $criteria): Criteria
     {
+        self::addVariantAssociations($criteria);
+
         return $criteria->addAssociations(
             [
                 'seoUrls',
-                'categories',
-                'categories.seoUrls',
                 'translations',
-                'tags',
+                'searchKeywords',
                 'media',
                 'manufacturer',
                 'manufacturer.translations',
+                'cover',
+            ]
+        );
+    }
+
+    public static function addVariantAssociations(Criteria $criteria): Criteria
+    {
+        return $criteria->addAssociations(
+            [
+                'categories',
+                'categories.seoUrls',
                 'properties',
-                'properties.group',
-                'properties.productConfiguratorSettings',
-                'properties.productConfiguratorSettings.option',
-                'properties.productConfiguratorSettings.option.group',
-                'properties.productConfiguratorSettings.option.group.translations',
+                'properties.group'
+            ]
+        );
+    }
+
+    /**
+     * @throws InconsistentCriteriaIdsException
+     */
+    public static function addChildrenAssociations(Criteria $criteria): Criteria
+    {
+        return $criteria->addAssociations(
+            [
                 'children',
+                'children.seoUrls',
+                'children.categories',
+                'children.categories.seoUrls',
+                'children.translations',
+                'children.tags',
+                'children.media',
+                'children.manufacturer',
+                'children.manufacturer.translations',
+                'children.cover',
                 'children.properties',
                 'children.properties.group',
+                'children.categories',
+                'children.categories.seoUrls',
                 'children.properties.productConfiguratorSettings',
                 'children.properties.productConfiguratorSettings.option',
                 'children.properties.productConfiguratorSettings.option.group',
@@ -89,6 +132,7 @@ class Utils
             ]
         );
     }
+
 
     public static function multiByteRawUrlEncode(string $string): string
     {
@@ -118,21 +162,80 @@ class Utils
         );
     }
 
-    public static function versionLowerThan(string $version): bool
+    public static function versionLowerThan(string $compareVersion, ?string $actualVersion = null): bool
     {
-        $versions = Versions::VERSIONS;
-        if (isset($versions['shopware/core'])) {
-            $shopwareVersion = Versions::getVersion('shopware/core');
-        } else {
-            $shopwareVersion = Versions::getVersion('shopware/platform');
+        return version_compare(static::getCleanShopwareVersion($actualVersion), $compareVersion, '<');
+    }
+
+    public static function versionGreaterOrEqual(string $compareVersion, ?string $actualVersion = null): bool
+    {
+        return version_compare(static::getCleanShopwareVersion($actualVersion), $compareVersion, '>=');
+    }
+
+    public static function getCleanShopwareVersion(?string $actualVersion = null): string
+    {
+        // The fallback version does not include the major version for 6.2, therefore version_compare fails
+        // It is 9999999-dev in 6.2 and 6.x.9999999.9999999-dev starting from 6.3
+        $version = $actualVersion === Kernel::SHOPWARE_FALLBACK_VERSION
+            ? static::getShopwareVersion()
+            : $actualVersion ?? static::getShopwareVersion();
+        $versionWithoutPrefix = ltrim($version, 'v');
+
+        return static::cleanVersionCommitHashAndReleaseInformation($versionWithoutPrefix);
+    }
+
+    /**
+     * Fetches the raw installed Shopware version. The returned version string may contain a version prefix
+     * and/or a commit hash and/or release information such as "-RC1". E.g.
+     * * 6.3.5.3@940439ea951dfcf7b34584485cf6251c49640cdf
+     * * v6.2.3
+     * * v6.4.0-RC1@34abab343847384934334781abababababcdddddd
+     */
+    protected static function getShopwareVersion(): string
+    {
+        // Composer 2 runtime API uses the `InstalledVersions::class` in favor of the
+        // deprecated/removed `Versions::class`
+        if (class_exists(InstalledVersions::class)) {
+            if (InstalledVersions::isInstalled('shopware/platform')) {
+                if (InstalledVersions::getPrettyVersion('shopware/platform')) {
+                    return InstalledVersions::getPrettyVersion('shopware/platform');
+                }
+            }
+
+            if (InstalledVersions::isInstalled('shopware/core')) {
+                if (InstalledVersions::getPrettyVersion('shopware/core')) {
+                    return InstalledVersions::getPrettyVersion('shopware/core');
+                }
+            }
         }
-        // Trim the version if it has v6.x.x instead of 6.x.x so it can be compared correctly.
-        $shopwareVersion = ltrim($shopwareVersion, 'v');
 
-        // Development versions may add the versions with an "@" sign, which refers to the current commit.
-        $versionWithoutCommitHash = substr($shopwareVersion, 0, strpos($shopwareVersion, '@'));
+        if (defined('PackageVersions\Versions::VERSIONS')) {
+            $packageVersions = Versions::VERSIONS;
+            if (isset($packageVersions['shopware/platform'])) {
+                return $packageVersions['shopware/platform'];
+            }
 
-        return version_compare($versionWithoutCommitHash, $version, '<');
+            if (isset($packageVersions['shopware/core'])) {
+                return $packageVersions['shopware/core'];
+            }
+        }
+
+        throw new Exception('Used Shopware version cannot be detected');
+    }
+
+    protected static function cleanVersionCommitHashAndReleaseInformation(string $version): string
+    {
+        $hasCommitHash = !!strpos($version, '@');
+        if ($hasCommitHash) {
+            $version = substr($version, 0, strpos($version, '@'));
+        }
+
+        $hasReleaseInformation = !!strpos($version, '-RC');
+        if ($hasReleaseInformation) {
+            $version = substr($version, 0, strpos($version, '-RC'));
+        }
+
+        return $version;
     }
 
     /**
@@ -186,14 +289,6 @@ class Utils
         return $findologicService->enable();
     }
 
-    public static function isFindologicEnabled(SalesChannelContext $context): bool
-    {
-        /** @var FindologicService $findologicService */
-        $findologicService = $context->getContext()->getExtension('findologicService');
-
-        return $findologicService ? $findologicService->getEnabled() : false;
-    }
-
     public static function isStagingSession(Request $request): bool
     {
         $findologic = $request->get('findologic');
@@ -214,6 +309,29 @@ class Utils
         }
 
         return false;
+    }
+
+    public static function isFindologicEnabled(SalesChannelContext $context): bool
+    {
+        /** @var FindologicService $findologicService */
+        $findologicService = $context->getContext()->getExtension('findologicService');
+
+        return $findologicService ? $findologicService->getEnabled() : false;
+    }
+
+    public static function disableFindologicWhenEnabled(SalesChannelContext $context): void
+    {
+        if (!static::isFindologicEnabled($context)) {
+            return;
+        }
+
+        if (!$context->getContext()->hasExtension('findologicService')) {
+            return;
+        }
+
+        /** @var FindologicService $findologicService */
+        $findologicService = $context->getContext()->getExtension('findologicService');
+        $findologicService->disable();
     }
 
     public static function isEmpty($value): bool
@@ -245,6 +363,22 @@ class Utils
         return implode('_', array_map('trim', $breadcrumb));
     }
 
+    /**
+     * Builds the category path by removing the path of the parent (root) category of the sales channel.
+     * Since Findologic does not care about any root categories, we need to get the difference between the
+     * normal category path and the root category.
+     *
+     * @return string[]
+     */
+    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $rootCategory): array
+    {
+        $rootCategoryBreadcrumbs = $rootCategory->getBreadcrumb();
+
+        $path = array_splice($categoryBreadcrumb, count($rootCategoryBreadcrumbs));
+
+        return array_values($path);
+    }
+
     public static function fetchNavigationCategoryFromSalesChannel(
         EntityRepository $categoryRepository,
         SalesChannelEntity $salesChannel
@@ -263,18 +397,94 @@ class Utils
     }
 
     /**
-     * Builds the category path by removing the path of the parent (root) category of the sales channel.
-     * Since Findologic does not care about any root categories, we need to get the difference between the
-     * normal category path and the root category.
-     *
-     * @return string[]
+     * Builds an entity search result, which is backwards-compatible for older Shopware versions.
      */
-    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $rootCategory): array
+    public static function buildEntitySearchResult(
+        string $entity,
+        int $total,
+        EntityCollection $entities,
+        ?AggregationResultCollection $aggregations,
+        Criteria $criteria,
+        Context $context,
+        int $page = 1,
+        ?int $limit = null
+    ): EntitySearchResult {
+        try {
+            // Shopware >= 6.4
+            return new EntitySearchResult(
+                $entity,
+                $total,
+                $entities,
+                $aggregations,
+                $criteria,
+                $context,
+                $page,
+                $limit
+            );
+        } catch (Throwable $e) {
+            // Shopware < 6.4
+            return new EntitySearchResult(
+                $total,
+                $entities,
+                $aggregations,
+                $criteria,
+                $context,
+                $page,
+                $limit
+            );
+        }
+    }
+
+    /**
+     * Takes a given domain collection and only returns domains which are not associated to a headless sales
+     * channel, as these do not have real URLs, but only contain placeholder information.
+     */
+    public static function filterSalesChannelDomainsWithoutHeadlessDomain(
+        SalesChannelDomainCollection $original
+    ): SalesChannelDomainCollection {
+        return $original->filter(function (SalesChannelDomainEntity $domainEntity) {
+            return !str_starts_with($domainEntity->getUrl(), Defaults::HEADLESS_SALES_CHANNEL_PREFIX);
+        });
+    }
+
+    /**
+     * Takes invalid URLs that contain special characters such as umlauts, or special UTF-8 characters and
+     * encodes them.
+     */
+    public static function getEncodedUrl(string $url): string
     {
-        $rootCategoryBreadcrumbs = $rootCategory->getBreadcrumb();
+        $parsedUrl = (array)parse_url($url);
+        $urlPath = explode('/', $parsedUrl['path']);
+        $encodedPath = [];
+        foreach ($urlPath as $path) {
+            $encodedPath[] = self::multiByteRawUrlEncode($path);
+        }
 
-        $path = array_splice($categoryBreadcrumb, count($rootCategoryBreadcrumbs));
+        $parsedUrl['path'] = implode('/', $encodedPath);
 
-        return array_values($path);
+        return self::buildUrl($parsedUrl);
+    }
+
+    /**
+     * Flattens a given array. This method is similar to the JavaScript method "Array.prototype.flat()".
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
+     *
+     * @param array $array
+     *
+     * @return array
+     */
+    public static function flat(array $array): array
+    {
+        $flattened = [];
+        array_walk_recursive($array, static function ($a) use (&$flattened) {
+            $flattened[] = $a;
+        });
+
+        return $flattened;
+    }
+
+    public static function flattenWithUnique(array $array): array
+    {
+        return array_unique(static::flat($array), SORT_REGULAR);
     }
 }

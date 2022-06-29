@@ -1,0 +1,336 @@
+{
+  "properties": {
+    "entities": {
+      "rating": {
+        "max": 0
+      },
+      "price": {
+        "entities": [
+          {
+            "translated": {
+              "name": "Preis"
+            },
+            "options": [
+              {
+                "selectedRange":  {
+                  "min": 0.39,
+                  "max": 2239.1
+                },
+                "totalRange":  {
+                  "min": 0.39,
+                  "max": 2239.1
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "Farbe": {
+        "entities": [
+          {
+            "translated": {
+              "name": "Farbe"
+            },
+            "options": [
+              {
+                "id": "Farbe>beige",
+                "translated": {
+                  "name": "Farbe>beige"
+                }
+              },
+              {
+                "id": "beige",
+                "translated": {
+                  "name": "beige"
+                }
+              },
+              {
+                "id": "Farbe>blau",
+                "translated": {
+                  "name": "Farbe>blau"
+                }
+              },
+              {
+                "id": "blau",
+                "translated": {
+                  "name": "blau"
+                }
+              },
+              {
+                "id": "Farbe>braun",
+                "translated": {
+                  "name": "Farbe>braun"
+                }
+              },
+              {
+                "id": "braun",
+                "translated": {
+                  "name": "braun"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "Material": {
+        "entities": [
+          {
+            "translated": {
+              "name": "Material"
+            },
+            "options": [
+              {
+                "id": "Material>Hartgep\u00e4ck",
+                "translated": {
+                  "name": "Material>Hartgep\u00e4ck"
+                }
+              },
+              {
+                "id": "Hartgep\u00e4ck",
+                "translated": {
+                  "name": "Hartgep\u00e4ck"
+                }
+              },
+              {
+                "id": "Material>Leder",
+                "translated": {
+                  "name": "Material>Leder"
+                }
+              },
+              {
+                "id": "Leder",
+                "translated": {
+                  "name": "Leder"
+                }
+              },
+              {
+                "id": "Material>Nylon",
+                "translated": {
+                  "name": "Material>Nylon"
+                }
+              },
+              {
+                "id": "Nylon",
+                "translated": {
+                  "name": "Nylon"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "vendor": {
+        "entities": [
+          {
+            "translated": {
+              "name": "Hersteller"
+            },
+            "options": [
+              {
+                "id": "vendor>Bodenschatz",
+                "translated": {
+                  "name": "vendor>Bodenschatz"
+                }
+              },
+              {
+                "id": "Bodenschatz",
+                "translated": {
+                  "name": "Bodenschatz"
+                }
+              },
+              {
+                "id": "vendor>Braun B\u00fcffel",
+                "translated": {
+                  "name": "vendor>Braun B\u00fcffel"
+                }
+              },
+              {
+                "id": "Braun B\u00fcffel",
+                "translated": {
+                  "name": "Braun B\u00fcffel"
+                }
+              },
+              {
+                "id": "vendor>Camel Active",
+                "translated": {
+                  "name": "vendor>Camel Active"
+                }
+              },
+              {
+                "id": "Camel Active",
+                "translated": {
+                  "name": "Camel Active"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "rating": {
+    "max": 0
+  },
+  "price": {
+    "entities": [
+      {
+        "translated": {
+          "name": "Preis"
+        },
+        "options": [
+          {
+            "selectedRange":  {
+              "min": 0.39,
+              "max": 2239.1
+            },
+            "totalRange":  {
+              "min": 0.39,
+              "max": 2239.1
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "Farbe": {
+    "entities": [
+      {
+        "translated": {
+          "name": "Farbe"
+        },
+        "options": [
+          {
+            "id": "Farbe>beige",
+            "translated": {
+              "name": "Farbe>beige"
+            }
+          },
+          {
+            "id": "beige",
+            "translated": {
+              "name": "beige"
+            }
+          },
+          {
+            "id": "Farbe>blau",
+            "translated": {
+              "name": "Farbe>blau"
+            }
+          },
+          {
+            "id": "blau",
+            "translated": {
+              "name": "blau"
+            }
+          },
+          {
+            "id": "Farbe>braun",
+            "translated": {
+              "name": "Farbe>braun"
+            }
+          },
+          {
+            "id": "braun",
+            "translated": {
+              "name": "braun"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "Material": {
+    "entities": [
+      {
+        "translated": {
+          "name": "Material"
+        },
+        "options": [
+          {
+            "id": "Material>Hartgep\u00e4ck",
+            "translated": {
+              "name": "Material>Hartgep\u00e4ck"
+            }
+          },
+          {
+            "id": "Hartgep\u00e4ck",
+            "translated": {
+              "name": "Hartgep\u00e4ck"
+            }
+          },
+          {
+            "id": "Material>Leder",
+            "translated": {
+              "name": "Material>Leder"
+            }
+          },
+          {
+            "id": "Leder",
+            "translated": {
+              "name": "Leder"
+            }
+          },
+          {
+            "id": "Material>Nylon",
+            "translated": {
+              "name": "Material>Nylon"
+            }
+          },
+          {
+            "id": "Nylon",
+            "translated": {
+              "name": "Nylon"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "vendor": {
+    "entities": [
+      {
+        "translated": {
+          "name": "Hersteller"
+        },
+        "options": [
+          {
+            "id": "vendor>Bodenschatz",
+            "translated": {
+              "name": "vendor>Bodenschatz"
+            }
+          },
+          {
+            "id": "Bodenschatz",
+            "translated": {
+              "name": "Bodenschatz"
+            }
+          },
+          {
+            "id": "vendor>Braun B\u00fcffel",
+            "translated": {
+              "name": "vendor>Braun B\u00fcffel"
+            }
+          },
+          {
+            "id": "Braun B\u00fcffel",
+            "translated": {
+              "name": "Braun B\u00fcffel"
+            }
+          },
+          {
+            "id": "vendor>Camel Active",
+            "translated": {
+              "name": "vendor>Camel Active"
+            }
+          },
+          {
+            "id": "Camel Active",
+            "translated": {
+              "name": "Camel Active"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

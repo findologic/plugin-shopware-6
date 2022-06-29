@@ -6,17 +6,26 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
 
+use function array_merge;
+use function end;
+use function in_array;
+
 class FilterHandler
 {
-    protected const FILTER_DELIMITER = '|';
+    public const FILTER_DELIMITER = '|';
     protected const MIN_PREFIX = 'min-';
     protected const MAX_PREFIX = 'max-';
+    protected const IGNORE_LIST = ['pushAttrib'];
 
     /**
      * Sets all requested filters to the FINDOLOGIC API request.
@@ -31,6 +40,12 @@ class FilterHandler
 
         if ($selectedFilters) {
             foreach ($selectedFilters as $filterName => $filterValues) {
+                if (
+                    in_array($filterName, self::IGNORE_LIST, false) ||
+                    !is_string($filterValues)
+                ) {
+                    continue;
+                }
                 foreach ($this->getFilterValues($filterValues) as $filterValue) {
                     $this->handleFilter(
                         $filterName,
@@ -59,13 +74,17 @@ class FilterHandler
         $attributes = $request->get('attrib');
         if ($attributes) {
             foreach ($attributes as $key => $attribute) {
-                foreach ($attribute as $value) {
-                    if (is_array($value)) {
-                        $value = implode(self::FILTER_DELIMITER, $value);
-                    }
+                $values = [];
 
-                    $mappedParams[$key] = $value;
+                foreach ($attribute as $attributeValue) {
+                    if ($key === BaseFilter::CAT_FILTER_NAME) {
+                        $values[] = $attributeValue;
+                    } else {
+                        $values[] = $key . FilterValue::DELIMITER . $attributeValue;
+                    }
                 }
+
+                $mappedParams[$key] = implode(self::FILTER_DELIMITER, $values);
             }
 
             unset($queryParams['attrib']);
@@ -119,8 +138,6 @@ class FilterHandler
             } else {
                 $searchNavigationRequest->addAttribute($filterName, $filterValue);
             }
-
-            return;
         }
     }
 
@@ -207,5 +224,95 @@ class FilterHandler
         $parsedFilterValue = explode(sprintf('%s%s', $filterName, FilterValue::DELIMITER), $filterValue);
         $filterValue = end($parsedFilterValue);
         $searchNavigationRequest->addAttribute($filterName, $filterValue);
+    }
+
+    public function handleAvailableFilters(ShopwareEvent $event): array
+    {
+        $criteria = $event->getCriteria();
+
+        /** @var FiltersExtension $availableFilters */
+        $availableFilters = $criteria->getExtension('flAvailableFilters');
+        $allFilters = $criteria->getExtension('flFilters');
+
+        return $this->parseFindologicFiltersForShopware($availableFilters, $allFilters);
+    }
+
+    private function parseFindologicFiltersForShopware(
+        FiltersExtension $availableFilters,
+        FiltersExtension $allFilters
+    ): array {
+        $result = [];
+        $result[RatingFilter::RATING_FILTER_NAME]['max'] = 0;
+
+        foreach ($allFilters->getFilters() as $filterWithAllValues) {
+            $filterName = $filterWithAllValues->getId();
+            if (!$filter = $availableFilters->getFilter($filterName)) {
+                $result[$filterName]['entities'] = [];
+                continue;
+            }
+
+            /** @var FilterValue[] $values */
+            $values = $filter->getValues();
+
+            if ($filter instanceof RatingFilter) {
+                $max = end($values);
+                $result[RatingFilter::RATING_FILTER_NAME]['max'] = $max->getId();
+            } else {
+                $filterValues = [];
+
+                if ($filter instanceof CategoryFilter) {
+                    $this->handleCategoryFilters($values, $filterValues);
+                } elseif ($filter instanceof RangeSliderFilter) {
+                    $filterValues[] = [
+                        'selectedRange' => $filter->getSelectedRange(),
+                        'totalRange' => $filter->getTotalRange(),
+                    ];
+                } else {
+                    foreach ($values as $value) {
+                        $valueId = $value->getUuid() ?? $value->getId();
+                        $filterValues[] = [
+                            'id' => $valueId,
+                            'translated' => ['name' => $valueId]
+                        ];
+                        $filterValues[] = [
+                            'id' => $value->getTranslated()->getName(),
+                            'translated' => ['name' => $value->getTranslated()->getName()]
+                        ];
+                    }
+                }
+
+                $entityValues = [
+                    'translated' => [
+                        'name' => $filter instanceof CategoryFilter ? $filter->getId() : $filter->getName()
+                    ],
+                    'options' => $filterValues
+                ];
+
+                $result[$filterName]['entities'][] = $entityValues;
+            }
+        }
+
+        $actualResult['properties']['entities'] = $result;
+
+        return array_merge($actualResult, $result);
+    }
+
+    /**
+     * @param FilterValue[] $values
+     * @param array<string,array> $filterValues
+     */
+    private function handleCategoryFilters(array $values, array &$filterValues): void
+    {
+        /** @var CategoryFilterValue $value */
+        foreach ($values as $value) {
+            $valueId = $value->getId();
+            $filterValues[] = [
+                'id' => $valueId,
+                'translated' => ['name' => $valueId]
+            ];
+            if ($value->getValues()) {
+                $this->handleCategoryFilters($value->getValues(), $filterValues);
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Struct;
 
+use DateTimeImmutable;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\Data\DateAdded;
 use FINDOLOGIC\Export\Data\Image;
@@ -19,28 +20,32 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesExcepti
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
+use FINDOLOGIC\FinSearch\Export\ProductImageService;
+use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
+use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
-use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Property\Aggregate\PropertyGroupOption\PropertyGroupOptionEntity;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
-use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
-use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\Entity;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as ProductPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\RangeFilter;
 use Shopware\Core\Framework\Struct\Struct;
-use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+use function method_exists;
+
+/**
+ * @deprecated FindologicProduct class will be removed in plugin version 4.0
+ */
 class FindologicProduct extends Struct
 {
     /** @var ProductEntity */
@@ -51,12 +56,6 @@ class FindologicProduct extends Struct
 
     /** @var ContainerInterface */
     protected $container;
-
-    /**
-     * @deprecated will be removed in 2.0. Use $salesChannelContext->getContext() instead.
-     * @var Context
-     */
-    protected $context;
 
     /** @var SalesChannelContext */
     protected $salesChannelContext;
@@ -109,18 +108,23 @@ class FindologicProduct extends Struct
     /** @var Item */
     protected $item;
 
-    /**
-     * @var TranslatorInterface
-     */
+    /** @var TranslatorInterface */
     protected $translator;
 
-    /**
-     * @var DynamicProductGroupService|null
-     */
+    /** @var DynamicProductGroupService|null */
     protected $dynamicProductGroupService;
 
     /** @var CategoryEntity */
     protected $navigationCategory;
+
+    /** @var ProductImageService */
+    protected $productImageService;
+
+    /** @var Config */
+    protected $config;
+
+    /** @var UrlBuilderService */
+    protected $urlBuilderService;
 
     /**
      * @param CustomerGroupEntity[] $customerGroups
@@ -133,15 +137,14 @@ class FindologicProduct extends Struct
         ProductEntity $product,
         RouterInterface $router,
         ContainerInterface $container,
-        Context $context,
         string $shopkey,
         array $customerGroups,
-        Item $item
+        Item $item,
+        ?Config $config = null
     ) {
         $this->product = $product;
         $this->router = $router;
         $this->container = $container;
-        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->customerGroups = $customerGroups;
         $this->item = $item;
@@ -149,8 +152,12 @@ class FindologicProduct extends Struct
         $this->attributes = [];
         $this->properties = [];
         $this->translator = $container->get('translator');
-
         $this->salesChannelContext = $this->container->get('fin_search.sales_channel_context');
+        $this->config = $config ?? $container->get(Config::class);
+
+        if (!$this->config->isInitialized()) {
+            $this->config->initializeBySalesChannel($this->salesChannelContext);
+        }
         if ($this->container->has('fin_search.dynamic_product_group')) {
             $this->dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
         }
@@ -158,6 +165,9 @@ class FindologicProduct extends Struct
             $this->container->get('category.repository'),
             $this->salesChannelContext->getSalesChannel()
         );
+        $this->urlBuilderService = $this->container->get(UrlBuilderService::class);
+        $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
+        $this->productImageService = $this->container->get(ProductImageService::class);
 
         $this->setName();
         $this->setAttributes();
@@ -173,27 +183,8 @@ class FindologicProduct extends Struct
         $this->setProperties();
     }
 
-    public function hasName(): bool
-    {
-        return !Utils::isEmpty($this->name);
-    }
-
-    public function hasAttributes(): bool
-    {
-        return !Utils::isEmpty($this->attributes);
-    }
-
-    public function hasPrices(): bool
-    {
-        return !Utils::isEmpty($this->prices);
-    }
-
-    public function hasDescription(): bool
-    {
-        return !Utils::isEmpty($this->description);
-    }
-
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws AccessEmptyPropertyException
      */
     public function getName(): string
@@ -206,6 +197,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoNameException
      */
     protected function setName(): void
@@ -219,6 +211,15 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
+    public function hasName(): bool
+    {
+        return !Utils::isEmpty($this->name);
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Attribute[]
      * @throws AccessEmptyPropertyException
      */
@@ -232,6 +233,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoCategoriesException
      */
     protected function setAttributes(): void
@@ -244,6 +246,15 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
+    public function hasAttributes(): bool
+    {
+        return !Utils::isEmpty($this->attributes);
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Price[]
      * @throws AccessEmptyPropertyException
      */
@@ -257,6 +268,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoPricesException
      */
     protected function setPrices(): void
@@ -266,17 +278,29 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
+    public function hasPrices(): bool
+    {
+        return !Utils::isEmpty($this->prices);
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws AccessEmptyPropertyException
      */
     public function getDescription(): string
     {
         if (!$this->hasDescription()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->description;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setDescription(): void
     {
         $description = $this->product->getTranslation('description');
@@ -286,112 +310,80 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @return bool
+     */
+    public function hasDescription(): bool
+    {
+        return !Utils::isEmpty($this->description);
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws AccessEmptyPropertyException
      */
     public function getDateAdded(): DateAdded
     {
         if (!$this->hasDateAdded()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->dateAdded;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     *
+     */
     protected function setDateAdded(): void
     {
-        $createdAt = $this->product->getCreatedAt();
-        if ($createdAt !== null) {
+        $releaseDate = $this->product->getReleaseDate();
+        if ($releaseDate !== null) {
             $dateAdded = new DateAdded();
-            $dateAdded->setDateValue($createdAt);
+            $dateAdded->setDateValue($releaseDate);
             $this->dateAdded = $dateAdded;
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasDateAdded(): bool
     {
         return $this->dateAdded && !empty($this->dateAdded);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws AccessEmptyPropertyException
      */
     public function getUrl(): string
     {
         if (!$this->hasUrl()) {
-            throw new AccessEmptyPropertyException();
+            throw new AccessEmptyPropertyException($this->product);
         }
 
         return $this->url;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setUrl(): void
     {
-        $baseUrl = $this->getTranslatedDomainBaseUrl();
-        $seoPath = $this->getTranslatedSeoPath();
-
-        if ($baseUrl && $seoPath) {
-            $productUrl = sprintf('%s/%s', $baseUrl, $seoPath);
-        } else {
-            $productUrl = $this->router->generate(
-                'frontend.detail.page',
-                ['productId' => $this->product->getId()],
-                RouterInterface::ABSOLUTE_URL
-            );
-        }
-
-        $this->url = $productUrl;
-    }
-
-    protected function getTranslatedSeoPath(): ?string
-    {
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $seoUrlCollection = $this->product->getSeoUrls()->filterBySalesChannelId($salesChannel->getId());
-
-        /** @var SeoUrlEntity|null $seoUrlEntity */
-        $seoUrlEntity = $this->getTranslatedEntity($seoUrlCollection);
-
-        return $seoUrlEntity ? ltrim($seoUrlEntity->getSeoPathInfo(), '/') : null;
-    }
-
-    protected function getTranslatedDomainBaseUrl(): ?string
-    {
-        $salesChannel = $this->salesChannelContext->getSalesChannel();
-        $domainCollection = $salesChannel->getDomains();
-
-        /** @var SalesChannelDomainEntity|null $domainEntity */
-        $domainEntity = $this->getTranslatedEntity($domainCollection);
-
-        return $domainEntity ? rtrim($domainEntity->getUrl(), '/') : null;
+        $this->url = $this->urlBuilderService->buildProductUrl($this->product);
     }
 
     /**
-     * Finds the first entity of a collection for the export language and returns it. If none is found,
-     * null is returned.
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      */
-    protected function getTranslatedEntity(?EntityCollection $collection): ?Entity
-    {
-        if (!$collection) {
-            return null;
-        }
-
-        $translatedEntities = $collection->filterByProperty(
-            'languageId',
-            $this->salesChannelContext->getSalesChannel()->getLanguageId()
-        );
-
-        if ($translatedEntities->count() === 0) {
-            return null;
-        }
-
-        return $translatedEntities->first();
-    }
-
     public function hasUrl(): bool
     {
         return $this->url && !Utils::isEmpty($this->url);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Keyword[]
      * @throws AccessEmptyPropertyException
      */
@@ -404,24 +396,43 @@ class FindologicProduct extends Struct
         return $this->keywords;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setKeywords(): void
     {
-        $tags = $this->product->getTags();
-        if ($tags !== null && $tags->count() > 0) {
-            foreach ($tags as $tag) {
-                if (!Utils::isEmpty($tag->getName())) {
-                    $this->keywords[] = new Keyword($tag->getName());
+        $blackListedKeywords = [
+            $this->product->getProductNumber(),
+        ];
+        $keywords = $this->product->getSearchKeywords();
+
+        if ($manufacturer = $this->product->getManufacturer()) {
+            $blackListedKeywords[] = $manufacturer->getTranslation('name');
+        }
+
+        if ($keywords !== null && $keywords->count() > 0) {
+            foreach ($keywords as $keyword) {
+                $keywordValue = $keyword->getKeyword();
+                if (!Utils::isEmpty($keywordValue)) {
+                    $isBlackListedKeyword = in_array($keywordValue, $blackListedKeywords);
+                    if (!$isBlackListedKeyword) {
+                        $this->keywords[] = new Keyword($keywordValue);
+                    }
                 }
             }
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasKeywords(): bool
     {
         return $this->keywords && !empty($this->keywords);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Image[]
      * @throws AccessEmptyPropertyException
      */
@@ -434,72 +445,67 @@ class FindologicProduct extends Struct
         return $this->images;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setImages(): void
     {
-        if (!$this->product->getMedia() || !$this->product->getMedia()->count()) {
-            $fallbackImage = $this->buildFallbackImage($this->router->getContext());
-
-            if (!Utils::isEmpty($fallbackImage)) {
-                $this->images[] = new Image($fallbackImage);
-                $this->images[] = new Image($fallbackImage, Image::TYPE_THUMBNAIL);
-            }
-
-            return;
-        }
-
-        foreach ($this->getSortedImages() as $mediaEntity) {
-            if (!$mediaEntity->getMedia() || !$mediaEntity->getMedia()->getUrl()) {
-                continue;
-            }
-
-            $encodedUrl = $this->getEncodedUrl($mediaEntity->getMedia()->getUrl());
-            if (!Utils::isEmpty($encodedUrl)) {
-                $this->images[] = new Image($encodedUrl);
-            }
-
-            $thumbnails = $mediaEntity->getMedia()->getThumbnails();
-            if (!$thumbnails) {
-                continue;
-            }
-
-            foreach ($thumbnails as $thumbnailEntity) {
-                $encodedThumbnailUrl = $this->getEncodedUrl($thumbnailEntity->getUrl());
-                if (!Utils::isEmpty($encodedThumbnailUrl)) {
-                    $this->images[] = new Image($encodedThumbnailUrl, Image::TYPE_THUMBNAIL);
-                }
-            }
-        }
+        $this->images = $this->productImageService->getProductImages($this->product);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasImages(): bool
     {
         return $this->images && !empty($this->images);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function getSalesFrequency(): int
     {
         return $this->salesFrequency;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @return void
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface\
+     */
+    protected function setSalesFrequency(): void
+    {
+        $lastMonthDate = new DateTimeImmutable('-1 month');
+        $criteria = new Criteria();
+        $criteria->addAssociation('order');
+        $criteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_AND, [
+            new EqualsFilter('productId', $this->product->getId()),
+            new RangeFilter(
+                'order.orderDateTime',
+                [RangeFilter::GTE => $lastMonthDate->format(Defaults::STORAGE_DATE_TIME_FORMAT)]
+            )
+        ]));
+
+        /** @var EntityRepository $orderLineItemRepository */
+        $orderLineItemRepository = $this->container->get('order_line_item.repository');
+        $orders = $orderLineItemRepository->searchIds($criteria, $this->salesChannelContext->getContext());
+
+        $this->salesFrequency = $orders->getTotal();
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasSalesFrequency(): bool
     {
         // In case a product has no sales, it's sales frequency would still be 0.
         return true;
     }
 
-    protected function setSalesFrequency(): void
-    {
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('payload.productNumber', $this->product->getProductNumber()));
-
-        /** @var EntityRepository $orderLineItemRepository */
-        $orderLineItemRepository = $this->container->get('order_line_item.repository');
-        $orders = $orderLineItemRepository->search($criteria, $this->salesChannelContext->getContext());
-
-        $this->salesFrequency = $orders->count();
-    }
-
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Usergroup[]
      * @throws AccessEmptyPropertyException
      */
@@ -512,6 +518,9 @@ class FindologicProduct extends Struct
         return $this->userGroups;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setUserGroups(): void
     {
         foreach ($this->customerGroups as $customerGroupEntity) {
@@ -521,12 +530,16 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasUserGroups(): bool
     {
         return $this->userGroups && !empty($this->userGroups);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Ordernumber[]
      * @throws AccessEmptyPropertyException
      */
@@ -539,6 +552,9 @@ class FindologicProduct extends Struct
         return $this->ordernumbers;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setOrdernumbers(): void
     {
         $this->setOrdernumberByProduct($this->product);
@@ -547,12 +563,16 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasOrdernumbers(): bool
     {
         return $this->ordernumbers && !empty($this->ordernumbers);
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Property[]
      * @throws AccessEmptyPropertyException
      */
@@ -565,6 +585,9 @@ class FindologicProduct extends Struct
         return $this->properties;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setProperties(): void
     {
         if ($this->product->getTax()) {
@@ -628,7 +651,7 @@ class FindologicProduct extends Struct
         }
 
         if ($this->product->getReleaseDate()) {
-            $value = (string)$this->product->getReleaseDate()->format(DATE_ATOM);
+            $value = $this->product->getReleaseDate()->format(DATE_ATOM);
             $this->addProperty('releasedate', $value);
         }
 
@@ -636,26 +659,55 @@ class FindologicProduct extends Struct
             $value = $this->product->getManufacturer()->getMedia()->getUrl();
             $this->addProperty('vendorlogo', $value);
         }
+
+        if ($this->product->getPrice()) {
+            /** @var ProductPrice $price */
+            $price = $this->product->getPrice()->getCurrencyPrice($this->salesChannelContext->getCurrency()->getId());
+            if ($price) {
+                /** @var ProductPrice $listPrice */
+                $listPrice = $price->getListPrice();
+                if ($listPrice) {
+                    $this->addProperty('old_price', (string) round($listPrice->getGross(), 2));
+                    $this->addProperty('old_price_net', (string) round($listPrice->getNet(), 2));
+                }
+            }
+        }
+
+        if (method_exists($this->product, 'getMarkAsTopseller')) {
+            $isMarkedAsTopseller = $this->product->getMarkAsTopseller() ?? false;
+            $translated = $this->translateBooleanValue($isMarkedAsTopseller);
+            $this->addProperty('product_promotion', $translated);
+        }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     public function hasProperties(): bool
     {
         return $this->properties && !empty($this->properties);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setVendors(): void
     {
         $manufacturer = $this->product->getManufacturer();
         if ($manufacturer) {
             $name = $manufacturer->getTranslation('name');
             if (!Utils::isEmpty($name)) {
-                $vendorAttribute = new Attribute('vendor', [Utils::removeControlCharacters($name)]);
+                $vendorAttribute = new Attribute(
+                    'vendor',
+                    [$this->decodeHtmlEntity(Utils::removeControlCharacters($name))]
+                );
                 $this->attributes[] = $vendorAttribute;
             }
         }
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Attribute[]
      */
     protected function getAttributeProperties(ProductEntity $productEntity): array
@@ -682,6 +734,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Property[]
      */
     protected function getAttributePropertyAsProperty(PropertyGroupOptionEntity $propertyGroupOptionEntity): array
@@ -690,7 +743,7 @@ class FindologicProduct extends Struct
 
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $groupName = Utils::removeSpecialChars($group->getTranslation('name'));
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
                 $propertyGroupProperty = new Property($groupName);
@@ -700,30 +753,11 @@ class FindologicProduct extends Struct
             }
         }
 
-        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-            $settingOption = $setting->getOption();
-            if ($settingOption) {
-                $group = $settingOption->getGroup();
-            }
-
-            if (!$group) {
-                continue;
-            }
-
-            $groupName = $group->getTranslation('name');
-            $optionName = $settingOption->getTranslation('name');
-            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                $configProperty = new Property(Utils::removeSpecialChars($groupName));
-                $configProperty->addValue(Utils::removeControlCharacters($optionName));
-
-                $properties[] = $configProperty;
-            }
-        }
-
         return $properties;
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Attribute[]
      */
     protected function getAttributePropertyAsAttribute(PropertyGroupOptionEntity $propertyGroupOptionEntity): array
@@ -732,39 +766,24 @@ class FindologicProduct extends Struct
 
         $group = $propertyGroupOptionEntity->getGroup();
         if ($group && $propertyGroupOptionEntity->getTranslation('name') && $group->getTranslation('name')) {
-            $groupName = Utils::removeSpecialChars($group->getTranslation('name'));
+            $groupName = $this->getAttributeKey($group->getTranslation('name'));
             $propertyGroupOptionName = $propertyGroupOptionEntity->getTranslation('name');
             if (!Utils::isEmpty($groupName) && !Utils::isEmpty($propertyGroupOptionName)) {
-                $properyGroupAttrib = new Attribute(Utils::removeSpecialChars($groupName));
-                $properyGroupAttrib->addValue(Utils::removeControlCharacters($propertyGroupOptionName));
+                $properyGroupAttrib = new Attribute($groupName);
+                $properyGroupAttrib->addValue($this->decodeHtmlEntity(
+                    Utils::removeControlCharacters($propertyGroupOptionName)
+                ));
 
                 $attributes[] = $properyGroupAttrib;
-            }
-        }
-
-        foreach ($propertyGroupOptionEntity->getProductConfiguratorSettings() as $setting) {
-            $settingOption = $setting->getOption();
-            if ($settingOption) {
-                $group = $settingOption->getGroup();
-            }
-
-            if (!$group) {
-                continue;
-            }
-
-            $groupName = $group->getTranslation('name');
-            $optionName = $settingOption->getTranslation('name');
-            if (!Utils::isEmpty($groupName) && !Utils::isEmpty($optionName)) {
-                $configAttrib = new Attribute(Utils::removeSpecialChars($groupName));
-                $configAttrib->addValue(Utils::removeControlCharacters($optionName));
-
-                $attributes[] = $configAttrib;
             }
         }
 
         return $attributes;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setAttributeProperties(): void
     {
         $this->attributes = array_merge($this->attributes, $this->getAttributeProperties($this->product));
@@ -773,6 +792,9 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setAdditionalAttributes(): void
     {
         $shippingFree = $this->translateBooleanValue($this->product->getShippingFree());
@@ -784,6 +806,9 @@ class FindologicProduct extends Struct
         $this->attributes = array_merge($this->attributes, $this->customFields);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setOrdernumberByProduct(ProductEntity $product): void
     {
         if (!Utils::isEmpty($product->getProductNumber())) {
@@ -798,38 +823,55 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoCategoriesException
      */
     protected function setCategoriesAndCatUrls(): void
     {
-        $productCategories = $this->product->getCategories();
-        if ($productCategories === null || empty($productCategories->count())) {
+        if (!$this->hasCategories()) {
             throw new ProductHasNoCategoriesException($this->product);
         }
 
-        $categoryAttribute = new Attribute('cat');
-        $catUrlAttribute = new Attribute('cat_url');
+        $productCategories = $this->product->getCategories();
+        $children = $this->product->getChildren();
 
         $catUrls = [];
         $categories = [];
 
         $this->parseCategoryAttributes($productCategories->getElements(), $catUrls, $categories);
+
+        if ($children->count() > 0) {
+            foreach ($children as $child) {
+                $variantCategories = $child->getCategories();
+                if ($variantCategories->count() === 0) {
+                    continue;
+                }
+
+                $this->parseCategoryAttributes($variantCategories->getElements(), $catUrls, $categories);
+            }
+        }
+
         if ($this->dynamicProductGroupService) {
             $dynamicGroupCategories = $this->dynamicProductGroupService->getCategories($this->product->getId());
             $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
         }
 
-        if (!Utils::isEmpty($catUrls)) {
-            $catUrlAttribute->setValues(array_unique($catUrls));
+        if ($this->isDirectIntegration() && !Utils::isEmpty($catUrls)) {
+            $catUrlAttribute = new Attribute('cat_url');
+            $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flattenWithUnique($catUrls)));
             $this->attributes[] = $catUrlAttribute;
         }
 
         if (!Utils::isEmpty($categories)) {
-            $categoryAttribute->setValues(array_unique($categories));
+            $categoryAttribute = new Attribute('cat');
+            $categoryAttribute->setValues($this->decodeHtmlEntities(array_unique($categories)));
             $this->attributes[] = $categoryAttribute;
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function setVariantPrices(): void
     {
         if ($this->product->getChildCount() === 0) {
@@ -846,38 +888,52 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Price[]
      */
-    protected function getPricesFromProduct(ProductEntity $variant): array
+    protected function getPricesFromProduct(ProductEntity $product): array
     {
         $prices = [];
+        $productPrice = $product->getPrice();
+        if (!$productPrice || !$productPrice->first()) {
+            return [];
+        }
 
-        foreach ($variant->getPrice() as $item) {
-            foreach ($this->customerGroups as $customerGroup) {
-                $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
-                if (Utils::isEmpty($userGroupHash)) {
-                    continue;
-                }
+        $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+        $currencyPrice = $productPrice->getCurrencyPrice($currencyId, false);
 
-                $price = new Price();
-                if ($customerGroup->getDisplayGross()) {
-                    $price->setValue($item->getGross(), $userGroupHash);
-                } else {
-                    $price->setValue($item->getNet(), $userGroupHash);
-                }
+        // If no currency price is available, fallback to the default price.
+        if (!$currencyPrice) {
+            $currencyPrice = $productPrice->first();
+        }
 
-                $prices[] = $price;
+        foreach ($this->customerGroups as $customerGroup) {
+            $userGroupHash = Utils::calculateUserGroupHash($this->shopkey, $customerGroup->getId());
+            if (Utils::isEmpty($userGroupHash)) {
+                continue;
             }
 
+            $netPrice = $currencyPrice->getNet();
+            $grossPrice = $currencyPrice->getGross();
             $price = new Price();
-            $price->setValue($item->getGross());
+            if ($customerGroup->getDisplayGross()) {
+                $price->setValue(round($grossPrice, 2), $userGroupHash);
+            } else {
+                $price->setValue(round($netPrice, 2), $userGroupHash);
+            }
+
             $prices[] = $price;
         }
+
+        $price = new Price();
+        $price->setValue(round($currencyPrice->getGross(), 2));
+        $prices[] = $price;
 
         return $prices;
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @throws ProductHasNoPricesException
      */
     protected function setProductPrices(): void
@@ -886,82 +942,12 @@ class FindologicProduct extends Struct
         if (Utils::isEmpty($prices)) {
             throw new ProductHasNoPricesException($this->product);
         }
-
         $this->prices = array_merge($this->prices, $prices);
     }
 
     /**
-     * Takes invalid URLs that contain special characters such as umlauts, or special UTF-8 characters and
-     * encodes them.
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      */
-    protected function getEncodedUrl(string $url): string
-    {
-        $parsedUrl = parse_url($url);
-        $urlPath = explode('/', $parsedUrl['path']);
-        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
-        $parsedUrl['path'] = implode('/', $encodedPath);
-
-        return Utils::buildUrl($parsedUrl);
-    }
-
-    protected function buildFallbackImage(RequestContext $requestContext): string
-    {
-        $schemaAuthority = $requestContext->getScheme() . '://' . $requestContext->getHost();
-        if ($requestContext->getHttpPort() !== 80) {
-            $schemaAuthority .= ':' . $requestContext->getHttpPort();
-        } elseif ($requestContext->getHttpsPort() !== 443) {
-            $schemaAuthority .= ':' . $requestContext->getHttpsPort();
-        }
-
-        return sprintf(
-            '%s/%s',
-            $schemaAuthority,
-            'bundles/storefront/assets/icon/default/placeholder.svg'
-        );
-    }
-
-    protected function fetchCategorySeoUrls(CategoryEntity $categoryEntity): SeoUrlCollection
-    {
-        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
-        $seoUrls = new SeoUrlCollection();
-
-        foreach ($categoryEntity->getSeoUrls()->getElements() as $seoUrlEntity) {
-            if ($seoUrlEntity->getSalesChannelId() === $salesChannelId || $seoUrlEntity->getSalesChannelId() === null) {
-                $seoUrls->add($seoUrlEntity);
-            }
-        }
-
-        return $seoUrls;
-    }
-
-    /**
-     * @deprecated will be removed in 2.0. Use Utils::buildCategoryPath() instead.
-     * @see Utils::buildCategoryPath()
-     */
-    protected function buildCategoryPath(CategoryEntity $categoryEntity): string
-    {
-        $breadCrumbs = $categoryEntity->getBreadcrumb();
-        array_shift($breadCrumbs);
-
-        return implode('_', $breadCrumbs);
-    }
-
-    protected function getSortedImages(): ProductMediaCollection
-    {
-        $images = $this->product->getMedia();
-        $coverImageId = $this->product->getCoverId();
-        $coverImage = $images->get($coverImageId);
-
-        if (!$coverImage || $images->count() === 1) {
-            return $images;
-        }
-
-        $images->remove($coverImageId);
-        $images->insert(0, $coverImage);
-
-        return $images;
-    }
-
     protected function setCustomFieldAttributes(): void
     {
         $this->customFields = array_merge($this->customFields, $this->getCustomFieldProperties($this->product));
@@ -973,6 +959,9 @@ class FindologicProduct extends Struct
         }
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function getCustomFieldProperties(ProductEntity $product): array
     {
         $attributes = [];
@@ -983,11 +972,21 @@ class FindologicProduct extends Struct
         }
 
         foreach ($productFields as $key => $value) {
-            $cleanedKey = Utils::removeSpecialChars($key);
+            $key = $this->getAttributeKey($key);
             $cleanedValue = $this->getCleanedAttributeValue($value);
 
-            if (!Utils::isEmpty($cleanedKey) && !Utils::isEmpty($cleanedValue)) {
-                $customFieldAttribute = new Attribute($cleanedKey, (array)$cleanedValue);
+            if (!Utils::isEmpty($key) && !Utils::isEmpty($cleanedValue)) {
+                // Third-Party plugins may allow setting multidimensional custom-fields. As those can not really
+                // be properly sanitized, they need to be skipped.
+                if (is_array($cleanedValue) && is_array(array_values($cleanedValue)[0])) {
+                    continue;
+                }
+
+                // Filter null, false and empty strings, but not "0". See: https://stackoverflow.com/a/27501297/6281648
+                $customFieldAttribute = new Attribute(
+                    $key,
+                    $this->decodeHtmlEntities(array_filter((array)$cleanedValue, 'strlen'))
+                );
                 $attributes[] = $customFieldAttribute;
             }
         }
@@ -996,6 +995,7 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @return Attribute[]
      */
     public function getCustomFields(): array
@@ -1004,7 +1004,9 @@ class FindologicProduct extends Struct
     }
 
     /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
      * @param array<string, int, bool>|string|int|bool $value
+     *
      * @return array<string, int, bool>|string|int|bool
      */
     protected function getCleanedAttributeValue($value)
@@ -1033,6 +1035,9 @@ class FindologicProduct extends Struct
         return $value;
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function translateBooleanValue(bool $value)
     {
         $translationKey = $value ? 'finSearch.general.yes' : 'finSearch.general.no';
@@ -1040,6 +1045,9 @@ class FindologicProduct extends Struct
         return $this->translator->trans($translationKey);
     }
 
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
     protected function addProperty(string $name, $value): void
     {
         if (!Utils::isEmpty($value)) {
@@ -1049,7 +1057,10 @@ class FindologicProduct extends Struct
         }
     }
 
-    private function parseCategoryAttributes(
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
+    protected function parseCategoryAttributes(
         array $categoryCollection,
         array &$catUrls,
         array &$categories
@@ -1066,34 +1077,9 @@ class FindologicProduct extends Struct
                 continue;
             }
 
+            // If the category is not in the current sales channel's root category, we do not need to export it.
             if (!$categoryEntity->getPath() || !strpos($categoryEntity->getPath(), $navigationCategoryId)) {
                 continue;
-            }
-
-            $seoUrls = $this->fetchCategorySeoUrls($categoryEntity);
-            if ($seoUrls->count() > 0) {
-                foreach ($seoUrls->getElements() as $seoUrlEntity) {
-                    $catUrl = $seoUrlEntity->getSeoPathInfo();
-                    if (!Utils::isEmpty($catUrl)) {
-                        $catUrls[] = sprintf('/%s', ltrim($catUrl, '/'));
-                    }
-                }
-            }
-
-            $catUrl = sprintf(
-                '/%s',
-                ltrim(
-                    $this->router->generate(
-                        'frontend.navigation.page',
-                        ['navigationId' => $categoryEntity->getId()],
-                        RouterInterface::ABSOLUTE_PATH
-                    ),
-                    '/'
-                )
-            );
-
-            if (!Utils::isEmpty($catUrl)) {
-                $catUrls[] = $catUrl;
             }
 
             $categoryPath = Utils::buildCategoryPath(
@@ -1101,9 +1087,87 @@ class FindologicProduct extends Struct
                 $this->navigationCategory
             );
 
+
             if (!Utils::isEmpty($categoryPath)) {
-                $categories[] = $categoryPath;
+                if (!in_array($categoryPath, $categories)) {
+                    $categories = array_merge($categories, [$categoryPath]);
+                }
+            }
+
+            // Only export `cat_url`s recursively if integration type is Direct Integration.
+            if ($this->isDirectIntegration()) {
+                $catUrls = array_merge(
+                    $catUrls,
+                    $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
+                );
             }
         }
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
+    protected function isDirectIntegration(): bool
+    {
+        return $this->config->getIntegrationType() === IntegrationType::DI;
+    }
+
+    protected function isApiIntegration(): bool
+    {
+        return $this->config->getIntegrationType() === IntegrationType::API;
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * For API Integrations, we have to remove special characters from the attribute key as a requirement for
+     * sending data via API.
+     */
+    protected function getAttributeKey(?string $key): ?string
+    {
+        if ($this->isApiIntegration()) {
+            return Utils::removeSpecialChars($key);
+        }
+
+        return $key;
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     */
+    protected function decodeHtmlEntities(array $values): array
+    {
+        foreach ($values as $key => $value) {
+            $values[$key] = $this->decodeHtmlEntity($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @param mixed $value
+     * @return string|mixed
+     */
+    protected function decodeHtmlEntity($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        return html_entity_decode($value);
+    }
+
+    /**
+     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * Checks if the product, or any of its children has any category assigned.
+     */
+    protected function hasCategories(): bool
+    {
+        $productCategories = $this->product->getCategories();
+        $childrenWithCategories = $this->product->getChildren()->filter(function (ProductEntity $variant) {
+            return $variant->getCategories()->count() > 0;
+        });
+
+        return $productCategories->count() > 0 || $childrenWithCategories->count() > 0;
     }
 }

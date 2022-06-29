@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
+use Doctrine\DBAL\Connection;
+use FINDOLOGIC\FinSearch\Exceptions\Config\ShopkeyAlreadyExistsException;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 use function strpos;
+use function in_array;
 
 /**
  * @RouteScope(scopes={"api"})
@@ -24,13 +27,20 @@ class FindologicConfigController extends AbstractController
      */
     private $findologicConfigService;
 
-    public function __construct(FindologicConfigService $findologicConfigService)
+    /**
+     * @var Connection
+     */
+    private $connection;
+
+    public function __construct(FindologicConfigService $findologicConfigService, Connection $connection)
     {
         $this->findologicConfigService = $findologicConfigService;
+        $this->connection = $connection;
     }
 
     /**
-     * @Route("/api/v{version}/_action/finsearch", name="api.action.finsearch", methods={"GET"})
+     * @Route("/api/_action/finsearch", name="api.action.finsearch", methods={"GET"})
+     * @Route("/api/v{version}/_action/finsearch", name="api.action.finsearch.legacy", methods={"GET"})
      */
     public function getConfigurationValues(Request $request): JsonResponse
     {
@@ -49,7 +59,8 @@ class FindologicConfigController extends AbstractController
     }
 
     /**
-     * @Route("/api/v{version}/_action/finsearch", name="api.action.finsearch.save", methods={"POST"})
+     * @Route("/api/_action/finsearch", name="api.action.finsearch.save", methods={"POST"})
+     * @Route("/api/v{version}/_action/finsearch", name="api.action.finsearch.legacy.save", methods={"POST"})
      */
     public function saveConfiguration(Request $request): Response
     {
@@ -62,18 +73,41 @@ class FindologicConfigController extends AbstractController
     }
 
     /**
-     * @Route("/api/v{version}/_action/finsearch/batch", name="api.action.finsearch.save.batch", methods={"POST"})
+     * @Route("/api/_action/finsearch/batch", name="api.action.finsearch.save.batch", methods={"POST"})
+     * @Route(
+     *     "/api/v{version}/_action/finsearch/batch",
+     *     name="api.action.finsearch.legacy.save.batch",
+     *     methods={"POST"}
+     * )
      */
     public function batchSaveConfiguration(Request $request): Response
     {
-        foreach ($request->request->all() as $key => $config) {
-            if (strpos($key, '-') !== false) {
-                [$salesChannelId, $languageId] = explode('-', $key);
-                $this->saveKeyValues($config, $salesChannelId, $languageId);
-            } else {
-                $this->saveKeyValues($config);
+        $allShopkeys = [];
+        $this->connection->beginTransaction();
+        try {
+            foreach ($request->request->all() as $key => $config) {
+                if (isset($config['FinSearch.config.shopkey']) && $config['FinSearch.config.shopkey']) {
+                    $shopkey = $config['FinSearch.config.shopkey'];
+                    if (!in_array($shopkey, $allShopkeys, false)) {
+                        $allShopkeys[] = $shopkey;
+                    } else {
+                        throw new ShopkeyAlreadyExistsException();
+                    }
+                }
+
+                if (strpos($key, '-') !== false) {
+                    [$salesChannelId, $languageId] = explode('-', $key);
+                    $this->saveKeyValues($config, $salesChannelId, $languageId);
+                } else {
+                    $this->saveKeyValues($config);
+                }
             }
+        } catch (ShopkeyAlreadyExistsException $e) {
+            $this->connection->rollBack();
+            throw $e;
         }
+
+        $this->connection->commit();
 
         return new Response('', Response::HTTP_NO_CONTENT);
     }

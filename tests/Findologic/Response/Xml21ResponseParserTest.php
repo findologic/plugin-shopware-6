@@ -9,6 +9,7 @@ use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\LabelTextFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
@@ -191,22 +192,22 @@ class Xml21ResponseParserTest extends TestCase
         $expectedVendorFilter = new VendorImageFilter($vendor, 'Hersteller');
         $expectedVendorFilter->addValue(
             (new ImageFilterValue('Anderson, Gusikowski and Barton', 'Anderson, Gusikowski and Barton', $vendor))
-                ->setDisplayType('none')
+                ->setDisplayType('media')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/anderson_gusikowski_and_barton.png'))
         );
         $expectedVendorFilter->addValue(
             (new ImageFilterValue('Bednar Ltd', 'Bednar Ltd', $vendor))
-                ->setDisplayType('none')
+                ->setDisplayType('media')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/bednar_ltd.png'))
         );
         $expectedVendorFilter->addValue(
             (new ImageFilterValue('Buckridge-Fisher', 'Buckridge-Fisher', $vendor))
-                ->setDisplayType('none')
+                ->setDisplayType('media')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/buckridge_fisher.png'))
         );
         $expectedVendorFilter->addValue(
             (new ImageFilterValue('Connelly, Eichmann and Weissnat', 'Connelly, Eichmann and Weissnat', $vendor))
-                ->setDisplayType('none')
+                ->setDisplayType('media')
                 ->setMedia(new Media('https://demo.findologic.com/vendor/connelly_eichmann_and_weissnat.png'))
         );
 
@@ -216,7 +217,16 @@ class Xml21ResponseParserTest extends TestCase
         $expectedPriceFilter->addValue(new FilterValue('13.45 - 25.99', '13.45 - 25.99', $price));
         $expectedPriceFilter->addValue(new FilterValue('26 - 40.3', '26 - 40.3', $price));
         $expectedPriceFilter->setMin(0.39);
-        $expectedPriceFilter->setMax(40.3);
+        $expectedPriceFilter->setMax(2239.1);
+        $expectedPriceFilter->setStep(0.1);
+        $expectedPriceFilter->setTotalRange([
+            'min' => 0.39,
+            'max' => 2239.1
+        ]);
+        $expectedPriceFilter->setSelectedRange([
+            'min' => 0.39,
+            'max' => 2239.1
+        ]);
 
         $expectedRatingFilter = new RatingFilter('rating', 'Rating');
         $expectedRatingFilter->setMaxPoints(5.0);
@@ -229,16 +239,19 @@ class Xml21ResponseParserTest extends TestCase
             (new ColorFilterValue('beige', 'beige', $color))
                 ->setColorHexCode('#F5F5DC')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/beige.gif'))
+                ->setDisplayType('media')
         );
         $expectedColorFilter->addValue(
             (new ColorFilterValue('blau', 'blau', $color))
                 ->setColorHexCode('#3c6380')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/blau.gif'))
+                ->setDisplayType('media')
         );
         $expectedColorFilter->addValue(
             (new ColorFilterValue('braun', 'braun', $color))
                 ->setColorHexCode('#94651e')
                 ->setMedia(new Media('https://blubbergurken.io/farbfilter/braun.gif'))
+                ->setDisplayType('media')
         );
 
         $material = 'Material';
@@ -253,12 +266,12 @@ class Xml21ResponseParserTest extends TestCase
                     $this->getMockResponse('XMLResponse/demoResponseWithAllFilterTypes.xml')
                 ),
                 'expectedFilters' => [
-                    $expectedCategoryFilter,
-                    $expectedVendorFilter,
-                    $expectedPriceFilter,
-                    $expectedColorFilter,
-                    $expectedSelectDropdownFilter,
-                    $expectedRatingFilter
+                    'cat' => $expectedCategoryFilter,
+                    'vendor' => $expectedVendorFilter,
+                    'price' => $expectedPriceFilter,
+                    'Farbe' => $expectedColorFilter,
+                    'Material' => $expectedSelectDropdownFilter,
+                    'rating' => $expectedRatingFilter
                 ]
             ],
             'response without results' => [
@@ -272,6 +285,32 @@ class Xml21ResponseParserTest extends TestCase
                     $this->getMockResponse('XMLResponse/demoResponseWithNoResultsButWithFilters.xml')
                 ),
                 'expectedFilters' => []
+            ],
+            'response with colors without image URLs' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithColorFiltersWithoutUrl.xml')
+                ),
+                'expectedFilters' => [
+                    'Farbe' => (new ColorPickerFilter('Farbe', 'Farbe'))
+                        ->addValue(
+                            (new ColorFilterValue('beige', 'beige', $color))
+                                ->setMedia(new Media(''))
+                                ->setColorHexCode('#F5F5DC')
+                                ->setDisplayType('color')
+                        )
+                        ->addValue(
+                            (new ColorFilterValue('blau', 'blau', $color))
+                                ->setMedia(new Media(''))
+                                ->setColorHexCode('#3c6380')
+                                ->setDisplayType('color')
+                        )
+                        ->addValue(
+                            (new ColorFilterValue('braun', 'braun', $color))
+                                ->setMedia(new Media(''))
+                                ->setColorHexCode('')
+                                ->setDisplayType('none')
+                        )
+                ]
             ]
         ];
     }
@@ -338,6 +377,14 @@ class Xml21ResponseParserTest extends TestCase
                 'flBlocks' => [],
                 'expectedFilterName' => 'Hersteller',
                 'expectedInstanceOf' => VendorImageFilter::class,
+                'isHidden' => false
+            ],
+            'No smart suggest blocks are sent and text vendor filter is available in response' => [
+                'type' => 'vendor',
+                'demoResponse' => 'demoResponseWithTextVendorFilter.xml',
+                'flBlocks' => [],
+                'expectedFilterName' => 'Hersteller',
+                'expectedInstanceOf' => LabelTextFilter::class,
                 'isHidden' => false
             ],
         ];
@@ -467,11 +514,21 @@ class Xml21ResponseParserTest extends TestCase
                 'response' => new Xml21Response(
                     $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
                 ),
-                'request' => new Request(['vendor' => 'Blubbergurken inc.']),
+                'request' => new Request(['vendor' => 'vendor>Blubbergurken inc.']),
                 'expectedInstance' => VendorInfoMessage::class,
                 'expectedVars' => [
                     'filterName' => 'Hersteller',
                     'filterValue' => 'Blubbergurken inc.',
+                    'extensions' => []
+                ]
+            ],
+            'no search query but 2 selected vendors' => [
+                'response' => new Xml21Response(
+                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                ),
+                'request' => new Request(['vendor' => 'vendor>Blubbergurken inc.|vendor>Blubbergurken Limited']),
+                'expectedInstance' => DefaultInfoMessage::class,
+                'expectedVars' => [
                     'extensions' => []
                 ]
             ],

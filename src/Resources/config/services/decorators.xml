@@ -31,6 +31,22 @@
             />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler"/>
             <argument type="service" id="service_container" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
+        </service>
+
+        <service
+                id="FINDOLOGIC\FinSearch\Storefront\Controller\CmsController"
+                decorates="Shopware\Storefront\Controller\CmsController"
+                public="true"
+        >
+            <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Controller\CmsController.inner"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler"/>
+            <argument type="service" id="service_container" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
         </service>
 
         <service
@@ -48,6 +64,7 @@
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder"/>
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"/>
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
+            <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
         <service
@@ -58,6 +75,8 @@
             <argument type="service"
                       id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingRoute.inner"/>
             <argument type="service" id="sales_channel.product.repository"/>
+            <argument type="service" id="category.repository"/>
+            <argument type="service" id="Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder"/>
             <argument type="service" id="event_dispatcher"/>
             <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition"/>
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder"/>
@@ -65,14 +84,35 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
         </service>
 
-        <!-- Indirect Service Decorators (are used by decorators above) -->
-        <!-- Indirect Service Decorators will only override their decorated service when explicitly used -->
+        <service
+                id="FINDOLOGIC\FinSearch\Core\Content\Category\SalesChannel\CachedCategoryRoute"
+                decorates="Shopware\Core\Content\Category\SalesChannel\CachedCategoryRoute"
+                decoration-on-invalid="ignore"
+        >
+            <argument type="service"
+                      id="Shopware\Core\Content\Category\SalesChannel\CachedCategoryRoute.inner"
+            />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService"/>
+        </service>
 
         <service
-                id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"
-                class="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder"
+            id="FINDOLOGIC\FinSearch\Elasticsearch\Product\ProductSearchBuilder"
+            decorates="Shopware\Elasticsearch\Product\ProductSearchBuilder"
+            decoration-priority="-51000"
         >
-            <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter"/>
+            <argument type="service" id="FINDOLOGIC\FinSearch\Elasticsearch\Product\ProductSearchBuilder.inner"/>
+            <argument type="service" id="Shopware\Elasticsearch\Framework\ElasticsearchHelper"/>
+            <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition"/>
+        </service>
+
+        <service
+            id="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder"
+            decorates="Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface"
+        >
+            <argument type="service" id="Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreter" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword\ProductSearchBuilder.inner"/>
+            <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
         <service
@@ -87,11 +127,6 @@
                     on-invalid="null"
             />
             <argument type="service" id="event_dispatcher"/>
-            <argument
-                    type="service"
-                    id="FINDOLOGIC\FinSearch\CompatibilityLayer\Shopware61\Storefront\Page\Search\SearchPageLoader"
-                    on-invalid="null"
-            />
         </service>
 
     </services>

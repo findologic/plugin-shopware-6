@@ -16,14 +16,15 @@
             {% for filter in filters %}
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\LabelTextFilter") or
                     filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\SelectDropdownFilter") %}
-                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-multi-select.html.twig' with {
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-property-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
                         name: filter.id,
                         hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
-                        pluginSelector: 'filter-property-select'
+                        pluginSelector: 'filter-property-select',
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 
@@ -35,10 +36,11 @@
                 {% set filterRangeActiveMinLabel = 'detail.priceDataInfoFrom'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
                 {% set filterRangeActiveMaxLabel = 'detail.priceDataInfoUntil'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RangeSliderFilter") %}
-                    {% sw_include '@Storefront/storefront/component/listing/filter/filter-range.html.twig' with {
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-slider-range.html.twig' with {
                         price: {
                             min: filter.min,
-                            max: filter.max
+                            max: filter.max,
+                            step: filter.step
                         },
                         elements: filter.values,
                         sidebar: sidebar,
@@ -49,7 +51,8 @@
                         minKey: filter.minKey,
                         maxKey: filter.maxKey,
                         pluginSelector: 'filter-range-slider',
-                        currencySymbol: filter.unit
+                        currencySymbol: filter.unit,
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 
@@ -62,7 +65,8 @@
                         hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: filter.displayType,
-                        pluginSelector: 'filter-property-select'
+                        pluginSelector: 'filter-property-select',
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 
@@ -74,19 +78,34 @@
                         hidden: filter.hidden,
                         displayName: filter.name,
                         displayType: property.displayType,
-                        pluginSelector: 'filter-category-select'
+                        pluginSelector: 'filter-category-select',
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 
                 {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RatingFilter") %}
-                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating.html.twig' with {
+                    {# New rating filter. Shopware >= 6.4 #}
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating-select.html.twig' ignore missing with {
                         elements: filter.values,
                         maxPoints: filter.maxPoints,
                         sidebar: sidebar,
                         name: filter.id,
                         hidden: filter.hidden,
                         displayName: filter.name,
-                        pluginSelector: 'filter-rating'
+                        pluginSelector: 'filter-rating-select',
+                        propertyName: filter.name
+                    } %}
+
+                    {# Old rating filter. Shopware < 6.4 #}
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating.html.twig' ignore missing with {
+                        elements: filter.values,
+                        maxPoints: filter.maxPoints,
+                        sidebar: sidebar,
+                        name: filter.id,
+                        hidden: filter.hidden,
+                        displayName: filter.name,
+                        pluginSelector: 'filter-rating',
+                        propertyName: filter.name
                     } %}
                 {% endif %}
 

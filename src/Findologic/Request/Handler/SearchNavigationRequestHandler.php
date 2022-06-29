@@ -30,6 +30,15 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 abstract class SearchNavigationRequestHandler
 {
     /**
+     * Contains criteria variable keys, which have been added in newer Shopware versions.
+     * If they're not set (e.g. an older Shopware version), these values will be set to null by default.
+     */
+    private const NEW_CRITERIA_VARS = [
+        'includes',
+        'title',
+    ];
+
+    /**
      * @var ServiceConfigResource
      */
     protected $serviceConfigResource;
@@ -55,11 +64,13 @@ abstract class SearchNavigationRequestHandler
     protected $findologicRequestFactory;
 
     /**
-     * @var SortingHandlerInterface[]
+     * @var SortingHandlerService
      */
-    protected $sortingHandlers;
+    protected $sortingHandlerService;
 
-    /** @var FilterHandler */
+    /**
+     * @var FilterHandler
+     */
     protected $filterHandler;
 
     public function __construct(
@@ -68,6 +79,7 @@ abstract class SearchNavigationRequestHandler
         Config $config,
         ApiConfig $apiConfig,
         ApiClient $apiClient,
+        SortingHandlerService $sortingHandlerService,
         ?FilterHandler $filterHandler = null
     ) {
         $this->serviceConfigResource = $serviceConfigResource;
@@ -75,9 +87,8 @@ abstract class SearchNavigationRequestHandler
         $this->config = $config;
         $this->apiConfig = $apiConfig;
         $this->apiClient = $apiClient;
+        $this->sortingHandlerService = $sortingHandlerService;
         $this->filterHandler = $filterHandler ?? new FilterHandler();
-
-        $this->sortingHandlers = $this->getSortingHandler();
     }
 
     abstract public function handleRequest(ShopwareEvent $event): void;
@@ -112,40 +123,19 @@ abstract class SearchNavigationRequestHandler
     protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
     {
         $vars = $criteria->getVars();
-        // `includes` is added in Shopware >= 6.2, so we manually add this for compatibility with older versions
-        if (!empty($vars) && !array_key_exists('includes', $vars)) {
-            $vars['includes'] = null;
-        }
-        // `title` is added in Shopware >= 6.3, so we manually add this for compatibility with older versions
-        if (!empty($vars) && !array_key_exists('title', $vars)) {
-            $vars['title'] = null;
-        }
-        $event->getCriteria()->assign($vars);
-    }
 
-    /**
-     * @return SortingHandlerInterface[]
-     */
-    protected function getSortingHandler(): array
-    {
-        return [
-            new ScoreSortingHandler(),
-            new PriceSortingHandler(),
-            new ProductNameSortingHandler(),
-            new ReleaseDateSortingHandler(),
-            new TopSellerSortingHandler(),
-        ];
-    }
+        if (!empty($vars)) {
+            $vars['limit'] = $event->getCriteria()->getLimit();
 
-    protected function addSorting(SearchNavigationRequest $searchNavigationRequest, Criteria $criteria): void
-    {
-        foreach ($this->sortingHandlers as $handler) {
-            foreach ($criteria->getSorting() as $fieldSorting) {
-                if ($handler->supportsSorting($fieldSorting)) {
-                    $handler->generateSorting($fieldSorting, $searchNavigationRequest);
+            // Set criteria default vars to allow compatibility with older Shopware versions.
+            foreach (self::NEW_CRITERIA_VARS as $varName) {
+                if (!array_key_exists($varName, $vars)) {
+                    $vars[$varName] = null;
                 }
             }
         }
+
+        $event->getCriteria()->assign($vars);
     }
 
     protected function setPagination(

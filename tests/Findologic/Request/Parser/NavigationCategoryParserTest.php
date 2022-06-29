@@ -65,8 +65,6 @@ class NavigationCategoryParserTest extends TestCase
         $page = new Page();
         $page->setHeader($headerPageletMock);
 
-        $this->genericPageLoader->expects($this->once())->method('load')->willReturn($page);
-
         $request = new Request();
         $salesChannelContext = $this->buildSalesChannelContext();
         $category = $this->getDefaultNavigationCategoryParser()->parse($request, $salesChannelContext);
@@ -98,16 +96,9 @@ class NavigationCategoryParserTest extends TestCase
         $request = new Request();
         $salesChannelContext = $this->buildSalesChannelContext();
 
-        $this->genericPageLoader->expects($this->once())->method('load')
-            ->with($request, $salesChannelContext)
-            ->willReturnCallback(function ($request, $actualSalesChannelContext) use ($page, $salesChannelContext) {
-                // Ensure that used instance is not the same. This prevents Shopware from modifying it.
-                $this->assertNotSame($salesChannelContext, $actualSalesChannelContext);
+        $category = $this->getDefaultNavigationCategoryParser()->parse($request, $salesChannelContext);
 
-                return $page;
-            });
-
-        $this->getDefaultNavigationCategoryParser()->parse($request, $salesChannelContext);
+        $this->assertEquals($expectedCategory, $category);
     }
 
     private function getCategory(): CategoryEntity

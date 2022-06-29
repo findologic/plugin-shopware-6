@@ -6,7 +6,9 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\LabelTextFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
@@ -75,20 +77,87 @@ class FilterHandlerTest extends TestCase
         $this->assertSame($expectedValue, current($result['attrib'][$filterName]));
     }
 
-    public function testHandleFindologicSearchParams()
+    public function testHandleFindologicSearchParams(): void
     {
         $filterHandler = new FilterHandler();
         $request = new Request([
             'search' => '',
             'attrib' => [
-                'vendor' => ['shopware'],
+                'vendor' => ['shopware', 'shopware3'],
                 'cat' => ['Test_Test Sub']
             ]
         ]);
 
         $actualUrl = $filterHandler->handleFindologicSearchParams($request);
-        $expectedUrl = '?search=&vendor=shopware&cat=Test_Test%20Sub';
+        $expectedUrl = '?search=&vendor=vendor%3Eshopware%7Cvendor%3Eshopware3&cat=Test_Test%20Sub';
 
         $this->assertEquals($expectedUrl, $actualUrl);
+    }
+
+    public function testPushAttribIsNotAddedAsRegularFilter(): void
+    {
+        $searchNavigationRequest = new SearchRequest();
+        $filterHandler = new FilterHandler();
+        $filterExtension = new FiltersExtension();
+
+        $request = new Request([
+            'search' => 'artikel',
+            'pushAttrib' => [
+                'size' => ['xl' => 30],
+            ]
+        ]);
+
+        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $criteria = new Criteria();
+        $criteria->setExtensions(['flFilters' => $filterExtension]);
+        $eventMock->method('getRequest')->willReturn($request);
+        $eventMock->method('getCriteria')->willReturn($criteria);
+
+        $filterHandler->handleFilters($eventMock, $searchNavigationRequest);
+        $result = $searchNavigationRequest->getParams();
+        $this->assertEmpty($result);
+    }
+
+    public function testOnlyStringValuesAreConsidered(): void
+    {
+        $searchNavigationRequest = new SearchRequest();
+        $filterHandler = new FilterHandler();
+        $filterExtension = new FiltersExtension();
+        $filterExtension
+            ->addFilter(new LabelTextFilter('string', 'string'))
+            ->addFilter(new LabelTextFilter('bool', 'bool'))
+            ->addFilter(new LabelTextFilter('int', 'int'))
+            ->addFilter(new LabelTextFilter('float', 'float'))
+            ->addFilter(new LabelTextFilter('array', 'array'));
+
+        $request = new Request([
+            'string' => 'string',
+            'bool' => false,
+            'int' => 12,
+            'float' => 13.37,
+            'array' => [
+                'ar' => 'ray',
+            ]
+        ]);
+
+        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $criteria = new Criteria();
+        $criteria->setExtensions(['flFilters' => $filterExtension]);
+        $eventMock->method('getRequest')->willReturn($request);
+        $eventMock->method('getCriteria')->willReturn($criteria);
+
+        $filterHandler->handleFilters($eventMock, $searchNavigationRequest);
+        $result = $searchNavigationRequest->getParams();
+        $this->assertEquals([
+            'string' => [
+                '' => 'string'
+            ]
+        ], $result['attrib']);
     }
 }

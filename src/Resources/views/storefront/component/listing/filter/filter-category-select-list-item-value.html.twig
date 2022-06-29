@@ -1,8 +1,7 @@
 {% block component_filter_multi_select_list_item %}
-
     {% for element in values %}
         {% block component_filter_multi_select_list_item_value %}
-            <div class="custom-control custom-checkbox sub-item">
+            <div class="custom-control custom-checkbox sub-item hide-category-list-item">
                 {% set id = element.id %}
                 {% set filterValue = filterValue ~ '_' ~ element.id %}
                 {% set name = element.translated.name %}
@@ -11,17 +10,25 @@
                            class="custom-control-input filter-multi-select-checkbox filter-category-select-checkbox"
                            data-label="{{ name }}"
                            value="{{ filterValue }}"
-                           id="{{ id }}">
+                           id="{{ filterValue }}">
                 {% endblock %}
 
                 {% block component_filter_multi_select_list_item_value_label_element %}
-                    <label class="filter-multi-select-item-label filter-category-select-item-label custom-control-label" for="{{ id }}">
+                    <label class="filter-multi-select-item-label filter-category-select-item-label custom-control-label"
+                           for="{{ filterValue }}">
                         {% block component_multi_select_list_item_value_label %}
                             <span>{{ name }}</span>
                         {% endblock %}
                     </label>
-                {% endblock %}
 
+                    {% block arrow_icon %}
+                        {% if element.values %}
+                            <div class="category-toggle-icon closed-icon">
+                                {% sw_icon 'arrow-medium-down' style {'pack': 'solid', 'size': 'xs', 'class': 'filter-panel-item-toggle'} %}
+                            </div>
+                        {% endif %}
+                    {% endblock %}
+                {% endblock %}
                 {% if element.values %}
                     {% sw_include '@FinSearch/storefront/component/listing/filter/filter-category-select-list-item-value.html.twig' with {
                         values: element.values,
