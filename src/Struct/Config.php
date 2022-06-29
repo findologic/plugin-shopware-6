@@ -181,7 +181,6 @@ class Config extends Struct
 
     public function getCrossSellingCategories(): array
     {
-        
         return $this->crossSellingCategories;
     }
 
