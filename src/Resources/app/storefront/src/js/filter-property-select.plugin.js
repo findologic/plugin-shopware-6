@@ -27,11 +27,11 @@ export default class FlFilterPropertySelectPlugin extends FilterPropertySelectPl
         const actualValues = this.getValues();
 
         if (activeItems.length < 1 && actualValues[this.options.name].length === 0) {
-            this.disableFilter()
+            this.disableFilter();
             return;
-        } else {
-            this.enableFilter();
         }
+        this.enableFilter();
+
 
         this._disableInactiveFilterOptions(activeItems.map(entity => entity.id));
     }
