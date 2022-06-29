@@ -1,7 +1,31 @@
-# Next
+# NEXT
+- [SW-442] ESLint für unsere JavaScript Dateien hinzugefügt
+
+# 3.0.0
+- Diese Version ist ein Major Release und enthält damit brechende Änderungen, wenn ein Erweiterungsplugin installiert ist.
+- Bevor ein Upgrade durchgeführt wird, beachte den Upgrade-Guide.
+- [SW-619] Ein Performance Problem wurde behoben, für Produkte mit hunderten oder tausenden von Varianten.
+- [SW-664] Neue "adapter" Klassen wurden hinzugefügt.
+- [SW-724] Die Möglichkeit den Export zu erweitern wurde durch Hinzufügen von "adapter" Klassen für ungenutzte XML tags verbessert.
+- [SW-666] Produkte ohne die benötigten Daten werden übersprungen.
+- [SW-704] Information der Varianten wurde den "adapter" Klassen hinzugefügt.
+- [SW-727] Unterstützung der Konfiguration für die billigsten Varianten im neuen Export.
+- [SW-730] Die Möglichkeit den Export zu erweitern wurde durch das aufsplitten einer Klasse in zwei Klassen verbessert.
+- [SW-728] Weitere Performance Verbesserungen für den neuen Export.
+- [SW-705] Kompatibilität zu alten Export Erweiterungen hergestellt.
+- [SW-733] Die Möglichkeit den Export zu erweitern wurde durch ein Event nach dem Verarbeiten des Produkts verbessert.
+- [SW-732] Ein Upgrade Guide für die neue Version wurde definiert.
+- [SW-700] Ein Fehler wurde behoben, wodurch der Hersteller-Filter nicht angezeigt wird, wenn zuvor ein Hersteller in der Smart Suggest selektiert wurde.
+- [SW-591] Ein Fehler wurde behoben, wodurch der Kategorie-Filter nicht deaktiviert wurde, wenn kein Filterwert verfügbar war.
+- [SW-729] Shopware 6.4.10.1 und 6.4.11.1 wurden zur Test-Matrix hinzugefügt.
+- [PH-657] Shopware 6.4.12.0 wurde zur Test-Matrix hinzugefügt.
+- Fixed the internal test runner for SW version 6.4.9.0.
+
+# 2.8.2
 - [SW-715] Ein Fehler wurde behoben, wodurch inkompatible Filter Werte von anderen Plugins verarbeitet wurden.
 - [SW-716] Ein Fehler wurde behoben, wodurch der Preis Filter automatisch selektiert wurde wenn Produktpreise mit mehr als zwei Nachkommastellen verwendet werden.
 - [SW-720] Ein Fehler wurde behoben, wodurch Varianten Eigenschaften auf Produktlisting Seiten nicht verfügbar waren.
+- [SW-722] Ein Fehler wurde behoben, wodurch Direct Integration auf Navigationsseiten nicht mehr funktionierte nachdem die Smart Suggest auf mobile verwendet wurde.
 - [SW-718] Update der Komponenten guzzlehttp/psr7 und minimist.
 
 # 2.8.1

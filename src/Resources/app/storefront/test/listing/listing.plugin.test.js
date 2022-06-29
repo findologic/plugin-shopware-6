@@ -2,89 +2,117 @@
  * @jest-environment jsdom
  */
 
-import FlListingPlugin from "../../src/js/listing/listing.plugin";
+import ListingPlugin from 'src/plugin/listing/listing.plugin';
 
 describe('listing.plugin,js', () => {
-  let listingPlugin = undefined;
-  let spyInit = jest.fn();
-  let spyInitializePlugins = jest.fn();
+    let listingPlugin;
+    const spyInit = jest.fn();
+    const spyInitializePlugins = jest.fn();
 
-  function setupListingPlugin() {
-    const mockElement = document.createElement('div');
-    const cmsElementProductListingWrapper = document.createElement('div');
-    cmsElementProductListingWrapper.classList.add('cms-element-product-listing-wrapper');
+    function setupListingPlugin() {
+        const mockElement = document.createElement('div');
+        const cmsElementProductListingWrapper = document.createElement('div');
+        cmsElementProductListingWrapper.classList.add('cms-element-product-listing-wrapper');
 
-    document.body.append(cmsElementProductListingWrapper);
+        document.body.append(cmsElementProductListingWrapper);
 
-    listingPlugin = new FlListingPlugin(mockElement);
-  }
+        const FlListingPlugin = require('../../src/js/listing/listing.plugin').default;
 
-  beforeEach(() => {
+        listingPlugin = new FlListingPlugin(mockElement);
+    }
+
+    beforeEach(() => {
     // create mocks
-    window.csrf = {
-      enabled: false
-    };
-
-    window.router = [];
-
-    window.PluginManager = {
-      getPluginInstancesFromElement: () => {
-        return new Map();
-      },
-      getPlugin: () => {
-        return {
-          get: () => []
+        window.csrf = {
+            enabled: false,
         };
-      },
-      initializePlugins: undefined
-    };
 
-    // mock listing plugins
-    const mockElement = document.createElement('div');
-    listingPlugin = new FlListingPlugin(mockElement);
-    listingPlugin._registry = [];
+        window.router = [];
 
-    // create spy elements
-    listingPlugin.init = spyInit;
-    window.PluginManager.initializePlugins = spyInitializePlugins;
-  });
+        window.PluginManager = {
+            getPluginInstancesFromElement: () => {
+                return new Map();
+            },
+            getPlugin: () => {
+                return {
+                    get: (value) => (value === 'class' ? ListingPlugin : []),
+                };
+            },
+            initializePlugins: undefined,
+        };
 
-  afterEach(() => {
-    listingPlugin = undefined;
-    spyInit.mockClear();
-    spyInitializePlugins.mockClear();
-    window.PluginManager.initializePlugins = undefined;
-  });
+        // mock listing plugins
+        const mockElement = document.createElement('div');
+        const FlListingPlugin = require('../../src/js/listing/listing.plugin').default;
+        listingPlugin = new FlListingPlugin(mockElement);
+        listingPlugin._registry = [];
 
-  test('listing plugin exists', () => {
-    expect(typeof listingPlugin).toBe('object');
-  });
+        // create spy elements
+        listingPlugin.init = spyInit;
+        window.PluginManager.initializePlugins = spyInitializePlugins;
+    });
 
-  test.each([
-    '#navigation:search=&attrib%5Bcat_url%5D%5B0%5D=%2FKids%2F',
-    '#search:search=blub&query=blub',
-    '#suggest:suggest',
-    '#navigation:attrib%5Bcat_url%5D%5B0%5D=%2Fwohnaccessoires%2F&count=24',
-    '#search:count=24',
-  ])('history must not be changed on Direct Integration page %s', (hash) => {
-    setupListingPlugin();
+    afterEach(() => {
+        listingPlugin = undefined;
+        spyInit.mockClear();
+        spyInitializePlugins.mockClear();
+        window.PluginManager.initializePlugins = undefined;
+    });
 
-    jest.spyOn(listingPlugin, 'refreshRegistry');
-    window.location.hash = hash;
+    test('listing plugin exists', () => {
+        expect(typeof listingPlugin).toBe('object');
+    });
 
-    listingPlugin._onWindowPopstate();
+    test('lastHash is set on initialization', () => {
+        const expectedHash = '#initialHash';
+        window.location.hash = '#initialHash';
 
-    expect(listingPlugin.refreshRegistry).not.toHaveBeenCalled();
-  });
+        setupListingPlugin();
 
-  test('history must be changed on regular non-Direct Integration pages', () => {
-    setupListingPlugin();
+        expect(listingPlugin.lastHash).toBe(expectedHash);
+    });
 
-    jest.spyOn(listingPlugin, 'refreshRegistry');
-    window.location.hash = '#shopware';
+    test.each([
+        { lastHash: '', hash: '#navigation:search=&attrib%5Bcat_url%5D%5B0%5D=%2FKids%2F' },
+        { lastHash: '', hash: '#search:search=blub&query=blub' },
+        { lastHash: '', hash: '#suggest:suggest' },
+        { lastHash: '', hash: '#navigation:attrib%5Bcat_url%5D%5B0%5D=%2Fwohnaccessoires%2F&count=24' },
+        { lastHash: '', hash: '#search:count=24' },
+        { lastHash: '#suggest:suggest', hash: '' },
+        { lastHash: '#search:count=24', hash: '' },
+    ])('history must not be changed on Direct Integration page %s', ({ lastHash, hash }) => {
+        setupListingPlugin();
 
-    listingPlugin._onWindowPopstate();
+        jest.spyOn(listingPlugin, 'refreshRegistry');
+        window.location.hash = hash;
+        listingPlugin.lastHash = lastHash;
 
-    expect(listingPlugin.refreshRegistry).toHaveBeenCalled();
-  });
+        listingPlugin._onWindowPopstate();
+
+        expect(listingPlugin.refreshRegistry).not.toHaveBeenCalled();
+    });
+
+    test('history must be changed on regular non-Direct Integration pages', () => {
+        setupListingPlugin();
+
+        jest.spyOn(listingPlugin, 'refreshRegistry');
+        window.location.hash = '#shopware';
+
+        listingPlugin._onWindowPopstate();
+
+        expect(listingPlugin.refreshRegistry).toHaveBeenCalled();
+    });
+
+    test('lastHash is changed on each check', () => {
+        window.location.hash = '#initialHash';
+
+        setupListingPlugin();
+
+        expect(listingPlugin.lastHash).toBe('#initialHash');
+        window.location.hash = '#newHash';
+
+        listingPlugin._isDirectIntegrationPage();
+
+        expect(listingPlugin.lastHash).toBe('#newHash');
+    });
 });

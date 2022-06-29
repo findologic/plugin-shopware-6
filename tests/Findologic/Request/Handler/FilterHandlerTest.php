@@ -83,13 +83,13 @@ class FilterHandlerTest extends TestCase
         $request = new Request([
             'search' => '',
             'attrib' => [
-                'vendor' => ['shopware'],
+                'vendor' => ['shopware', 'shopware3'],
                 'cat' => ['Test_Test Sub']
             ]
         ]);
 
         $actualUrl = $filterHandler->handleFindologicSearchParams($request);
-        $expectedUrl = '?search=&vendor=shopware&cat=Test_Test%20Sub';
+        $expectedUrl = '?search=&vendor=vendor%3Eshopware%7Cvendor%3Eshopware3&cat=Test_Test%20Sub';
 
         $this->assertEquals($expectedUrl, $actualUrl);
     }

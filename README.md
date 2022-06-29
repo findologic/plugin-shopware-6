@@ -48,6 +48,29 @@ Please see [our Shopware 6 documentation](https://docs.findologic.com/doku.php?i
    bin/console plugin:install FinSearch --activate --clearCache
    ```
 
+### Run linting
+
+### CLI linting
+
+The `Makefile` includes commands for all relevant tasks:
+- `make storefront-lint`
+- `make administration-lint`
+- `make storefront-fix`
+- `make administration-fix`
+
+### PHPStorm linting
+
+There are different configurations for administration and storefront. Depending on the current project, use the
+corresponding configuration.
+
+#### Storefront
+
+![PHPStorm configuration storefront](docs/images/phpstorm_linting_storefront.png)
+
+#### Administration
+
+![PHPStorm configuration administration](docs/images/phpstorm_linting_administration.png)
+
 ### Run PHPUnit tests
 
 #### Prerequisites
@@ -139,6 +162,8 @@ Use the [FINDOLOGIC Shopware 6 extension plugin](https://github.com/findologic/p
 guide you on how you can customize certain entities, like attributes or properties.
 
 ## Deployment and Release
+
+**Use PHP 7.4 to run the release script**
 
 1. Update the changelogs `CHANGELOG.md` and `CHANGELOG_de-DE.md`.
 2. Ensure that all changes, including the changelog changes have been merged into the `develop` branch.

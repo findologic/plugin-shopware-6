@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\WithTestClient;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
@@ -244,11 +245,17 @@ class ExportControllerTest extends TestCase
         $parsedResponse = new SimpleXMLElement($response->getContent());
 
         $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
-        $this->assertSame('FINDOLOGIC Product', $parsedResponse->items->item->names->name->__toString());
+
+        // They started to return the correct translation, instead of the defined product name
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->assertSame('FINDOLOGIC Product EN', $parsedResponse->items->item->names->name->__toString());
+        } else {
+            $this->assertSame('FINDOLOGIC Product', $parsedResponse->items->item->names->name->__toString());
+        }
 
         // Reset it here otherwise it will fetch the same service instance from the container
         // @see \FINDOLOGIC\FinSearch\Export\ProductService::getInstance
-        $this->getContainer()->set('fin_search.product_service', null);
+        $this->getContainer()->set('fin_search.product_service_separate_variants', null);
 
         $salesChannelContext = $this->buildSalesChannelContext(
             Defaults::SALES_CHANNEL,
@@ -269,7 +276,13 @@ class ExportControllerTest extends TestCase
         $parsedResponse = new SimpleXMLElement($response->getContent());
 
         $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
-        $this->assertSame('FINDOLOGIC Product DE', $parsedResponse->items->item->names->name->__toString());
+
+        // They started to return the correct translation, instead of the defined product name
+        if (Utils::versionGreaterOrEqual('6.4.11.0')) {
+            $this->assertSame('FINDOLOGIC Product EN', $parsedResponse->items->item->names->name->__toString());
+        } else {
+            $this->assertSame('FINDOLOGIC Product', $parsedResponse->items->item->names->name->__toString());
+        }
     }
 
     /**

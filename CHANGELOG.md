@@ -1,8 +1,32 @@
-# Next
+# NEXT
+- [SW-442] Add linting for the JavaScript files
+
+# 3.0.0
+- This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
+- Before upgrading, read our upgrade guide.
+- [SW-619] Fixed a performance issue for products with hundreds or thousands of variants.
+- [SW-664] Introduced new adapter classes to the export.
+- [SW-724] Improved the extension possibilities by creating adapters for unused XML tags.
+- [SW-666] Products are now skipped, when some required data is not set.
+- [SW-704] Added the variant information to the new adapter classes.
+- [SW-727] Correctly handle the cheapest variant configuration for the new export.
+- [SW-730] Improved the extension possibilities by splitting up a service into two.
+- [SW-728] Made some further performance improvements within the new export.
+- [SW-705] Implemented support for old extension plugins.
+- [SW-733] Improved the extension possibilities by adding an event after a product is processed.
+- [SW-732] Define an upgrade guide for the new release.
+- [SW-700] Fixed a bug that caused the manufacturer filter not being shown when previously selecting a manufacturer in the Smart Suggest.
+- [SW-591] Fixed a bug that caused the category filter not being disabled when no filter value was available.
+- [SW-729] Add new minor versions to our internal test runner.
+- [PH-657] Add 6.4.12.0 to the tested versions in our internal test runner.
+- Fixed the internal test runner for SW version 6.4.9.0.
+
+# 2.8.2
 - [SW-715] Fixed a bug that caused an error due to incompatible filter values being passed by other plugins.
 - [SW-716] Fixed a bug that caused the price filter being selected automatically when having product prices with more than two decimals.
-- [SW-720] Fixed a bug that caused variant properties not being available on product listing pages
-- [SW-718] Update dependencies guzzlehttp/psr7 and minimist
+- [SW-720] Fixed a bug that caused variant properties not being available on product listing pages.
+- [SW-722] Fixed a bug that caused Direct Integration not working on navigation pages after using the mobile Smart Suggest.
+- [SW-718] Update dependencies guzzlehttp/psr7 and minimist.
 
 # 2.8.1
 - [SW-689] Fixed a bug that caused available variants not being exported because the main product is not available.
