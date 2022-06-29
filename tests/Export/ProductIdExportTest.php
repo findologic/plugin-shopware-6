@@ -31,7 +31,8 @@ class ProductIdExportTest extends XmlExportTest
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
             'ABCDABCDABCDABCDABCDABCDABCDABCD',
-            0
+            0,
+            100
         );
         $this->getContainer()->set(
             'fin_search.export_context',

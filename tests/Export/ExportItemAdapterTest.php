@@ -49,7 +49,8 @@ class ExportItemAdapterTest extends TestCase
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
             'ABCDABCDABCDABCDABCDABCDABCDABCD',
-            0
+            0,
+            100
         );
 
         $this->loggerMock = $this->getMockBuilder(Logger::class)
