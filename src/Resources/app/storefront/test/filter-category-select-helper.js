@@ -11,130 +11,130 @@ export default class FilterCategorySelectElement  {
      childCheckboxClassList = 'custom-control-input filter-multi-select-checkbox ' +
                               'filter-category-select-checkbox'
 
-    init() {
-        return this;
-    }
+     init() {
+         return this;
+     }
 
-    /**
+     /**
      * @param name
      * @returns {HTMLDivElement}
      */
-    createMainCategory(name) {
+     createMainCategory(name) {
 
-    const div = document.createElement('div');
-    div.classList = this.divClassList;
+         const div = document.createElement('div');
+         div.classList = this.divClassList;
 
-    const checkBox = document.createElement('input');
-    checkBox.type = 'checkbox';
-    checkBox.id = name;
-    checkBox.value = name;
-    checkBox.classList = this.inputClassList;
+         const checkBox = document.createElement('input');
+         checkBox.type = 'checkbox';
+         checkBox.id = name;
+         checkBox.value = name;
+         checkBox.classList = this.inputClassList;
 
-    const label = document.createElement('label');
-    label.append('<span>'+name+'</span>');
-    label.classList = this.labelClassList;
+         const label = document.createElement('label');
+         label.append('<span>'+name+'</span>');
+         label.classList = this.labelClassList;
 
-    div.append(checkBox);
-    div.append(label);
+         div.append(checkBox);
+         div.append(label);
 
-    return div;
-}
+         return div;
+     }
 
-    /**
+     /**
      * @param name
      * @param parentCategoryName
      * @returns {HTMLDivElement}
      */
-    createChildCategory(name, parentCategoryName) {
-    const div = document.createElement('div');
-    div.classList = this.childDivClassList;
+     createChildCategory(name, parentCategoryName) {
+         const div = document.createElement('div');
+         div.classList = this.childDivClassList;
 
-    const input = document.createElement('input');
-    input.id = parentCategoryName+'_'+name;
-    input.type = 'checkbox';
-    input.value = parentCategoryName+'_'+name;
-    input.classList = this.childCheckboxClassList;
+         const input = document.createElement('input');
+         input.id = parentCategoryName+'_'+name;
+         input.type = 'checkbox';
+         input.value = parentCategoryName+'_'+name;
+         input.classList = this.childCheckboxClassList;
 
-    const label = document.createElement('label');
-    label.classList = this.labelClassList;
-    label.append('<span>'+name+'</span>');
-    label.classList = this.labelClassList;
+         const label = document.createElement('label');
+         label.classList = this.labelClassList;
+         label.append('<span>'+name+'</span>');
+         label.classList = this.labelClassList;
 
-    div.append(input);
-    div.append(label);
+         div.append(input);
+         div.append(label);
 
-    return div;
-}
+         return div;
+     }
 
-    /**
+     /**
      * @returns {HTMLUListElement}
      */
-    createCategoryStructure() {
-        const ul = document.createElement('ul');
-        ul.classList = this.ulClassList;
+     createCategoryStructure() {
+         const ul = document.createElement('ul');
+         ul.classList = this.ulClassList;
 
-        const menList = document.createElement('li');
-        menList.classList = this.liClassList;
+         const menList = document.createElement('li');
+         menList.classList = this.liClassList;
 
-        const newcomersList = document.createElement('li');
-        newcomersList.classList = this.liClassList;
+         const newcomersList = document.createElement('li');
+         newcomersList.classList = this.liClassList;
 
-        const womenList = document.createElement('li');
-        womenList.classList = this.liClassList;
+         const womenList = document.createElement('li');
+         womenList.classList = this.liClassList;
 
-        const menIcon = document.createElement('label');
-        menIcon.classList = this.iconClassList;
+         const menIcon = document.createElement('label');
+         menIcon.classList = this.iconClassList;
 
-        const womenIcon = document.createElement('label');
-        womenIcon.classList = this.iconClassList;
+         const womenIcon = document.createElement('label');
+         womenIcon.classList = this.iconClassList;
 
-        const men = this.createMainCategory('Men');
-        const women = this.createMainCategory('Women');
+         const men = this.createMainCategory('Men');
+         const women = this.createMainCategory('Women');
 
-        const menHats = this.createChildCategory('Hats', 'Men');
-        const menCoolHats = this.createChildCategory('Cool Hats', 'Men');
-        const menLameHats = this.createChildCategory('Lame Hats', 'Men');
+         const menHats = this.createChildCategory('Hats', 'Men');
+         const menCoolHats = this.createChildCategory('Cool Hats', 'Men');
+         const menLameHats = this.createChildCategory('Lame Hats', 'Men');
 
-        menHats.append(menIcon);
-        menHats.append(menCoolHats);
-        menHats.append(menLameHats);
+         menHats.append(menIcon);
+         menHats.append(menCoolHats);
+         menHats.append(menLameHats);
 
-        const womenHats = this.createChildCategory('Hats', 'Women');
-        const womenCoolHats = this.createChildCategory('Cool Hats', 'Women');
-        const womenLameHats = this.createChildCategory('Lame Hats', 'Women');
+         const womenHats = this.createChildCategory('Hats', 'Women');
+         const womenCoolHats = this.createChildCategory('Cool Hats', 'Women');
+         const womenLameHats = this.createChildCategory('Lame Hats', 'Women');
 
-        womenHats.append(womenIcon);
-        womenHats.append(womenCoolHats);
-        womenHats.append(womenLameHats);
+         womenHats.append(womenIcon);
+         womenHats.append(womenCoolHats);
+         womenHats.append(womenLameHats);
 
-        const menShirts = this.createChildCategory('Shirts', 'Men');
-        const menShoes = this.createChildCategory('Shoes', 'Men');
-        const womenShirts = this.createChildCategory('Shirts', 'Women');
-        const womenShoes = this.createChildCategory('shoes', 'Women');
-        const newComers = this.createMainCategory('Newcomers');
+         const menShirts = this.createChildCategory('Shirts', 'Men');
+         const menShoes = this.createChildCategory('Shoes', 'Men');
+         const womenShirts = this.createChildCategory('Shirts', 'Women');
+         const womenShoes = this.createChildCategory('shoes', 'Women');
+         const newComers = this.createMainCategory('Newcomers');
 
-        men.append(menIcon);
+         men.append(menIcon);
 
-        //Child categories
-        men.append(menHats);
-        men.append(menShirts);
-        men.append(menShoes);
+         //Child categories
+         men.append(menHats);
+         men.append(menShirts);
+         men.append(menShoes);
 
-        women.append(womenIcon);
+         women.append(womenIcon);
 
-        //Child categories
-        women.append(womenHats);
-        women.append(womenShirts);
-        women.append(womenShoes);
+         //Child categories
+         women.append(womenHats);
+         women.append(womenShirts);
+         women.append(womenShoes);
 
-        menList.append(men);
-        newcomersList.append(newComers);
-        womenList.append(women);
+         menList.append(men);
+         newcomersList.append(newComers);
+         womenList.append(women);
 
-        ul.append(menList);
-        ul.append(newcomersList);
-        ul.append(womenList);
+         ul.append(menList);
+         ul.append(newcomersList);
+         ul.append(womenList);
 
-        return ul;
-    }
+         return ul;
+     }
 }
