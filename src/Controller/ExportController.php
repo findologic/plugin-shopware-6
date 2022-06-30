@@ -64,7 +64,7 @@ class ExportController extends AbstractController
     /** @var EntityRepository */
     private $customerGroupRepository;
 
-    /** @var SalesChannelContext */
+    /** @var ?SalesChannelContext */
     private $salesChannelContext;
 
     /** @var ExportConfigurationBase */
@@ -130,7 +130,7 @@ class ExportController extends AbstractController
      */
     protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
-        $this->exportConfig = ExportConfiguration::getInstance($request);
+        $this->exportConfig = ExportConfigurationBase::getInstance($request);
 
         $this->salesChannelService = $context ? $this->container->get(SalesChannelService::class) : null;
         $this->salesChannelContext = $this->salesChannelService ? $this->salesChannelService
@@ -350,97 +350,61 @@ class ExportController extends AbstractController
         return false;
     }
 
-    /**
-     * @return LoggerInterface
-     */
     public function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
 
-    /**
-     * @return Router
-     */
-    public function getRouter()
+    public function getRouter(): Router
     {
         return $this->router;
     }
 
-    /**
-     * @return HeaderHandler
-     */
     public function getHeaderHandler(): HeaderHandler
     {
         return $this->headerHandler;
     }
 
-    /**
-     * @return CacheItemPoolInterface
-     */
     public function getCache(): CacheItemPoolInterface
     {
         return $this->cache;
     }
 
-    /**
-     * @return EventDispatcherInterface
-     */
     public function getEventDispatcher(): EventDispatcherInterface
     {
         return $this->eventDispatcher;
     }
 
-    /**
-     * @return EntityRepository
-     */
     public function getCustomerGroupRepository(): EntityRepository
     {
         return $this->customerGroupRepository;
     }
 
-    /**
-     * @return SalesChannelContext
-     */
-    public function getSalesChannelContext(): SalesChannelContext
+    public function getSalesChannelContext(): ?SalesChannelContext
     {
         return $this->salesChannelContext;
     }
 
-    /**
-     * @return ExportConfigurationBase
-     */
     public function getExportConfig(): ExportConfigurationBase
     {
         return $this->exportConfig;
     }
 
-    /**
-     * @return ExportContext
-     */
     public function getExportContext(): ExportContext
     {
         return $this->exportContext;
     }
 
-    /**
-     * @return ProductSearcher
-     */
     public function getProductSearcher(): ProductSearcher
     {
         return $this->productSearcher;
     }
 
-    /**
-     * @return Export|ProductIdExport|XmlExport
-     */
-    public function getExport()
+    public function getExport(): Export
     {
         return $this->export;
     }
 
-    /**
-     * @return Config
-     */
     public function getPluginConfig(): Config
     {
         return $this->pluginConfig;

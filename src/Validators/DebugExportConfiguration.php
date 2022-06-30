@@ -31,14 +31,6 @@ class DebugExportConfiguration extends ExportConfigurationBase
 
     private $count = 1;
 
-    public static function getInstance(Request $request): DebugExportConfiguration
-    {
-        return new DebugExportConfiguration(
-            $request->query->get('shopkey', ''),
-            $request->query->get('productId', '')
-        );
-    }
-
     public function __construct(string $shopkey, string $productId)
     {
         $this->shopkey = $shopkey;

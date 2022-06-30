@@ -40,6 +40,10 @@ class ProductDebugController extends ExportController
     {
         parent::initialize($request, $context);
 
+        if (!$this->getSalesChannelContext()) {
+            return;
+        }
+
         $this->productDebugSearcher = $this->container->get(ProductDebugSearcher::class);
         $this->productDebugService = $this->container->get(ProductDebugService::class);
     }
@@ -69,7 +73,7 @@ class ProductDebugController extends ExportController
         $product = $this->productDebugSearcher->findVisibleProducts(
             null,
             null,
-            $mainProduct->getId()
+            $mainProduct ? $mainProduct->getId() : $this->getExportConfig()->getProductId()
         )->first();
 
         /** @var XMLItem[] $xmlProducts */

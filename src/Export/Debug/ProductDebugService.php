@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ProductDebugService
 {
+    private const NO_PRODUCT_EXPORTED = 'No product is exported';
+
     /** @var SalesChannelContext */
     private $salesChannelContext;
 
@@ -79,16 +81,23 @@ class ProductDebugService
         return new JsonResponse([
             'export' => [
                 'productId' => $this->requestedProduct->getId(),
-                'exportedMainProductId' => $this->exportedMainProduct->getId(),
+                'exportedMainProductId' => $this->exportedMainProduct
+                    ? $this->exportedMainProduct->getId()
+                    : self::NO_PRODUCT_EXPORTED,
                 'isExported' => $isExported,
                 'reasons' => $this->parseExportErrors()
             ],
             'debugLinks' => [
-                'exportUrl' => $this->debugUrlBuilder->buildExportUrl($this->exportedMainProduct->getId()),
-                'debugUrl' => $this->debugUrlBuilder->buildDebugUrl($this->exportedMainProduct->getId()),
+                'exportUrl' => $this->exportedMainProduct
+                    ? $this->debugUrlBuilder->buildExportUrl($this->exportedMainProduct->getId())
+                    : self::NO_PRODUCT_EXPORTED,
+                'debugUrl' => $this->exportedMainProduct
+                    ? $this->debugUrlBuilder->buildDebugUrl($this->exportedMainProduct->getId())
+                    : self::NO_PRODUCT_EXPORTED,
             ],
             'data' => [
-                'isExportedMainVariant' => $this->exportedMainProduct->getId() === $this->requestedProduct->getId(),
+                'isExportedMainVariant' => $this->exportedMainProduct &&
+                    $this->exportedMainProduct->getId() === $this->requestedProduct->getId(),
                 'product' => $this->requestedProduct,
                 'siblings' => $this->requestedProduct->getParentId()
                     ? $this->productDebugSearcher->getSiblings($this->requestedProduct->getParentId(), 100)

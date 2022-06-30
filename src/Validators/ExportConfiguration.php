@@ -49,16 +49,6 @@ class ExportConfiguration extends ExportConfigurationBase
      */
     private $productId;
 
-    public static function getInstance(Request $request): ExportConfiguration
-    {
-        return new ExportConfiguration(
-            $request->query->get('shopkey', ''),
-            $request->query->getInt('start', self::DEFAULT_START_PARAM),
-            $request->query->getInt('count', self::DEFAULT_COUNT_PARAM),
-            $request->query->get('productId')
-        );
-    }
-
     public function __construct(string $shopkey, int $start, int $count, ?string $productId = null)
     {
         $this->shopkey = $shopkey;
