@@ -81,6 +81,202 @@ trait ProductHelper
         return $this->upsertProducts($products);
     }
 
+    public function createProductWithMultipleVariants(
+        string $parentId,
+        string $expectedFirstVariantId,
+        string $expectedSecondVariantId,
+        string $expectedThirdVariantId
+    ): ?ProductEntity {
+        $firstOptionId = Uuid::randomHex();
+        $secondOptionId = Uuid::randomHex();
+        $thirdOptionId = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedThirdVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.3',
+            'name' => 'FINDOLOGIC VARIANT 3',
+            'options' => [
+                ['id' => $thirdOptionId]
+            ],
+        ]);
+
+        return $this->createVisibleTestProductWithCustomVariants([
+            'id' => $parentId,
+            'active' => false,
+            'configuratorSettings' => [
+                [
+                    'option' => [
+                        'id' => $firstOptionId,
+                        'name' => 'Red',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $secondOptionId,
+                        'name' => 'Orange',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $thirdOptionId,
+                        'name' => 'Green',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+            ]
+        ], $variants);
+    }
+
+    public function createProductWithDifferentPriceVariants(
+        string $parentId,
+        float $parentPrice,
+        string $expectedFirstVariantId,
+        float $firstVariantPrice,
+        string $expectedSecondVariantId,
+        float $secondVariantPrice,
+        string $expectedThirdVariantId,
+        float $thirdVariantPrice
+    ): ?ProductEntity {
+        $firstOptionId = Uuid::randomHex();
+        $secondOptionId = Uuid::randomHex();
+        $thirdOptionId = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $firstVariantPrice,
+                    'net' => $firstVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $firstOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedSecondVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.2',
+            'name' => 'FINDOLOGIC VARIANT 2',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $secondVariantPrice,
+                    'net' => $secondVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $secondOptionId]
+            ],
+        ]);
+
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedThirdVariantId,
+            'parentId' => $parentId,
+            'productNumber' => 'FINDOLOGIC001.3',
+            'name' => 'FINDOLOGIC VARIANT 3',
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $thirdVariantPrice,
+                    'net' => $thirdVariantPrice,
+                    'linked' => false
+                ]
+            ],
+            'options' => [
+                ['id' => $thirdOptionId]
+            ],
+        ]);
+
+        return $this->createVisibleTestProductWithCustomVariants([
+            'id' => $parentId,
+            'active' => false,
+            'price' => [
+                [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $parentPrice,
+                    'net' => $parentPrice,
+                    'linked' => false
+                ]
+            ],
+            'configuratorSettings' => [
+                [
+                    'option' => [
+                        'id' => $firstOptionId,
+                        'name' => 'Red',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $secondOptionId,
+                        'name' => 'Orange',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+                [
+                    'option' => [
+                        'id' => $thirdOptionId,
+                        'name' => 'Green',
+                        'group' => [
+                            'id' => $optionGroupId,
+                            'name' => 'Color',
+                        ],
+                    ],
+                ],
+            ]
+        ], $variants);
+    }
+
     public function buildProductInfo(
         array $overrideData = [],
         bool $overrideRecursively = false,
