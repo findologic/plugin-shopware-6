@@ -2,37 +2,29 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Export;
+namespace FINDOLOGIC\FinSearch\Tests\Export\Debug;
 
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher;
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
 use FINDOLOGIC\FinSearch\Export\Errors\ExportErrors;
-use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
-use FINDOLOGIC\FinSearch\Utils\Utils;
-use PHPUnit\Framework\AssertionFailedError;
-use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Defaults;
-use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ProductServiceTest extends TestCase
 {
-    private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
-
     use ProductHelper;
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
     use ConfigHelper;
+
+    private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
     /** @var ProductDebugService */
     private $defaultDebugService;
@@ -147,11 +139,12 @@ class ProductServiceTest extends TestCase
         $this->assertSame($productId, $data['data']['product']['id']);
     }
 
-    public function testSiblingsAreSet(): void {
+    public function testSiblingsAreSet(): void
+    {
         $product = $this->createProductWithMultipleVariants();
         $firstChild = $product->getChildren()->first();
 
-        $xmlItem =new XMLItem($firstChild->getId());
+        $xmlItem = new XMLItem($firstChild->getId());
 
         $data = $this->defaultProductService->getDebugInformation(
             $firstChild->getId(),
@@ -165,7 +158,8 @@ class ProductServiceTest extends TestCase
         $this->assertCount(3, $json['data']['siblings']);
     }
 
-    public function testAssociationsSet(): void {
+    public function testAssociationsSet(): void
+    {
         $data = $this->getDebugInformation();
 
         $this->assertNotEmpty($data['data']['associations']);
@@ -175,8 +169,7 @@ class ProductServiceTest extends TestCase
         ?string $productId = null,
         ?string $mainProductId = null,
         ?bool $withXmlItem = true
-    ): array
-    {
+    ): array {
         $product = $this->createTestProduct([
             'id' => $productId ?? Uuid::randomHex(),
             'productNumber' => 'FINDOLOGIC1'
