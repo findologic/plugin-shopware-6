@@ -48,23 +48,6 @@ class ProductDebugController extends ExportController
         $this->productDebugService = $this->container->get(ProductDebugService::class);
     }
 
-    protected function getExportInstance(): Export
-    {
-        return Export::getInstance(
-            Export::TYPE_PRODUCT_ID,
-            $this->getRouter(),
-            $this->container,
-            $this->getLogger(),
-            $this->getEventDispatcher(),
-            $this->getPluginConfig()->getCrossSellingCategories()
-        );
-    }
-
-    protected function getExportConfigInstance(Request $request): ExportConfigurationBase
-    {
-        return DebugExportConfiguration::getInstance($request);
-    }
-
     protected function doExport(): Response
     {
         $this->warmUpDynamicProductGroups();
