@@ -136,4 +136,18 @@ class ProductDebugSearcherTest extends TestCase
             $this->defaultProductDebugSearcher->getProductById($variantId)->getId()
         );
     }
+
+    public function testGetSiblings(): void
+    {
+        $parent = $this->createProductWithMultipleVariants();
+
+        $this->assertSame(
+            3,
+            count($this->defaultProductDebugSearcher->getSiblings($parent->getId(), 100))
+        );
+        $this->assertSame(
+            1,
+            count($this->defaultProductDebugSearcher->getSiblings($parent->getId(), 1))
+        );
+    }
 }

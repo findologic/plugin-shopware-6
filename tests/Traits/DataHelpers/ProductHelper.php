@@ -82,19 +82,21 @@ trait ProductHelper
     }
 
     public function createProductWithMultipleVariants(
-        string $parentId,
-        string $expectedFirstVariantId,
-        string $expectedSecondVariantId,
-        string $expectedThirdVariantId
+        ?string $parentId = null,
+        ?string $expectedFirstVariantId = null,
+        ?string $expectedSecondVariantId = null,
+        ?string $expectedThirdVariantId = null
     ): ?ProductEntity {
         $firstOptionId = Uuid::randomHex();
         $secondOptionId = Uuid::randomHex();
         $thirdOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
+        $parentId = $parentId ?? Uuid::randomHex();
+
         $variants = [];
         $variants[] = $this->getBasicVariantData([
-            'id' => $expectedFirstVariantId,
+            'id' => $expectedFirstVariantId ?? Uuid::randomHex(),
             'parentId' => $parentId,
             'productNumber' => 'FINDOLOGIC001.1',
             'name' => 'FINDOLOGIC VARIANT 1',
@@ -104,7 +106,7 @@ trait ProductHelper
         ]);
 
         $variants[] = $this->getBasicVariantData([
-            'id' => $expectedSecondVariantId,
+            'id' => $expectedSecondVariantId ?? Uuid::randomHex(),
             'parentId' => $parentId,
             'productNumber' => 'FINDOLOGIC001.2',
             'name' => 'FINDOLOGIC VARIANT 2',
@@ -114,7 +116,7 @@ trait ProductHelper
         ]);
 
         $variants[] = $this->getBasicVariantData([
-            'id' => $expectedThirdVariantId,
+            'id' => $expectedThirdVariantId ?? Uuid::randomHex(),
             'parentId' => $parentId,
             'productNumber' => 'FINDOLOGIC001.3',
             'name' => 'FINDOLOGIC VARIANT 3',
