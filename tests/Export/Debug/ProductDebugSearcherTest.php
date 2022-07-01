@@ -6,17 +6,11 @@ namespace FINDOLOGIC\FinSearch\Tests\Export\Debug;
 
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher;
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
-use FINDOLOGIC\FinSearch\Findologic\MainVariant;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
-use FINDOLOGIC\FinSearch\Utils\Utils;
-use PHPUnit\Framework\AssertionFailedError;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Defaults;
-use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
