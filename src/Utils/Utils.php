@@ -133,7 +133,6 @@ class Utils
         );
     }
 
-
     public static function multiByteRawUrlEncode(string $string): string
     {
         $encoded = '';

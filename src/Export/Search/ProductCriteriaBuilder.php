@@ -196,7 +196,7 @@ class ProductCriteriaBuilder
         return $this;
     }
 
-    public function withProductIdFilter(?string $productId): self
+    public function withProductIdFilter(?string $productId, ?bool $considerVariants = false): self
     {
         if ($productId) {
             $productFilter = [
@@ -209,6 +209,10 @@ class ProductCriteriaBuilder
             // from throwing an exception in case it is not.
             if (Uuid::isValid($productId)) {
                 $productFilter[] = new EqualsFilter('id', $productId);
+
+                if ($considerVariants) {
+                    $productFilter[] = new EqualsFilter('parentId', $productId);
+                }
             }
 
             $this->criteria->addFilter(

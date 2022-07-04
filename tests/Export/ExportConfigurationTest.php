@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use FINDOLOGIC\FinSearch\Validators\DebugExportConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,7 @@ class ExportConfigurationTest extends TestCase
         $expectedStart = 0;
         $expectedCount = 100;
 
-        $request = new Request([
+        $request = $this->createRequest([
             'shopkey' => $expectedShopkey,
             'start' => $expectedStart,
             'count' => $expectedCount
@@ -36,7 +37,7 @@ class ExportConfigurationTest extends TestCase
         $expectedDefaultStart = 0;
         $expectedDefaultCount = 20;
 
-        $request = new Request([
+        $request = $this->createRequest([
             'shopkey' => 'ABCDABCDABCDABCDABCDABCDABCDABCD',
         ]);
 
@@ -50,7 +51,7 @@ class ExportConfigurationTest extends TestCase
     {
         $expectedProductId = '03cca9ceac4047e4b331b6827e245594';
 
-        $request = new Request([
+        $request = $this->createRequest([
             'shopkey' => 'ABCDABCDABCDABCDABCDABCDABCDABCD',
             'productId' => $expectedProductId
         ]);
@@ -105,7 +106,7 @@ class ExportConfigurationTest extends TestCase
     public function testInvalidConfigurationIsDetected(
         array $queryParams
     ): void {
-        $request = new Request($queryParams);
+        $request = $this->createRequest($queryParams);
         $config = ExportConfiguration::getInstance($request);
 
         try {
@@ -122,5 +123,36 @@ class ExportConfigurationTest extends TestCase
         $violations = $validator->validate($config);
 
         $this->assertGreaterThan(0, $violations->count());
+    }
+
+    public function pathProvider(): array
+    {
+        return [
+            'Export path' => [
+                'path' => 'findologic',
+                'expectedClass' => ExportConfiguration::class
+            ],
+            'Export debug path' => [
+                'path' => 'findologic/debug',
+                'expectedClass' => DebugExportConfiguration::class
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider pathProvider
+     */
+    public function testGetInstanceReturnsCorrectConfiguration(string $path, $expectedClass): void
+    {
+        $request = $this->createRequest([], $path);
+
+        $config = ExportConfiguration::getInstance($request);
+
+        $this->assertEquals($expectedClass, get_class($config));
+    }
+
+    private function createRequest(?array $query = [], ?string $path = 'findologic'): Request
+    {
+        return new Request($query, [], [], [], [], ['REQUEST_URI' => 'https://example.com/' . $path]);
     }
 }
