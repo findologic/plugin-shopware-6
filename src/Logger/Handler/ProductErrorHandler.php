@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Logger\Handler;
 
 use BadMethodCallException;
+use Exception;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductInvalidException;
 use FINDOLOGIC\FinSearch\Export\Errors\ExportErrors;
 use FINDOLOGIC\FinSearch\Export\Errors\ProductError;
@@ -88,6 +89,7 @@ class ProductErrorHandler implements HandlerInterface
             /** @var ProductInvalidException $exception */
             $exception = $record['context']['exception'];
             if (!$exception instanceof ProductInvalidException) {
+                $this->handleGeneralException($exception);
                 return;
             }
 
@@ -104,5 +106,10 @@ class ProductErrorHandler implements HandlerInterface
 
             $this->exportErrors->addProductError($productError);
         }
+    }
+
+    protected function handleGeneralException(Exception $e): void
+    {
+        $this->exportErrors->addGeneralError($e->getMessage());
     }
 }
