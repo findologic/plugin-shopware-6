@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Validators;
 
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class ExportConfiguration
+class ExportConfiguration extends ExportConfigurationBase
 {
     public const DEFAULT_START_PARAM = 0;
     public const DEFAULT_COUNT_PARAM = 20;
@@ -48,16 +47,6 @@ class ExportConfiguration
      * @var string|null
      */
     private $productId;
-
-    public static function getInstance(Request $request): ExportConfiguration
-    {
-        return new ExportConfiguration(
-            $request->query->get('shopkey', ''),
-            $request->query->getInt('start', self::DEFAULT_START_PARAM),
-            $request->query->getInt('count', self::DEFAULT_COUNT_PARAM),
-            $request->query->get('productId')
-        );
-    }
 
     public function __construct(string $shopkey, int $start, int $count, ?string $productId = null)
     {

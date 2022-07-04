@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Tests\Export;
+namespace FINDOLOGIC\FinSearch\Tests\Export\Search;
 
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;

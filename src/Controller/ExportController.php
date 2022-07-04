@@ -18,6 +18,7 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
+use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -65,10 +66,10 @@ class ExportController extends AbstractController
     /** @var EntityRepository */
     private $customerGroupRepository;
 
-    /** @var SalesChannelContext */
+    /** @var ?SalesChannelContext */
     private $salesChannelContext;
 
-    /** @var ExportConfiguration */
+    /** @var ExportConfigurationBase */
     private $exportConfig;
 
     /** @var ExportContext */
@@ -85,6 +86,9 @@ class ExportController extends AbstractController
 
     /** @var SalesChannelService|null */
     private $salesChannelService;
+
+    /** @var Config */
+    private $pluginConfig;
 
     /**
      * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
@@ -153,19 +157,19 @@ class ExportController extends AbstractController
      */
     protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
-        $this->exportConfig = ExportConfiguration::getInstance($request);
+        $this->exportConfig = ExportConfigurationBase::getInstance($request);
 
         $this->salesChannelService = $context ? $this->container->get(SalesChannelService::class) : null;
         $this->salesChannelContext = $this->salesChannelService ? $this->salesChannelService
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
 
-        $pluginConfig = $this->getPluginConfig();
+        $this->pluginConfig = $this->buildPluginConfig();
 
         $this->productService = ProductService::getInstance(
             $this->container,
             $this->salesChannelContext,
-            $pluginConfig
+            $this->pluginConfig
         );
 
         $this->export = Export::getInstance(
@@ -174,7 +178,7 @@ class ExportController extends AbstractController
             $this->container,
             $this->logger,
             $this->eventDispatcher,
-            $pluginConfig->getCrossSellingCategories()
+            $this->pluginConfig->getCrossSellingCategories()
         );
 
         // No need to initialize components relying on the sales channel context.
@@ -271,7 +275,7 @@ class ExportController extends AbstractController
 
     protected function validateStateAndGetErrorMessages(): array
     {
-        $messages = $this->validateExportConfiguration($this->exportConfig);
+        $messages = $this->validateExportConfiguration();
         if (count($messages) > 0) {
             return $messages;
         }
@@ -300,10 +304,10 @@ class ExportController extends AbstractController
         return $dynamicProductGroupService->getDynamicProductGroupsTotal();
     }
 
-    private function validateExportConfiguration(ExportConfiguration $config): array
+    private function validateExportConfiguration(): array
     {
         $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
-        $violations = $validator->validate($config);
+        $violations = $validator->validate($this->exportConfig);
 
         $messages = [];
         if ($violations->count() > 0) {
@@ -315,7 +319,7 @@ class ExportController extends AbstractController
         return $messages;
     }
 
-    private function getPluginConfig(): Config
+    private function buildPluginConfig(): Config
     {
         /** @var Config $config */
         $config = $this->container->get(Config::class);
@@ -388,5 +392,65 @@ class ExportController extends AbstractController
         }
 
         return false;
+    }
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
+    }
+
+    public function getRouter(): Router
+    {
+        return $this->router;
+    }
+
+    public function getHeaderHandler(): HeaderHandler
+    {
+        return $this->headerHandler;
+    }
+
+    public function getCache(): CacheItemPoolInterface
+    {
+        return $this->cache;
+    }
+
+    public function getEventDispatcher(): EventDispatcherInterface
+    {
+        return $this->eventDispatcher;
+    }
+
+    public function getCustomerGroupRepository(): EntityRepository
+    {
+        return $this->customerGroupRepository;
+    }
+
+    public function getSalesChannelContext(): ?SalesChannelContext
+    {
+        return $this->salesChannelContext;
+    }
+
+    public function getExportConfig(): ExportConfigurationBase
+    {
+        return $this->exportConfig;
+    }
+
+    public function getExportContext(): ExportContext
+    {
+        return $this->exportContext;
+    }
+
+    public function getProductSearcher(): ProductSearcher
+    {
+        return $this->productSearcher;
+    }
+
+    public function getExport(): Export
+    {
+        return $this->export;
+    }
+
+    public function getPluginConfig(): Config
+    {
+        return $this->pluginConfig;
     }
 }
