@@ -1,5 +1,8 @@
-# NEXT
+# 3.1.0
+- [SW-659] Eine neue Route für Export Debug Informationen wurde hinzugefügt (`/findologic/debug`)
 - [SW-442] ESLint für unsere JavaScript Dateien hinzugefügt
+- [PH-672] Shopware 6.4.13.0 wurde zur Test-Matrix hinzugefügt.
+- Downgrade der verwendeten Composer Version im internen Test-Runner.
 
 # 3.0.0
 - Diese Version ist ein Major Release und enthält damit brechende Änderungen, wenn ein Erweiterungsplugin installiert ist.
