@@ -77,6 +77,23 @@
           "cheapest": {
             "label": "Günstigste Variante"
           }
+        },
+        "advancedPricing": {
+          "label": "Erweitere Preise",
+          "tooltipText": "Welche erweiterten Preise sollten berücksichtigt werden?",
+          "off": {
+              "label": "Keine erweiterten Preise"
+          },
+          "cheapest": {
+              "label": "Günstigster Preis"
+          },
+          "unit": {
+              "label": "Preis beim Kauf von einer Einheit"
+          }
+        },
+        "exportZeroPricedProducts": {
+          "label": "Produkte ohne Preis exportieren",
+          "tooltipText": "Wenn deaktiviert, werden alle Produkte/Varianten mit einem Preis von 0 ausgeschlossen. Wenn das Hauptprodukt einen Preis von 0 hat, werden Varianten mit Preis trotzdem noch berücksichtigt."
         }
       },
       "titleSuccess": "Erfolgreich",

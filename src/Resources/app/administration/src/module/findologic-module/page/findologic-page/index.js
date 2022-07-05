@@ -128,14 +128,7 @@ Component.register('findologic-page', {
             if ((this.selectedSalesChannelId && this.selectedLanguageId)) {
                 this.isLoading = true;
                 this.readAll().then((values) => {
-                    if (!values['FinSearch.config.filterPosition']) {
-                        values['FinSearch.config.filterPosition'] = 'top';
-                    }
-                    if (!values['FinSearch.config.mainVariant']) {
-                        values['FinSearch.config.mainVariant'] = 'default';
-                    }
-
-                    this.actualConfigData = values;
+                    this.actualConfigData = this.setDefaultsOfNewConfigurations(values);
                     this.isLoading = false;
                 });
             }
@@ -152,6 +145,23 @@ Component.register('findologic-page', {
                     this.salesChannel = res;
                 });
             }
+        },
+
+        setDefaultsOfNewConfigurations(values) {
+            if (!values['FinSearch.config.filterPosition']) {
+                values['FinSearch.config.filterPosition'] = 'top';
+            }
+            if (!values['FinSearch.config.mainVariant']) {
+                values['FinSearch.config.mainVariant'] = 'default';
+            }
+            if (!values['FinSearch.config.advancedPricing']) {
+                values['FinSearch.config.advancedPricing'] = 'off';
+            }
+            if (!values['FinSearch.config.exportZeroPricedProducts']) {
+                values['FinSearch.config.exportZeroPricedProducts'] = false;
+            }
+
+            return values;
         },
 
         /**

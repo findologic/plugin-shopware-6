@@ -77,6 +77,23 @@
           "cheapest": {
             "label": "Cheapest variant"
           }
+        },
+        "advancedPricing": {
+          "label": "Considered advanced pricing",
+          "tooltipText": "Select which advanced price should be considered, or not at all",
+          "off": {
+              "label": "No advanced pricing"
+          },
+          "cheapest": {
+              "label": "Cheapest unit price"
+          },
+          "unit": {
+              "label": "Price when buying one unit"
+          }
+        },
+        "exportZeroPricedProducts": {
+          "label": "Export products without price",
+          "tooltipText": "If deactivated, products and variants with a price of 0 are excluded from the export. When parent products have a price of 0, variants with a price are still considered."
         }
       },
       "titleSuccess": "Success",

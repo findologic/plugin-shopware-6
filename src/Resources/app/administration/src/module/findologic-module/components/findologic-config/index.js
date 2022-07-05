@@ -106,6 +106,23 @@ Component.register('findologic-config', {
             ];
         },
 
+        advancedPricingOptions() {
+            return [
+                {
+                    label: this.$tc('findologic.settingForm.config.advancedPricing.off.label'),
+                    value: 'off',
+                },
+                {
+                    label: this.$tc('findologic.settingForm.config.advancedPricing.cheapest.label'),
+                    value: 'cheapest',
+                },
+                {
+                    label: this.$tc('findologic.settingForm.config.advancedPricing.unit.label'),
+                    value: 'unit',
+                },
+            ];
+        },
+
         integrationType() {
             return this.actualConfigData['FinSearch.config.integrationType'];
         },
