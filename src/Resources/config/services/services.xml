@@ -44,6 +44,7 @@
             <argument type="service" id="serializer.mapping.cache.symfony" />
             <argument type="service" id="event_dispatcher" />
             <argument type="service" id="customer_group.repository" />
+            <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ProductDebugController" public="true">
@@ -133,6 +134,7 @@
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter" public="true">
             <argument type="service" id="fin_search.sales_channel_context" />
             <argument type="service" id="fin_search.export_context" />
+            <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\DefaultPropertiesAdapter" public="true">

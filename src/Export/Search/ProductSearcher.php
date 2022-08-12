@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
+use FINDOLOGIC\FinSearch\Findologic\AdvancedPricing;
 use FINDOLOGIC\FinSearch\Findologic\MainVariant;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use InvalidArgumentException;
@@ -132,6 +133,7 @@ class ProductSearcher
     ): Criteria {
         $this->productCriteriaBuilder->withDefaultCriteria($limit, $offset, $productId);
         $this->adaptCriteriaBasedOnConfiguration();
+        $this->adaptAdvancedPricing();
 
         return $this->productCriteriaBuilder->build();
     }
@@ -165,6 +167,14 @@ class ProductSearcher
     {
         $this->productCriteriaBuilder
             ->withActiveParentOrInactiveParentWithVariantsFilter();
+    }
+
+    protected function adaptAdvancedPricing(): void
+    {
+        $advancedPricing = $this->config->getAdvancedPricing();
+        if ($advancedPricing !== AdvancedPricing::OFF) {
+            $this->productCriteriaBuilder->withAdvancedPricing($advancedPricing);
+        }
     }
 
     protected function getCheapestProducts(ProductCollection $products): EntitySearchResult
@@ -236,6 +246,8 @@ class ProductSearcher
             ->withChildCriteria($productId)
             ->withProductAssociations();
 
+        $this->adaptAdvancedPricing();
+
         return $this->productRepository->search(
             $this->productCriteriaBuilder->build(),
             $this->salesChannelContext->getContext()
@@ -260,6 +272,8 @@ class ProductSearcher
             ->withIds($productIds)
             ->withDefaultCriteria()
             ->withVisibilityFilter();
+
+        $this->adaptAdvancedPricing();
 
         return $this->productRepository->search(
             $this->productCriteriaBuilder->build(),

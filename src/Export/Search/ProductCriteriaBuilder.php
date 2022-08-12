@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
+use FINDOLOGIC\FinSearch\Findologic\AdvancedPricing;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
@@ -21,19 +24,21 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ProductCriteriaBuilder
 {
-    /**
-     * @var SalesChannelContext
-     */
+    protected const WHITELISTED_RULE_CONDITIONS = [
+        'alwaysValid',
+        'currency',
+        'customerCustomerGroup',
+        'language',
+        'salesChannel',
+    ];
+
+    /** @var SalesChannelContext */
     protected $salesChannelContext;
 
-    /**
-     * @var SystemConfigService
-     */
+    /**  @var SystemConfigService */
     protected $systemConfigService;
 
-    /**
-     * @var Criteria
-     */
+    /** @var Criteria */
     protected $criteria;
 
     public function __construct(SalesChannelContext $salesChannelContext, SystemConfigService $systemConfigService)
@@ -348,5 +353,31 @@ class ProductCriteriaBuilder
             $this->salesChannelContext->getSalesChannel()->getId(),
             ProductVisibilityDefinition::VISIBILITY_SEARCH
         );
+    }
+
+    public function withAdvancedPricing(string $advancedPricing): self
+    {
+        $this->criteria->addAssociation('prices.rule.conditions');
+        $prices = $this->criteria->getAssociation('prices');
+
+        if ($advancedPricing === AdvancedPricing::UNIT) {
+            $prices->addFilter(
+                new EqualsFilter('quantityStart', 1)
+            );
+        } elseif ($advancedPricing === AdvancedPricing::CHEAPEST) {
+            $prices->addGroupField(new FieldGrouping('ruleId'));
+//            $prices->addFilter(
+//                new NotFilter(
+//                    NotFilter::CONNECTION_AND,
+//                    [new EqualsFilter('displayGroup', null)]
+//                )
+//            );
+        }
+
+        $prices->addFilter(
+            new EqualsAnyFilter('rule.conditions.type', self::WHITELISTED_RULE_CONDITIONS)
+        );
+
+        return $this;
     }
 }
