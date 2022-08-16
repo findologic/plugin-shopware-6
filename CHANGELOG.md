@@ -1,5 +1,8 @@
-# NEXT
-- [SW-442] Add linting for the JavaScript files
+# 3.1.0
+- [SW-659] Introduced a new route for export debug information (`/findologic/debug`)
+- [SW-442] Add linting for the JavaScript files.
+- [PH-672] Add 6.4.13.0 to the tested versions in our internal test runner.
+- Downgrade the used composer version in our internal test runner.
 
 # 3.0.0
 - This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
