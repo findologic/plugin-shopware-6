@@ -124,7 +124,7 @@ class PriceAdapter
 
             $this->calculator->calculate([$product], $salesChannelContext);
 
-            dump($product->get('calculatedPrices'));
+            dd($product->get('calculatedPrices'));
         }
 
         $this->calculator->calculate([$product], $salesChannelContext);
