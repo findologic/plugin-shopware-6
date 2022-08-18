@@ -48,7 +48,8 @@ class SalesChannelService
      */
     public function getSalesChannelContext(
         SalesChannelContext $currentContext,
-        string $shopkey
+        string $shopkey,
+        ?string $customerId = null
     ): ?SalesChannelContext {
         $systemConfigEntities = $this->systemConfigRepository->search(
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
@@ -61,7 +62,10 @@ class SalesChannelService
                 return $this->salesChannelContextFactory->create(
                     $currentContext->getToken(),
                     $systemConfigEntity->getSalesChannelId(),
-                    [SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId()]
+                    [
+                        SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId(),
+                        SalesChannelContextService::CUSTOMER_ID => $customerId
+                    ]
                 );
             }
         }

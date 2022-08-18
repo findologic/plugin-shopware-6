@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Export\Adapters;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
+use FINDOLOGIC\FinSearch\Export\Provider\CustomerGroupSalesChannelProvider;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Aggregate\ProductPrice\ProductPriceEntity;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -30,15 +31,21 @@ class PriceAdapter
 
     /** @var ProductPriceCalculator */
     protected $calculator;
+    /**
+     * @var CustomerGroupSalesChannelProvider
+     */
+    private $customerGroupSalesChannelProvider;
 
     public function __construct(
         SalesChannelContext $salesChannelContext,
         ExportContext $exportContext,
-        ProductPriceCalculator $productPriceCalculator
+        ProductPriceCalculator $productPriceCalculator,
+        CustomerGroupSalesChannelProvider $customerGroupSalesChannelProvider
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->exportContext = $exportContext;
         $this->calculator = $productPriceCalculator ;
+        $this->customerGroupSalesChannelProvider = $customerGroupSalesChannelProvider;
     }
 
     /**
@@ -104,8 +111,23 @@ class PriceAdapter
      */
     public function getAdvancedPricesFromProduct(ProductEntity $product): array
     {
-        dump($this->salesChannelContext);
-        $this->calculator->calculate([$product], $this->salesChannelContext);
+        foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
+           $salesChannelContext = $this->customerGroupSalesChannelProvider->getSalesChannelForUserGroup(
+               $this->salesChannelContext,
+               $customerGroup->getId(),
+               $this->exportContext->getShopkey()
+           );
+
+           if (!$salesChannelContext) {
+               continue;
+           }
+
+            $this->calculator->calculate([$product], $salesChannelContext);
+
+            dump($product->get('calculatedPrices'));
+        }
+
+        $this->calculator->calculate([$product], $salesChannelContext);
 
         $prices = [];
         $productPrice = $product->getPrice();

@@ -135,6 +135,8 @@
             <argument type="service" id="fin_search.sales_channel_context" />
             <argument type="service" id="fin_search.export_context" />
             <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Provider\CustomerGroupSalesChannelProvider" />
+
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\DefaultPropertiesAdapter" public="true">
@@ -200,6 +202,20 @@
             <argument type="service" id="fin_search.sales_channel_context" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Search\CustomerSearcher" public="true">
+            <argument type="service" id="customer.repository"/>
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Provider\AdvancedPriceRulesProvider" public="true">
+            <argument type="service" id="Shopware\Core\Checkout\Cart\CartRuleLoader" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Provider\CustomerGroupSalesChannelProvider" public="true">
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Provider\AdvancedPriceRulesProvider" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\SalesChannelService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Search\CustomerSearcher" />
         </service>
 
         <service id="fin_search.sales_channel_context" synthetic="true" public="true" />
