@@ -123,7 +123,7 @@ class UrlBuilderService
      */
     protected function getProductSeoPath(ProductEntity $product): ?string
     {
-        $allSeoUrls = $product->getSeoUrls();
+        $allSeoUrls = $this->removeInvalidUrls($product->getSeoUrls()->getElements());
         if (!$allSeoUrls) {
             return null;
         }
@@ -140,6 +140,20 @@ class UrlBuilderService
         $seoUrl = $canonicalSeoUrl ?? $seoUrls->first();
 
         return ltrim($seoUrl->getSeoPathInfo(), '/');
+    }
+
+    /**
+     * Filters the given collection to only return entities with valid url.
+     */
+    public function removeInvalidUrls(array $seoUrls): SeoUrlCollection
+    {
+        foreach ($seoUrls as $key => $seoUrl) {
+            $urlStr = $seoUrl->getSeoPathInfo();
+            if (!filter_var(sprintf('https://dummy.com%s"', $urlStr), FILTER_VALIDATE_URL)) {
+                unset($seoUrls[$key]);
+            }
+        }
+        return new SeoUrlCollection($seoUrls);
     }
 
     /**
