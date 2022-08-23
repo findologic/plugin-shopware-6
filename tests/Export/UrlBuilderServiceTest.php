@@ -4,55 +4,48 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
-use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
-use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ImageHelper;
-use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\OrderHelper;
+use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
+use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
-use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
-use PHPUnit\Framework\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
-
-use function array_map;
-use function current;
-use function explode;
-use function getenv;
-use function implode;
-use function parse_url;
-
+use PHPUnit\Framework\MockObject\MockObject;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\Routing\RouterInterface;
 
 class UrlBuilderServiceTest extends TestCase
 {
-//    use SalesChannelHelper;
-//    use RandomIdHelper;
-//    use IntegrationTestBehaviour;
-    use RandomIdHelper;
+    use IntegrationTestBehaviour;
     use ProductHelper;
-    use ConfigHelper;
     use SalesChannelHelper;
-    use OrderHelper;
-    use ImageHelper;
-
 
     /** @var SalesChannelContext */
     private $salesChannelContext;
 
+    /** @var RouterInterface|MockObject */
+    private $urlBuilderService;
 
     protected function setUp(): void
     {
         parent::setUp();
-//        $this->salesChannelContext = $this->buildSalesChannelContext();
-//        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
+
+        $routerMock = $this->getMockBuilder(RouterInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        /** @var EntityRepository $categoryRepository */
+        $categoryRepository = $this->getContainer()->get('category.repository');
+        $this->salesChannelContext = $this->buildSalesChannelContext();
+
+        $this->urlBuilderService = new UrlBuilderService($routerMock, $categoryRepository);
+        $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
     }
 
     public function testRemoveInvalidUrls(): void
     {
+        $product = $this->createTestProduct();
+        $allowedUrl = $this->urlBuilderService->removeInvalidUrls($product->getSeoUrls()->getElements());
 
-//        $urlBuilderService = $this->getContainer()->get(UrlBuilderService::class);
-//        $urlBuilderService->setSalesChannelContext($this->salesChannelContext);
-
-//        $product = $this->createTestProduct();
-//        $allowedUrl = $urlBuilderService->removeInvalidUrls([]);
-
-        $this->assertSame(0, 0);
+        $this->assertSame(2, $allowedUrl->count());
     }
 }
