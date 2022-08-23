@@ -137,7 +137,7 @@ class UrlBuilderService
         $canonicalSeoUrl = $seoUrls->filter(function (SeoUrlEntity $entity) {
             return $entity->getIsCanonical();
         })->first();
-        $seoUrl = $canonicalSeoUrl ?? $canonicalSeoUrl->first();
+        $seoUrl = $canonicalSeoUrl ?? $seoUrls->first();
 
         return ltrim($seoUrl->getSeoPathInfo(), '/');
     }
