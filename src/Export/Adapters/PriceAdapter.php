@@ -8,21 +8,16 @@ use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\Provider\CustomerGroupSalesChannelProvider;
+use FINDOLOGIC\FinSearch\Export\Provider\PriceBasedOnConfigurationProvider;
+use FINDOLOGIC\FinSearch\Findologic\AdvancedPricing;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Shopware\Core\Content\Product\Aggregate\ProductPrice\ProductPriceEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
-use Shopware\Core\Content\Rule\Aggregate\RuleCondition\RuleConditionEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class PriceAdapter
 {
-    protected const WHITELISTED_RULE_CONDITIONS = [
-        'customerCustomerGroup',
-        'orContainer',
-        'andContainer'
-    ];
-
     /** @var SalesChannelContext */
     protected $salesChannelContext;
 
@@ -31,21 +26,30 @@ class PriceAdapter
 
     /** @var ProductPriceCalculator */
     protected $calculator;
-    /**
-     * @var CustomerGroupSalesChannelProvider
-     */
+
+    /** @var CustomerGroupSalesChannelProvider */
     private $customerGroupSalesChannelProvider;
+
+    /** @var PriceBasedOnConfigurationProvider */
+    private $priceBasedOnConfigurationProvider;
+
+    /** @var Config */
+    private $config;
 
     public function __construct(
         SalesChannelContext $salesChannelContext,
         ExportContext $exportContext,
         ProductPriceCalculator $productPriceCalculator,
-        CustomerGroupSalesChannelProvider $customerGroupSalesChannelProvider
+        CustomerGroupSalesChannelProvider $customerGroupSalesChannelProvider,
+        PriceBasedOnConfigurationProvider $priceBasedOnConfigurationProvider,
+        Config $config
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->exportContext = $exportContext;
         $this->calculator = $productPriceCalculator ;
         $this->customerGroupSalesChannelProvider = $customerGroupSalesChannelProvider;
+        $this->priceBasedOnConfigurationProvider = $priceBasedOnConfigurationProvider;
+        $this->config = $config;
     }
 
     /**
@@ -54,7 +58,12 @@ class PriceAdapter
      */
     public function adapt(ProductEntity $product): array
     {
-        $prices = $this->getAdvancedPricesFromProduct($product);
+        if ($this->config->getAdvancedPricing() === AdvancedPricing::OFF) {
+            $prices = $this->getPricesFromProduct($product);
+        } else {
+            $prices = $this->getAdvancedPricesFromProduct($product);
+        }
+
         if (Utils::isEmpty($prices)) {
             throw new ProductHasNoPricesException($product);
         }
@@ -111,73 +120,58 @@ class PriceAdapter
      */
     public function getAdvancedPricesFromProduct(ProductEntity $product): array
     {
+        $prices = [];
+
         foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
-           $salesChannelContext = $this->customerGroupSalesChannelProvider->getSalesChannelForUserGroup(
-               $this->salesChannelContext,
-               $customerGroup->getId(),
-               $this->exportContext->getShopkey()
-           );
+            $price = $this->getAdvancedPrice($product, $customerGroup->getId());
 
-           if (!$salesChannelContext) {
-               continue;
-           }
+            if (!$price) {
+                continue;
+            }
 
-            $this->calculator->calculate([$product], $salesChannelContext);
+            $prices[] = $price;
+        }
 
-            dd($product->get('calculatedPrices'));
+        $price = $this->getAdvancedPrice($product, null);
+
+        if (!$price) {
+            return $prices;
+        }
+
+        $prices[] = $price;
+
+        return $prices;
+    }
+
+    protected function getAdvancedPrice(ProductEntity $product, ?string $customerGroupId): ?Price
+    {
+        $salesChannelContext = $this->customerGroupSalesChannelProvider->getSalesChannelForUserGroup(
+            $this->salesChannelContext,
+            $customerGroupId,
+            $this->exportContext->getShopkey()
+        );
+
+        if (!$salesChannelContext) {
+            return null;
         }
 
         $this->calculator->calculate([$product], $salesChannelContext);
 
-        $prices = [];
-        $productPrice = $product->getPrice();
-        $productPrices = $product->getPrices() ? $product->getPrices()->getElements() : null;
+        $advancedPrice = $this->priceBasedOnConfigurationProvider->getPriceBasedOnConfiguration(
+            $product->get('calculatedPrices')
+        );
 
-        $foundRules = [];
-        $cheapestCustomerGroupPrices = $product->getPrices()->filter(function (ProductPriceEntity $price) use (&$foundRules) {
-            /** @var RuleConditionEntity $condition */
-            foreach ($price->getRule()->getConditions() as $condition) {
-                if (!in_array($condition->getType(), self::WHITELISTED_RULE_CONDITIONS)) {
-                    return false;
-                }
-            }
+        $price = new Price();
 
-            if ($price->getQuantityStart() > 1) {
-                return false;
-            }
+        if (!$customerGroupId) {
+            $price->setValue(round($advancedPrice->getUnitPrice(), 2));
 
-            $currentPrice = $price->getPrice()->first()->getGross();
-            dump($foundRules);
-            if (key_exists($price->getRuleId(), $foundRules)) {
-                $foundPrice = $foundRules[$price->getRuleId()];
-
-                if ($foundPrice > $currentPrice) {
-                    $foundRules[$price->getRuleId()] = $currentPrice;
-                } else {
-                    return false;
-                }
-            } else {
-                $foundRules[$price->getRuleId()] = $currentPrice;
-            }
-            return true;
-        });
-
-        dump($cheapestCustomerGroupPrices);
-
-        if (!$productPrice || !$productPrice->first()) {
-            return [];
+            return $price;
         }
 
-        // Sorting in the criteria is not working in combination of the condition filter
-        usort($productPrices, function(ProductPriceEntity $a, ProductPriceEntity $b) {
-            return $a->getRule()->getPriority() < $b->getRule()->getPriority();
-        });
+        $userGroupHash = Utils::calculateUserGroupHash($this->exportContext->getShopkey(), $customerGroupId);
+        $price->setValue(round($advancedPrice->getUnitPrice(), 2), $userGroupHash);
 
-        $calculatedPrices = $product->get('calculatedPrices');
-        usort($productPrices, function(ProductPriceEntity $a, ProductPriceEntity $b) {
-            return $a->getRule()->getPriority() < $b->getRule()->getPriority();
-        });
-
-        dd($product->getId(), $product->get('calculatedPrices'), $productPrices);
+        return $price;
     }
 }

@@ -13,13 +13,15 @@ class ProductDebugSearcher extends ProductSearcher
 {
     public function buildCriteria(?int $limit = null, ?int $offset = null, ?string $productId = null): Criteria
     {
+        $shouldExportZeroPricedProducts = $this->config->shouldExportZeroPricedProducts();
+
         $this->productCriteriaBuilder->withCreatedAtSorting()
             ->withIdSorting()
             ->withPagination($limit, $offset)
             ->withProductIdFilter($productId, true)
             ->withOutOfStockFilter()
             ->withProductAssociations();
-        $this->adaptCriteriaBasedOnConfiguration();
+        $this->adaptCriteriaBasedOnConfiguration($shouldExportZeroPricedProducts);
 
         return $this->productCriteriaBuilder->build();
     }

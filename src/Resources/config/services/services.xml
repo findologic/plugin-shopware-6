@@ -136,7 +136,8 @@
             <argument type="service" id="fin_search.export_context" />
             <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Provider\CustomerGroupSalesChannelProvider" />
-
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Provider\PriceBasedOnConfigurationProvider" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\DefaultPropertiesAdapter" public="true">
@@ -182,6 +183,7 @@
         <service id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" public="true">
             <argument type="service" id="fin_search.sales_channel_context" />
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Search\ProductSearcher" public="true">
@@ -210,6 +212,10 @@
 
         <service id="FINDOLOGIC\FinSearch\Export\Provider\AdvancedPriceRulesProvider" public="true">
             <argument type="service" id="Shopware\Core\Checkout\Cart\CartRuleLoader" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Provider\PriceBasedOnConfigurationProvider" public="true">
+            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Provider\CustomerGroupSalesChannelProvider" public="true">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
 use FINDOLOGIC\FinSearch\Findologic\AdvancedPricing;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -24,14 +25,6 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ProductCriteriaBuilder
 {
-    protected const WHITELISTED_RULE_CONDITIONS = [
-        'alwaysValid',
-        'currency',
-        'customerCustomerGroup',
-        'language',
-        'salesChannel',
-    ];
-
     /** @var SalesChannelContext */
     protected $salesChannelContext;
 
@@ -41,10 +34,17 @@ class ProductCriteriaBuilder
     /** @var Criteria */
     protected $criteria;
 
-    public function __construct(SalesChannelContext $salesChannelContext, SystemConfigService $systemConfigService)
-    {
+    /** @var Config */
+    private $config;
+
+    public function __construct(
+        SalesChannelContext $salesChannelContext,
+        SystemConfigService $systemConfigService,
+        Config $config
+    ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->systemConfigService = $systemConfigService;
+        $this->config = $config;
         $this->reset();
     }
 
@@ -247,6 +247,10 @@ class ProductCriteriaBuilder
 
     public function withPriceZeroFilter(): self
     {
+        if ($this->config->shouldExportZeroPricedProducts()) {
+            return $this;
+        }
+
         $this->criteria->addFilter(
             new RangeFilter('price', [
                 RangeFilter::GT => 0
@@ -262,7 +266,7 @@ class ProductCriteriaBuilder
             MultiFilter::CONNECTION_OR,
             [
                 new EqualsFilter('active', false),
-                new EqualsFilter('price', 0)
+                $this->config->shouldExportZeroPricedProducts() === false?? new EqualsFilter('price', 0)
             ]
         );
 
@@ -271,7 +275,7 @@ class ProductCriteriaBuilder
             [
                 new EqualsFilter('parentId', null),
                 new EqualsFilter('active', true),
-                new RangeFilter('price', [RangeFilter::GT => 0])
+                $this->config->shouldExportZeroPricedProducts() === false ?? new RangeFilter('price', [RangeFilter::GT => 0])
             ]
         );
 
@@ -358,25 +362,6 @@ class ProductCriteriaBuilder
     public function withAdvancedPricing(string $advancedPricing): self
     {
         $this->criteria->addAssociation('prices.rule.conditions');
-        $prices = $this->criteria->getAssociation('prices');
-
-        if ($advancedPricing === AdvancedPricing::UNIT) {
-            $prices->addFilter(
-                new EqualsFilter('quantityStart', 1)
-            );
-        } elseif ($advancedPricing === AdvancedPricing::CHEAPEST) {
-            $prices->addGroupField(new FieldGrouping('ruleId'));
-//            $prices->addFilter(
-//                new NotFilter(
-//                    NotFilter::CONNECTION_AND,
-//                    [new EqualsFilter('displayGroup', null)]
-//                )
-//            );
-        }
-
-        $prices->addFilter(
-            new EqualsAnyFilter('rule.conditions.type', self::WHITELISTED_RULE_CONDITIONS)
-        );
 
         return $this;
     }

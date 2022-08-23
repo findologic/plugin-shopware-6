@@ -22,8 +22,10 @@ class CustomerSearcher
         $this->customerRepository = $customerRepository;
     }
 
-    public function getSingleCustomerIdByGroup(SalesChannelContext $salesChannelContext, string $customerGroupId): ?string
-    {
+    public function getSingleCustomerIdByGroup(
+        SalesChannelContext $salesChannelContext,
+        string $customerGroupId
+    ): ?string {
         $criteria = new Criteria();
 
         $criteria->addFilter(

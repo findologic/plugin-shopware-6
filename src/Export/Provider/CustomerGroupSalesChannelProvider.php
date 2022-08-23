@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Provider;
 
@@ -17,9 +17,7 @@ class CustomerGroupSalesChannelProvider
     /** @var CustomerSearcher */
     private $customerSearcher;
 
-    /**
-     * @var AdvancedPriceRulesProvider
-     */
+    /** @var AdvancedPriceRulesProvider */
     private $advancedPriceRulesProvider;
 
     public function __construct(
@@ -34,16 +32,20 @@ class CustomerGroupSalesChannelProvider
 
     public function getSalesChannelForUserGroup(
         SalesChannelContext $salesChannelContext,
-        string $customerGroup,
+        ?string $customerGroup,
         string $shopKey
     ): ?SalesChannelContext {
-        $customerId = $this->customerSearcher->getSingleCustomerIdByGroup(
-            $salesChannelContext,
-            $customerGroup
-        );
+        $customerId = null;
 
-        if (!$customerId) {
-            return null;
+        if ($customerGroup) {
+            $customerId = $this->customerSearcher->getSingleCustomerIdByGroup(
+                $salesChannelContext,
+                $customerGroup
+            );
+
+            if (!$customerId) {
+                return null;
+            }
         }
 
         $salesChannelContext = $this->salesChannelService->getSalesChannelContext(
@@ -58,5 +60,4 @@ class CustomerGroupSalesChannelProvider
 
         return $salesChannelContext;
     }
-
 }
