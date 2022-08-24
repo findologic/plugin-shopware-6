@@ -12,6 +12,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
 use Symfony\Component\Routing\RouterInterface;
 
 class UrlBuilderServiceTest extends TestCase
@@ -43,9 +44,21 @@ class UrlBuilderServiceTest extends TestCase
 
     public function testRemoveInvalidUrls(): void
     {
-        $product = $this->createTestProduct();
-        $allowedUrl = $this->urlBuilderService->removeInvalidUrls($product->getSeoUrls()->getElements());
+        $seoPathInfos = [
+            '/failed seo url with spaces',
+            'failedSeoUrlWithoutSlash',
+            '/correctSeoUrl-One',
+            '/correctSeoUrlTwo'
+        ];
+        $seoUrlCollection = [];
+        foreach ($seoPathInfos as $seoPathInfo) {
+            $seoUrlEntity = new SeoUrlEntity();
+            $seoUrlEntity->setSeoPathInfo($seoPathInfo);
+            $seoUrlEntity->setId($seoPathInfo);
+            array_push($seoUrlCollection, $seoUrlEntity);
+        }
+        $allowedUrls = $this->urlBuilderService->removeInvalidUrls($seoUrlCollection);
 
-        $this->assertSame(2, $allowedUrl->count());
+        $this->assertSame(2, $allowedUrls->count());
     }
 }
