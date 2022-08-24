@@ -48,4 +48,12 @@ class UrlBuilderServiceTest extends TestCase
 
         $this->assertSame(2, $allowedUrl->count());
     }
+
+    public function testGetProductSeoPath(): void
+    {
+        $product = $this->createTestProduct();
+        $seoUrl = $this->urlBuilderService->getProductSeoPath($product);
+
+        $this->assertSame('FINDOLOGIC-Product-EN/FINDOLOGIC001', $seoUrl);
+    }
 }
