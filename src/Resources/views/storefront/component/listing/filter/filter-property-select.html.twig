@@ -43,3 +43,10 @@
         </span>
     {% endif %}
 {% endblock %}
+
+{% block component_filter_property_select_preview_list_item_label_element %}
+    {% if context.context.extensions.findologicService.enabled %}
+        {% set id = element.uuid %}
+    {% endif %}
+    {{ parent() }}
+{% endblock %}
