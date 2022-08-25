@@ -262,21 +262,16 @@ class ProductCriteriaBuilder
 
     public function withActiveParentOrInactiveParentWithVariantsFilter(): self
     {
+        $filtersBasedOnConfiguration = $this->getFiltersBasedOnPriceConfiguration();
+
         $notActiveOrPriceZeroFilter = new MultiFilter(
             MultiFilter::CONNECTION_OR,
-            [
-                new EqualsFilter('active', false),
-                $this->config->shouldExportZeroPricedProducts() === false?? new EqualsFilter('price', 0)
-            ]
+            $filtersBasedOnConfiguration['notActive']
         );
 
         $activeParentFilter =  new MultiFilter(
             MultiFilter::CONNECTION_AND,
-            [
-                new EqualsFilter('parentId', null),
-                new EqualsFilter('active', true),
-                $this->config->shouldExportZeroPricedProducts() === false ?? new RangeFilter('price', [RangeFilter::GT => 0])
-            ]
+            $filtersBasedOnConfiguration['active']
         );
 
         /**
@@ -326,6 +321,36 @@ class ProductCriteriaBuilder
                 ]
             )
         );
+    }
+
+    protected function getFiltersBasedOnPriceConfiguration(): array
+    {
+        if ($this->config->shouldExportZeroPricedProducts() === true) {
+            $notActiveFilter = [
+                new EqualsFilter('active', false),
+            ];
+
+            $activeFilter = [
+                new EqualsFilter('parentId', null),
+                new EqualsFilter('active', true),
+            ];
+        } else {
+            $notActiveFilter = [
+                new EqualsFilter('active', false),
+                new EqualsFilter('price', 0)
+            ];
+
+            $activeFilter = [
+                new EqualsFilter('parentId', null),
+                new EqualsFilter('active', true),
+                new RangeFilter('price', [RangeFilter::GT => 0])
+            ];
+        }
+
+        return [
+            'notActive' => $notActiveFilter,
+            'active' => $activeFilter
+        ];
     }
 
     protected function adaptProductIdCriteriaWithoutParentId(ProductEntity $productEntity): void
