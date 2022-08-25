@@ -123,8 +123,12 @@ class UrlBuilderService
      */
     protected function getProductSeoPath(ProductEntity $product): ?string
     {
+        if (!$product->getSeoUrls()) {
+            return null;
+        }
+
         $allSeoUrls = $this->removeInvalidUrls($product->getSeoUrls());
-        if (!count($allSeoUrls)) {
+        if (!$allSeoUrls->count()) {
             return null;
         }
 
