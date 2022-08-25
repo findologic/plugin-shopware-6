@@ -94,7 +94,7 @@ class FindologicProductTest extends TestCase
         $this->router = $this->getContainer()->get('router');
         $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->shopkey = $this->getShopkey();
-        $this->ids = new TestDataCollection(Context::createDefaultContext());
+        $this->ids = new TestDataCollection();
         $this->customerRepository = $this->getContainer()->get('customer.repository');
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
