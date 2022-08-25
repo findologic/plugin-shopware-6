@@ -27,7 +27,7 @@
             {% block component_filter_property_select_checkox_input %}
                 <input type="checkbox"
                        class="filter-property-select-checkbox filter-multi-select-checkbox"
-                       id="{{ element.id }}"
+                       id="{{ element.uuid }}"
                        data-label="{{ name }}"
                        {% if displayType == 'color' and color %}
                        data-preview-hex="{{ color }}"
@@ -42,4 +42,11 @@
             {% endblock %}
         </span>
     {% endif %}
+{% endblock %}
+
+{% block component_filter_property_select_preview_list_item_label_element %}
+    {% if context.context.extensions.findologicService.enabled %}
+        {% set id = element.uuid %}
+    {% endif %}
+    {{ parent() }}
 {% endblock %}
