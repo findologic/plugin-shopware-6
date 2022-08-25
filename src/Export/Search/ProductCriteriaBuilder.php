@@ -262,16 +262,14 @@ class ProductCriteriaBuilder
 
     public function withActiveParentOrInactiveParentWithVariantsFilter(): self
     {
-        $filtersBasedOnConfiguration = $this->getFiltersBasedOnPriceConfiguration();
-
         $notActiveOrPriceZeroFilter = new MultiFilter(
             MultiFilter::CONNECTION_OR,
-            $filtersBasedOnConfiguration['notActive']
+            $this->getNotActiveFilterBasedOnPriceConfiguration()
         );
 
         $activeParentFilter =  new MultiFilter(
             MultiFilter::CONNECTION_AND,
-            $filtersBasedOnConfiguration['active']
+            $this->getActiveFilterBasedOnPriceConfiguration()
         );
 
         /**
@@ -323,34 +321,31 @@ class ProductCriteriaBuilder
         );
     }
 
-    protected function getFiltersBasedOnPriceConfiguration(): array
+    protected function getNotActiveFilterBasedOnPriceConfiguration(): array
     {
-        if ($this->config->shouldExportZeroPricedProducts() === true) {
-            $notActiveFilter = [
-                new EqualsFilter('active', false),
-            ];
+        $notActiveFilter = [
+            new EqualsFilter('active', false)
+        ];
 
-            $activeFilter = [
-                new EqualsFilter('parentId', null),
-                new EqualsFilter('active', true),
-            ];
-        } else {
-            $notActiveFilter = [
-                new EqualsFilter('active', false),
-                new EqualsFilter('price', 0)
-            ];
-
-            $activeFilter = [
-                new EqualsFilter('parentId', null),
-                new EqualsFilter('active', true),
-                new RangeFilter('price', [RangeFilter::GT => 0])
-            ];
+        if (!$this->config->shouldExportZeroPricedProducts()) {
+            $notActiveFilter[] =  new EqualsFilter('price', 0);
         }
 
-        return [
-            'notActive' => $notActiveFilter,
-            'active' => $activeFilter
+        return $notActiveFilter;
+    }
+
+    protected function getActiveFilterBasedOnPriceConfiguration(): array
+    {
+        $activeFilter = [
+            new EqualsFilter('parentId', null),
+            new EqualsFilter('active', true),
         ];
+
+        if (!$this->config->shouldExportZeroPricedProducts()) {
+            $activeFilter[] = new RangeFilter('price', [RangeFilter::GT => 0]);
+        }
+
+        return $activeFilter;
     }
 
     protected function adaptProductIdCriteriaWithoutParentId(ProductEntity $productEntity): void
@@ -384,7 +379,7 @@ class ProductCriteriaBuilder
         );
     }
 
-    public function withAdvancedPricing(string $advancedPricing): self
+    public function withAdvancedPricing(): self
     {
         $this->criteria->addAssociation('prices.rule.conditions');
 

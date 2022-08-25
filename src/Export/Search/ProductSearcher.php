@@ -173,7 +173,7 @@ class ProductSearcher
     {
         $advancedPricing = $this->config->getAdvancedPricing();
         if ($advancedPricing !== AdvancedPricing::OFF) {
-            $this->productCriteriaBuilder->withAdvancedPricing($advancedPricing);
+            $this->productCriteriaBuilder->withAdvancedPricing();
         }
     }
 

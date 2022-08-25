@@ -134,13 +134,11 @@ class PriceAdapter
 
         $price = $this->getAdvancedPrice($product, null);
 
-        if (!$price) {
-            return $prices;
+        if ($price) {
+            $prices[] = $price;
         }
 
-        $prices[] = $price;
-
-        return $prices;
+        return empty($prices) ? $this->getPricesFromProduct($product) : $prices;
     }
 
     protected function getAdvancedPrice(ProductEntity $product, ?string $customerGroupId): ?Price
@@ -156,6 +154,10 @@ class PriceAdapter
         }
 
         $this->calculator->calculate([$product], $salesChannelContext);
+
+        if ($product->get('calculatedPrices')->count() === 0) {
+            return null;
+        }
 
         $advancedPrice = $this->priceBasedOnConfigurationProvider->getPriceBasedOnConfiguration(
             $product->get('calculatedPrices')
