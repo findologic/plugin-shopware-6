@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher;
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
 use FINDOLOGIC\FinSearch\Export\Errors\ExportErrors;
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
@@ -40,7 +41,8 @@ class ProductServiceTest extends TestCase
 
         $productCriteriaBuilder = new ProductCriteriaBuilder(
             $this->salesChannelContext,
-            $this->getContainer()->get(SystemConfigService::class)
+            $this->getContainer()->get(SystemConfigService::class),
+            $this->getContainer()->get(Config::class)
         );
         $defaultProductDebugSearcher = new ProductDebugSearcher(
             $this->salesChannelContext,

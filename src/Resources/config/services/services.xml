@@ -44,7 +44,6 @@
             <argument type="service" id="serializer.mapping.cache.symfony" />
             <argument type="service" id="event_dispatcher" />
             <argument type="service" id="customer_group.repository" />
-            <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ProductDebugController" public="true">

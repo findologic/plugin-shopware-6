@@ -82,6 +82,10 @@ class PriceAdapter
 
         $currencyPrice = $this->getCurrencyPrice($product, $this->salesChannelContext);
 
+        if (!$currencyPrice) {
+            return [];
+        }
+
         foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
             $price = $this->getStandardPrice($currencyPrice, $customerGroup);
 
@@ -111,12 +115,16 @@ class PriceAdapter
 
             // If no advanced price is provided - use standard price
             if (!$price) {
-               $currencyPrice = $this->getCurrencyPrice($product);
-               $price = $this->getStandardPrice($currencyPrice, $customerGroup);
+                $currencyPrice = $this->getCurrencyPrice($product);
 
-               if (!$price) {
-                   continue;
-               }
+                if (!$currencyPrice) {
+                    continue;
+                }
+
+                $price = $this->getStandardPrice($currencyPrice, $customerGroup);
+                if (!$price) {
+                    continue;
+                }
             }
 
             $prices[] = $price;
@@ -127,8 +135,11 @@ class PriceAdapter
         // If no advanced price is provided - use standard price
         if (!$price) {
             $currencyPrice = $this->getCurrencyPrice($product);
-            $price = new Price();
-            $price->setValue(round($currencyPrice->getGross(), 2));
+
+            if ($currencyPrice) {
+                $price = new Price();
+                $price->setValue(round($currencyPrice->getGross(), 2));
+            }
         }
 
         if ($price) {
@@ -174,7 +185,7 @@ class PriceAdapter
         return $price;
     }
 
-    protected function getStandardPrice(CurrencyPrice $currencyPrice, CustomerGroupEntity $customerGroup): ? Price
+    protected function getStandardPrice(CurrencyPrice $currencyPrice, CustomerGroupEntity $customerGroup): ?Price
     {
         $userGroupHash = Utils::calculateUserGroupHash($this->exportContext->getShopkey(), $customerGroup->getId());
 

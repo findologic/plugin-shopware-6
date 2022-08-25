@@ -65,9 +65,6 @@ class ExportController extends AbstractController
     /** @var EntityRepository */
     private $customerGroupRepository;
 
-    /** @var ProductPriceCalculator */
-    private $calculator;
-
     /** @var ?SalesChannelContext */
     private $salesChannelContext;
 
@@ -102,8 +99,7 @@ class ExportController extends AbstractController
         $salesChannelContextFactory,
         CacheItemPoolInterface $cache,
         EventDispatcherInterface $eventDispatcher,
-        EntityRepository $customerGroupRepository,
-        ProductPriceCalculator $productPriceCalculator
+        EntityRepository $customerGroupRepository
     ) {
         $this->logger = $logger;
         $this->router = $router;
@@ -112,7 +108,6 @@ class ExportController extends AbstractController
         $this->cache = $cache;
         $this->eventDispatcher = $eventDispatcher;
         $this->customerGroupRepository = $customerGroupRepository;
-        $this->calculator = $productPriceCalculator;
     }
 
     /**
@@ -141,7 +136,7 @@ class ExportController extends AbstractController
         $this->salesChannelService = $context ? $this->container->get(SalesChannelService::class) : null;
         $this->salesChannelContext = $this->salesChannelService ? $this->salesChannelService
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
-        $this->salesChannelContext->setRuleIds($context->getRuleIds());
+        //$this->salesChannelContext->setRuleIds($context->getRuleIds());
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
 
         $this->pluginConfig = $this->buildPluginConfig();

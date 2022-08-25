@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Export\Debug;
 
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher;
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
@@ -42,7 +43,8 @@ class ProductDebugSearcherTest extends TestCase
 
         $this->productCriteriaBuilder = new ProductCriteriaBuilder(
             $this->salesChannelContext,
-            $this->getContainer()->get(SystemConfigService::class)
+            $this->getContainer()->get(SystemConfigService::class),
+            $this->getContainer()->get(Config::class)
         );
         $this->defaultProductDebugSearcher = new ProductDebugSearcher(
             $this->salesChannelContext,

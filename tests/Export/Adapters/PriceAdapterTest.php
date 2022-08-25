@@ -9,12 +9,16 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\ProductService;
+use FINDOLOGIC\FinSearch\Export\Provider\CustomerGroupSalesChannelProvider;
+use FINDOLOGIC\FinSearch\Export\Provider\PriceBasedOnConfigurationProvider;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -198,7 +202,11 @@ class PriceAdapterTest extends TestCase
 
         $adapter = new PriceAdapter(
             $this->salesChannelContext,
-            $this->exportContext
+            $this->exportContext,
+            $this->getContainer()->get(ProductPriceCalculator::class),
+            $this->getContainer()->get(CustomerGroupSalesChannelProvider::class),
+            $this->getContainer()->get(PriceBasedOnConfigurationProvider::class),
+            $this->getContainer()->get(Config::class)
         );
         $testProduct = $this->createTestProduct([
             'price' => [
