@@ -12,8 +12,10 @@ use FINDOLOGIC\FinSearch\Export\Provider\PriceBasedOnConfigurationProvider;
 use FINDOLOGIC\FinSearch\Findologic\AdvancedPricing;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
+use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as CurrencyPrice;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class PriceAdapter
@@ -77,32 +79,14 @@ class PriceAdapter
     protected function getPricesFromProduct(ProductEntity $product): array
     {
         $prices = [];
-        $productPrice = $product->getPrice();
-        if (!$productPrice || !$productPrice->first()) {
-            return [];
-        }
 
-        $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
-        $currencyPrice = $productPrice->getCurrencyPrice($currencyId, false);
-
-        // If no currency price is available, fallback to the default price.
-        if (!$currencyPrice) {
-            $currencyPrice = $productPrice->first();
-        }
+        $currencyPrice = $this->getCurrencyPrice($product, $this->salesChannelContext);
 
         foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
-            $userGroupHash = Utils::calculateUserGroupHash($this->exportContext->getShopkey(), $customerGroup->getId());
-            if (Utils::isEmpty($userGroupHash)) {
-                continue;
-            }
+            $price = $this->getStandardPrice($currencyPrice, $customerGroup);
 
-            $netPrice = $currencyPrice->getNet();
-            $grossPrice = $currencyPrice->getGross();
-            $price = new Price();
-            if ($customerGroup->getDisplayGross()) {
-                $price->setValue(round($grossPrice, 2), $userGroupHash);
-            } else {
-                $price->setValue(round($netPrice, 2), $userGroupHash);
+            if (!$price) {
+                continue;
             }
 
             $prices[] = $price;
@@ -125,14 +109,27 @@ class PriceAdapter
         foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
             $price = $this->getAdvancedPrice($product, $customerGroup->getId());
 
+            // If no advanced price is provided - use standard price
             if (!$price) {
-                continue;
+               $currencyPrice = $this->getCurrencyPrice($product);
+               $price = $this->getStandardPrice($currencyPrice, $customerGroup);
+
+               if (!$price) {
+                   continue;
+               }
             }
 
             $prices[] = $price;
         }
 
         $price = $this->getAdvancedPrice($product, null);
+
+        // If no advanced price is provided - use standard price
+        if (!$price) {
+            $currencyPrice = $this->getCurrencyPrice($product);
+            $price = new Price();
+            $price->setValue(round($currencyPrice->getGross(), 2));
+        }
 
         if ($price) {
             $prices[] = $price;
@@ -175,5 +172,45 @@ class PriceAdapter
         $price->setValue(round($advancedPrice->getUnitPrice(), 2), $userGroupHash);
 
         return $price;
+    }
+
+    protected function getStandardPrice(CurrencyPrice $currencyPrice, CustomerGroupEntity $customerGroup): ? Price
+    {
+        $userGroupHash = Utils::calculateUserGroupHash($this->exportContext->getShopkey(), $customerGroup->getId());
+
+        if (Utils::isEmpty($userGroupHash)) {
+            return null;
+        }
+
+        $netPrice = $currencyPrice->getNet();
+        $grossPrice = $currencyPrice->getGross();
+        $price = new Price();
+
+        if ($customerGroup->getDisplayGross()) {
+            $price->setValue(round($grossPrice, 2), $userGroupHash);
+        } else {
+            $price->setValue(round($netPrice, 2), $userGroupHash);
+        }
+
+        return $price;
+    }
+
+    protected function getCurrencyPrice(ProductEntity $product): ?CurrencyPrice
+    {
+        $productPrice = $product->getPrice();
+
+        if (!$productPrice || !$productPrice->first()) {
+            return null;
+        }
+
+        $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
+        $currencyPrice = $productPrice->getCurrencyPrice($currencyId, false);
+
+        // If no currency price is available, fallback to the default price.
+        if (!$currencyPrice) {
+            $currencyPrice = $productPrice->first();
+        }
+
+        return $currencyPrice;
     }
 }
