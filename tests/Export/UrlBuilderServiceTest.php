@@ -11,7 +11,10 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Content\Seo\SeoUrl\SeoUrlEntity;
+use Shopware\Core\Content\Seo\SeoUrl\SeoUrlCollection;
 use Symfony\Component\Routing\RouterInterface;
 
 class UrlBuilderServiceTest extends TestCase
@@ -43,10 +46,27 @@ class UrlBuilderServiceTest extends TestCase
 
     public function testRemoveInvalidUrls(): void
     {
-        $product = $this->createTestProduct();
-        $allowedUrl = $this->urlBuilderService->removeInvalidUrls($product->getSeoUrls()->getElements());
+        $expectedUrlCount = 2;
+        $seoPathInfos = [
+            '/failed seo url with spaces',
+            'failedSeoUrlWithoutSlash',
+            '/correctSeoUrl-One',
+            '/correctSeoUrlTwo'
+        ];
 
-        $this->assertSame(2, $allowedUrl->count());
+        $seoUrlCollection = new SeoUrlCollection();
+        foreach ($seoPathInfos as $seoPathInfo) {
+            $seoUrlEntity = new SeoUrlEntity();
+            $seoUrlEntity->setId(Uuid::randomHex());
+            $seoUrlEntity->setSeoPathInfo($seoPathInfo);
+
+            $seoUrlCollection->add($seoUrlEntity);
+        }
+
+        $this->assertSame(
+            $expectedUrlCount,
+            $this->urlBuilderService->removeInvalidUrls($seoUrlCollection)->count()
+        );
     }
 
     public function testGetProductSeoPath(): void
