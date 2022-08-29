@@ -38,7 +38,7 @@ class SalesFrequencyAdapterTest extends TestCase
     {
         parent::setUp();
 
-        $this->ids = new TestDataCollection(Context::createDefaultContext());
+        $this->ids = new TestDataCollection();
         $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
