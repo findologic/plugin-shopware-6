@@ -121,7 +121,7 @@ class UrlBuilderService
      * * Lightweight-Paper-Prior-IT/7562a1140f7f4abd8c6a4a4b6d050b77
      * * Sony-Alpha-7-III-Sigma-AF-24-70mm-1-2-8-DG-DN-ART/145055000510
      */
-    public function getProductSeoPath(ProductEntity $product): ?string
+    protected function getProductSeoPath(ProductEntity $product): ?string
     {
         if (!$product->getSeoUrls()) {
             return null;
@@ -149,7 +149,7 @@ class UrlBuilderService
     /**
      * Filters the given collection to only return entities with valid url.
      */
-    public function removeInvalidUrls(SeoUrlCollection $seoUrls): SeoUrlCollection
+    protected function removeInvalidUrls(SeoUrlCollection $seoUrls): SeoUrlCollection
     {
         return $seoUrls->filter(function (SeoUrlEntity $seoUrl) {
             return filter_var(

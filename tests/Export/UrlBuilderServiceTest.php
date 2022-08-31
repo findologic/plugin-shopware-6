@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\MockObject\MockObject;
+use FINDOLOGIC\FinSearch\Tests\Utils\UtilsTest;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -65,15 +66,25 @@ class UrlBuilderServiceTest extends TestCase
 
         $this->assertSame(
             $expectedUrlCount,
-            $this->urlBuilderService->removeInvalidUrls($seoUrlCollection)->count()
+            UtilsTest::callMethod(
+                $this->urlBuilderService,
+                'removeInvalidUrls',
+                array($seoUrlCollection)
+            )->count()
         );
     }
 
     public function testGetProductSeoPath(): void
     {
+        $expectedSeoUrl = 'FINDOLOGIC-Product-EN/FINDOLOGIC001';
         $product = $this->createTestProduct();
-        $seoUrl = $this->urlBuilderService->getProductSeoPath($product);
 
-        $this->assertSame('FINDOLOGIC-Product-EN/FINDOLOGIC001', $seoUrl);
+        $seoUrl = UtilsTest::callMethod(
+            $this->urlBuilderService,
+            'getProductSeoPath',
+            array($product)
+        );
+
+        $this->assertSame($expectedSeoUrl, $seoUrl);
     }
 }
