@@ -12,6 +12,7 @@ use FINDOLOGIC\FinSearch\Export\Provider\PriceBasedOnConfigurationProvider;
 use FINDOLOGIC\FinSearch\Findologic\AdvancedPricing;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use Psr\Container\ContainerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
@@ -26,8 +27,8 @@ class PriceAdapter
     /** @var ExportContext */
     protected $exportContext;
 
-    /** @var ProductPriceCalculator */
-    protected $calculator;
+    /** @var ProductPriceCalculator|null */
+    protected $calculator = null;
 
     /** @var CustomerGroupSalesChannelProvider */
     private $customerGroupSalesChannelProvider;
@@ -48,10 +49,10 @@ class PriceAdapter
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->exportContext = $exportContext;
-        $this->calculator = $productPriceCalculator ;
         $this->customerGroupSalesChannelProvider = $customerGroupSalesChannelProvider;
         $this->priceBasedOnConfigurationProvider = $priceBasedOnConfigurationProvider;
         $this->config = $config;
+        $this->calculator = $productPriceCalculator;
     }
 
     /**
@@ -60,10 +61,10 @@ class PriceAdapter
      */
     public function adapt(ProductEntity $product): array
     {
-        if ($this->config->getAdvancedPricing() === AdvancedPricing::OFF) {
-            $prices = $this->getPricesFromProduct($product);
-        } else {
+        if ($this->config->getAdvancedPricing() !== AdvancedPricing::OFF) {
             $prices = $this->getAdvancedPricesFromProduct($product);
+        } else {
+            $prices = $this->getPricesFromProduct($product);
         }
 
         if (Utils::isEmpty($prices)) {
@@ -170,6 +171,10 @@ class PriceAdapter
         $advancedPrice = $this->priceBasedOnConfigurationProvider->getPriceBasedOnConfiguration(
             $product->get('calculatedPrices')
         );
+
+        if (!$advancedPrice) {
+            return null;
+        }
 
         $price = new Price();
 

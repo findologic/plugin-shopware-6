@@ -8,14 +8,16 @@ use FINDOLOGIC\FinSearch\Findologic\AdvancedPricing;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\PriceCollection;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class PriceBasedOnConfigurationProvider
 {
     /** @var Config */
     private $config;
 
-    public function __construct(Config $config)
-    {
+    public function __construct(
+        Config $config
+    ) {
         $this->config = $config;
     }
 

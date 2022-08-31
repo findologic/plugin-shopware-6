@@ -54,6 +54,8 @@ trait ConfigHelper
             'navigationResultContainer' => 'fl-navigation-result',
             'integrationType' => 'Direct Integration',
             'mainVariant' => 'default',
+            'advancedPricing' => 'OFF',
+            'exportZeroPricedProducts' => false
         ];
 
         $config = array_merge($defaultConfig, $overrides);
@@ -108,6 +110,12 @@ trait ConfigHelper
                         $salesChannelId,
                         $languageId,
                         $config['mainVariant']
+                    ],
+                    [
+                        'FinSearch.config.advancedPricing',
+                        $salesChannelId,
+                        $languageId,
+                        $config['advancedPricing']
                     ]
                 ]
             );

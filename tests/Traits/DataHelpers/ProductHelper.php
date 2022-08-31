@@ -322,6 +322,7 @@ trait ProductHelper
             ],
             'cover' => $this->getDefaultCoverData(),
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
+            'prices' => [],
             'tax' => ['id' => Uuid::randomHex(),  'name' => '9%', 'taxRate' => 9],
             'categories' => $this->getDefaultCategories(),
             'seoUrls' => $productSeoUrls,
@@ -377,6 +378,7 @@ trait ProductHelper
             $criteria = Utils::addProductAssociations($criteria);
             $criteria = Utils::addChildrenAssociations($criteria);
             $criteria->addAssociation('visibilities');
+            $criteria->addAssociation('prices.rule.conditions');
 
             return $this->getContainer()->get('product.repository')->search($criteria, $context)->first();
         } catch (InconsistentCriteriaIdsException $e) {
@@ -407,11 +409,15 @@ trait ProductHelper
         $this->getContainer()->get('product_review.repository')->upsert([$data], Context::createDefaultContext());
     }
 
-    public function createCustomer(string $customerId): void
+    public function createCustomer(string $customerId, $customerGroup = null): void
     {
         $password = 'foo';
         $email = 'foo@bar.de';
         $addressId = Uuid::randomHex();
+
+        if ($customerGroup === null) {
+            $customerGroup = Defaults::FALLBACK_CUSTOMER_GROUP;
+        }
 
         $this->getContainer()->get('customer.repository')->upsert(
             [
@@ -434,7 +440,7 @@ trait ProductHelper
                         'description' => 'Default payment method',
                         'handlerIdentifier' => SyncTestPaymentHandler::class,
                     ],
-                    'groupId' => Defaults::FALLBACK_CUSTOMER_GROUP,
+                    'groupId' => $customerGroup,
                     'email' => $email,
                     'password' => $password,
                     'firstName' => 'Max',
