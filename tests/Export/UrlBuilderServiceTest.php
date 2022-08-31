@@ -69,7 +69,7 @@ class UrlBuilderServiceTest extends TestCase
             UtilsTest::callMethod(
                 $this->urlBuilderService,
                 'removeInvalidUrls',
-                array($seoUrlCollection)
+                [$seoUrlCollection]
             )->count()
         );
     }
@@ -82,7 +82,7 @@ class UrlBuilderServiceTest extends TestCase
         $seoUrl = UtilsTest::callMethod(
             $this->urlBuilderService,
             'getProductSeoPath',
-            array($product)
+            [$product]
         );
 
         $this->assertSame($expectedSeoUrl, $seoUrl);
