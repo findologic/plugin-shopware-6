@@ -1,4 +1,5 @@
 import template from './sw-self-maintained-extension-card.html.twig';
+
 const { Component, State } = Shopware;
 
 Component.override('sw-self-maintained-extension-card', {
