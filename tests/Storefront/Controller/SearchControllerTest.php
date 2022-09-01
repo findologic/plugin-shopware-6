@@ -17,7 +17,6 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\WithTestClient;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -65,10 +64,6 @@ class SearchControllerTest extends TestCase
      */
     public function testAvailableFilterReturnsCorrectResponse(string $demoResponse, string $expectedResponse): void
     {
-        if (Utils::versionLowerThan('6.3.3.0')) {
-            $this->markTestSkipped('Filter disabling feature was introduced in Shopware 6.3.3.0');
-        }
-
         $response = new Xml21Response($this->getMockResponse($demoResponse));
         $parser = new Xml21ResponseParser($response);
         $filterExtension = $parser->getFiltersExtension();
@@ -92,10 +87,6 @@ class SearchControllerTest extends TestCase
 
     public function testFiltersWhichAreNotInTheAvailableFilterResponseAreStillReturned(): void
     {
-        if (Utils::versionLowerThan('6.3.3.0')) {
-            $this->markTestSkipped('Filter disabling feature was introduced in Shopware 6.3.3.0');
-        }
-
         $availableFiltersResponse = new Xml21Response(
             $this->getMockResponse('XMLResponse/demoResponseWithNoResults.xml')
         );
