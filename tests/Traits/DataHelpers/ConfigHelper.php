@@ -116,6 +116,12 @@ trait ConfigHelper
                         $salesChannelId,
                         $languageId,
                         $config['advancedPricing']
+                    ],
+                    [
+                        'FinSearch.config.exportZeroPricedProducts',
+                        $salesChannelId,
+                        $languageId,
+                        $config['exportZeroPricedProducts']
                     ]
                 ]
             );

@@ -50,6 +50,11 @@ class ProductCriteriaBuilder
         $this->criteria = new Criteria();
     }
 
+    public function setConfig(Config $config): void
+    {
+        $this->config = $config;
+    }
+
     public function build(): Criteria
     {
         $criteria = clone $this->criteria;
