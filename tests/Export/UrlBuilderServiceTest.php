@@ -77,25 +77,25 @@ class UrlBuilderServiceTest extends TestCase
     /**
      * @dataProvider productSeoPathProvider
      */
-    public function testGetProductSeoPath(array $seoPathCollectionArray, ?string $expectedSeoUrl): void
+    public function testGetProductSeoPath(array $seoUrlArray, ?string $expectedSeoUrl): void
     {
-        $product = $this->createTestProduct();
-        $languageId = $this->salesChannelContext->getSalesChannel()->getLanguageId();
-        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
         $seoUrlCollection = new SeoUrlCollection();
+        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
+        $languageId = $this->salesChannelContext->getSalesChannel()->getLanguageId();
 
-        foreach ($seoPathCollectionArray as $seoPath) {
+        foreach ($seoUrlArray as $seoPath) {
             $seoUrlEntity = new SeoUrlEntity();
             $seoUrlEntity->setId(Uuid::randomHex());
-            $seoUrlEntity->setIsCanonical($seoPath['isCanonical']);
             $seoUrlEntity->setSalesChannelId($salesChannelId);
             $seoUrlEntity->setLanguageId($languageId);
-            $seoUrlEntity->setIsDeleted($seoPath['isDeleted']);
             $seoUrlEntity->setSeoPathInfo($seoPath['seoPathInfo']);
+            $seoUrlEntity->setIsCanonical($seoPath['isCanonical']);
+            $seoUrlEntity->setIsDeleted($seoPath['isDeleted']);
 
             $seoUrlCollection->add($seoUrlEntity);
         }
 
+        $product = $this->createTestProduct();
         $product->setSeoUrls($seoUrlCollection);
 
         $seoUrl = UtilsTest::callMethod(
@@ -110,31 +110,31 @@ class UrlBuilderServiceTest extends TestCase
     public function productSeoPathProvider(): array
     {
         return [
-            'Has valid url, all canonical' => [
-                'seoPathCollectionArray' => [
+            'Has valid url, all canonical and not deleted' => [
+                'seoUrlArray' => [
                     [ 'seoPathInfo' => '/validUrlOne', 'isCanonical' => true, 'isDeleted' => false ],
-                    [ 'seoPathInfo' => 'invalid url one', 'isCanonical' => true, 'isDeleted' => false ]
-                ],
-                'expectedSeoUrl' => 'validUrlOne'
-            ],
-            'Has valid url, all not canonical' => [
-                'seoPathCollectionArray' => [
-                    [ 'seoPathInfo' => '/validUrlOne', 'isCanonical' => false, 'isDeleted' => false ],
                     [ 'seoPathInfo' => 'invalid url one', 'isCanonical' => false, 'isDeleted' => false ]
                 ],
                 'expectedSeoUrl' => 'validUrlOne'
             ],
-            'No valid url, all not canonical' => [
-                'seoPathCollectionArray' => [
-                    [ 'seoPathInfo' => 'invalid url one', 'isCanonical' => false, 'isDeleted' => false ],
+            'Has valid url not canonical and not deleted' => [
+                'seoUrlArray' => [
+                    [ 'seoPathInfo' => '/validUrlTwo', 'isCanonical' => true, 'isDeleted' => false ],
                     [ 'seoPathInfo' => 'invalid url two', 'isCanonical' => false, 'isDeleted' => false ]
+                ],
+                'expectedSeoUrl' => 'validUrlTwo'
+            ],
+            'No valid url, all not canonical' => [
+                'seoUrlArray' => [
+                    [ 'seoPathInfo' => 'invalid url three', 'isCanonical' => false, 'isDeleted' => false ],
+                    [ 'seoPathInfo' => 'invalid url four', 'isCanonical' => false, 'isDeleted' => false ]
                 ],
                 'expectedSeoUrl' => null
             ],
-            'Valid url deleted' => [
-                'seoPathCollectionArray' => [
-                    [ 'seoPathInfo' => '/validUrlOne', 'isCanonical' => false, 'isDeleted' => true ],
-                    [ 'seoPathInfo' => 'invalid url one', 'isCanonical' => false, 'isDeleted' => false ]
+            'Has valid and canonical url, but deleted' => [
+                'seoUrlArray' => [
+                    [ 'seoPathInfo' => '/validUrlThree', 'isCanonical' => true, 'isDeleted' => true ],
+                    [ 'seoPathInfo' => 'invalid url five', 'isCanonical' => false, 'isDeleted' => false ]
                 ],
                 'expectedSeoUrl' => null
             ]
