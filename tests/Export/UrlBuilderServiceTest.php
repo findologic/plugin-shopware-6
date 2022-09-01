@@ -45,21 +45,16 @@ class UrlBuilderServiceTest extends TestCase
         $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
     }
 
-    public function testRemoveInvalidUrls(): void
+    /**
+     * @dataProvider removeInvalidUrlsProvider
+     */
+    public function testRemoveInvalidUrls(array $seoUrlArray, int $expectedUrlCount): void
     {
-        $expectedUrlCount = 2;
-        $seoPathInfos = [
-            '/failed seo url with spaces',
-            'failedSeoUrlWithoutSlash',
-            '/correctSeoUrl-One',
-            '/correctSeoUrlTwo'
-        ];
-
         $seoUrlCollection = new SeoUrlCollection();
-        foreach ($seoPathInfos as $seoPathInfo) {
+        foreach ($seoUrlArray as $seoUrl) {
             $seoUrlEntity = new SeoUrlEntity();
             $seoUrlEntity->setId(Uuid::randomHex());
-            $seoUrlEntity->setSeoPathInfo($seoPathInfo);
+            $seoUrlEntity->setSeoPathInfo($seoUrl['seoPathInfo']);
 
             $seoUrlCollection->add($seoUrlEntity);
         }
@@ -72,6 +67,37 @@ class UrlBuilderServiceTest extends TestCase
                 [$seoUrlCollection]
             )->count()
         );
+    }
+
+    public function removeInvalidUrlsProvider(): array
+    {
+        return [
+            'All valid urls' => [
+                'seoUrlArray' => [
+                    [ 'seoPathInfo' => '/correctSeoUrl-One' ],
+                    [ 'seoPathInfo' => '/correctSeoUrlTwo' ],
+                    [ 'seoPathInfo' => '/correctSeoUrl/Three' ]
+                ],
+                'expectedUrlCount' => 3
+            ],
+            'Half valid urls' => [
+                'seoUrlArray' => [
+                    [ 'seoPathInfo' => '/failed seo url with spaces' ],
+                    [ 'seoPathInfo' => 'failedSeoUrlWithoutSlash' ],
+                    [ 'seoPathInfo' => '/correctSeoUrl-One' ],
+                    [ 'seoPathInfo' => '/correctSeoUrlTwo' ]
+                ],
+                'expectedUrlCount' => 2
+            ],
+            'All Invalid urls' => [
+                'seoUrlArray' => [
+                    [ 'seoPathInfo' => '/failed seo url with spaces' ],
+                    [ 'seoPathInfo' => 'failedSeoUrlWithoutSlash' ],
+                    [ 'seoPathInfo' => 'failedSeoUrlWithoutSlash and with spaces' ],
+                ],
+                'expectedUrlCount' => 0
+            ],
+        ];
     }
 
     /**
@@ -110,31 +136,38 @@ class UrlBuilderServiceTest extends TestCase
     public function productSeoPathProvider(): array
     {
         return [
-            'Has valid url, all canonical and not deleted' => [
+            'Has valid url, canonical and not deleted' => [
                 'seoUrlArray' => [
-                    [ 'seoPathInfo' => '/validUrlOne', 'isCanonical' => true, 'isDeleted' => false ],
-                    [ 'seoPathInfo' => 'invalid url one', 'isCanonical' => false, 'isDeleted' => false ]
+                    [ 'seoPathInfo' => 'invalid url one', 'isCanonical' => false, 'isDeleted' => false ],
+                    [ 'seoPathInfo' => '/validUrlOne', 'isCanonical' => true, 'isDeleted' => false ]
                 ],
                 'expectedSeoUrl' => 'validUrlOne'
             ],
             'Has valid url not canonical and not deleted' => [
                 'seoUrlArray' => [
-                    [ 'seoPathInfo' => '/validUrlTwo', 'isCanonical' => true, 'isDeleted' => false ],
-                    [ 'seoPathInfo' => 'invalid url two', 'isCanonical' => false, 'isDeleted' => false ]
+                    [ 'seoPathInfo' => 'invalid url two', 'isCanonical' => false, 'isDeleted' => false ],
+                    [ 'seoPathInfo' => '/validUrlTwo', 'isCanonical' => false, 'isDeleted' => false ]
                 ],
                 'expectedSeoUrl' => 'validUrlTwo'
+            ],
+            'Has valid and canonical url, but deleted' => [
+                'seoUrlArray' => [
+                    [ 'seoPathInfo' => 'invalid url five', 'isCanonical' => false, 'isDeleted' => false ],
+                    [ 'seoPathInfo' => '/validUrlThree', 'isCanonical' => true, 'isDeleted' => true ]
+                ],
+                'expectedSeoUrl' => null
+            ],
+            'Has valid and not canonical url and deleted' => [
+                'seoUrlArray' => [
+                    [ 'seoPathInfo' => 'invalid url five', 'isCanonical' => false, 'isDeleted' => false ],
+                    [ 'seoPathInfo' => '/validUrlFour', 'isCanonical' => false, 'isDeleted' => true ]
+                ],
+                'expectedSeoUrl' => null
             ],
             'No valid url, all not canonical' => [
                 'seoUrlArray' => [
                     [ 'seoPathInfo' => 'invalid url three', 'isCanonical' => false, 'isDeleted' => false ],
                     [ 'seoPathInfo' => 'invalid url four', 'isCanonical' => false, 'isDeleted' => false ]
-                ],
-                'expectedSeoUrl' => null
-            ],
-            'Has valid and canonical url, but deleted' => [
-                'seoUrlArray' => [
-                    [ 'seoPathInfo' => '/validUrlThree', 'isCanonical' => true, 'isDeleted' => true ],
-                    [ 'seoPathInfo' => 'invalid url five', 'isCanonical' => false, 'isDeleted' => false ]
                 ],
                 'expectedSeoUrl' => null
             ]
