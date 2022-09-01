@@ -634,7 +634,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     ) {
         if (isset($overrides[ShopwareProductListingFeaturesSubscriber::class])) {
             $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class];
-        }  else {
+        } else {
             $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
                 $this->connectionMock,
                 $this->entityRepositoryMock,
