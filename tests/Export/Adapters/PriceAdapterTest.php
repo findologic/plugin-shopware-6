@@ -8,8 +8,7 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\ProductService;
-use FINDOLOGIC\FinSearch\Export\Provider\CustomerGroupSalesChannelProvider;
-use FINDOLOGIC\FinSearch\Export\Provider\PriceBasedOnConfigurationProvider;
+use FINDOLOGIC\FinSearch\Export\Providers\CustomerGroupContextProvider;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\AdvancedPriceHelper;
@@ -221,8 +220,7 @@ class PriceAdapterTest extends TestCase
             $this->salesChannelContext,
             $this->exportContext,
             $this->getContainer()->get(ProductPriceCalculator::class),
-            $this->getContainer()->get(CustomerGroupSalesChannelProvider::class),
-            $this->getContainer()->get(PriceBasedOnConfigurationProvider::class),
+            $this->getContainer()->get(CustomerGroupContextProvider::class),
             $this->getContainer()->get(Config::class)
         );
         $testProduct = $this->createTestProduct([
@@ -374,14 +372,12 @@ class PriceAdapterTest extends TestCase
         $config->initializeBySalesChannel($this->salesChannelContext);
         $configShopkey = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
         $this->enableFindologicPlugin($this->getContainer(), $configShopkey, $this->salesChannelContext);
-        $priceBasedOnConfiguration = new PriceBasedOnConfigurationProvider($config);
 
         $adapter = new PriceAdapter(
             $this->salesChannelContext,
             $this->exportContext,
             $this->getContainer()->get(ProductPriceCalculator::class),
-            $this->getContainer()->get(CustomerGroupSalesChannelProvider::class),
-            $priceBasedOnConfiguration,
+            $this->getContainer()->get(CustomerGroupContextProvider::class),
             $config
         );
 

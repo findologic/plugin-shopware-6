@@ -7,12 +7,12 @@ namespace FINDOLOGIC\FinSearch\Export\Adapters;
 use FINDOLOGIC\Export\Data\Price;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
-use FINDOLOGIC\FinSearch\Export\Provider\CustomerGroupSalesChannelProvider;
-use FINDOLOGIC\FinSearch\Export\Provider\PriceBasedOnConfigurationProvider;
+use FINDOLOGIC\FinSearch\Export\Providers\CustomerGroupContextProvider;
 use FINDOLOGIC\FinSearch\Findologic\AdvancedPricing;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Psr\Container\ContainerInterface;
+use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
+use Shopware\Core\Checkout\Cart\Price\Struct\PriceCollection;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
@@ -27,14 +27,11 @@ class PriceAdapter
     /** @var ExportContext */
     protected $exportContext;
 
-    /** @var ProductPriceCalculator|null */
-    protected $calculator = null;
+    /** @var ProductPriceCalculator */
+    protected $calculator;
 
-    /** @var CustomerGroupSalesChannelProvider */
-    private $customerGroupSalesChannelProvider;
-
-    /** @var PriceBasedOnConfigurationProvider */
-    private $priceBasedOnConfigurationProvider;
+    /** @var CustomerGroupContextProvider */
+    private $customerGroupContextProvider;
 
     /** @var Config */
     private $config;
@@ -43,16 +40,14 @@ class PriceAdapter
         SalesChannelContext $salesChannelContext,
         ExportContext $exportContext,
         ProductPriceCalculator $productPriceCalculator,
-        CustomerGroupSalesChannelProvider $customerGroupSalesChannelProvider,
-        PriceBasedOnConfigurationProvider $priceBasedOnConfigurationProvider,
+        CustomerGroupContextProvider $customerGroupContextProvider,
         Config $config
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->exportContext = $exportContext;
-        $this->customerGroupSalesChannelProvider = $customerGroupSalesChannelProvider;
-        $this->priceBasedOnConfigurationProvider = $priceBasedOnConfigurationProvider;
-        $this->config = $config;
         $this->calculator = $productPriceCalculator;
+        $this->customerGroupContextProvider = $customerGroupContextProvider;
+        $this->config = $config;
     }
 
     /**
@@ -61,11 +56,9 @@ class PriceAdapter
      */
     public function adapt(ProductEntity $product): array
     {
-        if ($this->config->getAdvancedPricing() !== AdvancedPricing::OFF) {
-            $prices = $this->getAdvancedPricesFromProduct($product);
-        } else {
-            $prices = $this->getPricesFromProduct($product);
-        }
+        $prices = $this->config->getAdvancedPricing() !== AdvancedPricing::OFF
+            ? $this->getAdvancedPricesFromProduct($product)
+            : $this->getPricesFromProduct($product);
 
         if (Utils::isEmpty($prices)) {
             throw new ProductHasNoPricesException($product);
@@ -88,13 +81,9 @@ class PriceAdapter
         }
 
         foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
-            $price = $this->getStandardPrice($currencyPrice, $customerGroup);
-
-            if (!$price) {
-                continue;
+            if ($price = $this->getStandardPrice($currencyPrice, $customerGroup)) {
+                $prices[] = $price;
             }
-
-            $prices[] = $price;
         }
 
         $price = new Price();
@@ -112,13 +101,9 @@ class PriceAdapter
         $prices = [];
 
         foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
-            $price = $this->getAdvancedPrice($product, $customerGroup->getId());
-
             // If no advanced price is provided - use standard price
-            if (!$price) {
-                $currencyPrice = $this->getCurrencyPrice($product);
-
-                if (!$currencyPrice) {
+            if (!$price = $this->getAdvancedPrice($product, $customerGroup->getId())) {
+                if (!$currencyPrice = $this->getCurrencyPrice($product)) {
                     continue;
                 }
 
@@ -131,13 +116,9 @@ class PriceAdapter
             $prices[] = $price;
         }
 
-        $price = $this->getAdvancedPrice($product, null);
-
         // If no advanced price is provided - use standard price
-        if (!$price) {
-            $currencyPrice = $this->getCurrencyPrice($product);
-
-            if ($currencyPrice) {
+        if (!$price = $this->getAdvancedPrice($product, null)) {
+            if ($currencyPrice = $this->getCurrencyPrice($product)) {
                 $price = new Price();
                 $price->setValue(round($currencyPrice->getGross(), 2));
             }
@@ -152,7 +133,7 @@ class PriceAdapter
 
     protected function getAdvancedPrice(ProductEntity $product, ?string $customerGroupId): ?Price
     {
-        $salesChannelContext = $this->customerGroupSalesChannelProvider->getSalesChannelForUserGroup(
+        $salesChannelContext = $this->customerGroupContextProvider->getSalesChannelForUserGroup(
             $this->salesChannelContext,
             $customerGroupId,
             $this->exportContext->getShopkey()
@@ -168,7 +149,7 @@ class PriceAdapter
             return null;
         }
 
-        $advancedPrice = $this->priceBasedOnConfigurationProvider->getPriceBasedOnConfiguration(
+        $advancedPrice = $this->getPriceBasedOnConfiguration(
             $product->get('calculatedPrices')
         );
 
@@ -178,14 +159,12 @@ class PriceAdapter
 
         $price = new Price();
 
-        if (!$customerGroupId) {
+        if ($customerGroupId) {
+            $userGroupHash = Utils::calculateUserGroupHash($this->exportContext->getShopkey(), $customerGroupId);
+            $price->setValue(round($advancedPrice->getUnitPrice(), 2), $userGroupHash);
+        } else {
             $price->setValue(round($advancedPrice->getUnitPrice(), 2));
-
-            return $price;
         }
-
-        $userGroupHash = Utils::calculateUserGroupHash($this->exportContext->getShopkey(), $customerGroupId);
-        $price->setValue(round($advancedPrice->getUnitPrice(), 2), $userGroupHash);
 
         return $price;
     }
@@ -222,11 +201,26 @@ class PriceAdapter
         $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
         $currencyPrice = $productPrice->getCurrencyPrice($currencyId, false);
 
-        // If no currency price is available, fallback to the default price.
-        if (!$currencyPrice) {
-            $currencyPrice = $productPrice->first();
+         return $currencyPrice ?? $productPrice->first();
+    }
+
+    protected function getPriceBasedOnConfiguration(PriceCollection $priceCollection): ?CalculatedPrice
+    {
+        if ($this->config->getAdvancedPricing() === AdvancedPricing::OFF) {
+            return null;
+        } elseif ($this->config->getAdvancedPricing() === AdvancedPricing::UNIT) {
+            return $priceCollection->first();
         }
 
-        return $currencyPrice;
+        return $this->getCheapestPrice($priceCollection);
+    }
+
+    protected function getCheapestPrice(PriceCollection $priceCollection): CalculatedPrice
+    {
+        $priceCollection->sort(function (CalculatedPrice $a, CalculatedPrice $b) {
+            return  $a->getUnitPrice() <=> $b->getUnitPrice();
+        });
+
+        return $priceCollection->first();
     }
 }

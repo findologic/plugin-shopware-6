@@ -27,7 +27,7 @@ class CustomerSearcher
         string $customerGroupId
     ): ?string {
         $criteria = new Criteria();
-
+        $criteria->setLimit(1);
         $criteria->addFilter(
             new EqualsFilter(
                 'groupId',
@@ -35,16 +35,8 @@ class CustomerSearcher
             )
         );
 
-        $criteria->setLimit(1);
-
-        $customers = $this->customerRepository->search($criteria, $salesChannelContext->getContext());
-
-        $customer = $customers->first();
-
-        if (!$customer) {
-            return null;
-        }
-
-        return $customer->getId();
+        return $this->customerRepository
+            ->searchIds($criteria, $salesChannelContext->getContext())
+            ->firstId();
     }
 }

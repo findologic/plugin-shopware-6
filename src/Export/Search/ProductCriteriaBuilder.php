@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
-use FINDOLOGIC\FinSearch\Findologic\AdvancedPricing;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
-use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
@@ -328,7 +325,7 @@ class ProductCriteriaBuilder
         ];
 
         if (!$this->config->shouldExportZeroPricedProducts()) {
-            $notActiveFilter[] =  new EqualsFilter('price', 0);
+            $notActiveFilter[] = new EqualsFilter('price', 0);
         }
 
         return $notActiveFilter;

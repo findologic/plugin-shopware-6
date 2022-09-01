@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export\Provider;
+namespace FINDOLOGIC\FinSearch\Export\Providers;
 
 use Shopware\Core\Checkout\Cart\CartRuleLoader;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;

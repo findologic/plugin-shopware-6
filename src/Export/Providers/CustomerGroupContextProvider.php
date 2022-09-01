@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export\Provider;
+namespace FINDOLOGIC\FinSearch\Export\Providers;
 
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\CustomerSearcher;
-use Shopware\Core\Checkout\Cart\CartRuleLoader;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
-class CustomerGroupSalesChannelProvider
+class CustomerGroupContextProvider
 {
     /** @var SalesChannelService */
     private $salesChannelService;
@@ -25,9 +24,9 @@ class CustomerGroupSalesChannelProvider
         SalesChannelService $salesChannelService,
         CustomerSearcher $customerSearcher
     ) {
+        $this->advancedPriceRulesProvider = $advancedPriceRulesProvider;
         $this->salesChannelService = $salesChannelService;
         $this->customerSearcher = $customerSearcher;
-        $this->advancedPriceRulesProvider = $advancedPriceRulesProvider;
     }
 
     public function getSalesChannelForUserGroup(
