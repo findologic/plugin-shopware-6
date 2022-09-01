@@ -10,7 +10,6 @@ use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\ProductService;
 use FINDOLOGIC\FinSearch\Export\Providers\CustomerGroupContextProvider;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\AdvancedPriceHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
@@ -18,25 +17,14 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
-use Shopware\Core\Checkout\Cart\Rule\CartAmountRule;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Checkout\Customer\Rule\CustomerGroupRule;
-use Shopware\Core\Checkout\Customer\Rule\CustomerLoggedInRule;
-use Shopware\Core\Checkout\Test\Payment\Handler\V630\SyncTestPaymentHandler;
-use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
 use Shopware\Core\Defaults;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Rule\Container\AndRule;
-use Shopware\Core\Framework\Rule\Rule;
-use Shopware\Core\Framework\Test\IdsCollection;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\Test\TestDefaults;
 
 class PriceAdapterTest extends TestCase
 {
@@ -336,19 +324,35 @@ class PriceAdapterTest extends TestCase
                     $grossCustomerGroupId => 4
                 ]
             ],
-            'Test unit config and no advanced prices' => [
+            'Test unit config and no advanced prices for gross customer' => [
                 'groupsData' => $this->getAdvancedPricesTestGroupData(
                     [
                         [
                             'groupId' => $netCustomerGroupId,
                             'displayGross' => false,
-                            'prices' => []
+                            'prices' => [
+                                ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 4, 'net' => 3],
+                                ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 8, 'net' => 2],
+                            ]
                         ],
                         [
                             'groupId' => $grossCustomerGroupId,
                             'displayGross' => true,
                             'prices' => []
                         ]
+                    ]
+                ),
+                'advancedPricingConfig' => 'unit',
+                'expectedPrices' => [
+                    $netCustomerGroupId => 3,
+                    $grossCustomerGroupId => 15
+                ]
+            ],
+            'Test unit config and no advanced prices' => [
+                'groupsData' => $this->getAdvancedPricesTestGroupData(
+                    [
+                        ['groupId' => $netCustomerGroupId, 'displayGross' => false, 'prices' => []],
+                        ['groupId' => $grossCustomerGroupId, 'displayGross' => true, 'prices' => []]
                     ]
                 ),
                 'advancedPricingConfig' => 'unit',
@@ -368,6 +372,9 @@ class PriceAdapterTest extends TestCase
         string $advancedPricingConfig,
         array $expectedPrices
     ): void {
+        /** @var ExportContext $exportContext */
+        $exportContext = $this->getContainer()->get('fin_search.export_context');
+
         $config = $this->getFindologicConfig(['advancedPricing' => $advancedPricingConfig]);
         $config->initializeBySalesChannel($this->salesChannelContext);
         $configShopkey = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
@@ -381,11 +388,9 @@ class PriceAdapterTest extends TestCase
             $config
         );
 
-        $this->createRules($groupsData);
         $customerGroups = $this->generateCustomers($groupsData);
-        /** @var ExportContext $exportContext */
-        $exportContext = $this->getContainer()->get('fin_search.export_context');
         $exportContext->setCustomerGroups($customerGroups);
+        $this->createRules($groupsData);
         $productEntity = $this->createTestProduct(['prices' => $this->getPrices($groupsData)]);
         $this->createCustomerGroups($groupsData);
         $this->createCustomers($groupsData);
