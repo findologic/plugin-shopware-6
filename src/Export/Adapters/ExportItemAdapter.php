@@ -29,26 +29,19 @@ use Throwable;
 
 class ExportItemAdapter implements ExportItemAdapterInterface
 {
-    /** @var ContainerInterface */
-    protected $container;
+    protected ContainerInterface $container;
 
-    /** @var RouterInterface */
-    protected $router;
+    protected RouterInterface $router;
 
-    /** @var EventDispatcherInterface|EventDispatcher */
-    protected $eventDispatcher;
+    protected EventDispatcherInterface $eventDispatcher;
 
-    /** @var Config */
-    protected $config;
+    protected Config $config;
 
-    /** @var AdapterFactory  $adapterFactory*/
-    protected $adapterFactory;
+    protected AdapterFactory $adapterFactory;
 
-    /** @var ExportContext $exportContext*/
-    protected $exportContext;
+    protected ExportContext $exportContext;
 
-    /** @var LoggerInterface  $logger*/
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(
         ContainerInterface $container,

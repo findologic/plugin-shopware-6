@@ -16,7 +16,6 @@ use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -24,7 +23,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
@@ -43,59 +41,42 @@ use Symfony\Component\Validator\Validation;
  */
 class ExportController extends AbstractController
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /** @var Router */
-    private $router;
+    private RouterInterface $router;
 
-    /** @var HeaderHandler */
-    private $headerHandler;
+    private HeaderHandler $headerHandler;
 
-    /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
-    private $salesChannelContextFactory;
+    private AbstractSalesChannelContextFactory $salesChannelContextFactory;
 
-    /** @var CacheItemPoolInterface */
-    private $cache;
+    private CacheItemPoolInterface $cache;
 
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
-    /** @var EntityRepository */
-    private $customerGroupRepository;
+    private EntityRepository $customerGroupRepository;
 
-    /** @var ?SalesChannelContext */
-    private $salesChannelContext;
+    private ?SalesChannelContext $salesChannelContext;
 
-    /** @var ExportConfigurationBase */
-    private $exportConfig;
+    private ExportConfigurationBase $exportConfig;
 
-    /** @var ExportContext */
-    private $exportContext;
+    private ExportContext $exportContext;
 
-    /** @var ProductService */
-    private $productService;
+    private ProductService $productService;
 
-    /** @var ProductSearcher */
-    private $productSearcher;
+    private ProductSearcher $productSearcher;
 
     /** @var Export|XmlExport|ProductIdExport */
     private $export;
 
-    /** @var SalesChannelService|null */
-    private $salesChannelService;
+    private ?SalesChannelService $salesChannelService;
 
-    /** @var Config */
-    private $pluginConfig;
+    private Config $pluginConfig;
 
-    /**
-     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
-     */
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
         HeaderHandler $headerHandler,
-        $salesChannelContextFactory,
+        AbstractSalesChannelContextFactory $salesChannelContextFactory,
         CacheItemPoolInterface $cache,
         EventDispatcherInterface $eventDispatcher,
         EntityRepository $customerGroupRepository
@@ -124,10 +105,6 @@ class ExportController extends AbstractController
             : $this->doExport();
     }
 
-    /**
-     * @param Request $request
-     * @param SalesChannelContext|null $context
-     */
     protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
         $this->exportConfig = ExportConfigurationBase::getInstance($request);

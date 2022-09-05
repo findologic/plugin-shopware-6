@@ -33,20 +33,15 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class CmsController extends StorefrontController
 {
-    /** @var ShopwareCmsController */
-    private $decorated;
+    private ShopwareCmsController $decorated;
 
-    /** @var FilterHandler */
-    private $filterHandler;
+    private FilterHandler $filterHandler;
 
-    /** @var FindologicSearchService */
-    private $findologicSearchService;
+    private FindologicSearchService $findologicSearchService;
 
-    /** @var ServiceConfigResource */
-    private $serviceConfigResource;
+    private ServiceConfigResource $serviceConfigResource;
 
-    /** @var Config */
-    private $config;
+    private Config $config;
 
     public function __construct(
         ShopwareCmsController $decorated,

@@ -21,20 +21,11 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class ResponseParser
 {
-    /**
-     * @var Response
-     */
-    protected $response;
+    protected Response $response;
 
-    /**
-     * @var ServiceConfigResource|null
-     */
-    protected $serviceConfigResource;
+    protected ?ServiceConfigResource $serviceConfigResource;
 
-    /**
-     * @var Config
-     */
-    protected $config;
+    protected Config $config;
 
     public function __construct(
         Response $response,

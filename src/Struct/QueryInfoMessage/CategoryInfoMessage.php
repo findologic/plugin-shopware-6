@@ -6,11 +6,9 @@ namespace FINDOLOGIC\FinSearch\Struct\QueryInfoMessage;
 
 class CategoryInfoMessage extends QueryInfoMessage
 {
-    /** @var string */
-    protected $filterName;
+    protected string $filterName;
 
-    /** @var string */
-    protected $filterValue;
+    protected string $filterValue;
 
     public function __construct(string $filterName, string $filterValue)
     {

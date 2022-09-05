@@ -51,15 +51,9 @@ abstract class ProductRouteBase extends TestCase
      */
     protected $eventDispatcherMock;
 
-    /**
-     * @var ProductDefinition
-     */
-    protected $productDefinition;
+    protected ProductDefinition $productDefinition;
 
-    /**
-     * @var RequestCriteriaBuilder
-     */
-    protected $criteriaBuilder;
+    protected RequestCriteriaBuilder $criteriaBuilder;
 
     /**
      * @var SalesChannelRepositoryInterface|MockObject
@@ -77,7 +71,7 @@ abstract class ProductRouteBase extends TestCase
     protected $productStreamBuilderMock;
 
     /**
-     * @var ProductSearchBuilderInterface
+     * @var ProductSearchBuilderInterface|MockObject
      */
     protected $productSearchBuilderMock;
 

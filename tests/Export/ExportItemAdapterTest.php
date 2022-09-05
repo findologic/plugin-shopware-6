@@ -16,6 +16,7 @@ use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use Monolog\Logger;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -30,6 +31,7 @@ class ExportItemAdapterTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
 
+    /** @var Logger|MockObject */
     private $loggerMock = null;
 
     protected function setUp(): void

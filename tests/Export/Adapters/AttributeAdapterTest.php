@@ -44,11 +44,9 @@ class AttributeAdapterTest extends TestCase
     use ConfigHelper;
     use ExportItemAdapterHelper;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var AttributeAdapter */
-    protected $attributeAdapter;
+    protected AttributeAdapter $attributeAdapter;
 
     protected function setUp(): void
     {
@@ -72,7 +70,9 @@ class AttributeAdapterTest extends TestCase
             )
         );
 
-        $this->attributeAdapter = $this->getContainer()->get(AttributeAdapter::class);
+        $this->attributeAdapter = $this->getAttributeAdapter(
+            $this->getMockedConfig()
+        );
     }
 
     public function testAttributeContainsAttributeOfTheProduct(): void
@@ -93,8 +93,8 @@ class AttributeAdapterTest extends TestCase
         ]);
 
         $expected = array_merge(
-            $this->getAttributes($product, IntegrationType::API),
-            $this->getAttributes($variantProduct, IntegrationType::API)
+            $this->getAttributes($product, IntegrationType::DI),
+            $this->getAttributes($variantProduct, IntegrationType::DI)
         );
 
         $attributes = array_merge(

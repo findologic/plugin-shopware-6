@@ -38,40 +38,19 @@ abstract class SearchNavigationRequestHandler
         'title',
     ];
 
-    /**
-     * @var ServiceConfigResource
-     */
-    protected $serviceConfigResource;
+    protected ServiceConfigResource $serviceConfigResource;
 
-    /**
-     * @var Config
-     */
-    protected $config;
+    protected Config $config;
 
-    /**
-     * @var ApiConfig
-     */
-    protected $apiConfig;
+    protected ApiConfig $apiConfig;
 
-    /**
-     * @var ApiClient
-     */
-    protected $apiClient;
+    protected ApiClient $apiClient;
 
-    /**
-     * @var FindologicRequestFactory
-     */
-    protected $findologicRequestFactory;
+    protected FindologicRequestFactory $findologicRequestFactory;
 
-    /**
-     * @var SortingHandlerService
-     */
-    protected $sortingHandlerService;
+    protected SortingHandlerService $sortingHandlerService;
 
-    /**
-     * @var FilterHandler
-     */
-    protected $filterHandler;
+    protected FilterHandler $filterHandler;
 
     public function __construct(
         ServiceConfigResource $serviceConfigResource,

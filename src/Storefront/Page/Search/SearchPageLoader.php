@@ -19,20 +19,11 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SearchPageLoader extends ShopwareSearchPageLoader
 {
-    /**
-     * @var GenericPageLoader
-     */
-    private $genericLoader;
+    private GenericPageLoader $genericLoader;
 
-    /**
-     * @var AbstractProductSearchRoute|null
-     */
-    private $productSearchRoute;
+    private ?AbstractProductSearchRoute $productSearchRoute;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         GenericPageLoader $genericLoader,

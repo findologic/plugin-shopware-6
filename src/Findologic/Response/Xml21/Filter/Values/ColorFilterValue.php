@@ -6,13 +6,9 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values;
 
 class ColorFilterValue extends ColorImageFilterValue
 {
-    /** @var string */
-    protected $displayType = 'color';
+    protected string $displayType = 'color';
 
-    /**
-     * @var string|null
-     */
-    private $colorHexCode;
+    private ?string $colorHexCode;
 
     public function getColorHexCode(): ?string
     {

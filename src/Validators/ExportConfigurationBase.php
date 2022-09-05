@@ -9,13 +9,13 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class ExportConfigurationBase
 {
-    private $shopkey;
+    private string $shopkey;
 
-    private $productId;
+    private ?string $productId;
 
-    private $start;
+    private int $start;
 
-    private $count;
+    private int $count;
 
     public static function getInstance(Request $request): ExportConfigurationBase
     {

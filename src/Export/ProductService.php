@@ -33,14 +33,11 @@ class ProductService
 {
     public const CONTAINER_ID = 'fin_search.product_service';
 
-    /** @var Config */
-    private $config;
+    private Config $config;
 
-    /** @var ContainerInterface */
-    private $container;
+    private ContainerInterface $container;
 
-    /** @var SalesChannelContext|null */
-    private $salesChannelContext;
+    private ?SalesChannelContext $salesChannelContext;
 
     public function __construct(
         ContainerInterface $container,

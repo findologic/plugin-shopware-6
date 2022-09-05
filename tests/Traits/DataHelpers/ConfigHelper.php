@@ -47,6 +47,7 @@ trait ConfigHelper
         }
         $defaultConfig = [
             'active' => true,
+            'isStaging' => false,
             'shopkey' => $this->getShopkey(),
             'activeOnCategoryPages' => true,
             'crossSellingCategories' => [],
@@ -66,6 +67,12 @@ trait ConfigHelper
                         $salesChannelId,
                         $languageId,
                         $config['active']
+                    ],
+                    [
+                        'FinSearch.config.isStaging',
+                        $salesChannelId,
+                        $languageId,
+                        $config['isStaging']
                     ],
                     [
                         'FinSearch.config.shopkey',

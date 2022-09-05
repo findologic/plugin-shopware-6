@@ -22,10 +22,9 @@ class ProductSearchBuilderTest extends TestCase
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var MockObject|ProductSearchBuilderInterface */
+    /** @var ProductSearchBuilderInterface|MockObject */
     private $productSearchBuilderMock;
 
     public function setUp(): void

@@ -24,8 +24,7 @@ class UrlBuilderServiceTest extends TestCase
     use ProductHelper;
     use SalesChannelHelper;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
     /** @var RouterInterface|MockObject */
     private $urlBuilderService;

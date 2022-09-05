@@ -119,11 +119,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /** @var EventDispatcherInterface|MockObject */
     private $eventDispatcherMock;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var ProductSortingCollection */
-    private $sortingCollection;
+    private ProductSortingCollection $sortingCollection;
 
     public function setUp(): void
     {

@@ -30,40 +30,21 @@ class DynamicProductGroupServiceTest extends TestCase
     use ExportHelper;
     use ProductHelper;
 
-    /**
-     * @var Context
-     */
-    protected $defaultContext;
+    protected Context $defaultContext;
 
-    /**
-     * @var string
-     */
-    protected $validShopkey;
+    protected string $validShopkey;
 
-    /**
-     * @var string
-     */
-    protected $cacheKey;
+    protected string $cacheKey;
 
-    /**
-     * @var MockObject|CacheItemPoolInterface
-     */
+    /** @var CacheItemPoolInterface|MockObject */
     private $cache;
 
-    /**
-     * @var ContainerInterface
-     */
+    /** @var ContainerInterface|MockObject */
     private $containerMock;
 
-    /**
-     * @var int
-     */
-    private $start;
+    private int $start;
 
-    /**
-     * @var string
-     */
-    private $productId;
+    private ?string $productId;
 
     protected function setUp(): void
     {
@@ -73,12 +54,13 @@ class DynamicProductGroupServiceTest extends TestCase
         }
         $this->cache = $this->getMockBuilder(CacheItemPoolInterface::class)->disableOriginalConstructor()->getMock();
         $services['product.repository'] = $this->getContainer()->get('product.repository');
-        $this->containerMock = $this->getContainerMock($services);
         $this->start = 1;
+        $this->productId = null;
         $this->defaultContext = Context::createDefaultContext();
         $this->validShopkey = $this->getShopkey();
         $this->cacheKey = sprintf('%s_%s', 'fl_product_groups', $this->validShopkey);
         $this->createTestProductStreams();
+        $this->containerMock = $this->getContainerMock($services);
     }
 
     public function cacheWarmUpProvider(): array

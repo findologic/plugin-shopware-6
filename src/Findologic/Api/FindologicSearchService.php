@@ -32,38 +32,19 @@ class FindologicSearchService
 {
     private const FILTER_REQUEST_LIMIT = 0;
 
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
+    private ContainerInterface $container;
 
-    /**
-     * @var ApiClient
-     */
-    private $apiClient;
+    private ApiClient $apiClient;
 
-    /**
-     * @var ApiConfig
-     */
-    private $apiConfig;
+    private ApiConfig $apiConfig;
 
-    /**
-     * @var PluginConfig
-     */
-    private $pluginConfig;
+    private PluginConfig $pluginConfig;
 
-    /**
-     * @var SortingService
-     */
-    private $sortingService;
+    private SortingService $sortingService;
 
-    /** @var PaginationService */
-    private $paginationService;
+    private PaginationService $paginationService;
 
-    /**
-     * @var SortingHandlerService
-     */
-    private $sortingHandlerService;
+    private SortingHandlerService $sortingHandlerService;
 
     public function __construct(
         ContainerInterface $container,

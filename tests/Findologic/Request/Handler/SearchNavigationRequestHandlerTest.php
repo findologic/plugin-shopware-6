@@ -51,17 +51,15 @@ class SearchNavigationRequestHandlerTest extends TestCase
     /** @var Config|MockObject */
     private $configMock;
 
-    /** @var ApiConfig */
-    private $apiConfig;
+    private ApiConfig $apiConfig;
 
-    /** @var ApiClient */
+    /** @var ApiClient|MockObject */
     private $apiClientMock;
 
     /** @var FindologicRequestFactory|MockObject */
     private $findologicRequestFactoryMock;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
     protected function setUp(): void
     {

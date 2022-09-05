@@ -16,14 +16,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DefaultPropertiesAdapter
 {
-    /** @var Config $config */
-    protected $config;
+    protected Config $config;
 
-    /** @var SalesChannelContext $salesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var TranslatorInterface $translator */
-    protected $translator;
+    protected TranslatorInterface $translator;
 
     public function __construct(
         Config $config,

@@ -68,7 +68,8 @@
         <service id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory" public="true" />
 
         <service id="FINDOLOGIC\FinSearch\Export\HeaderHandler" public="true">
-            <argument id="service_container" type="service" />
+            <argument type="service" id="plugin.repository" />
+            <argument type="string" key="$shopwareVersion">%kernel.shopware_version%</argument>
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" public="true">

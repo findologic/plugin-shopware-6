@@ -31,8 +31,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class NavigationRequestHandler extends SearchNavigationRequestHandler
 {
-    /** @var ContainerInterface */
-    private $container;
+    private ContainerInterface $container;
 
     public function __construct(
         ServiceConfigResource $serviceConfigResource,

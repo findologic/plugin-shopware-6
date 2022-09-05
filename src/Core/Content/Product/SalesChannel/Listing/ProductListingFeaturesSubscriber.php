@@ -14,14 +14,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ProductListingFeaturesSubscriber implements EventSubscriberInterface
 {
-    /** @var ShopwareProductListingFeaturesSubscriber */
-    protected $decorated;
+    protected ShopwareProductListingFeaturesSubscriber $decorated;
 
-    /** @var FindologicSearchService */
-    protected $findologicSearchService;
+    protected FindologicSearchService $findologicSearchService;
 
-    /** @var bool */
-    protected $isListingRequestHandled = false;
+    protected bool $isListingRequestHandled = false;
 
     public function __construct(
         ShopwareProductListingFeaturesSubscriber $decorated,

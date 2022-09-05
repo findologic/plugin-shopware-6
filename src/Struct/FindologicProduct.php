@@ -48,83 +48,66 @@ use function method_exists;
  */
 class FindologicProduct extends Struct
 {
-    /** @var ProductEntity */
-    protected $product;
+    protected ProductEntity $product;
 
-    /** @var RouterInterface */
-    protected $router;
+    protected RouterInterface $router;
 
-    /** @var ContainerInterface */
-    protected $container;
+    protected ContainerInterface $container;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var string */
-    protected $shopkey;
+    protected string $shopkey;
 
     /** @var CustomerGroupEntity[] */
-    protected $customerGroups;
+    protected array $customerGroups;
 
-    /** @var string */
-    protected $name;
+    protected string $name;
 
     /** @var Attribute[] */
-    protected $attributes;
+    protected array $attributes;
 
     /** @var Price[] */
-    protected $prices;
+    protected array $prices;
 
-    /** @var string */
-    protected $description;
+    protected string $description;
 
-    /** @var DateAdded|null */
-    protected $dateAdded;
+    protected ?DateAdded $dateAdded;
 
-    /** @var string */
-    protected $url;
+    protected string$url;
 
     /** @var Keyword[] */
-    protected $keywords;
+    protected array $keywords;
 
     /** @var Image[] */
-    protected $images;
+    protected array $images;
 
-    /** @var int */
-    protected $salesFrequency = 0;
+    protected int $salesFrequency = 0;
 
     /** @var Usergroup[] */
-    protected $userGroups;
+    protected array $userGroups;
 
     /** @var Ordernumber[] */
-    protected $ordernumbers;
+    protected array $ordernumbers;
 
     /** @var Property[] */
-    protected $properties;
+    protected array $properties;
 
     /** @var Attribute[] */
-    protected $customFields = [];
+    protected array $customFields = [];
 
-    /** @var Item */
-    protected $item;
+    protected Item $item;
 
-    /** @var TranslatorInterface */
-    protected $translator;
+    protected TranslatorInterface $translator;
 
-    /** @var DynamicProductGroupService|null */
-    protected $dynamicProductGroupService;
+    protected ?DynamicProductGroupService $dynamicProductGroupService;
 
-    /** @var CategoryEntity */
-    protected $navigationCategory;
+    protected CategoryEntity $navigationCategory;
 
-    /** @var ProductImageService */
-    protected $productImageService;
+    protected ProductImageService $productImageService;
 
-    /** @var Config */
-    protected $config;
+    protected Config $config;
 
-    /** @var UrlBuilderService */
-    protected $urlBuilderService;
+    protected UrlBuilderService $urlBuilderService;
 
     /**
      * @param CustomerGroupEntity[] $customerGroups

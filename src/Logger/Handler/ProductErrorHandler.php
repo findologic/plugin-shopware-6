@@ -15,8 +15,7 @@ use Shopware\Core\Content\Product\ProductEntity;
 
 class ProductErrorHandler implements HandlerInterface
 {
-    /** @var ExportErrors */
-    private $exportErrors;
+    private ExportErrors $exportErrors;
 
     public function __construct(?ExportErrors $exportErrors = null)
     {

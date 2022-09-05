@@ -6,8 +6,7 @@ namespace FINDOLOGIC\FinSearch\Struct\QueryInfoMessage;
 
 class ShoppingGuideInfoMessage extends QueryInfoMessage
 {
-    /** @var string */
-    protected $shoppingGuide;
+    protected string $shoppingGuide;
 
     public function __construct(string $shoppingGuide)
     {

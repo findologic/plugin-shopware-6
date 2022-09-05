@@ -26,17 +26,14 @@ class XmlExportTest extends TestCase
     use SalesChannelHelper;
     use IntegrationTestBehaviour;
 
-    /** @var Logger */
-    protected $logger;
+    protected Logger $logger;
 
     /** @var string[] */
-    protected $crossSellCategories;
+    protected array $crossSellCategories;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var ProductErrorHandler */
-    protected $productErrorHandler;
+    protected ProductErrorHandler $productErrorHandler;
 
     protected function setUp(): void
     {

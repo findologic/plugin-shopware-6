@@ -10,14 +10,11 @@ class Pagination extends Struct
 {
     public const DEFAULT_LIMIT = 24;
 
-    /** @var int|null */
-    private $offset;
+    private ?int $offset;
 
-    /** @var int|null */
-    private $limit;
+    private ?int $limit;
 
-    /** @var int|null */
-    private $total;
+    private ?int $total;
 
     public function __construct(?int $limit, ?int $offset, ?int $total)
     {

@@ -11,11 +11,9 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class UrlAdapter
 {
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var UrlBuilderService */
-    protected $urlBuilderService;
+    protected UrlBuilderService $urlBuilderService;
 
     public function __construct(
         UrlBuilderService $urlBuilderService,

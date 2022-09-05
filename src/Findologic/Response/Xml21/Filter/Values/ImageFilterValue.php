@@ -6,6 +6,5 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values;
 
 class ImageFilterValue extends ColorImageFilterValue
 {
-    /** @var string */
-    protected $displayType = 'media';
+    protected string $displayType = 'media';
 }

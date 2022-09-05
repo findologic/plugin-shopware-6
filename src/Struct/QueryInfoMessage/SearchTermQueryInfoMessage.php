@@ -6,8 +6,7 @@ namespace FINDOLOGIC\FinSearch\Struct\QueryInfoMessage;
 
 class SearchTermQueryInfoMessage extends QueryInfoMessage
 {
-    /** @var string */
-    protected $query;
+    protected string $query;
 
     public function __construct(string $query)
     {

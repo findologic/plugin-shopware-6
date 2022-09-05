@@ -20,8 +20,7 @@ class ImagesAdapterTest extends TestCase
     use ProductHelper;
     use ImageHelper;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
     protected function setUp(): void
     {

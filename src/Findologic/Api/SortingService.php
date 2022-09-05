@@ -22,14 +22,11 @@ class SortingService
 {
     protected const TOPSELLER_SORT_FIELD = 'product.sales';
 
-    /** @var ProductListingSortingRegistry|null */
-    private $legacySortingRegistry;
+    private ?ProductListingSortingRegistry $legacySortingRegistry;
 
-    /** @var TranslatorInterface */
-    private $translator;
+    private TranslatorInterface $translator;
 
-    /** @var string */
-    private $shopwareVersion;
+    private string $shopwareVersion;
 
     public function __construct(
         ?ProductListingSortingRegistry $legacySortingRegistry,

@@ -34,50 +34,23 @@ class ProductListingRoute extends AbstractProductListingRoute
 {
     use SearchResultHelper;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
-    /**
-     * @var ProductDefinition
-     */
-    private $definition;
+    private ProductDefinition $definition;
 
-    /**
-     * @var RequestCriteriaBuilder
-     */
-    private $criteriaBuilder;
+    private RequestCriteriaBuilder $criteriaBuilder;
 
-    /**
-     * @var AbstractProductListingRoute
-     */
-    private $decorated;
+    private AbstractProductListingRoute $decorated;
 
-    /**
-     * @var SalesChannelRepositoryInterface
-     */
-    private $productRepository;
+    private SalesChannelRepositoryInterface $productRepository;
 
-    /**
-     * @var EntityRepositoryInterface
-     */
-    private $categoryRepository;
+    private EntityRepositoryInterface $categoryRepository;
 
-    /**
-     * @var ProductStreamBuilderInterface
-     */
-    private $productStreamBuilder;
+    private ProductStreamBuilderInterface $productStreamBuilder;
 
-    /**
-     * @var ServiceConfigResource
-     */
-    private $serviceConfigResource;
+    private ServiceConfigResource $serviceConfigResource;
 
-    /**
-     * @var Config
-     */
-    private $config;
+    private Config $config;
 
     public function __construct(
         AbstractProductListingRoute $decorated,

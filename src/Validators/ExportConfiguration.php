@@ -18,7 +18,7 @@ class ExportConfiguration extends ExportConfigurationBase
      *     message="Invalid key provided."
      * )
      */
-    private $shopkey;
+    private string $shopkey;
 
     /**
      * @Assert\NotBlank
@@ -27,9 +27,8 @@ class ExportConfiguration extends ExportConfigurationBase
      *     message="The value {{ value }} is not a valid {{ type }}."
      * )
      * @Assert\GreaterThanOrEqual(0)
-     * @var int
      */
-    private $start;
+    private int $start;
 
     /**
      * @Assert\NotBlank
@@ -38,15 +37,13 @@ class ExportConfiguration extends ExportConfigurationBase
      *     message="The value {{ value }} is not a valid {{ type }}."
      * )
      * @Assert\GreaterThan(0)
-     * @var int
      */
-    private $count;
+    private int $count;
 
     /**
      * @Assert\Type("string")
-     * @var string|null
      */
-    private $productId;
+    private ?string $productId;
 
     public function __construct(string $shopkey, int $start, int $count, ?string $productId = null)
     {
