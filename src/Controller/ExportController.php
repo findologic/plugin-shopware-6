@@ -22,8 +22,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
@@ -50,9 +48,6 @@ class ExportController extends AbstractController
 
     /** @var HeaderHandler */
     private $headerHandler;
-
-    /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
-    private $salesChannelContextFactory;
 
     /** @var CacheItemPoolInterface */
     private $cache;
@@ -87,14 +82,10 @@ class ExportController extends AbstractController
     /** @var Config */
     private $pluginConfig;
 
-    /**
-     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
-     */
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
         HeaderHandler $headerHandler,
-        $salesChannelContextFactory,
         CacheItemPoolInterface $cache,
         EventDispatcherInterface $eventDispatcher,
         EntityRepository $customerGroupRepository
@@ -102,7 +93,6 @@ class ExportController extends AbstractController
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
-        $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->cache = $cache;
         $this->eventDispatcher = $eventDispatcher;
         $this->customerGroupRepository = $customerGroupRepository;
