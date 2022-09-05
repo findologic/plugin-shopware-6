@@ -22,7 +22,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
@@ -46,8 +45,6 @@ class ExportController extends AbstractController
     private RouterInterface $router;
 
     private HeaderHandler $headerHandler;
-
-    private AbstractSalesChannelContextFactory $salesChannelContextFactory;
 
     private CacheItemPoolInterface $cache;
 
@@ -76,7 +73,6 @@ class ExportController extends AbstractController
         LoggerInterface $logger,
         RouterInterface $router,
         HeaderHandler $headerHandler,
-        AbstractSalesChannelContextFactory $salesChannelContextFactory,
         CacheItemPoolInterface $cache,
         EventDispatcherInterface $eventDispatcher,
         EntityRepository $customerGroupRepository
@@ -84,7 +80,6 @@ class ExportController extends AbstractController
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
-        $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->cache = $cache;
         $this->eventDispatcher = $eventDispatcher;
         $this->customerGroupRepository = $customerGroupRepository;
@@ -187,7 +182,7 @@ class ExportController extends AbstractController
                 sprintf(
                     '%s %s %s %s',
                     'Decorating the FindologicProduct or ProductService class is deprecated since 3.x',
-                    'and will be removed in 4.0! Consider decorating the responsible export adapters in',
+                    'and will be removed in 5.0! Consider decorating the responsible export adapters in',
                     'FinSearch/Export/Adapters or the relevant services in FinSearch/Export/Search.',
                     'Make sure to follow the upgrade guide at FinSearch/UPGRADE-3.0.'
                 )

@@ -16,12 +16,12 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
- * @deprecated FindologicProductFactory class will be removed in plugin version 4.0
+ * @deprecated FindologicProductFactory class will be removed in plugin version 5.0
  */
 class FindologicProductFactory
 {
     /**
-     * @deprecated FindologicProductFactory class will be removed in plugin version 4.0
+     * @deprecated FindologicProductFactory class will be removed in plugin version 5.0
      * @param CustomerGroupEntity[] $customerGroups
      *
      * @throws ProductHasNoCategoriesException
