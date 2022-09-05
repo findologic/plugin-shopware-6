@@ -28,11 +28,9 @@ class SalesFrequencyAdapterTest extends TestCase
     use OrderHelper;
     use RandomIdHelper;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var TestDataCollection */
-    private $ids;
+    private TestDataCollection $ids;
 
     protected function setUp(): void
     {

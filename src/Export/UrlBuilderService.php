@@ -22,14 +22,11 @@ use const PHP_URL_PATH;
 
 class UrlBuilderService
 {
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var RouterInterface */
-    private $router;
+    private RouterInterface $router;
 
-    /** @var EntityRepository */
-    private $categoryRepository;
+    private EntityRepository $categoryRepository;
 
     public function __construct(RouterInterface $router, EntityRepository $categoryRepository)
     {
@@ -99,8 +96,6 @@ class UrlBuilderService
      * * http://localhost:8000
      * * https://your-domain.com
      * * https://your-domain.com/de
-     *
-     * @return string|null
      */
     protected function getSalesChannelDomain(): ?string
     {

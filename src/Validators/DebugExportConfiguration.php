@@ -15,20 +15,19 @@ class DebugExportConfiguration extends ExportConfigurationBase
      *     message="Invalid key provided."
      * )
      */
-    private $shopkey;
+    private string $shopkey;
 
     /**
      * @Assert\NotBlank
      * @Assert\Uuid(
      *     strict=false
      *)
-     * @var string
      */
-    private $productId;
+    private string $productId;
 
-    private $start = 0;
+    private int $start = 0;
 
-    private $count = 1;
+    private int $count = 1;
 
     public function __construct(string $shopkey, string $productId)
     {

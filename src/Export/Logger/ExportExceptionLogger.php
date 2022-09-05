@@ -17,8 +17,7 @@ use Throwable;
 
 class ExportExceptionLogger
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(LoggerInterface $logger)
     {

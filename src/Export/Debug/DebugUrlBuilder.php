@@ -12,11 +12,9 @@ class DebugUrlBuilder
     private const EXPORT_PATH = 'findologic';
     private const DEBUG_PATH = 'findologic/debug';
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var string */
-    private $shopkey;
+    private string $shopkey;
 
     public function __construct(SalesChannelContext $salesChannelContext, string $shopkey)
     {

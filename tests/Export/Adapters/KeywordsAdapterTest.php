@@ -21,8 +21,7 @@ class KeywordsAdapterTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
     protected function setUp(): void
     {

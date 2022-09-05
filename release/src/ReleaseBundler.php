@@ -27,8 +27,7 @@ class ReleaseBundler
         '*.phar',
     ];
 
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(LoggerInterface $logger)
     {

@@ -29,50 +29,23 @@ class DynamicProductGroupService
     private const CACHE_ID_PRODUCT_GROUP = 'fl_product_groups';
     private const CACHE_LIFETIME_PRODUCT_GROUP = 60 * 11;
 
-    /**
-     * @var ProductStreamBuilderInterface
-     */
-    protected $productStreamBuilder;
+    protected ProductStreamBuilderInterface $productStreamBuilder;
 
-    /**
-     * @var EntityRepositoryInterface
-     */
-    protected $productRepository;
+    protected EntityRepositoryInterface $productRepository;
 
-    /**
-     * @var Context
-     */
-    protected $context;
+    protected Context $context;
 
-    /**
-     * @var ContainerInterface
-     */
-    protected $container;
+    protected ContainerInterface $container;
 
-    /**
-     * @var CacheItemPoolInterface
-     */
-    protected $cache;
+    protected CacheItemPoolInterface $cache;
 
-    /**
-     * @var string
-     */
-    protected $shopkey;
+    protected string $shopkey;
 
-    /**
-     * @var int
-     */
-    protected $start;
+    protected int $start;
 
-    /**
-     * @var SalesChannelEntity
-     */
-    private $salesChannel;
+    private SalesChannelEntity $salesChannel;
 
-    /**
-     * @var EntityRepositoryInterface
-     */
-    private $categoryRepository;
+    private EntityRepositoryInterface $categoryRepository;
 
     private function __construct(
         ContainerInterface $container,

@@ -45,9 +45,7 @@ class Xml21ResponseParserTest extends TestCase
     use ExtensionHelper;
     use ConfigHelper;
 
-    /**
-     * @var ServiceConfigResource|MockObject
-     */
+    /** @var ServiceConfigResource|MockObject */
     private $serviceConfigResource;
 
     protected function setUp(): void

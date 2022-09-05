@@ -8,14 +8,11 @@ use Psr\Log\LoggerInterface;
 
 class ShopwarePluginRelease
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /** @var ReleaseBundler */
-    private $releaseBundler;
+    private ReleaseBundler $releaseBundler;
 
-    /** @var ReleaseTagger */
-    private $releaseTagger;
+    private ReleaseTagger $releaseTagger;
 
     public function __construct(
         LoggerInterface $logger,

@@ -12,11 +12,11 @@ use FINDOLOGIC\FinSearch\Export\Errors\ProductError;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Handler\HandlerInterface;
 use Shopware\Core\Content\Product\ProductEntity;
+use Throwable;
 
 class ProductErrorHandler implements HandlerInterface
 {
-    /** @var ExportErrors */
-    private $exportErrors;
+    private ExportErrors $exportErrors;
 
     public function __construct(?ExportErrors $exportErrors = null)
     {
@@ -108,7 +108,7 @@ class ProductErrorHandler implements HandlerInterface
         }
     }
 
-    protected function handleGeneralException(Exception $e): void
+    protected function handleGeneralException(Throwable $e): void
     {
         $this->exportErrors->addGeneralError($e->getMessage());
     }

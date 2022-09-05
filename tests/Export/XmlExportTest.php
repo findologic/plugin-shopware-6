@@ -7,14 +7,13 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
+use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use Monolog\Logger;
-use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Defaults;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
@@ -26,17 +25,14 @@ class XmlExportTest extends TestCase
     use SalesChannelHelper;
     use IntegrationTestBehaviour;
 
-    /** @var Logger */
-    protected $logger;
+    protected Logger $logger;
 
     /** @var string[] */
-    protected $crossSellCategories;
+    protected array $crossSellCategories;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var ProductErrorHandler */
-    protected $productErrorHandler;
+    protected ProductErrorHandler $productErrorHandler;
 
     protected function setUp(): void
     {

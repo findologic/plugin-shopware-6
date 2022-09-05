@@ -25,11 +25,9 @@ class ExportTest extends TestCase
     /** @var ContainerInterface|MockObject */
     private $containerMock;
 
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
     protected function setUp(): void
     {

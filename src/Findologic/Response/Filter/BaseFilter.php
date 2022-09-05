@@ -11,20 +11,16 @@ abstract class BaseFilter
     public const RATING_FILTER_NAME = 'rating';
     public const CAT_FILTER_NAME = 'cat';
 
-    /** @var string|null */
-    protected $displayType;
+    protected ?string $displayType;
 
-    /** @var string */
-    protected $id;
+    protected string $id;
 
-    /** @var string */
-    protected $name;
+    protected string $name;
 
     /** @var FilterValue[] */
-    protected $values;
+    protected array $values;
 
-    /** @var bool */
-    protected $hidden = false;
+    protected bool $hidden = false;
 
     public function __construct(string $id, string $name, array $values = [])
     {

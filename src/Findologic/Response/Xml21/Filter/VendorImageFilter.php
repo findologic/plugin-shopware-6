@@ -6,6 +6,5 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter;
 
 class VendorImageFilter extends Filter
 {
-    /** @var string */
-    protected $displayType = 'media';
+    protected ?string $displayType = 'media';
 }

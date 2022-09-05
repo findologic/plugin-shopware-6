@@ -6,11 +6,10 @@ namespace FINDOLOGIC\FinSearch\Export\Errors;
 
 class ProductError
 {
-    /** @var string */
-    private $id;
+    private string $id;
 
     /** @var string[] */
-    private $errors;
+    private array $errors;
 
     public function __construct(string $id, array $errors)
     {

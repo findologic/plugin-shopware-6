@@ -12,11 +12,9 @@ class BeforeItemAdaptEvent extends Event
 {
     public const NAME = 'fin_search.export.before_item_adapt';
 
-    /** @var ProductEntity */
-    protected $product;
+    protected ProductEntity $product;
 
-    /** @var Item */
-    protected $item;
+    protected Item $item;
 
     public function __construct(ProductEntity $product, Item $item)
     {
