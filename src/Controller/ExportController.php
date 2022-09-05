@@ -16,7 +16,6 @@ use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -258,10 +257,6 @@ class ExportController extends AbstractController
 
     protected function warmUpDynamicProductGroups(): void
     {
-        if (Utils::versionLowerThan('6.3.1.0', $this->container->getParameter('kernel.shopware_version'))) {
-            return;
-        }
-
         $dynamicProductGroupService = DynamicProductGroupService::getInstance(
             $this->container,
             $this->cache,

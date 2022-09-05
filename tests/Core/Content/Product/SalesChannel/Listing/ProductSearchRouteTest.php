@@ -57,7 +57,6 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->criteriaBuilder,
             $this->serviceConfigResourceMock,
             $this->findologicConfigServiceMock,
-            $this->getContainer()->getParameter('kernel.shopware_version'),
             $this->configMock
         );
     }
@@ -196,17 +195,13 @@ class ProductSearchRouteTest extends ProductRouteBase
                 $this->criteriaBuilder,
                 $this->serviceConfigResourceMock,
                 $this->findologicConfigServiceMock,
-                $this->getContainer()->getParameter('kernel.shopware_version'),
                 $this->configMock
             ])
             ->onlyMethods(['addElasticSearchContext'])
             ->getMock();
 
-        if (Utils::versionGreaterOrEqual('6.4.0.0')) {
-            $productSearchRouteMock->expects($this->once())->method('addElasticSearchContext');
-        } else {
-            $productSearchRouteMock->expects($this->never())->method('addElasticSearchContext');
-        }
+        $productSearchRouteMock->expects($this->once())
+            ->method('addElasticSearchContext');
 
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true);
         $context = $salesChannelContextMock->getContext();

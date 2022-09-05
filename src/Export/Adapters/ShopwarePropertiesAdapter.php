@@ -40,9 +40,8 @@ class ShopwarePropertiesAdapter
 
         foreach ($product->getProperties() as $propertyGroupOptionEntity) {
             $group = $propertyGroupOptionEntity->getGroup();
-            // Method getFilterable exists since Shopware 6.2.x.
-            if ($group && method_exists($group, 'getFilterable') && !$group->getFilterable()) {
-                // Non filterable properties should be available in the properties field.
+            if ($group && !$group->getFilterable()) {
+                // Non-filterable properties should be available in the properties field.
                 $properties = array_merge(
                     $properties,
                     $this->getAttributePropertyAsProperty($propertyGroupOptionEntity)
