@@ -6,6 +6,5 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter;
 
 class ColorPickerFilter extends Filter
 {
-    /** @var string */
-    protected $displayType = 'color';
+    protected ?string $displayType = 'color';
 }

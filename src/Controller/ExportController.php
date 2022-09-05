@@ -40,47 +40,34 @@ use Symfony\Component\Validator\Validation;
  */
 class ExportController extends AbstractController
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /** @var Router */
-    private $router;
+    private RouterInterface $router;
 
-    /** @var HeaderHandler */
-    private $headerHandler;
+    private HeaderHandler $headerHandler;
 
-    /** @var CacheItemPoolInterface */
-    private $cache;
+    private CacheItemPoolInterface $cache;
 
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
-    /** @var EntityRepository */
-    private $customerGroupRepository;
+    private EntityRepository $customerGroupRepository;
 
-    /** @var ?SalesChannelContext */
-    private $salesChannelContext;
+    private ?SalesChannelContext $salesChannelContext;
 
-    /** @var ExportConfigurationBase */
-    private $exportConfig;
+    private ExportConfigurationBase $exportConfig;
 
-    /** @var ExportContext */
-    private $exportContext;
+    private ExportContext $exportContext;
 
-    /** @var ProductService */
-    private $productService;
+    private ProductService $productService;
 
-    /** @var ProductSearcher */
-    private $productSearcher;
+    private ProductSearcher $productSearcher;
 
     /** @var Export|XmlExport|ProductIdExport */
     private $export;
 
-    /** @var SalesChannelService|null */
-    private $salesChannelService;
+    private ?SalesChannelService $salesChannelService;
 
-    /** @var Config */
-    private $pluginConfig;
+    private Config $pluginConfig;
 
     public function __construct(
         LoggerInterface $logger,
@@ -113,10 +100,6 @@ class ExportController extends AbstractController
             : $this->doExport();
     }
 
-    /**
-     * @param Request $request
-     * @param SalesChannelContext|null $context
-     */
     protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
         $this->exportConfig = ExportConfigurationBase::getInstance($request);

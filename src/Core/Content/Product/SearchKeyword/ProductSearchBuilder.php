@@ -18,15 +18,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ProductSearchBuilder implements ProductSearchBuilderInterface
 {
-    /**
-     * @var ProductSearchTermInterpreterInterface
-     */
-    private $interpreter;
+    private ProductSearchTermInterpreterInterface $interpreter;
 
-    /**
-     * @var ProductSearchBuilderInterface
-     */
-    private $decorated;
+    private ProductSearchBuilderInterface $decorated;
 
     public function __construct(
         ProductSearchTermInterpreterInterface $interpreter,

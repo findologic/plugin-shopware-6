@@ -14,8 +14,7 @@ use Symfony\Component\Routing\RouterInterface;
 
 class ProductIdExport extends XmlExport
 {
-    /** @var ProductErrorHandler */
-    private $errorHandler;
+    private ProductErrorHandler $errorHandler;
 
     public function __construct(
         RouterInterface $router,

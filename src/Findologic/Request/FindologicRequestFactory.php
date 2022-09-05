@@ -25,11 +25,9 @@ abstract class FindologicRequestFactory
     private const CACHE_VERSION_LIFETIME = 60 * 60 * 24;
     private const CACHE_VERSION_KEY = 'finsearch_version';
 
-    /** @var CacheItemPoolInterface */
-    private $cache;
+    private CacheItemPoolInterface $cache;
 
-    /** @var ContainerInterface */
-    private $container;
+    private ContainerInterface $container;
 
     public function __construct(CacheItemPoolInterface $cache, ContainerInterface $container)
     {

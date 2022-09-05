@@ -6,53 +6,37 @@ namespace FINDOLOGIC\FinSearch\Export\Adapters;
 
 class AdapterFactory
 {
-    /** @var AttributeAdapter */
-    private $attributeAdapter;
+    private AttributeAdapter $attributeAdapter;
 
-    /** @var BonusAdapter */
-    private $bonusAdapter;
+    private BonusAdapter $bonusAdapter;
 
-    /** @var DateAddedAdapter */
-    private $dateAddedAdapter;
+    private DateAddedAdapter $dateAddedAdapter;
 
-    /** @var DescriptionAdapter */
-    private $descriptionAdapter;
+    private DescriptionAdapter $descriptionAdapter;
 
-    /** @var DefaultPropertiesAdapter */
-    private $defaultPropertiesAdapter;
+    private DefaultPropertiesAdapter $defaultPropertiesAdapter;
 
-    /** @var ImagesAdapter */
-    private $imagesAdapter;
+    private ImagesAdapter $imagesAdapter;
 
-    /** @var KeywordsAdapter */
-    private $keywordsAdapter;
+    private KeywordsAdapter $keywordsAdapter;
 
-    /** @var NameAdapter */
-    private $nameAdapter;
+    private NameAdapter $nameAdapter;
 
-    /** @var OrderNumberAdapter */
-    private $orderNumberAdapter;
+    private OrderNumberAdapter $orderNumberAdapter;
 
-    /** @var PriceAdapter */
-    private $priceAdapter;
+    private PriceAdapter $priceAdapter;
 
-    /** @var SalesFrequencyAdapter */
-    private $salesFrequencyAdapter;
+    private SalesFrequencyAdapter $salesFrequencyAdapter;
 
-    /** @var SortAdapter */
-    private $sortAdapter;
+    private SortAdapter $sortAdapter;
 
-    /** @var SummaryAdapter */
-    private $summaryAdapter;
+    private SummaryAdapter $summaryAdapter;
 
-    /** @var ShopwarePropertiesAdapter */
-    private $shopwarePropertiesAdapter;
+    private ShopwarePropertiesAdapter $shopwarePropertiesAdapter;
 
-    /** @var UrlAdapter */
-    private $urlAdapter;
+    private UrlAdapter $urlAdapter;
 
-    /** @var UserGroupsAdapter */
-    private $userGroupsAdapter;
+    private UserGroupsAdapter $userGroupsAdapter;
 
     public function __construct(
         AttributeAdapter $attributeAdapter,

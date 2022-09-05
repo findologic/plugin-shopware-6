@@ -34,7 +34,7 @@ class ProductSearchRouteTest extends ProductRouteBase
     /** @var AbstractProductSearchRoute|MockObject */
     private $original;
 
-    /** @var MockObject|SalesChannelContext */
+    /** @var SalesChannelContext| MockObject */
     private $salesChannelContext;
 
     protected function setUp(): void

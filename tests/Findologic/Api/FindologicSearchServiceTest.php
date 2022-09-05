@@ -36,8 +36,7 @@ class FindologicSearchServiceTest extends TestCase
     /** @var ApiClient|MockObject */
     private $apiClientMock;
 
-    /** @var ApiConfig */
-    private $apiConfig;
+    private ApiConfig $apiConfig;
 
     /** @var PluginConfig|MockObject */
     private $pluginConfigMock;

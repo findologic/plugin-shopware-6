@@ -8,8 +8,7 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class LandingPage extends Struct
 {
-    /** @var string */
-    protected $link;
+    protected string $link;
 
     public function __construct(string $link)
     {

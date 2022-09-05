@@ -8,13 +8,9 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
 
 abstract class ColorImageFilterValue extends FilterValue
 {
-    /** @var string */
-    protected $displayType;
+    protected string $displayType;
 
-    /**
-     * @var Media|null
-     */
-    protected $media;
+    protected ?Media $media;
 
     public function getMedia(): ?Media
     {

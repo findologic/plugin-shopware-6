@@ -15,32 +15,23 @@ class ProductDebugService
 {
     private const NO_PRODUCT_EXPORTED = 'No product is exported';
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var ProductDebugSearcher */
-    private $productDebugSearcher;
+    private ProductDebugSearcher $productDebugSearcher;
 
-    /** @var ProductCriteriaBuilder */
-    private $productCriteriaBuilder;
+    private ProductCriteriaBuilder $productCriteriaBuilder;
 
-    /** @var string */
-    private $productId;
+    private string $productId;
 
-    /** @var ExportErrors */
-    private $exportErrors;
+    private ExportErrors $exportErrors;
 
-    /** @var ProductEntity */
-    private $requestedProduct;
+    private ?ProductEntity $requestedProduct;
 
-    /** @var ProductEntity */
-    private $exportedMainProduct;
+    private ?ProductEntity $exportedMainProduct;
 
-    /** @var ?XMLItem */
-    private $xmlItem;
+    private ?XMLItem $xmlItem;
 
-    /** @var DebugUrlBuilder */
-    private $debugUrlBuilder;
+    private DebugUrlBuilder $debugUrlBuilder;
 
     public function __construct(
         SalesChannelContext $salesChannelContext,
@@ -127,11 +118,7 @@ class ProductDebugService
 
     private function isExported(): bool
     {
-        if ($isVisible = $this->isVisible()) {
-            return $this->isExportedVariant();
-        }
-
-        return $isVisible;
+        return $this->isVisible() && $this->isExportedVariant();
     }
 
     private function isVisible(): bool

@@ -92,7 +92,7 @@ trait ProductHelper
         $thirdOptionId = Uuid::randomHex();
         $optionGroupId = Uuid::randomHex();
 
-        $parentId = $parentId ?? Uuid::randomHex();
+        $parentId ??= Uuid::randomHex();
 
         $variants = [];
         $variants[] = $this->getBasicVariantData([

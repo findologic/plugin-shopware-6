@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
+use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
@@ -30,8 +31,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Xml21ResponseParser extends ResponseParser
 {
-    /** @var Xml21Response */
-    protected $response;
+    /** @var Xml21Response $response */
+    protected Response $response;
 
     public function getProductIds(): array
     {

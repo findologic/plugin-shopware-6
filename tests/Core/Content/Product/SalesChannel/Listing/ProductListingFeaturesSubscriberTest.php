@@ -114,11 +114,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /** @var EventDispatcherInterface|MockObject */
     private $eventDispatcherMock;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var ProductSortingCollection */
-    private $sortingCollection;
+    private ProductSortingCollection $sortingCollection;
 
     public function setUp(): void
     {
@@ -650,7 +648,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $paginationService = new PaginationService();
         $sortingHandlerService = $this->getContainer()->get(SortingHandlerService::class);
 
-        $findologicSearchService = $findologicSearchService ?? new FindologicSearchService(
+        $findologicSearchService ??= new FindologicSearchService(
             $this->containerMock,
             $this->apiClientMock,
             $this->apiConfigMock,

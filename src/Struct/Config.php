@@ -32,44 +32,31 @@ class Config extends Struct
         'mainVariant'
     ];
 
-    /** @var FindologicConfigService */
-    private $systemConfigService;
+    private FindologicConfigService $systemConfigService;
 
-    /** @var string|null */
-    private $shopkey;
+    private ?string $shopkey;
 
-    /** @var bool */
-    private $active;
+    private bool $active;
 
-    /** @var bool */
-    private $activeOnCategoryPages;
+    private bool $activeOnCategoryPages;
 
-    /** @var string */
-    private $searchResultContainer;
+    private string $searchResultContainer;
 
-    /** @var string */
-    private $navigationResultContainer;
+    private string $navigationResultContainer;
 
-    /** @var string|null */
-    private $integrationType;
+    private ?string $integrationType = null;
 
-    /** @var ServiceConfigResource */
-    private $serviceConfigResource;
+    private ServiceConfigResource $serviceConfigResource;
 
-    /** @var bool */
-    private $staging;
+    private bool $staging;
 
-    /** @var bool */
-    private $initialized = false;
+    private bool $initialized = false;
 
-    /** @var string */
-    private $filterPosition;
+    private string $filterPosition;
 
-    /** @var string */
-    private $mainVariant = MainVariant::SHOPWARE_DEFAULT;
+    private string $mainVariant = MainVariant::SHOPWARE_DEFAULT;
 
-    /** @var array */
-    private $crossSellingCategories = [];
+    private array $crossSellingCategories = [];
 
     public function __construct(
         FindologicConfigService $systemConfigService,
@@ -225,7 +212,7 @@ class Config extends Struct
     }
 
     /**
-     * @return string|bool|null
+     * @return string|bool|array|null
      */
     private function getConfig(?string $salesChannelId, ?string $languageId, string $configKey, $default = null)
     {

@@ -24,8 +24,7 @@ class DefaultPropertiesAdapterTest extends TestCase
     use ProductHelper;
     use PropertiesHelper;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
     protected function setUp(): void
     {
