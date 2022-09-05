@@ -199,7 +199,7 @@ class ExportController extends AbstractController
                 sprintf(
                     '%s %s %s %s',
                     'Decorating the FindologicProduct or ProductService class is deprecated since 3.x',
-                    'and will be removed in 4.0! Consider decorating the responsible export adapters in',
+                    'and will be removed in 5.0! Consider decorating the responsible export adapters in',
                     'FinSearch/Export/Adapters or the relevant services in FinSearch/Export/Search.',
                     'Make sure to follow the upgrade guide at FinSearch/UPGRADE-3.0.'
                 )

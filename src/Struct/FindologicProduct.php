@@ -44,7 +44,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use function method_exists;
 
 /**
- * @deprecated FindologicProduct class will be removed in plugin version 4.0
+ * @deprecated FindologicProduct class will be removed in plugin version 5.0
  */
 class FindologicProduct extends Struct
 {
@@ -184,7 +184,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @throws AccessEmptyPropertyException
      */
     public function getName(): string
@@ -197,7 +197,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @throws ProductHasNoNameException
      */
     protected function setName(): void
@@ -211,7 +211,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasName(): bool
     {
@@ -219,7 +219,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Attribute[]
      * @throws AccessEmptyPropertyException
      */
@@ -233,7 +233,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @throws ProductHasNoCategoriesException
      */
     protected function setAttributes(): void
@@ -246,7 +246,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasAttributes(): bool
     {
@@ -254,7 +254,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Price[]
      * @throws AccessEmptyPropertyException
      */
@@ -268,7 +268,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @throws ProductHasNoPricesException
      */
     protected function setPrices(): void
@@ -278,7 +278,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasPrices(): bool
     {
@@ -286,7 +286,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @throws AccessEmptyPropertyException
      */
     public function getDescription(): string
@@ -299,7 +299,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setDescription(): void
     {
@@ -310,7 +310,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return bool
      */
     public function hasDescription(): bool
@@ -319,7 +319,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @throws AccessEmptyPropertyException
      */
     public function getDateAdded(): DateAdded
@@ -332,7 +332,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      *
      */
     protected function setDateAdded(): void
@@ -346,7 +346,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasDateAdded(): bool
     {
@@ -354,7 +354,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @throws AccessEmptyPropertyException
      */
     public function getUrl(): string
@@ -367,7 +367,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setUrl(): void
     {
@@ -375,7 +375,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasUrl(): bool
     {
@@ -383,7 +383,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Keyword[]
      * @throws AccessEmptyPropertyException
      */
@@ -397,7 +397,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setKeywords(): void
     {
@@ -424,7 +424,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasKeywords(): bool
     {
@@ -432,7 +432,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Image[]
      * @throws AccessEmptyPropertyException
      */
@@ -446,7 +446,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setImages(): void
     {
@@ -454,7 +454,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasImages(): bool
     {
@@ -462,7 +462,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function getSalesFrequency(): int
     {
@@ -470,7 +470,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return void
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface\
@@ -496,7 +496,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasSalesFrequency(): bool
     {
@@ -505,7 +505,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Usergroup[]
      * @throws AccessEmptyPropertyException
      */
@@ -519,7 +519,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setUserGroups(): void
     {
@@ -531,7 +531,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasUserGroups(): bool
     {
@@ -539,7 +539,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Ordernumber[]
      * @throws AccessEmptyPropertyException
      */
@@ -553,7 +553,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setOrdernumbers(): void
     {
@@ -564,7 +564,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasOrdernumbers(): bool
     {
@@ -572,7 +572,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Property[]
      * @throws AccessEmptyPropertyException
      */
@@ -586,7 +586,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setProperties(): void
     {
@@ -681,7 +681,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     public function hasProperties(): bool
     {
@@ -689,7 +689,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setVendors(): void
     {
@@ -707,7 +707,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Attribute[]
      */
     protected function getAttributeProperties(ProductEntity $productEntity): array
@@ -734,7 +734,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Property[]
      */
     protected function getAttributePropertyAsProperty(PropertyGroupOptionEntity $propertyGroupOptionEntity): array
@@ -757,7 +757,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Attribute[]
      */
     protected function getAttributePropertyAsAttribute(PropertyGroupOptionEntity $propertyGroupOptionEntity): array
@@ -782,7 +782,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setAttributeProperties(): void
     {
@@ -793,7 +793,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setAdditionalAttributes(): void
     {
@@ -807,7 +807,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setOrdernumberByProduct(ProductEntity $product): void
     {
@@ -823,7 +823,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @throws ProductHasNoCategoriesException
      */
     protected function setCategoriesAndCatUrls(): void
@@ -870,7 +870,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setVariantPrices(): void
     {
@@ -888,7 +888,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Price[]
      */
     protected function getPricesFromProduct(ProductEntity $product): array
@@ -933,7 +933,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @throws ProductHasNoPricesException
      */
     protected function setProductPrices(): void
@@ -946,7 +946,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function setCustomFieldAttributes(): void
     {
@@ -960,7 +960,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function getCustomFieldProperties(ProductEntity $product): array
     {
@@ -995,7 +995,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @return Attribute[]
      */
     public function getCustomFields(): array
@@ -1004,7 +1004,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @param array<string, int, bool>|string|int|bool $value
      *
      * @return array<string, int, bool>|string|int|bool
@@ -1036,7 +1036,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function translateBooleanValue(bool $value)
     {
@@ -1046,7 +1046,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function addProperty(string $name, $value): void
     {
@@ -1058,7 +1058,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function parseCategoryAttributes(
         array $categoryCollection,
@@ -1105,7 +1105,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function isDirectIntegration(): bool
     {
@@ -1118,7 +1118,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * For API Integrations, we have to remove special characters from the attribute key as a requirement for
      * sending data via API.
      */
@@ -1132,7 +1132,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      */
     protected function decodeHtmlEntities(array $values): array
     {
@@ -1144,7 +1144,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * @param mixed $value
      * @return string|mixed
      */
@@ -1158,7 +1158,7 @@ class FindologicProduct extends Struct
     }
 
     /**
-     * @deprecated FindologicProduct class will be removed in plugin version 4.0
+     * @deprecated FindologicProduct class will be removed in plugin version 5.0
      * Checks if the product, or any of its children has any category assigned.
      */
     protected function hasCategories(): bool

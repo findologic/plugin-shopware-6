@@ -111,7 +111,7 @@ class XmlExport extends Export
     }
 
     /**
-     * @deprecated buildItemsLegacy function will be removed in plugin version 4.0
+     * @deprecated buildItemsLegacy function will be removed in plugin version 5.0
      *
      * Converts given product entities to Findologic XML items. In case items can not be exported, they won't
      * be returned. Details about why specific products can not be exported, can be found in the logs.
