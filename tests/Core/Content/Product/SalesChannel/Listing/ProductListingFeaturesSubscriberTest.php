@@ -688,7 +688,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $paginationService = new PaginationService();
         $sortingHandlerService = $this->getContainer()->get(SortingHandlerService::class);
 
-        $findologicSearchService = $findologicSearchService ?? new FindologicSearchService(
+        $findologicSearchService ??= new FindologicSearchService(
             $this->containerMock,
             $this->apiClientMock,
             $this->apiConfigMock,

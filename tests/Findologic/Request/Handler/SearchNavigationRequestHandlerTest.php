@@ -191,9 +191,9 @@ class SearchNavigationRequestHandlerTest extends TestCase
         ?Request $request = null,
         ?Criteria $criteria = null
     ): ProductSearchCriteriaEvent {
-        $salesChannelContext = $salesChannelContext ?? $this->buildSalesChannelContext();
-        $request = $request ?? new Request();
-        $criteria = $criteria ?? new Criteria();
+        $salesChannelContext ??= $this->buildSalesChannelContext();
+        $request ??= new Request();
+        $criteria ??= new Criteria();
 
         return new ProductSearchCriteriaEvent($request, $criteria, $salesChannelContext);
     }
@@ -203,9 +203,9 @@ class SearchNavigationRequestHandlerTest extends TestCase
         ?Request $request = null,
         ?Criteria $criteria = null
     ): ProductListingCriteriaEvent {
-        $salesChannelContext = $salesChannelContext ?? $this->buildSalesChannelContext();
-        $request = $request ?? new Request();
-        $criteria = $criteria ?? new Criteria();
+        $salesChannelContext ??= $this->buildSalesChannelContext();
+        $request ??= new Request();
+        $criteria ??= new Criteria();
 
         return new ProductListingCriteriaEvent($request, $criteria, $salesChannelContext);
     }

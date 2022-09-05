@@ -86,7 +86,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         SalesChannelContext $salesChannelContext,
         ?Criteria $criteria = null
     ): ProductListingRouteResponse {
-        $criteria = $criteria ?? $this->criteriaBuilder->handleRequest(
+        $criteria ??= $this->criteriaBuilder->handleRequest(
             $request,
             new Criteria(),
             $this->definition,

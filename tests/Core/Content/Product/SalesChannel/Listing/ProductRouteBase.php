@@ -219,7 +219,7 @@ abstract class ProductRouteBase extends TestCase
         if ($supportsProductStreams) {
             $productStream = new ProductStreamEntity();
             $productStream->setId($streamId ?? Uuid::randomHex());
-            $productAssignmentType = $productAssignmentType ?? CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT;
+            $productAssignmentType ??= CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT;
 
             $category->setProductAssignmentType($productAssignmentType);
             $category->setProductStream($productStream);

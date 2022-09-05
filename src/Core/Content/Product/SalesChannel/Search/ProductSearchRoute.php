@@ -87,7 +87,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
             $this->addElasticSearchContext($context);
         }
 
-        $criteria = $criteria ?? $this->criteriaBuilder->handleRequest(
+        $criteria ??= $this->criteriaBuilder->handleRequest(
             $request,
             new Criteria(),
             $this->definition,
