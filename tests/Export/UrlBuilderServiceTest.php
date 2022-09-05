@@ -9,7 +9,7 @@ use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\MockObject\MockObject;
-use FINDOLOGIC\FinSearch\Tests\Utils\UtilsTest;
+use FINDOLOGIC\FinSearch\Tests\TestHelper\Helper;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -45,30 +45,6 @@ class UrlBuilderServiceTest extends TestCase
         $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
     }
 
-    /**
-     * @dataProvider removeInvalidUrlsProvider
-     */
-    public function testRemoveInvalidUrls(array $seoUrlArray, int $expectedUrlCount): void
-    {
-        $seoUrlCollection = new SeoUrlCollection();
-        foreach ($seoUrlArray as $seoUrl) {
-            $seoUrlEntity = new SeoUrlEntity();
-            $seoUrlEntity->setId(Uuid::randomHex());
-            $seoUrlEntity->setSeoPathInfo($seoUrl['seoPathInfo']);
-
-            $seoUrlCollection->add($seoUrlEntity);
-        }
-
-        $this->assertSame(
-            $expectedUrlCount,
-            UtilsTest::callMethod(
-                $this->urlBuilderService,
-                'removeInvalidUrls',
-                [$seoUrlCollection]
-            )->count()
-        );
-    }
-
     public function removeInvalidUrlsProvider(): array
     {
         return [
@@ -101,36 +77,27 @@ class UrlBuilderServiceTest extends TestCase
     }
 
     /**
-     * @dataProvider productSeoPathProvider
+     * @dataProvider removeInvalidUrlsProvider
      */
-    public function testGetProductSeoPath(array $seoUrlArray, ?string $expectedSeoUrl): void
+    public function testRemoveInvalidUrls(array $seoUrlArray, int $expectedUrlCount): void
     {
         $seoUrlCollection = new SeoUrlCollection();
-        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
-        $languageId = $this->salesChannelContext->getSalesChannel()->getLanguageId();
-
-        foreach ($seoUrlArray as $seoPath) {
+        foreach ($seoUrlArray as $seoUrl) {
             $seoUrlEntity = new SeoUrlEntity();
             $seoUrlEntity->setId(Uuid::randomHex());
-            $seoUrlEntity->setSalesChannelId($salesChannelId);
-            $seoUrlEntity->setLanguageId($languageId);
-            $seoUrlEntity->setSeoPathInfo($seoPath['seoPathInfo']);
-            $seoUrlEntity->setIsCanonical($seoPath['isCanonical']);
-            $seoUrlEntity->setIsDeleted($seoPath['isDeleted']);
+            $seoUrlEntity->setSeoPathInfo($seoUrl['seoPathInfo']);
 
             $seoUrlCollection->add($seoUrlEntity);
         }
 
-        $product = $this->createTestProduct();
-        $product->setSeoUrls($seoUrlCollection);
-
-        $seoUrl = UtilsTest::callMethod(
-            $this->urlBuilderService,
-            'getProductSeoPath',
-            [$product]
+        $this->assertSame(
+            $expectedUrlCount,
+            Helper::callMethod(
+                $this->urlBuilderService,
+                'removeInvalidUrls',
+                [$seoUrlCollection]
+            )->count()
         );
-
-        $this->assertSame($expectedSeoUrl, $seoUrl);
     }
 
     public function productSeoPathProvider(): array
@@ -172,5 +139,38 @@ class UrlBuilderServiceTest extends TestCase
                 'expectedSeoUrl' => null
             ]
         ];
+    }
+
+    /**
+     * @dataProvider productSeoPathProvider
+     */
+    public function testGetProductSeoPath(array $seoUrlArray, ?string $expectedSeoUrl): void
+    {
+        $seoUrlCollection = new SeoUrlCollection();
+        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
+        $languageId = $this->salesChannelContext->getSalesChannel()->getLanguageId();
+
+        foreach ($seoUrlArray as $seoPath) {
+            $seoUrlEntity = new SeoUrlEntity();
+            $seoUrlEntity->setId(Uuid::randomHex());
+            $seoUrlEntity->setSalesChannelId($salesChannelId);
+            $seoUrlEntity->setLanguageId($languageId);
+            $seoUrlEntity->setSeoPathInfo($seoPath['seoPathInfo']);
+            $seoUrlEntity->setIsCanonical($seoPath['isCanonical']);
+            $seoUrlEntity->setIsDeleted($seoPath['isDeleted']);
+
+            $seoUrlCollection->add($seoUrlEntity);
+        }
+
+        $product = $this->createTestProduct();
+        $product->setSeoUrls($seoUrlCollection);
+
+        $seoUrl = Helper::callMethod(
+            $this->urlBuilderService,
+            'getProductSeoPath',
+            [$product]
+        );
+
+        $this->assertSame($expectedSeoUrl, $seoUrl);
     }
 }
