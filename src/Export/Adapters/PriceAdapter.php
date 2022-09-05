@@ -56,7 +56,7 @@ class PriceAdapter
      */
     public function adapt(ProductEntity $product): array
     {
-        $prices = $this->config->getAdvancedPricing() !== AdvancedPricing::OFF
+        $prices = (!Utils::versionLowerThan('6.4.9.0') && $this->config->getAdvancedPricing() !== AdvancedPricing::OFF)
             ? $this->getAdvancedPricesFromProduct($product)
             : $this->getPricesFromProduct($product);
 

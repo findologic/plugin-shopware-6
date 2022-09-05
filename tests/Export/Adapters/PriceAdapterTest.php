@@ -372,6 +372,10 @@ class PriceAdapterTest extends TestCase
         string $advancedPricingConfig,
         array $expectedPrices
     ): void {
+        if (Utils::versionLowerThan('6.4.9.0')) {
+            $this->markTestSkipped('Advanced price calculation by Product entity exists in newer Shopware versions');
+        }
+
         /** @var ExportContext $exportContext */
         $exportContext = $this->getContainer()->get('fin_search.export_context');
 
