@@ -11,6 +11,7 @@
                 public="true"
         >
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <tag name="kernel.event_subscriber" />
         </service>
     </services>
