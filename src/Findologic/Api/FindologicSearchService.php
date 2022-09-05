@@ -23,7 +23,6 @@ use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
-use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -89,16 +88,6 @@ class FindologicSearchService
 
             $this->handleRequest($event, $navigationRequestHandler, $limit);
         }
-    }
-
-    public function handleResult(ProductListingResultEvent $event): void
-    {
-        $findologicService = $event->getContext()->getExtension('findologicService');
-        if (!$findologicService || !$findologicService->getEnabled()) {
-            return;
-        }
-
-        $this->sortingService->handleResult($event);
     }
 
     protected function handleRequest(

@@ -8,7 +8,6 @@ use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -49,9 +48,6 @@ class DynamicProductGroupServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        if (Utils::versionLowerThan('6.3.1.0')) {
-            $this->markTestSkipped('Product streams in category is not available until v6.3.1.0');
-        }
         $this->cache = $this->getMockBuilder(CacheItemPoolInterface::class)->disableOriginalConstructor()->getMock();
         $services['product.repository'] = $this->getContainer()->get('product.repository');
         $this->start = 1;

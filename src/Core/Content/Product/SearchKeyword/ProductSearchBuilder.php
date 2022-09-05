@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Core\Content\Product\SearchKeyword;
 
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchTermInterpreterInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -23,16 +22,12 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
 
     private ProductSearchBuilderInterface $decorated;
 
-    private string $shopwareVersion;
-
     public function __construct(
         ProductSearchTermInterpreterInterface $interpreter,
-        ProductSearchBuilderInterface $decorated,
-        string $shopwareVersion
+        ProductSearchBuilderInterface $decorated
     ) {
         $this->interpreter = $interpreter;
         $this->decorated = $decorated;
-        $this->shopwareVersion = $shopwareVersion;
     }
 
     public function build(Request $request, Criteria $criteria, SalesChannelContext $context): void
@@ -42,11 +37,7 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
             return;
         }
 
-        if (Utils::versionLowerThan('6.4.0.0', $this->shopwareVersion)) {
-            $this->buildShopware63AndLower($request, $criteria, $context);
-        } else {
-            $this->buildShopware64AndGreater($request, $criteria, $context);
-        }
+        $this->doBuild($request, $criteria, $context);
     }
 
     public function buildParent(Request $request, Criteria $criteria, SalesChannelContext $context): void
@@ -54,46 +45,7 @@ class ProductSearchBuilder implements ProductSearchBuilderInterface
         $this->decorated->build($request, $criteria, $context);
     }
 
-    public function buildShopware63AndLower(Request $request, Criteria $criteria, SalesChannelContext $context): void
-    {
-        $search = $request->query->get('search');
-
-        if (is_array($search)) {
-            $term = implode(' ', $search);
-        } else {
-            $term = (string) $search;
-        }
-
-        $term = trim($term);
-
-        $pattern = $this->interpreter->interpret($term, $context->getContext());
-
-        foreach ($pattern->getTerms() as $searchTerm) {
-            $criteria->addQuery(
-                new ScoreQuery(
-                    new EqualsFilter('product.searchKeywords.keyword', $searchTerm->getTerm()),
-                    $searchTerm->getScore(),
-                    'product.searchKeywords.ranking'
-                )
-            );
-        }
-        $criteria->addQuery(
-            new ScoreQuery(
-                new ContainsFilter('product.searchKeywords.keyword', $pattern->getOriginal()->getTerm()),
-                $pattern->getOriginal()->getScore(),
-                'product.searchKeywords.ranking'
-            )
-        );
-
-        $criteria->addFilter(
-            new EqualsAnyFilter('product.searchKeywords.keyword', array_values($pattern->getAllTerms()))
-        );
-        $criteria->addFilter(
-            new EqualsFilter('product.searchKeywords.languageId', $context->getContext()->getLanguageId())
-        );
-    }
-
-    public function buildShopware64AndGreater(Request $request, Criteria $criteria, SalesChannelContext $context): void
+    public function doBuild(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
         $search = $request->query->get('search');
 

@@ -11,7 +11,6 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PropertiesHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Adapter\Translation\Translator;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -38,10 +37,6 @@ class ShopwarePropertiesAdapterTest extends TestCase
 
     public function testNonFilterablePropertiesAreExportedAsPropertiesInsteadOfAttributes(): void
     {
-        if (Utils::versionLowerThan('6.2.0')) {
-            $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
-        }
-
         $expectedPropertyName1 = 'blub';
         $expectedPropertyName2 = 'blub1';
         $expectedPropertyName3 = 'blub2';

@@ -30,8 +30,6 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
-use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordEntity;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -974,10 +972,6 @@ class FindologicProductTest extends TestCase
 
     public function testNonFilterablePropertiesAreExportedAsPropertiesInsteadOfAttributes(): void
     {
-        if (Utils::versionLowerThan('6.2.0')) {
-            $this->markTestSkipped('Properties can only have a filter visibility with Shopware 6.2.x and upwards');
-        }
-
         $expectedPropertyName = 'blub';
         $expectedPropertyValue = 'some value';
 

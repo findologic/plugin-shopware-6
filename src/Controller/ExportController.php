@@ -235,10 +235,6 @@ class ExportController extends AbstractController
 
     protected function warmUpDynamicProductGroups(): void
     {
-        if (Utils::versionLowerThan('6.3.1.0', $this->container->getParameter('kernel.shopware_version'))) {
-            return;
-        }
-
         $dynamicProductGroupService = DynamicProductGroupService::getInstance(
             $this->container,
             $this->cache,

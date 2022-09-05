@@ -9,7 +9,6 @@ use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Storefront\Framework\Page\StorefrontSearchResult;
 use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Page\Search\SearchPage;
 use Shopware\Storefront\Page\Search\SearchPageLoadedEvent;
@@ -41,10 +40,6 @@ class SearchPageLoader extends ShopwareSearchPageLoader
      */
     public function load(Request $request, SalesChannelContext $salesChannelContext): SearchPage
     {
-        if (method_exists(SearchPage::class, 'setSearchResult')) {
-            return $this->legacyLoad($request, $salesChannelContext);
-        }
-
         $page = $this->genericLoader->load($request, $salesChannelContext);
         $page = SearchPage::createFrom($page);
 
@@ -57,27 +52,6 @@ class SearchPageLoader extends ShopwareSearchPageLoader
         $page->setSearchTerm(
             (string) $request->query->get('search')
         );
-
-        $this->eventDispatcher->dispatch(
-            new SearchPageLoadedEvent($page, $salesChannelContext, $request)
-        );
-
-        return $page;
-    }
-
-    /**
-     * Loads the search page for Shopware versions below 6.3.0.0.
-     */
-    public function legacyLoad(Request $request, SalesChannelContext $salesChannelContext): SearchPage
-    {
-        $page = $this->genericLoader->load($request, $salesChannelContext);
-        $page = SearchPage::createFrom($page);
-        $result = $this->productSearchRoute->load($request, $salesChannelContext);
-
-        $listing = $result->getListingResult();
-        $page->setListing($listing);
-        $page->setSearchResult(StorefrontSearchResult::createFrom($listing));
-        $page->setSearchTerm((string)$request->query->get('search'));
 
         $this->eventDispatcher->dispatch(
             new SearchPageLoadedEvent($page, $salesChannelContext, $request)

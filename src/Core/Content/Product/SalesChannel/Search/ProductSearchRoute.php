@@ -45,8 +45,6 @@ class ProductSearchRoute extends AbstractProductSearchRoute
 
     private ServiceConfigResource $serviceConfigResource;
 
-    private string $shopwareVersion;
-
     private Config $config;
 
     public function __construct(
@@ -58,7 +56,6 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         RequestCriteriaBuilder $criteriaBuilder,
         ServiceConfigResource $serviceConfigResource,
         FindologicConfigService $findologicConfigService,
-        string $shopwareVersion,
         ?Config $config = null
     ) {
         $this->decorated = $decorated;
@@ -68,7 +65,6 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         $this->definition = $definition;
         $this->criteriaBuilder = $criteriaBuilder;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->shopwareVersion = $shopwareVersion;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 
@@ -82,10 +78,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         SalesChannelContext $context,
         ?Criteria $criteria = null
     ): ProductSearchRouteResponse {
-
-        if (Utils::versionGreaterOrEqual('6.4.0.0', $this->shopwareVersion)) {
-            $this->addElasticSearchContext($context);
-        }
+        $this->addElasticSearchContext($context);
 
         $criteria ??= $this->criteriaBuilder->handleRequest(
             $request,
