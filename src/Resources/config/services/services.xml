@@ -136,6 +136,7 @@
             <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\Providers\CustomerGroupContextProvider" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
+            <argument type="string" key="$shopwareVersion">%kernel.shopware_version%</argument>
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\DefaultPropertiesAdapter" public="true">

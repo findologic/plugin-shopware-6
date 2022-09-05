@@ -36,18 +36,23 @@ class PriceAdapter
     /** @var Config */
     private $config;
 
+    /** @var string */
+    private $shopwareVersion;
+
     public function __construct(
         SalesChannelContext $salesChannelContext,
         ExportContext $exportContext,
         ProductPriceCalculator $productPriceCalculator,
         CustomerGroupContextProvider $customerGroupContextProvider,
-        Config $config
+        Config $config,
+        string $shopwareVersion
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->exportContext = $exportContext;
         $this->calculator = $productPriceCalculator;
         $this->customerGroupContextProvider = $customerGroupContextProvider;
         $this->config = $config;
+        $this->shopwareVersion = $shopwareVersion;
     }
 
     /**
@@ -56,7 +61,7 @@ class PriceAdapter
      */
     public function adapt(ProductEntity $product): array
     {
-        $prices = (!Utils::versionLowerThan('6.4.9.0') && $this->config->getAdvancedPricing() !== AdvancedPricing::OFF)
+        $prices = ($this->useAdvancedPricing() && $this->config->getAdvancedPricing() !== AdvancedPricing::OFF)
             ? $this->getAdvancedPricesFromProduct($product)
             : $this->getPricesFromProduct($product);
 
@@ -74,7 +79,7 @@ class PriceAdapter
     {
         $prices = [];
 
-        $currencyPrice = $this->getCurrencyPrice($product, $this->salesChannelContext);
+        $currencyPrice = $this->getCurrencyPrice($product);
 
         if (!$currencyPrice) {
             return [];
@@ -222,5 +227,10 @@ class PriceAdapter
         });
 
         return $priceCollection->first();
+    }
+
+    protected function useAdvancedPricing(): bool
+    {
+        return Utils::versionGreaterOrEqual('6.4.9.0', $this->shopwareVersion);
     }
 }

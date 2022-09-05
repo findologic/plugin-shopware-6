@@ -102,4 +102,34 @@ trait AdvancedPriceHelper
 
         return $customerGroups;
     }
+
+    public function getAdvancedPricesTestGroupData(array $groupsData): array
+    {
+        $testData = [];
+
+        foreach ($groupsData as $groupData) {
+            $priceData = [];
+            $caseData =  [
+                'groupId' => $groupData['groupId'],
+                'customerId' => Uuid::randomHex(),
+                'ruleId' => Uuid::randomHex(),
+                'displayGross' => $groupData['displayGross'],
+            ];
+
+            foreach ($groupData['prices'] as $price) {
+                $priceData[] =  [
+                    'qtyMin' => $price['qtyMin'],
+                    'qtyMax' => $price['qtyMax'],
+                    'gross' => $price['gross'],
+                    'net' => $price['net']
+                ];
+            }
+
+            $caseData['prices'] = $priceData;
+
+            $testData[] = $caseData;
+        }
+
+        return $testData;
+    }
 }

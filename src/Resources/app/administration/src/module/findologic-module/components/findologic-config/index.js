@@ -90,7 +90,7 @@ Component.register('findologic-config', {
         },
 
         mainVariantOptions() {
-            const options = [
+            return [
                 {
                     label: this.$tc('findologic.settingForm.config.mainVariant.default.label'),
                     value: 'default',
@@ -99,16 +99,12 @@ Component.register('findologic-config', {
                     label: this.$tc('findologic.settingForm.config.mainVariant.parent.label'),
                     value: 'parent',
                 },
-            ];
-
-            if (this.actualConfigData['FinSearch.config.advancedPricing'] === 'off') {
-                options.push({
+                {
                     label: this.$tc('findologic.settingForm.config.mainVariant.cheapest.label'),
                     value: 'cheapest',
-                });
-            }
-
-            return options;
+                    disabled: this.actualConfigData['FinSearch.config.advancedPricing'] !== 'off'
+                }
+            ];
         },
 
         advancedPricingOptions() {
@@ -217,11 +213,10 @@ Component.register('findologic-config', {
         this.actualConfigData['FinSearch.config.crossSellingCategories'].filter(categoryId => categoryId !== item.id);
         },
 
-        onAdvancedPricingChange() {
-            const advancedPricingConfig = this.actualConfigData['FinSearch.config.advancedPricing'];
+        onAdvancedPricingChange(newConfig) {
             const mainVariantConfig = this.actualConfigData['FinSearch.config.mainVariant'];
 
-            if (advancedPricingConfig !== 'off' && mainVariantConfig === 'cheapest') {
+            if (newConfig !== 'off' && mainVariantConfig === 'cheapest') {
                 this.actualConfigData['FinSearch.config.mainVariant'] = 'default';
             }
         },

@@ -209,7 +209,8 @@ class PriceAdapterTest extends TestCase
             $this->exportContext,
             $this->getContainer()->get(ProductPriceCalculator::class),
             $this->getContainer()->get(CustomerGroupContextProvider::class),
-            $this->getContainer()->get(Config::class)
+            $this->getContainer()->get(Config::class),
+            '6.4.9.1'
         );
         $testProduct = $this->createTestProduct([
             'price' => [
@@ -389,7 +390,8 @@ class PriceAdapterTest extends TestCase
             $this->exportContext,
             $this->getContainer()->get(ProductPriceCalculator::class),
             $this->getContainer()->get(CustomerGroupContextProvider::class),
-            $config
+            $config,
+            '6.4.9.0'
         );
 
         $customerGroups = $this->generateCustomers($groupsData);
@@ -412,35 +414,5 @@ class PriceAdapterTest extends TestCase
                 }
             }
         }
-    }
-
-    private function getAdvancedPricesTestGroupData(array $groupsData): array
-    {
-        $testData = [];
-
-        foreach ($groupsData as $groupData) {
-            $priceData = [];
-            $caseData =  [
-                'groupId' => $groupData['groupId'],
-                'customerId' => Uuid::randomHex(),
-                'ruleId' => Uuid::randomHex(),
-                'displayGross' => $groupData['displayGross'],
-            ];
-
-            foreach ($groupData['prices'] as $price) {
-                $priceData[] =  [
-                    'qtyMin' => $price['qtyMin'],
-                    'qtyMax' => $price['qtyMax'],
-                    'gross' => $price['gross'],
-                    'net' => $price['net']
-                ];
-            }
-
-            $caseData['prices'] = $priceData;
-
-            $testData[] = $caseData;
-        }
-
-        return $testData;
     }
 }
