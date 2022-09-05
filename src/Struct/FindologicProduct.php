@@ -69,9 +69,9 @@ class FindologicProduct extends Struct
     /** @var Price[] */
     protected array $prices;
 
-    protected string $description;
+    protected ?string $description = null;
 
-    protected ?DateAdded $dateAdded;
+    protected ?DateAdded $dateAdded = null;
 
     protected string$url;
 
@@ -84,7 +84,7 @@ class FindologicProduct extends Struct
     protected int $salesFrequency = 0;
 
     /** @var Usergroup[] */
-    protected array $userGroups;
+    protected array $userGroups = [];
 
     /** @var Ordernumber[] */
     protected array $ordernumbers;
@@ -99,7 +99,7 @@ class FindologicProduct extends Struct
 
     protected TranslatorInterface $translator;
 
-    protected ?DynamicProductGroupService $dynamicProductGroupService;
+    protected ?DynamicProductGroupService $dynamicProductGroupService = null;
 
     protected CategoryEntity $navigationCategory;
 

@@ -114,16 +114,6 @@ class ShopwarePropertiesAdapterTest extends TestCase
         $this->assertContains($expectedPropertyValue2, $foundPropertyValues);
     }
 
-    private function getMockedConfig(): Config
-    {
-        $override = [
-            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
-            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
-        ];
-
-        return $this->getFindologicConfig($override);
-    }
-
     private function getShopwarePropertiesAdapter(Config $config): ShopwarePropertiesAdapter
     {
         return new ShopwarePropertiesAdapter(

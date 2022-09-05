@@ -44,7 +44,7 @@ class Config extends Struct
 
     private string $navigationResultContainer;
 
-    private ?string $integrationType;
+    private ?string $integrationType = null;
 
     private ServiceConfigResource $serviceConfigResource;
 
@@ -160,7 +160,7 @@ class Config extends Struct
             'FinSearch.config.mainVariant',
             MainVariant::SHOPWARE_DEFAULT
         );
-
+        var_dump('init');
         $this->initializeReadonlyConfig($salesChannelId, $languageId);
 
         $this->initialized = true;

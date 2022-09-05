@@ -58,7 +58,8 @@ class FindologicProductFactoryTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $this->getMockedConfig()
         );
 
         $this->assertInstanceOf(FindologicProduct::class, $findologicProduct);

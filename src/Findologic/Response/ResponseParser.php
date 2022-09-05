@@ -25,7 +25,7 @@ abstract class ResponseParser
 
     protected ?ServiceConfigResource $serviceConfigResource;
 
-    protected Config $config;
+    protected ?Config $config;
 
     public function __construct(
         Response $response,

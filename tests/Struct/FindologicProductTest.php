@@ -128,8 +128,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         if (!$exception) {
@@ -154,8 +153,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $this->assertSame($releaseDate->format(DATE_ATOM), $findologicProduct->getDateAdded()->getValues()['']);
@@ -192,8 +190,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
     }
 
@@ -254,7 +251,6 @@ class FindologicProductTest extends TestCase
             $this->salesChannelContext->getContext()
         )->get($id);
 
-        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -263,7 +259,7 @@ class FindologicProductTest extends TestCase
             $this->shopkey,
             [],
             new XMLItem('123'),
-            $config
+            $this->getMockedConfig()
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -367,7 +363,6 @@ class FindologicProductTest extends TestCase
         $categoryData['categories'] = $data;
         $productEntity = $this->createTestProduct($categoryData);
 
-        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -376,7 +371,7 @@ class FindologicProductTest extends TestCase
             $this->shopkey,
             [],
             new XMLItem('123'),
-            $config
+            $this->getMockedConfig()
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -395,7 +390,7 @@ class FindologicProductTest extends TestCase
     public function testProductCategoriesSeoUrl(): void
     {
         $productEntity = $this->createTestProduct();
-        $config = $this->getMockedConfig();
+
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -404,7 +399,7 @@ class FindologicProductTest extends TestCase
             $this->shopkey,
             [],
             new XMLItem('123'),
-            $config
+            $this->getMockedConfig()
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -450,8 +445,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         if (!$exception) {
@@ -501,8 +495,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $this->assertEquals($price, current($findologicProduct->getPrices()));
@@ -551,7 +544,6 @@ class FindologicProductTest extends TestCase
         $productSearchKeywordCollection = new ProductSearchKeywordCollection($keywordEntities);
         $productEntity->setSearchKeywords($productSearchKeywordCollection);
 
-        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -560,7 +552,7 @@ class FindologicProductTest extends TestCase
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123'),
-            $config
+            $this->getMockedConfig()
         );
 
         $keywords = [new Keyword('keyword1'), new Keyword('keyword2')];
@@ -619,8 +611,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $attributes = $findologicProduct->getCustomFields();
@@ -654,8 +645,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $attributes = $findologicProduct->getCustomFields();
@@ -682,8 +672,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $attributes = $findologicProduct->getCustomFields();
@@ -770,8 +759,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $attributes = $findologicProduct->getCustomFields();
@@ -797,8 +785,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $this->assertEmpty($findologicProduct->getCustomFields());
@@ -856,8 +843,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $attributes = $findologicProduct->getAttributes();
@@ -959,7 +945,6 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
-        $config = $this->getMockedConfig($integrationType);
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -968,7 +953,7 @@ class FindologicProductTest extends TestCase
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123'),
-            $config
+            $this->getMockedConfig($integrationType)
         );
 
         $foundAttributes = array_filter(
@@ -1033,8 +1018,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $foundAttributes = array_filter(
@@ -1321,8 +1305,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $this->assertFalse($findologicProduct->hasDescription());
@@ -1356,7 +1339,6 @@ class FindologicProductTest extends TestCase
             ->search(new Criteria(), $this->salesChannelContext->getContext())
             ->getElements();
 
-        $config = $this->getMockedConfig('API');
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1365,7 +1347,7 @@ class FindologicProductTest extends TestCase
             $this->shopkey,
             $customerGroupEntities,
             new XMLItem('123'),
-            $config
+            $this->getMockedConfig('API')
         );
 
         $this->assertEmpty($findologicProduct->getCustomFields());
@@ -1484,8 +1466,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $this->assertEquals($expectedUrl, $findologicProduct->getUrl());
@@ -1525,7 +1506,6 @@ class FindologicProductTest extends TestCase
             ]
         );
 
-        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1534,7 +1514,7 @@ class FindologicProductTest extends TestCase
             $this->shopkey,
             [],
             new XMLItem('123'),
-            $config
+            $this->getMockedConfig()
         );
 
         $this->assertCount(5, $findologicProduct->getAttributes());
@@ -1589,8 +1569,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroups->getElements(),
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $customerGroupElements = array_values($customerGroups->getElements());
@@ -1654,8 +1633,7 @@ class FindologicProductTest extends TestCase
             $containerMock,
             $this->shopkey,
             [],
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
@@ -1730,8 +1708,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $hasListPrice = false;
@@ -1787,7 +1764,6 @@ class FindologicProductTest extends TestCase
 
         $productEntity = $this->createTestProduct();
 
-        $config = $this->getMockedConfig();
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -1796,7 +1772,7 @@ class FindologicProductTest extends TestCase
             $this->shopkey,
             [],
             new XMLItem('123'),
-            $config
+            $this->getMockedConfig()
         );
 
         $attributes = $findologicProduct->getAttributes();
@@ -1996,8 +1972,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $actualImages = $this->urlDecodeImages($findologicProduct->getImages());
@@ -2107,8 +2082,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $properties = $findologicProduct->getProperties();
@@ -2165,21 +2139,10 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $this->assertSame($expectedSalesFrequency, $findologicProduct->getSalesFrequency());
-    }
-
-    private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
-    {
-        $override = [
-            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
-            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
-        ];
-
-        return $this->getFindologicConfig($override, $integrationType === 'Direct Integration');
     }
 
     public function categoryAndCatUrlWithIntegrationTypeProvider(): array
@@ -2307,7 +2270,7 @@ class FindologicProductTest extends TestCase
         }
 
         $productEntity = $this->createTestProduct(['categories' => $categories]);
-        $config = $this->getMockedConfig($integrationType);
+
         $findologicProductFactory = new FindologicProductFactory();
         $findologicProduct = $findologicProductFactory->buildInstance(
             $productEntity,
@@ -2316,7 +2279,7 @@ class FindologicProductTest extends TestCase
             $this->shopkey,
             [],
             new XMLItem('123'),
-            $config
+            $this->getMockedConfig($integrationType)
         );
 
         $this->assertTrue($findologicProduct->hasAttributes());
@@ -2357,8 +2320,7 @@ class FindologicProductTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             $customerGroupEntities,
-            new XMLItem('123'),
-            $this->getMockedConfig()
+            new XMLItem('123')
         );
 
         $attributes = $findologicProduct->getCustomFields();
