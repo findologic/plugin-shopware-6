@@ -19,18 +19,18 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SalesChannelService
 {
-    private EntityRepository $systemConfigRepository;
+    private EntityRepository $findologicConfigRepository;
 
     private AbstractSalesChannelContextFactory $salesChannelContextFactory;
 
     private RequestTransformerInterface $requestTransformer;
 
     public function __construct(
-        EntityRepository $systemConfigRepository,
+        EntityRepository $findologicConfigRepository,
         AbstractSalesChannelContextFactory $salesChannelContextFactory,
         RequestTransformerInterface $requestTransformer
     ) {
-        $this->systemConfigRepository = $systemConfigRepository;
+        $this->findologicConfigRepository = $findologicConfigRepository;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->requestTransformer = $requestTransformer;
     }
@@ -43,7 +43,7 @@ class SalesChannelService
         SalesChannelContext $currentContext,
         string $shopkey
     ): ?SalesChannelContext {
-        $systemConfigEntities = $this->systemConfigRepository->search(
+        $systemConfigEntities = $this->findologicConfigRepository->search(
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
             $currentContext->getContext()
         );

@@ -7,12 +7,10 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Request\Handler;
 use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
-use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
-use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
@@ -29,14 +27,11 @@ use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Storefront\Page\GenericPageLoader;
-use Shopware\Storefront\Page\Page;
 use Symfony\Component\HttpFoundation\Request;
 
 class SearchNavigationRequestHandlerTest extends TestCase
@@ -172,7 +167,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
             $this->apiConfig,
             $this->apiClientMock,
             $this->getContainer()->get(SortingHandlerService::class),
-            $this->getContainer()
+            $this->getContainer()->get('category.repository')
         );
     }
 

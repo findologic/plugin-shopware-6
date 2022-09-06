@@ -226,6 +226,8 @@ class DynamicProductGroupServiceTest extends TestCase
     {
         return DynamicProductGroupService::getInstance(
             $this->containerMock,
+            $this->getContainer()->get('product.repository'),
+            $this->getContainer()->get('category.repository'),
             $this->cache,
             $this->defaultContext,
             $this->validShopkey,

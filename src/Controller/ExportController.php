@@ -52,6 +52,12 @@ class ExportController extends AbstractController
 
     private EntityRepository $customerGroupRepository;
 
+    private EntityRepository $categoryRepository;
+
+    private EntityRepository $pluginRepository;
+
+    private EntityRepository $productRepository;
+
     private ?SalesChannelContext $salesChannelContext;
 
     private ExportConfigurationBase $exportConfig;
@@ -75,7 +81,10 @@ class ExportController extends AbstractController
         HeaderHandler $headerHandler,
         CacheItemPoolInterface $cache,
         EventDispatcherInterface $eventDispatcher,
-        EntityRepository $customerGroupRepository
+        EntityRepository $customerGroupRepository,
+        EntityRepository $categoryRepository,
+        EntityRepository $pluginRepository,
+        EntityRepository $productRepository
     ) {
         $this->logger = $logger;
         $this->router = $router;
@@ -83,6 +92,9 @@ class ExportController extends AbstractController
         $this->cache = $cache;
         $this->eventDispatcher = $eventDispatcher;
         $this->customerGroupRepository = $customerGroupRepository;
+        $this->categoryRepository = $categoryRepository;
+        $this->pluginRepository = $pluginRepository;
+        $this->productRepository = $productRepository;
     }
 
     /**
@@ -232,6 +244,8 @@ class ExportController extends AbstractController
     {
         $dynamicProductGroupService = DynamicProductGroupService::getInstance(
             $this->container,
+            $this->productRepository,
+            $this->categoryRepository,
             $this->cache,
             $this->salesChannelContext->getContext(),
             $this->exportConfig->getShopkey(),
@@ -289,7 +303,7 @@ class ExportController extends AbstractController
             $this->exportConfig->getShopkey(),
             $this->getAllCustomerGroups(),
             Utils::fetchNavigationCategoryFromSalesChannel(
-                $this->container->get('category.repository'),
+                $this->categoryRepository,
                 $this->salesChannelContext->getSalesChannel()
             )
         );
@@ -308,7 +322,7 @@ class ExportController extends AbstractController
         $criteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
 
         /** @var PluginEntity $plugin */
-        $plugin = $this->container->get('plugin.repository')
+        $plugin = $this->pluginRepository
             ->search($criteria, $this->salesChannelContext->getContext())
             ->first();
         if ($plugin !== null && $plugin->getActive()) {

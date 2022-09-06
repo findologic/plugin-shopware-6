@@ -27,6 +27,7 @@ use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\DefaultInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -646,16 +647,19 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             $this->getContainer()->get('translator'),
         );
         $paginationService = new PaginationService();
-        $sortingHandlerService = $this->getContainer()->get(SortingHandlerService::class);
 
         $findologicSearchService ??= new FindologicSearchService(
-            $this->containerMock,
             $this->apiClientMock,
             $this->apiConfigMock,
             $this->configMock,
             $sortingService,
             $paginationService,
-            $sortingHandlerService
+            $this->getContainer()->get(SortingHandlerService::class),
+            $this->serviceConfigResourceMock,
+            $this->searchRequestFactoryMock,
+            $this->navigationRequestFactoryMock,
+            $this->getContainer()->get(SystemAware::class),
+            $this->entityRepositoryMock
         );
 
         return new ProductListingFeaturesSubscriber(

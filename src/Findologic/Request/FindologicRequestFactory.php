@@ -13,11 +13,11 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 abstract class FindologicRequestFactory
@@ -27,12 +27,18 @@ abstract class FindologicRequestFactory
 
     private CacheItemPoolInterface $cache;
 
-    private ContainerInterface $container;
+    private EntityRepository $pluginRepository;
 
-    public function __construct(CacheItemPoolInterface $cache, ContainerInterface $container)
-    {
+    private string $shopwareVersion;
+
+    public function __construct(
+        CacheItemPoolInterface $cache,
+        EntityRepository $pluginRepository,
+        string $shopwareVersion
+    ) {
         $this->cache = $cache;
-        $this->container = $container;
+        $this->pluginRepository = $pluginRepository;
+        $this->shopwareVersion = $shopwareVersion;
     }
 
     abstract public function getInstance(Request $request);
@@ -51,7 +57,7 @@ abstract class FindologicRequestFactory
         $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindologicApiRequest::SET_VALUE);
         $searchNavigationRequest->addIndividualParam(
             'shopVersion',
-            $this->container->getParameter('kernel.shopware_version'),
+            $this->shopwareVersion,
             FindologicApiRequest::SET_VALUE
         );
 
@@ -89,7 +95,7 @@ abstract class FindologicRequestFactory
             $criteria->setLimit(1);
             $criteria->addFilter(new EqualsFilter('name', 'FinSearch'));
 
-            $result = $this->container->get('plugin.repository')->search($criteria, Context::createDefaultContext());
+            $result = $this->pluginRepository->search($criteria, Context::createDefaultContext());
 
             /** @var PluginEntity $plugin */
             $plugin = $result->first();
