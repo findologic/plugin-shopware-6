@@ -141,7 +141,7 @@ class UrlBuilderService
         $canonicalSeoUrl = $seoUrls->filter(function (SeoUrlEntity $entity) {
             return $entity->getIsCanonical();
         })->first();
-        $seoUrl = $canonicalSeoUrl ?? $canonicalSeoUrl->first();
+        $seoUrl = $canonicalSeoUrl ?? $seoUrls->first();
 
         return ltrim($seoUrl->getSeoPathInfo(), '/');
     }
@@ -149,7 +149,7 @@ class UrlBuilderService
     /**
      * Filters the given collection to only return entities with valid url.
      */
-    public function removeInvalidUrls(SeoUrlCollection $seoUrls): SeoUrlCollection
+    protected function removeInvalidUrls(SeoUrlCollection $seoUrls): SeoUrlCollection
     {
         return $seoUrls->filter(function (SeoUrlEntity $seoUrl) {
             return filter_var(
