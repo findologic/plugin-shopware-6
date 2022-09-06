@@ -10,14 +10,14 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class CustomerGroupContextProvider
 {
+    /** @var AdvancedPriceRulesProvider */
+    private $advancedPriceRulesProvider;
+    
     /** @var SalesChannelService */
     private $salesChannelService;
 
     /** @var CustomerSearcher */
     private $customerSearcher;
-
-    /** @var AdvancedPriceRulesProvider */
-    private $advancedPriceRulesProvider;
 
     public function __construct(
         AdvancedPriceRulesProvider $advancedPriceRulesProvider,
