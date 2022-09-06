@@ -11,24 +11,18 @@ use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\InvalidArgumentException;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FrontendSubscriber implements EventSubscriberInterface
 {
-    /** @var Config */
-    private $config;
-
-    /** @var FindologicConfigService */
-    private $serviceConfigResource;
+    private Config $config;
 
     public function __construct(
         FindologicConfigService $systemConfigService,
         ServiceConfigResource $serviceConfigResource,
         ?Config $config = null
     ) {
-        $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
     }
 

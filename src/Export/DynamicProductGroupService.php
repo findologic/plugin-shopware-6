@@ -12,6 +12,7 @@ use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
@@ -23,58 +24,52 @@ class DynamicProductGroupService
 {
     public const CONTAINER_ID = 'fin_search.dynamic_product_group';
 
-    /** @var ProductStreamBuilderInterface */
-    protected $productStreamBuilder;
+    protected ProductStreamBuilderInterface $productStreamBuilder;
 
-    /** @var EntityRepositoryInterface */
-    protected $productRepository;
+    protected EntityRepositoryInterface $productRepository;
 
-    /** @var Context */
-    protected $context;
+    protected Context $context;
 
-    /** @var ContainerInterface */
-    protected $container;
+    protected CacheItemPoolInterface $cache;
 
-    /** @var string */
-    protected $shopkey;
+    protected string $shopkey;
 
-    /** @var int */
-    protected $start;
+    protected int $start;
 
-    /** @var int */
-    protected $count;
+    protected int $count;
 
-    /** @var DynamicProductGroupCacheHandler */
-    protected $cacheHandler;
+    private SalesChannelEntity $salesChannel;
 
-    /** @var SalesChannelEntity */
-    protected $salesChannel;
+    protected DynamicProductGroupCacheHandler $cacheHandler;
 
-    /** @var EntityRepositoryInterface */
-    protected $categoryRepository;
+    private EntityRepositoryInterface $categoryRepository;
 
-    public function __construct(
-        ContainerInterface $container,
+    private function __construct(
+        EntityRepository $productRepository,
+        EntityRepository $categoryRepository,
+        ProductStreamBuilder $productStreamBuilder,
         DynamicProductGroupCacheHandler $cacheHandler,
         Context $context,
         string $shopkey,
         int $start,
         int $count
     ) {
-        $this->container = $container;
+        $this->productRepository = $productRepository;
+        $this->categoryRepository = $categoryRepository;
+        $this->productStreamBuilder = $productStreamBuilder;
+        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->start = $start;
         $this->count = $count;
-        $this->productStreamBuilder = $container->get(ProductStreamBuilder::class);
-        $this->productRepository = $container->get('product.repository');
-        $this->categoryRepository = $container->get('category.repository');
-        $this->context = $context;
+
         $this->cacheHandler = $cacheHandler;
         $this->cacheHandler->setShopkey($shopkey);
     }
 
     public static function getInstance(
         ContainerInterface $container,
+        EntityRepository $productRepository,
+        EntityRepository $categoryRepository,
         CacheItemPoolInterface $cache,
         Context $context,
         string $shopkey,
@@ -86,7 +81,9 @@ class DynamicProductGroupService
         } else {
             $cacheHandler = new DynamicProductGroupCacheHandler($cache);
             $dynamicProductGroupService = new DynamicProductGroupService(
-                $container,
+                $productRepository,
+                $categoryRepository,
+                $container->get(ProductStreamBuilder::class),
                 $cacheHandler,
                 $context,
                 $shopkey,
@@ -247,7 +244,7 @@ class DynamicProductGroupService
     protected function cacheDynamicProductGroupsTotal(): void
     {
         $isTotalCached = $this->cacheHandler->isDynamicProductGroupTotalCached();
-        if (!$isTotalCached) {
+        if (!$isTotalCached || $this->start === 0) {
             $total = $this->getTotalDynamicProductGroupsCount();
             $this->cacheHandler->setDynamicProductGroupTotal($total);
         }

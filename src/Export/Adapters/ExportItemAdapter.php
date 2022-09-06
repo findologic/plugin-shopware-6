@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Adapters;
 
-use Exception;
 use FINDOLOGIC\Export\Data\Item;
-use FINDOLOGIC\Export\Exceptions\EmptyValueNotAllowedException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductInvalidException;
-use FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory;
 use FINDOLOGIC\FinSearch\Export\Events\AfterItemAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\AfterVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\BeforeItemAdaptEvent;
@@ -19,39 +15,27 @@ use FINDOLOGIC\FinSearch\Export\Events\BeforeVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\Logger\ExportExceptionLogger;
 use FINDOLOGIC\FinSearch\Struct\Config;
-use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Content\Product\ProductEntity;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Throwable;
 
 class ExportItemAdapter implements ExportItemAdapterInterface
 {
-    /** @var ContainerInterface */
-    protected $container;
+    protected RouterInterface $router;
 
-    /** @var RouterInterface */
-    protected $router;
+    protected EventDispatcherInterface $eventDispatcher;
 
-    /** @var EventDispatcherInterface|EventDispatcher */
-    protected $eventDispatcher;
+    protected Config $config;
 
-    /** @var Config */
-    protected $config;
+    protected AdapterFactory $adapterFactory;
 
-    /** @var AdapterFactory  $adapterFactory*/
-    protected $adapterFactory;
+    protected ExportContext $exportContext;
 
-    /** @var ExportContext $exportContext*/
-    protected $exportContext;
-
-    /** @var LoggerInterface  $logger*/
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(
-        ContainerInterface $container,
         RouterInterface $router,
         EventDispatcherInterface $eventDispatcher,
         Config $config,
@@ -59,7 +43,6 @@ class ExportItemAdapter implements ExportItemAdapterInterface
         ExportContext $exportContext,
         LoggerInterface $logger
     ) {
-        $this->container = $container;
         $this->router = $router;
         $this->eventDispatcher = $eventDispatcher;
         $this->config = $config;

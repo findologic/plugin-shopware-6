@@ -32,11 +32,9 @@ class XmlProductTest extends TestCase
     use ConfigHelper;
     use SalesChannelHelper;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var string */
-    private $shopkey;
+    private string $shopkey;
 
     protected function setUp(): void
     {

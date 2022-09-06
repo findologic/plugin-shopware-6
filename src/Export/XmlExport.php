@@ -25,29 +25,22 @@ class XmlExport extends Export
 {
     private const MAXIMUM_PROPERTIES_COUNT = 500;
 
-    /** @var RouterInterface */
-    private $router;
+    private RouterInterface $router;
 
-    /** @var ContainerInterface */
-    private $container;
+    private ContainerInterface $container;
 
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
     /** @var string[] */
-    private $crossSellingCategories;
+    private array $crossSellingCategories;
 
-    /** @var XmlFileConverter */
-    private $xmlFileConverter;
+    private XmlFileConverter $xmlFileConverter;
 
-    /** @var ExportItemAdapter */
-    private $exportItemAdapter;
+    private ExportItemAdapter $exportItemAdapter;
 
-    /** @var ProductSearcher */
-    private $productSearcher;
+    private ProductSearcher $productSearcher;
 
     public function __construct(
         RouterInterface $router,
@@ -111,7 +104,7 @@ class XmlExport extends Export
     }
 
     /**
-     * @deprecated buildItemsLegacy function will be removed in plugin version 4.0
+     * @deprecated buildItemsLegacy function will be removed in plugin version 5.0
      *
      * Converts given product entities to Findologic XML items. In case items can not be exported, they won't
      * be returned. Details about why specific products can not be exported, can be found in the logs.
@@ -245,7 +238,6 @@ class XmlExport extends Export
     }
 
     /**
-     * @param ProductEntity $productEntity
      * @return CategoryEntity[]
      */
     private function getAssignedCategories(ProductEntity $productEntity): array
@@ -254,7 +246,6 @@ class XmlExport extends Export
     }
 
     /**
-     * @param ProductEntity $productEntity
      * @return CategoryEntity[]
      */
     private function getDynamicProductGroupCategories(ProductEntity $productEntity): array

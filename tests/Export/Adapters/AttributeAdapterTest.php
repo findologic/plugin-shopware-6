@@ -46,11 +46,9 @@ class AttributeAdapterTest extends TestCase
     use ConfigHelper;
     use ExportItemAdapterHelper;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var AttributeAdapter */
-    protected $attributeAdapter;
+    protected AttributeAdapter $attributeAdapter;
 
     protected function setUp(): void
     {
@@ -60,6 +58,8 @@ class AttributeAdapterTest extends TestCase
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
         DynamicProductGroupService::getInstance(
             $this->getContainer(),
+            $this->getContainer()->get('product.repository'),
+            $this->getContainer()->get('category.repository'),
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
             'ABCDABCDABCDABCDABCDABCDABCDABCD',
@@ -75,7 +75,9 @@ class AttributeAdapterTest extends TestCase
             )
         );
 
-        $this->attributeAdapter = $this->getContainer()->get(AttributeAdapter::class);
+        $this->attributeAdapter = $this->getAttributeAdapter(
+            $this->getMockedConfig()
+        );
     }
 
     public function testAttributeContainsAttributeOfTheProduct(): void
@@ -96,8 +98,8 @@ class AttributeAdapterTest extends TestCase
         ]);
 
         $expected = array_merge(
-            $this->getAttributes($product, IntegrationType::API),
-            $this->getAttributes($variantProduct, IntegrationType::API)
+            $this->getAttributes($product, IntegrationType::DI),
+            $this->getAttributes($variantProduct, IntegrationType::DI)
         );
 
         $attributes = array_merge(
@@ -586,16 +588,6 @@ class AttributeAdapterTest extends TestCase
         $this->assertArrayHasKey('cat', $value);
         $categoryAttributeValues = $value['cat']->getValues();
         $this->assertSame($expectedCategories, $categoryAttributeValues);
-    }
-
-    private function getMockedConfig(string $integrationType = 'Direct Integration'): Config
-    {
-        $override = [
-            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
-            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
-        ];
-
-        return $this->getFindologicConfig($override, $integrationType === 'Direct Integration');
     }
 
     private function getAttributeAdapter(Config $config): AttributeAdapter

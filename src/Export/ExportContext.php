@@ -9,14 +9,12 @@ use Shopware\Core\Content\Category\CategoryEntity;
 
 class ExportContext
 {
-    /** @var string */
-    protected $shopkey;
+    protected string $shopkey;
 
     /** @var CustomerGroupEntity[] */
-    protected $customerGroups;
+    protected array $customerGroups;
 
-    /** @var CategoryEntity|null */
-    protected $navigationRootCategory;
+    protected ?CategoryEntity $navigationRootCategory;
 
     public function __construct(
         string $shopkey,

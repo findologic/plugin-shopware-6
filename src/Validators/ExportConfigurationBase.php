@@ -9,18 +9,19 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class ExportConfigurationBase
 {
-    private $shopkey;
+    private string $shopkey;
 
-    private $productId;
+    private ?string $productId;
 
-    private $start;
+    private int $start;
 
-    private $count;
+    private int $count;
 
     public static function getInstance(Request $request): ExportConfigurationBase
     {
         switch ($request->getPathInfo()) {
             case '/findologic':
+            case '/findologic/dynamic-product-groups':
                 return new ExportConfiguration(
                     $request->query->get('shopkey', ''),
                     $request->query->getInt('start', ExportConfiguration::DEFAULT_START_PARAM),

@@ -25,11 +25,9 @@ class FindologicProductFactoryTest extends TestCase
     use ConfigHelper;
     use SalesChannelHelper;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var string */
-    private $shopkey;
+    private string $shopkey;
 
     protected function setUp(): void
     {
@@ -60,7 +58,8 @@ class FindologicProductFactoryTest extends TestCase
             $this->getContainer(),
             $this->shopkey,
             [],
-            new XMLItem('123')
+            new XMLItem('123'),
+            $this->getMockedConfig()
         );
 
         $this->assertInstanceOf(FindologicProduct::class, $findologicProduct);

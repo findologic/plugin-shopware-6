@@ -26,11 +26,9 @@ class ProductServiceTest extends TestCase
     use ProductHelper;
     use ConfigHelper;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var ProductService */
-    private $defaultProductService;
+    private ProductService $defaultProductService;
 
     protected function setUp(): void
     {

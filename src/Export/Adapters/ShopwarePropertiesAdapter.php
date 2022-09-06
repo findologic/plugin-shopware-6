@@ -15,14 +15,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ShopwarePropertiesAdapter
 {
-    /** @var Config $config */
-    protected $config;
+    protected Config $config;
 
-    /** @var SalesChannelContext $salesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var TranslatorInterface $translator */
-    protected $translator;
+    protected TranslatorInterface $translator;
 
     public function __construct(
         Config $config,
@@ -32,6 +29,10 @@ class ShopwarePropertiesAdapter
         $this->config = $config;
         $this->salesChannelContext = $salesChannelContext;
         $this->translator = $translator;
+
+        if (!$this->config->isInitialized()) {
+            $this->config->initializeBySalesChannel($this->salesChannelContext);
+        }
     }
 
     public function adapt(ProductEntity $product): array
@@ -40,9 +41,8 @@ class ShopwarePropertiesAdapter
 
         foreach ($product->getProperties() as $propertyGroupOptionEntity) {
             $group = $propertyGroupOptionEntity->getGroup();
-            // Method getFilterable exists since Shopware 6.2.x.
-            if ($group && method_exists($group, 'getFilterable') && !$group->getFilterable()) {
-                // Non filterable properties should be available in the properties field.
+            if ($group && !$group->getFilterable()) {
+                // Non-filterable properties should be available in the properties field.
                 $properties = array_merge(
                     $properties,
                     $this->getAttributePropertyAsProperty($propertyGroupOptionEntity)
@@ -74,15 +74,10 @@ class ShopwarePropertiesAdapter
 
     protected function getAttributeKey(?string $key): ?string
     {
-        if ($this->isApiIntegration()) {
+        if ($this->config->isIntegrationTypeApi()) {
             return Utils::removeSpecialChars($key);
         }
 
         return $key;
-    }
-
-    protected function isApiIntegration(): bool
-    {
-        return $this->config->getIntegrationType() === IntegrationType::API;
     }
 }

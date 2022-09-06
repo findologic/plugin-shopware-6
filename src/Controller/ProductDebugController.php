@@ -7,7 +7,6 @@ namespace FINDOLOGIC\FinSearch\Controller;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher;
 use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
-use FINDOLOGIC\FinSearch\Export\ProductServiceSeparateVariants;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,11 +18,9 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ProductDebugController extends ExportController
 {
-    /** @var ProductDebugSearcher */
-    private $productDebugSearcher;
+    private ProductDebugSearcher $productDebugSearcher;
 
-    /** @var ProductDebugService */
-    private $productDebugService;
+    private ProductDebugService $productDebugService;
 
     /**
      * @Route("/findologic/debug", name="frontend.findologic.debug", options={"seo"="false"}, methods={"GET"})

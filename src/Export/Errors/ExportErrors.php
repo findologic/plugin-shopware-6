@@ -7,10 +7,10 @@ namespace FINDOLOGIC\FinSearch\Export\Errors;
 class ExportErrors
 {
     /** @var string[] */
-    private $general = [];
+    private array $general = [];
 
     /** @var ProductError[] */
-    private $products = [];
+    private array $products = [];
 
     public function hasErrors(): bool
     {

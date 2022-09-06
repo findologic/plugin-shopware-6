@@ -12,11 +12,9 @@ class DynamicProductGroupCacheHandler
     private const CACHE_ID_PRODUCT_GROUP = 'fl_product_groups';
     private const CACHE_LIFETIME_PRODUCT_GROUP = 60 * 11;
 
-    /** @var CacheItemPoolInterface */
-    protected $cache;
+    protected CacheItemPoolInterface $cache;
 
-    /** @var string|null */
-    protected $shopkey;
+    protected ?string $shopkey;
 
     public function __construct(CacheItemPoolInterface $cache)
     {

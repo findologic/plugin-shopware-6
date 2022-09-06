@@ -113,8 +113,7 @@ class NavigationCategoryParserTest extends TestCase
     private function getDefaultNavigationCategoryParser(): NavigationCategoryParser
     {
         return new NavigationCategoryParser(
-            $this->getContainer(),
-            $this->genericPageLoader
+            $this->getContainer()->get('category.repository')
         );
     }
 }

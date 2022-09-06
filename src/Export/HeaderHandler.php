@@ -9,7 +9,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class HeaderHandler
 {
@@ -25,48 +24,26 @@ class HeaderHandler
     private const PLUGIN_VERSION = 'Plugin-Shopware-6/%s';
     private const EXTENSION_PLUGIN_VERSION = 'Plugin-Shopware-6-Extension/%s';
 
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
+    private Context $context;
 
-    /**
-     * @var Context
-     */
-    private $context;
+    private EntityRepository $repository;
 
-    /**
-     * @var EntityRepository
-     */
-    private $repository;
+    private string $shopwareVersion;
 
-    /**
-     * @var string
-     */
-    private $shopwareVersion;
+    private string $pluginVersion;
 
-    /**
-     * @var string
-     */
-    private $pluginVersion;
+    private string $extensionPluginVersion;
 
-    /**
-     * @var string
-     */
-    private $extensionPluginVersion;
+    private string $contentType;
 
-    /**
-     * @var string
-     */
-    private $contentType;
-
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
+    public function __construct(
+        EntityRepository $pluginRepository,
+        string $shopwareVersion
+    ) {
         $this->context = Context::createDefaultContext();
-        $this->repository = $container->get('plugin.repository');
+        $this->repository = $pluginRepository;
 
-        $this->shopwareVersion = $this->fetchShopwareVersion();
+        $this->shopwareVersion = sprintf(self::SHOPWARE_VERSION, $shopwareVersion);
         $this->pluginVersion = $this->fetchPluginVersion();
         $this->extensionPluginVersion = $this->fetchExtensionPluginVersion();
         $this->contentType = self::CONTENT_TYPE_XML;
@@ -85,13 +62,6 @@ class HeaderHandler
         $headers[self::HEADER_EXTENSION] = $this->extensionPluginVersion;
 
         return array_merge($headers, $overrides);
-    }
-
-    private function fetchShopwareVersion(): string
-    {
-        $shopwareVersion = $this->container->getParameter('kernel.shopware_version');
-
-        return sprintf(self::SHOPWARE_VERSION, $shopwareVersion);
     }
 
     private function fetchPluginVersion(): string

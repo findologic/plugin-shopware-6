@@ -13,31 +13,24 @@ use Shopware\Core\Framework\Routing\RequestTransformerInterface;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
 class SalesChannelService
 {
-    /** @var EntityRepository */
-    private $systemConfigRepository;
+    private EntityRepository $findologicConfigRepository;
 
-    /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
-    private $salesChannelContextFactory;
+    private AbstractSalesChannelContextFactory $salesChannelContextFactory;
 
-    /** @var RequestTransformerInterface */
-    private $requestTransformer;
+    private RequestTransformerInterface $requestTransformer;
 
-    /**
-     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
-     */
     public function __construct(
-        EntityRepository $systemConfigRepository,
-        $salesChannelContextFactory,
+        EntityRepository $findologicConfigRepository,
+        AbstractSalesChannelContextFactory $salesChannelContextFactory,
         RequestTransformerInterface $requestTransformer
     ) {
-        $this->systemConfigRepository = $systemConfigRepository;
+        $this->findologicConfigRepository = $findologicConfigRepository;
         $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->requestTransformer = $requestTransformer;
     }
@@ -50,7 +43,7 @@ class SalesChannelService
         SalesChannelContext $currentContext,
         string $shopkey
     ): ?SalesChannelContext {
-        $systemConfigEntities = $this->systemConfigRepository->search(
+        $systemConfigEntities = $this->findologicConfigRepository->search(
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
             $currentContext->getContext()
         );
