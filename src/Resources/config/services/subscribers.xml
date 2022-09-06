@@ -9,9 +9,8 @@
             id="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"
             class="FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber"
             public="true"
+            autowire="true"
         >
-            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <tag name="kernel.event_subscriber" />
         </service>
     </services>
