@@ -31,6 +31,9 @@ use Throwable;
 
 use function sprintf;
 
+/**
+ * @deprecated XmlProduct will be removed in plugin version 5.0
+ */
 class XmlProduct
 {
     private ProductEntity $product;

@@ -214,12 +214,14 @@
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" public="true">
             <argument id="serializer.mapping.cache.symfony" type="service" />
-            <argument id="service_container" type="service" />
+            <argument type="service" id="plugin.repository" />
+            <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" public="true">
             <argument id="serializer.mapping.cache.symfony" type="service" />
-            <argument id="service_container" type="service" />
+            <argument type="service" id="plugin.repository" />
+            <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Resources\snippet\en_GB\SnippetFile_en_GB" public="true">
