@@ -25,17 +25,13 @@ class PriceAdapter
 
     protected ExportContext $exportContext;
 
-    /** @var ProductPriceCalculator */
-    protected $calculator;
+    protected ProductPriceCalculator $calculator;
 
-    /** @var CustomerGroupContextProvider */
-    private $customerGroupContextProvider;
+    private CustomerGroupContextProvider $customerGroupContextProvider;
 
-    /** @var Config */
-    private $config;
+    private Config $config;
 
-    /** @var string */
-    private $shopwareVersion;
+    private string $shopwareVersion;
 
     public function __construct(
         SalesChannelContext $salesChannelContext,
