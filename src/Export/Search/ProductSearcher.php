@@ -20,25 +20,13 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class ProductSearcher
 {
-    /**
-     * @var SalesChannelContext
-     */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /**
-     * @var EntityRepository
-     */
-    protected $productRepository;
+    protected EntityRepository $productRepository;
 
-    /**
-     * @var ProductCriteriaBuilder
-     */
-    protected $productCriteriaBuilder;
+    protected ProductCriteriaBuilder $productCriteriaBuilder;
 
-    /**
-     * @var Config
-     */
-    protected $config;
+    protected Config $config;
 
     public function __construct(
         SalesChannelContext $salesChannelContext,
@@ -72,7 +60,6 @@ class ProductSearcher
     public function findMaxPropertiesCount(ProductEntity $productEntity): int
     {
         $criteria = new Criteria([$productEntity->getParentId() ?? $productEntity->getId()]);
-        /** @var EntityRepository $productRepository */
 
         $criteria->addAggregation(
             new TermsAggregation(
@@ -213,7 +200,6 @@ class ProductSearcher
     {
         $realProductIds = [];
 
-        /** @var ProductEntity $product */
         foreach ($products as $product) {
             if ($mainVariantId = $product->getMainVariantId()) {
                 $realProductIds[] = $mainVariantId;

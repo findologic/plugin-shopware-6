@@ -22,8 +22,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Shopware\Core\System\SalesChannel\Context\AbstractSalesChannelContextFactory;
-use Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
@@ -42,70 +40,61 @@ use Symfony\Component\Validator\Validation;
  */
 class ExportController extends AbstractController
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /** @var Router */
-    private $router;
+    private RouterInterface $router;
 
-    /** @var HeaderHandler */
-    private $headerHandler;
+    private HeaderHandler $headerHandler;
 
-    /** @var SalesChannelContextFactory|AbstractSalesChannelContextFactory */
-    private $salesChannelContextFactory;
+    private CacheItemPoolInterface $cache;
 
-    /** @var CacheItemPoolInterface */
-    private $cache;
+    private EventDispatcherInterface $eventDispatcher;
 
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private EntityRepository $customerGroupRepository;
 
-    /** @var EntityRepository */
-    private $customerGroupRepository;
+    private EntityRepository $categoryRepository;
 
-    /** @var ?SalesChannelContext */
-    private $salesChannelContext;
+    private EntityRepository $pluginRepository;
 
-    /** @var ExportConfigurationBase */
-    private $exportConfig;
+    private EntityRepository $productRepository;
 
-    /** @var ExportContext */
-    private $exportContext;
+    private ?SalesChannelContext $salesChannelContext;
 
-    /** @var ProductService */
-    private $productService;
+    private ExportConfigurationBase $exportConfig;
 
-    /** @var ProductSearcher */
-    private $productSearcher;
+    private ExportContext $exportContext;
+
+    private ProductService $productService;
+
+    private ProductSearcher $productSearcher;
 
     /** @var Export|XmlExport|ProductIdExport */
     private $export;
 
-    /** @var SalesChannelService|null */
-    private $salesChannelService;
+    private ?SalesChannelService $salesChannelService;
 
-    /** @var Config */
-    private $pluginConfig;
+    private Config $pluginConfig;
 
-    /**
-     * @param SalesChannelContextFactory|AbstractSalesChannelContextFactory $salesChannelContextFactory
-     */
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
         HeaderHandler $headerHandler,
-        $salesChannelContextFactory,
         CacheItemPoolInterface $cache,
         EventDispatcherInterface $eventDispatcher,
-        EntityRepository $customerGroupRepository
+        EntityRepository $customerGroupRepository,
+        EntityRepository $categoryRepository,
+        EntityRepository $pluginRepository,
+        EntityRepository $productRepository
     ) {
         $this->logger = $logger;
         $this->router = $router;
         $this->headerHandler = $headerHandler;
-        $this->salesChannelContextFactory = $salesChannelContextFactory;
         $this->cache = $cache;
         $this->eventDispatcher = $eventDispatcher;
         $this->customerGroupRepository = $customerGroupRepository;
+        $this->categoryRepository = $categoryRepository;
+        $this->pluginRepository = $pluginRepository;
+        $this->productRepository = $productRepository;
     }
 
     /**
@@ -123,10 +112,6 @@ class ExportController extends AbstractController
             : $this->doExport();
     }
 
-    /**
-     * @param Request $request
-     * @param SalesChannelContext|null $context
-     */
     protected function initialize(Request $request, ?SalesChannelContext $context): void
     {
         $this->exportConfig = ExportConfigurationBase::getInstance($request);
@@ -210,7 +195,7 @@ class ExportController extends AbstractController
                 sprintf(
                     '%s %s %s %s',
                     'Decorating the FindologicProduct or ProductService class is deprecated since 3.x',
-                    'and will be removed in 4.0! Consider decorating the responsible export adapters in',
+                    'and will be removed in 5.0! Consider decorating the responsible export adapters in',
                     'FinSearch/Export/Adapters or the relevant services in FinSearch/Export/Search.',
                     'Make sure to follow the upgrade guide at FinSearch/UPGRADE-3.0.'
                 )
@@ -258,12 +243,10 @@ class ExportController extends AbstractController
 
     protected function warmUpDynamicProductGroups(): void
     {
-        if (Utils::versionLowerThan('6.3.1.0', $this->container->getParameter('kernel.shopware_version'))) {
-            return;
-        }
-
         $dynamicProductGroupService = DynamicProductGroupService::getInstance(
             $this->container,
+            $this->productRepository,
+            $this->categoryRepository,
             $this->cache,
             $this->salesChannelContext->getContext(),
             $this->exportConfig->getShopkey(),
@@ -321,7 +304,7 @@ class ExportController extends AbstractController
             $this->exportConfig->getShopkey(),
             $this->getAllCustomerGroups(),
             Utils::fetchNavigationCategoryFromSalesChannel(
-                $this->container->get('category.repository'),
+                $this->categoryRepository,
                 $this->salesChannelContext->getSalesChannel()
             )
         );
@@ -340,7 +323,7 @@ class ExportController extends AbstractController
         $criteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
 
         /** @var PluginEntity $plugin */
-        $plugin = $this->container->get('plugin.repository')
+        $plugin = $this->pluginRepository
             ->search($criteria, $this->salesChannelContext->getContext())
             ->first();
         if ($plugin !== null && $plugin->getActive()) {

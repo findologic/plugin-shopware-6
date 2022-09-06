@@ -1,7 +1,7 @@
 {
   "name": "findologic/plugin-shopware-6",
   "description": "Findologic plugin for Shopware 6",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "license": "GPL-3.0-or-later",
   "type": "shopware-platform-plugin",
   "authors": [
@@ -53,7 +53,6 @@
     "lint": "./vendor/bin/phpcs --standard=phpcs.xml .",
     "fix": "./vendor/bin/phpcbf --standard=phpcs.xml .",
     "test": "../../../vendor/bin/phpunit -c phpunit.xml.dist --colors=always",
-    "test-legacy": "../../../vendor/bin/phpunit -c phpunit.legacy.xml.dist --colors=always",
     "release": "release/bin/release",
     "build-release": "release/bin/build-release"
   }

@@ -22,17 +22,13 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ProductCriteriaBuilder
 {
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /**  @var SystemConfigService */
-    protected $systemConfigService;
+    protected SystemConfigService $systemConfigService;
 
-    /** @var Criteria */
-    protected $criteria;
+    protected Criteria $criteria;
 
-    /** @var Config */
-    private $config;
+    protected Config $config;
 
     public function __construct(
         SalesChannelContext $salesChannelContext,

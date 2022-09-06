@@ -8,9 +8,6 @@ use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/**
- * @method ContainerInterface getContainer()
- */
 trait RandomIdHelper
 {
     public function fetchFirstIdFromTable(string $table): string

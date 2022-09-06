@@ -24,14 +24,11 @@ class ProductDebugSearcherTest extends TestCase
     use ProductHelper;
     use ConfigHelper;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var ProductCriteriaBuilder */
-    private $productCriteriaBuilder;
+    private ProductCriteriaBuilder $productCriteriaBuilder;
 
-    /** @var ProductDebugSearcher */
-    private $defaultProductDebugSearcher;
+    private ProductDebugSearcher $defaultProductDebugSearcher;
 
     protected function setUp(): void
     {

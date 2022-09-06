@@ -35,14 +35,9 @@ class PriceAdapterTest extends TestCase
     use PluginConfigHelper;
     use AdvancedPriceHelper;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var ExportContext */
-    protected $exportContext;
-
-    /** @var ProductService */
-    protected $productService;
+    protected ExportContext $exportContext;
 
     protected function setUp(): void
     {
@@ -57,8 +52,6 @@ class PriceAdapterTest extends TestCase
 
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->getContainer()->set('fin_search.export_context', $this->exportContext);
-
-        $this->productService = ProductService::getInstance($this->getContainer(), $this->salesChannelContext);
     }
 
     public function testExceptionIsThrownIfProductHasNoPrices(): void

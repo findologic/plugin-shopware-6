@@ -3,9 +3,7 @@
            xmlns="http://symfony.com/schema/dic/services"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
 >
-
     <services>
-
         <!-- General -->
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigDefinition">
@@ -25,10 +23,7 @@
             <argument type="service" id="Doctrine\DBAL\Connection" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Struct\Config" public="true">
-            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
-        </service>
+        <service id="FINDOLOGIC\FinSearch\Struct\Config" public="true" autowire="true" />
 
         <!-- Export -->
 
@@ -40,10 +35,12 @@
             </call>
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
-            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
             <argument type="service" id="serializer.mapping.cache.symfony" />
             <argument type="service" id="event_dispatcher" />
             <argument type="service" id="customer_group.repository" />
+            <argument type="service" id="category.repository" />
+            <argument type="service" id="plugin.repository" />
+            <argument type="service" id="product.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ProductDebugController" public="true">
@@ -54,10 +51,12 @@
             </call>
             <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
-            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
             <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument type="service" id="event_dispatcher" />
             <argument type="service" id="customer_group.repository" />
+            <argument type="service" id="category.repository" />
+            <argument type="service" id="plugin.repository" />
+            <argument type="service" id="product.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">
@@ -68,12 +67,12 @@
         <service id="FINDOLOGIC\FinSearch\Export\FindologicProductFactory" public="true" />
 
         <service id="FINDOLOGIC\FinSearch\Export\HeaderHandler" public="true">
-            <argument id="service_container" type="service" />
+            <argument type="service" id="plugin.repository" />
+            <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" public="true">
-            <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
-            <argument type="service" id="category.repository" />
+        <service id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" public="true" autowire="true">
+            <argument key="$categoryRepository" type="service" id="category.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\SalesChannelService" public="true">
@@ -82,127 +81,80 @@
             <argument type="service" id="Shopware\Core\Framework\Routing\RequestTransformerInterface" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\ProductImageService" public="true">
-            <argument type="service" id="router" />
+        <service id="FINDOLOGIC\FinSearch\Export\ProductImageService" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
+            <argument key="$exportContext" type="service" id="fin_search.export_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory">
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\BonusAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\DefaultPropertiesAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SortAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SummaryAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\ShopwarePropertiesAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter" />
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\BonusAdapter" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
+            <argument key="$exportContext" type="service" id="fin_search.export_context" />
+            <argument key="$shopwareVersion" type="string">%kernel.shopware_version%</argument>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter" public="true">
-            <argument type="service" id="service_container" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
-            <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
-            <argument type="service" id="fin_search.sales_channel_context" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" />
-            <argument type="service" id="fin_search.export_context" />
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\DefaultPropertiesAdapter" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\BonusAdapter" public="true" />
-
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\DateAddedAdapter" public="true" />
-
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\DescriptionAdapter" public="true" />
-
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ImagesAdapter" public="true">
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\ProductImageService" />
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ShopwarePropertiesAdapter" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter" public="true" />
-
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter" public="true" />
-
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\OrderNumberAdapter" public="true" />
-
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter" public="true">
-            <argument type="service" id="fin_search.sales_channel_context" />
-            <argument type="service" id="fin_search.export_context" />
-            <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Providers\CustomerGroupContextProvider" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
-            <argument type="string" key="$shopwareVersion">%kernel.shopware_version%</argument>
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter" public="true" autowire="true">
+            <argument key="$orderLineItemRepository" type="service" id="order_line_item.repository" />
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\DefaultPropertiesAdapter" public="true">
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
-            <argument type="service" id="fin_search.sales_channel_context" />
-            <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\SortAdapter" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\SummaryAdapter" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ShopwarePropertiesAdapter" public="true">
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
-            <argument type="service" id="fin_search.sales_channel_context" />
-            <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter" public="true" autowire="true">
+            <argument key="$exportContext" type="service" id="fin_search.export_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter" public="true">
-            <argument type="service" id="order_line_item.repository" />
-            <argument type="service" id="fin_search.sales_channel_context" />
+        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter" public="true" autowire="true">
+            <argument key="$exportContext" type="service" id="fin_search.export_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\SortAdapter" public="true" />
-
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\SummaryAdapter" public="true" />
-
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\UrlAdapter" public="true">
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" />
-            <argument type="service" id="fin_search.sales_channel_context" />
+        <service id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\UserGroupsAdapter" public="true">
-            <argument type="service" id="fin_search.export_context" />
+        <service id="FINDOLOGIC\FinSearch\Export\Search\ProductSearcher" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
+            <argument key="$productRepository" type="service" id="product.repository" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter" public="true">
-            <argument type="service" id="service_container" />
-            <argument type="service" id="router" />
-            <argument type="service" id="event_dispatcher" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\AdapterFactory" />
-            <argument type="service" id="fin_search.export_context" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
+        <service id="FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
+            <argument key="$productRepository" type="service" id="product.repository" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" public="true">
-            <argument type="service" id="fin_search.sales_channel_context" />
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
-        </service>
-
-        <service id="FINDOLOGIC\FinSearch\Export\Search\ProductSearcher" public="true">
-            <argument type="service" id="fin_search.sales_channel_context" />
-            <argument type="service" id="product.repository" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
-        </service>
-
-        <service id="FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher" public="true">
-            <argument type="service" id="fin_search.sales_channel_context" />
-            <argument type="service" id="product.repository" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
-        </service>
-
-        <service id="FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService" public="true">
-            <argument type="service" id="fin_search.sales_channel_context" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher" />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" />
+        <service id="FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Search\CustomerSearcher" public="true">
@@ -228,19 +180,20 @@
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory" public="true" />
 
-        <service id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" public="true">
-            <argument id="serializer.mapping.cache.symfony" type="service" />
-            <argument id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory" type="service" />
+        <service id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" public="true" autowire="true">
+            <argument key="$cache" id="serializer.mapping.cache.symfony" type="service" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" public="true">
-            <argument id="serializer.mapping.cache.symfony" type="service" />
-            <argument id="service_container" type="service" />
+        <service id="FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory" public="true" autowire="true">
+            <argument key="$cache" id="serializer.mapping.cache.symfony" type="service" />
+            <argument key="$pluginRepository" type="service" id="plugin.repository" />
+            <argument key="$shopwareVersion" type="string">%kernel.shopware_version%</argument>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" public="true">
-            <argument id="serializer.mapping.cache.symfony" type="service" />
-            <argument id="service_container" type="service" />
+        <service id="FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory" public="true" autowire="true">
+            <argument key="$cache" id="serializer.mapping.cache.symfony" type="service" />
+            <argument key="$pluginRepository" type="service" id="plugin.repository" />
+            <argument key="$shopwareVersion" type="string">%kernel.shopware_version%</argument>
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Resources\snippet\en_GB\SnippetFile_en_GB" public="true">
@@ -255,23 +208,19 @@
             <tag name="twig.extension" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Struct\SystemAware" public="true">
-            <argument type="service" id="Shopware\Storefront\Framework\Routing\Router" />
-        </service>
+        <service id="FINDOLOGIC\FinSearch\Struct\SystemAware" public="true" autowire="true" />
 
         <service id="FINDOLOGIC\Api\Config" />
 
-        <service id="FINDOLOGIC\Api\Client">
-            <argument type="service" id="FINDOLOGIC\Api\Config" />
-        </service>
+        <service id="FINDOLOGIC\Api\Client" autowire="true" />
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService" />
 
-        <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true" />
-
-        <service id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" autowire="true">
-            <argument type="string" key="$shopwareVersion">%kernel.shopware_version%</argument>
+        <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true">
+            <argument key="$categoryRepository" type="service" id="category.repository" />
         </service>
+
+        <service id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" autowire="true" />
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\PaginationService" autowire="true" />
 
@@ -291,9 +240,8 @@
         <!-- Symfony -->
 
         <service
-                id="Symfony\Component\DependencyInjection\ContainerInterface"
-                alias="service_container"
+            id="Symfony\Component\DependencyInjection\ContainerInterface"
+            alias="service_container"
         />
-
     </services>
 </container>

@@ -10,7 +10,7 @@ use Shopware\Core\Framework\Struct\Struct;
 class FiltersExtension extends Struct
 {
     /** @var BaseFilter[] */
-    private $filters;
+    private array $filters;
 
     public function __construct(array $filters = [])
     {

@@ -21,26 +21,19 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AttributeAdapter
 {
-    /** @var ContainerInterface */
-    protected $container;
+    protected ContainerInterface $container;
 
-    /** @var Config */
-    protected $config;
+    protected Config $config;
 
-    /** @var DynamicProductGroupService|null */
-    protected $dynamicProductGroupService;
+    protected ?DynamicProductGroupService $dynamicProductGroupService;
 
-    /** @var TranslatorInterface */
-    protected $translator;
+    protected TranslatorInterface $translator;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var UrlBuilderService */
-    protected $urlBuilderService;
+    protected UrlBuilderService $urlBuilderService;
 
-    /** @var ExportContext */
-    protected $exportContext;
+    protected ExportContext $exportContext;
 
     public function __construct(
         ContainerInterface $container,

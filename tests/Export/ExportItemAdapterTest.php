@@ -16,6 +16,7 @@ use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use Monolog\Logger;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -30,6 +31,7 @@ class ExportItemAdapterTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
 
+    /** @var Logger|MockObject */
     private $loggerMock = null;
 
     protected function setUp(): void
@@ -46,6 +48,8 @@ class ExportItemAdapterTest extends TestCase
         );
         DynamicProductGroupService::getInstance(
             $this->getContainer(),
+            $this->getContainer()->get('product.repository'),
+            $this->getContainer()->get('category.repository'),
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
             'ABCDABCDABCDABCDABCDABCDABCDABCD',
@@ -120,7 +124,6 @@ class ExportItemAdapterTest extends TestCase
     private function getExportItemAdapter(AdapterFactory $adapterFactory): ExportItemAdapter
     {
         return new ExportItemAdapter(
-            $this->getContainer()->get('service_container'),
             $this->getContainer()->get('router'),
             $this->getContainer()->get('event_dispatcher'),
             $this->getContainer()->get('FINDOLOGIC\FinSearch\Struct\Config'),

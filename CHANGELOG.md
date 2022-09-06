@@ -1,3 +1,10 @@
+# 3.1.1
+- [SW-737] Filter values of color picker should be selectable by clicking on the value next to the tile.
+- [SW-739] Color picker images must be shown for selected colors.
+- [SW-740] Ignore invalid SEO Urls in export.
+- [SW-746] There should be no export error when no canonical SEO url exists.
+- [PH-719] Add 6.4.14.0 to the tested versions in our internal test runner.
+
 # 3.1.0
 - [SW-659] Introduced a new route for export debug information (`/findologic/debug`)
 - [SW-442] Add linting for the JavaScript files.

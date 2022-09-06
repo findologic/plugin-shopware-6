@@ -11,7 +11,7 @@ class PaginationService
 {
     public function getRequestOffset(Request $request, ?int $limit): int
     {
-        $limit = $limit ?? Pagination::DEFAULT_LIMIT;
+        $limit ??= Pagination::DEFAULT_LIMIT;
         $page = $this->getCurrentPage($request);
 
         return $this->calculateOffset($page, $limit);

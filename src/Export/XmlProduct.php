@@ -31,31 +31,27 @@ use Throwable;
 
 use function sprintf;
 
+/**
+ * @deprecated XmlProduct will be removed in plugin version 5.0
+ */
 class XmlProduct
 {
-    /** @var ProductEntity */
-    private $product;
+    private ProductEntity $product;
 
-    /** @var RouterInterface */
-    private $router;
+    private RouterInterface $router;
 
-    /** @var ContainerInterface */
-    private $container;
+    private ContainerInterface $container;
 
-    /** @var string */
-    private $shopkey;
+    private string $shopkey;
 
     /** @var CustomerGroupEntity[] */
-    private $customerGroups;
+    private array $customerGroups;
 
-    /** @var Item */
-    private $xmlItem;
+    private Item $xmlItem;
 
-    /** @var Exporter */
-    private $exporter;
+    private Exporter $exporter;
 
-    /** @var FindologicProduct */
-    private $findologicProduct;
+    private FindologicProduct $findologicProduct;
 
     /**
      * @param CustomerGroupEntity[] $customerGroups

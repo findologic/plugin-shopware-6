@@ -29,8 +29,7 @@ class ProductDebugControllerTest extends TestCase
 
     private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
     protected function setUp(): void
     {

@@ -21,11 +21,9 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class PriceAdapter
 {
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var ExportContext */
-    protected $exportContext;
+    protected ExportContext $exportContext;
 
     /** @var ProductPriceCalculator */
     protected $calculator;

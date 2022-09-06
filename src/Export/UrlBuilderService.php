@@ -22,14 +22,11 @@ use const PHP_URL_PATH;
 
 class UrlBuilderService
 {
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var RouterInterface */
-    private $router;
+    private RouterInterface $router;
 
-    /** @var EntityRepository */
-    private $categoryRepository;
+    private EntityRepository $categoryRepository;
 
     public function __construct(RouterInterface $router, EntityRepository $categoryRepository)
     {
@@ -99,8 +96,6 @@ class UrlBuilderService
      * * http://localhost:8000
      * * https://your-domain.com
      * * https://your-domain.com/de
-     *
-     * @return string|null
      */
     protected function getSalesChannelDomain(): ?string
     {
@@ -123,8 +118,12 @@ class UrlBuilderService
      */
     protected function getProductSeoPath(ProductEntity $product): ?string
     {
-        $allSeoUrls = $product->getSeoUrls();
-        if (!$allSeoUrls) {
+        if (!$product->getSeoUrls()) {
+            return null;
+        }
+
+        $allSeoUrls = $this->removeInvalidUrls($product->getSeoUrls());
+        if (!$allSeoUrls->count()) {
             return null;
         }
 
@@ -137,9 +136,22 @@ class UrlBuilderService
         $canonicalSeoUrl = $seoUrls->filter(function (SeoUrlEntity $entity) {
             return $entity->getIsCanonical();
         })->first();
-        $seoUrl = $canonicalSeoUrl ?? $canonicalSeoUrl->first();
+        $seoUrl = $canonicalSeoUrl ?? $seoUrls->first();
 
         return ltrim($seoUrl->getSeoPathInfo(), '/');
+    }
+
+    /**
+     * Filters the given collection to only return entities with valid url.
+     */
+    protected function removeInvalidUrls(SeoUrlCollection $seoUrls): SeoUrlCollection
+    {
+        return $seoUrls->filter(function (SeoUrlEntity $seoUrl) {
+            return filter_var(
+                sprintf('https://dummy.com%s"', $seoUrl->getSeoPathInfo()),
+                FILTER_VALIDATE_URL
+            );
+        });
     }
 
     /**

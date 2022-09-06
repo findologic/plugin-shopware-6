@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "757129f1ed6c327c41a7d7e6ebacd574",
+    "content-hash": "1bb87019921577897f59ff7045fddf2a",
     "packages": [
         {
             "name": "findologic/findologic-api",
@@ -1120,5 +1120,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.3.0"
 }

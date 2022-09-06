@@ -27,8 +27,7 @@ class ProductServiceTest extends TestCase
 
     private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
-    /** @var ProductDebugService */
-    private $defaultDebugService;
+    private ProductDebugService $defaultDebugService;
 
     protected function setUp(): void
     {

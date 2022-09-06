@@ -47,6 +47,7 @@ trait ConfigHelper
         }
         $defaultConfig = [
             'active' => true,
+            'isStaging' => false,
             'shopkey' => $this->getShopkey(),
             'activeOnCategoryPages' => true,
             'crossSellingCategories' => [],
@@ -68,6 +69,12 @@ trait ConfigHelper
                         $salesChannelId,
                         $languageId,
                         $config['active']
+                    ],
+                    [
+                        'FinSearch.config.isStaging',
+                        $salesChannelId,
+                        $languageId,
+                        $config['isStaging']
                     ],
                     [
                         'FinSearch.config.shopkey',
@@ -127,6 +134,16 @@ trait ConfigHelper
             );
 
         return $configServiceMock;
+    }
+
+    public function getMockedConfig(string $integrationType = 'Direct Integration'): Config
+    {
+        $override = [
+            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
+            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
+        ];
+
+        return $this->getFindologicConfig($override, $integrationType === 'Direct Integration');
     }
 
     public function getFindologicConfig(array $override = [], bool $isDirectIntegration = true): Config

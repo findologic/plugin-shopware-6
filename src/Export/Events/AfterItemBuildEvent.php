@@ -12,8 +12,7 @@ class AfterItemBuildEvent extends Event
 {
     public const NAME = 'fin_search.export.after_item_builb';
 
-    /** @var Item */
-    protected $item;
+    protected Item $item;
 
     public function __construct(Item $item)
     {
