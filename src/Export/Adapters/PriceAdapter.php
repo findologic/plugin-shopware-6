@@ -27,11 +27,11 @@ class PriceAdapter
 
     protected ProductPriceCalculator $calculator;
 
-    private CustomerGroupContextProvider $customerGroupContextProvider;
+    protected CustomerGroupContextProvider $customerGroupContextProvider;
 
-    private Config $config;
+    protected Config $config;
 
-    private string $shopwareVersion;
+    protected string $shopwareVersion;
 
     public function __construct(
         SalesChannelContext $salesChannelContext,

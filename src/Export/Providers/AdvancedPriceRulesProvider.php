@@ -9,7 +9,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class AdvancedPriceRulesProvider
 {
-    private CartRuleLoader $cartRuleLoader;
+    protected CartRuleLoader $cartRuleLoader;
 
     public function __construct(CartRuleLoader $cartRuleLoader)
     {

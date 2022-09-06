@@ -11,7 +11,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class CustomerSearcher
 {
-    private EntityRepositoryInterface $customerRepository;
+    protected EntityRepositoryInterface $customerRepository;
 
     public function __construct(
         EntityRepositoryInterface $customerRepository
