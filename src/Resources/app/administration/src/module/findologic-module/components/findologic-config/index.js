@@ -102,8 +102,8 @@ Component.register('findologic-config', {
                 {
                     label: this.$tc('findologic.settingForm.config.mainVariant.cheapest.label'),
                     value: 'cheapest',
-                    disabled: this.actualConfigData['FinSearch.config.advancedPricing'] !== 'off'
-                }
+                    disabled: this.actualConfigData['FinSearch.config.advancedPricing'] !== 'off',
+                },
             ];
         },
 
