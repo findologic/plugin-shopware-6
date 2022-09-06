@@ -3,9 +3,7 @@
            xmlns="http://symfony.com/schema/dic/services"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
 >
-
     <services>
-
         <!-- General -->
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigDefinition">
@@ -278,9 +276,8 @@
         <!-- Symfony -->
 
         <service
-                id="Symfony\Component\DependencyInjection\ContainerInterface"
-                alias="service_container"
+            id="Symfony\Component\DependencyInjection\ContainerInterface"
+            alias="service_container"
         />
-
     </services>
 </container>
