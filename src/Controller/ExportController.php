@@ -119,7 +119,6 @@ class ExportController extends AbstractController
         $this->salesChannelService = $context ? $this->container->get(SalesChannelService::class) : null;
         $this->salesChannelContext = $this->salesChannelService ? $this->salesChannelService
             ->getSalesChannelContext($context, $this->exportConfig->getShopkey()) : null;
-        //$this->salesChannelContext->setRuleIds($context->getRuleIds());
         $this->container->set('fin_search.sales_channel_context', $this->salesChannelContext);
 
         $this->pluginConfig = $this->buildPluginConfig();
