@@ -43,6 +43,9 @@
             <argument type="service" id="serializer.mapping.cache.symfony" />
             <argument type="service" id="event_dispatcher" />
             <argument type="service" id="customer_group.repository" />
+            <argument type="service" id="category.repository" />
+            <argument type="service" id="plugin.repository" />
+            <argument type="service" id="product.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ProductDebugController" public="true">
@@ -56,6 +59,9 @@
             <argument id="serializer.mapping.cache.symfony" type="service" />
             <argument type="service" id="event_dispatcher" />
             <argument type="service" id="customer_group.repository" />
+            <argument type="service" id="category.repository" />
+            <argument type="service" id="plugin.repository" />
+            <argument type="service" id="product.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">

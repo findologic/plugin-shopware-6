@@ -13,6 +13,7 @@ use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
@@ -35,8 +36,6 @@ class DynamicProductGroupService
 
     protected Context $context;
 
-    protected ContainerInterface $container;
-
     protected CacheItemPoolInterface $cache;
 
     protected string $shopkey;
@@ -48,24 +47,27 @@ class DynamicProductGroupService
     private EntityRepositoryInterface $categoryRepository;
 
     private function __construct(
-        ContainerInterface $container,
+        EntityRepository $productRepository,
+        EntityRepository $categoryRepository,
+        ProductStreamBuilder $productStreamBuilder,
         CacheItemPoolInterface $cache,
         Context $context,
         string $shopkey,
         int $start
     ) {
-        $this->container = $container;
+        $this->productRepository = $productRepository;
+        $this->categoryRepository = $categoryRepository;
+        $this->productStreamBuilder = $productStreamBuilder;
         $this->cache = $cache;
+        $this->context = $context;
         $this->shopkey = $shopkey;
         $this->start = $start;
-        $this->productStreamBuilder = $container->get(ProductStreamBuilder::class);
-        $this->productRepository = $container->get('product.repository');
-        $this->categoryRepository = $container->get('category.repository');
-        $this->context = $context;
     }
 
     public static function getInstance(
         ContainerInterface $container,
+        EntityRepository $productRepository,
+        EntityRepository $categoryRepository,
         CacheItemPoolInterface $cache,
         Context $context,
         string $shopkey,
@@ -75,7 +77,9 @@ class DynamicProductGroupService
             $dynamicProductGroupService = $container->get(self::CONTAINER_ID);
         } else {
             $dynamicProductGroupService = new DynamicProductGroupService(
-                $container,
+                $productRepository,
+                $categoryRepository,
+                $container->get(ProductStreamBuilder::class),
                 $cache,
                 $context,
                 $shopkey,

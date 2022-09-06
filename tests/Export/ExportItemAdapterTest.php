@@ -48,6 +48,8 @@ class ExportItemAdapterTest extends TestCase
         );
         DynamicProductGroupService::getInstance(
             $this->getContainer(),
+            $this->getContainer()->get('product.repository'),
+            $this->getContainer()->get('category.repository'),
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
             'ABCDABCDABCDABCDABCDABCDABCDABCD',

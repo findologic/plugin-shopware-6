@@ -56,6 +56,8 @@ class AttributeAdapterTest extends TestCase
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
         DynamicProductGroupService::getInstance(
             $this->getContainer(),
+            $this->getContainer()->get('product.repository'),
+            $this->getContainer()->get('category.repository'),
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
             'ABCDABCDABCDABCDABCDABCDABCDABCD',
