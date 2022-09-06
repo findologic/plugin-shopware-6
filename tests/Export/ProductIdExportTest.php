@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Content\Category\CategoryEntity;
@@ -32,9 +33,7 @@ class ProductIdExportTest extends XmlExportTest
             $this->getContainer()->get('category.repository'),
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
-            'ABCDABCDABCDABCDABCDABCDABCDABCD',
-            0,
-            100
+            new ExportConfiguration('ABCDABCDABCDABCDABCDABCDABCDABCD', 0, 100)
         );
         $this->getContainer()->set(
             'fin_search.export_context',

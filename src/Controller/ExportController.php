@@ -28,7 +28,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -77,6 +76,8 @@ class ExportController extends AbstractController
 
     private Config $pluginConfig;
 
+    private DynamicProductGroupService $dynamicProductGroupService;
+
     public function __construct(
         LoggerInterface $logger,
         RouterInterface $router,
@@ -105,10 +106,8 @@ class ExportController extends AbstractController
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
         $this->initialize($request, $context);
-        if ($errorResponse = $this->validate()) {
-            return $errorResponse;
-        }
-        if ($errorResponse = $this->validateDynamicGroupPrecondition($request)) {
+
+        if ($errorResponse = $this->validate() ?? $this->validateDynamicGroupPrecondition($request)) {
             return $errorResponse;
         }
 
@@ -176,6 +175,8 @@ class ExportController extends AbstractController
 
         $this->productSearcher = $this->container->get(ProductSearcher::class);
 
+        $this->dynamicProductGroupService = $this->getDynamicProductGroupService();
+
         $this->manipulateRequestWithSalesChannelInformation($request);
     }
 
@@ -195,8 +196,7 @@ class ExportController extends AbstractController
     protected function validateDynamicGroupPrecondition(Request $request): ?Response
     {
         $excludeProductGroups = $request->query->getBoolean('excludeProductGroups');
-        $dynamicProductGroupService = $this->getDynamicProductGroupService();
-        if (!$excludeProductGroups && !$dynamicProductGroupService->areDynamicProductGroupsCached()) {
+        if (!$excludeProductGroups && !$this->dynamicProductGroupService->areDynamicProductGroupsCached()) {
             return new PreconditionFailedResponse();
         }
 
@@ -276,12 +276,15 @@ class ExportController extends AbstractController
 
     protected function warmUpDynamicProductGroupsAndGetTotal(): int
     {
-        $dynamicProductGroupService = $this->getDynamicProductGroupService();
-        if (!$dynamicProductGroupService->isCurrentOffsetWarmedUp()) {
-            $dynamicProductGroupService->warmUp();
+        if ($this->exportConfig->getStart() === 0) {
+            $this->dynamicProductGroupService->clearGeneralCache();
         }
 
-        return $dynamicProductGroupService->getDynamicProductGroupsTotal();
+        if (!$this->dynamicProductGroupService->areDynamicProductGroupsCached()) {
+            $this->dynamicProductGroupService->warmUp();
+        }
+
+        return $this->dynamicProductGroupService->getDynamicProductGroupsTotal();
     }
 
     private function validateExportConfiguration(): array
@@ -331,9 +334,7 @@ class ExportController extends AbstractController
             $this->categoryRepository,
             $this->cache,
             $this->salesChannelContext->getContext(),
-            $this->exportConfig->getShopkey(),
-            $this->exportConfig->getStart(),
-            $this->exportConfig->getCount()
+            $this->exportConfig
         );
 
         $dynamicProductGroupService->setSalesChannel($this->salesChannelContext->getSalesChannel());
@@ -381,7 +382,7 @@ class ExportController extends AbstractController
         return $this->logger;
     }
 
-    public function getRouter(): Router
+    public function getRouter(): RouterInterface
     {
         return $this->router;
     }

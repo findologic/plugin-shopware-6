@@ -15,6 +15,7 @@ use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -52,9 +53,7 @@ class ExportItemAdapterTest extends TestCase
             $this->getContainer()->get('category.repository'),
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
-            'ABCDABCDABCDABCDABCDABCDABCDABCD',
-            0,
-            100
+            new ExportConfiguration('ABCDABCDABCDABCDABCDABCDABCDABCD', 0, 100)
         );
 
         $this->loggerMock = $this->getMockBuilder(Logger::class)

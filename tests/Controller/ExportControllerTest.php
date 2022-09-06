@@ -114,30 +114,22 @@ class ExportControllerTest extends TestCase
     public function wrongArgumentsProvider(): array
     {
         return [
-            'Count of zero' => [
-                'params' => ['count' => 0],
-                'errorMessages' => ['count: This value should be greater than 0.'],
-            ],
-            'Start is negative and count is zero' => [
+            'Start is negative' => [
                 'params' => [
-                    'start' => -5,
-                    'count' => 0
+                    'start' => -5
                 ],
                 'errorMessages' => [
                     'start: This value should be greater than or equal to 0.',
-                    'count: This value should be greater than 0.'
                 ],
             ],
-            'Sales channel is not searched when start is negative, count is negative and shopkey is invalid' => [
+            'Sales channel is not searched when start is negative and shopkey is invalid' => [
                 'params' => [
                     'start' => -5,
-                    'count' => 0,
                     'shopkey' => 'I do not follow the shopkey schema'
                 ],
                 'errorMessages' => [
                     'shopkey: Invalid key provided.',
                     'start: This value should be greater than or equal to 0.',
-                    'count: This value should be greater than 0.',
                 ],
             ],
             'Sales channel is searched when shopkey is valid but is not assigned to a sales channel' => [
@@ -454,7 +446,6 @@ class ExportControllerTest extends TestCase
         }
 
         $response = $this->sendDynamicProductGroupRequest($params);
-
         $this->assertSame(422, $response->getStatusCode());
         $parsedResponse = json_decode($response->getContent(), true);
 

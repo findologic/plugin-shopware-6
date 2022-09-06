@@ -23,6 +23,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportItemAdapterHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
 use ReflectionClass;
@@ -62,9 +63,7 @@ class AttributeAdapterTest extends TestCase
             $this->getContainer()->get('category.repository'),
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
-            'ABCDABCDABCDABCDABCDABCDABCDABCD',
-            0,
-            100
+            new ExportConfiguration('ABCDABCDABCDABCDABCDABCDABCDABCD', 0, 100)
         );
         $this->getContainer()->set(
             'fin_search.export_context',

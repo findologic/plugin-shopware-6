@@ -26,25 +26,57 @@ class DynamicProductGroupCacheHandler
         $this->shopkey = $shopkey;
     }
 
-    public function warmUpDynamicProductGroups(int $start, int $count, int $total = 0): void
+    public function setWarmedUpCacheItem(): void
     {
-        // If we have reached the last page of the dynamic product group export, we then set a flag in cache to
-        // make sure that the dynamic product groups are all warmed up.
-        if (($start + $count) >= $total) {
-            $cacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
-            if ($cacheItem) {
-                $cacheItem->set(true);
-                $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-                $this->cache->save($cacheItem);
-            }
-        }
+        $cacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
+        $cacheItem->set(true);
+        $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+        $this->cache->save($cacheItem);
     }
 
     public function isDynamicProductGroupTotalCached(): bool
     {
         $totalCacheItem = $this->getDynamicGroupsTotalCacheItem();
 
-        return $totalCacheItem && $totalCacheItem->isHit();
+        return $totalCacheItem->isHit();
+    }
+
+    public function isOffsetCacheWarmedUp(int $offset): bool
+    {
+        $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
+        if ($cacheItem->isHit()) {
+            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+            $this->cache->save($cacheItem);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function areDynamicProductGroupsCached(): bool
+    {
+        $cacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
+        if ($cacheItem->isHit()) {
+            $cacheItem->set(true);
+            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+            $this->cache->save($cacheItem);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getCachedCategoriesForCurrentOffset(int $offset): array
+    {
+        $categories = [];
+        $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
+        if ($cacheItem->isHit()) {
+            $categories = (array)$cacheItem->get();
+        }
+
+        return $categories;
     }
 
     public function setDynamicProductGroupTotal(int $total): void
@@ -58,51 +90,21 @@ class DynamicProductGroupCacheHandler
      */
     public function setDynamicProductGroupsOffset(array $products, int $offset): void
     {
-        if ($offset > 0) {
-            $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
-            $cacheItem->set($products);
-            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-            $this->cache->save($cacheItem);
-        }
-    }
-
-    public function isCacheWarmedUp(int $offset): bool
-    {
         $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
-        if ($cacheItem && $cacheItem->isHit()) {
-            $cacheItem->set(true);
-            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-            $this->cache->save($cacheItem);
-
-            return true;
-        }
-
-        return false;
+        $cacheItem->set($products);
+        $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+        $this->cache->save($cacheItem);
     }
 
-    public function areDynamicProductGroupsCached(): bool
+    public function clearGeneralCache(): void
     {
-        $cacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
-        if ($cacheItem && $cacheItem->isHit()) {
-            $cacheItem->set(true);
-            $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-            $this->cache->save($cacheItem);
+        $totalCacheItem = $this->getDynamicGroupsTotalCacheItem();
+        $warmedUpCacheItem = $this->getDynamicProductGroupWarmedUpCacheItem();
 
-            return true;
-        }
-
-        return false;
-    }
-
-    public function getCachedCategoryIdsForCurrentOffset(int $offset): array
-    {
-        $categories = [];
-        $cacheItem = $this->getDynamicProductGroupOffsetCacheItem($offset);
-        if ($cacheItem->isHit()) {
-            $categories = (array)$cacheItem->get();
-        }
-
-        return $categories;
+        $this->cache->deleteItems([
+            $totalCacheItem->getKey(),
+            $warmedUpCacheItem->getKey()
+        ]);
     }
 
     public function getDynamicProductGroupsCachedTotal(): int
@@ -124,13 +126,6 @@ class DynamicProductGroupCacheHandler
         return $this->cache->getItem($id);
     }
 
-    protected function setTotalInCache(CacheItemInterface $cacheItem, int $total): void
-    {
-        $cacheItem->set($total);
-        $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
-        $this->cache->save($cacheItem);
-    }
-
     protected function getDynamicGroupsTotalCacheItem(): CacheItemInterface
     {
         $id = sprintf('%s_%s_total', self::CACHE_ID_PRODUCT_GROUP, $this->shopkey);
@@ -141,7 +136,7 @@ class DynamicProductGroupCacheHandler
     protected function getDynamicProductGroupTotalFromCache(): int
     {
         $cacheItem = $this->getDynamicGroupsTotalCacheItem();
-        if ($cacheItem && $cacheItem->isHit()) {
+        if ($cacheItem->isHit()) {
             $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
             $this->cache->save($cacheItem);
 
@@ -149,5 +144,12 @@ class DynamicProductGroupCacheHandler
         }
 
         return 0;
+    }
+
+    protected function setTotalInCache(CacheItemInterface $cacheItem, int $total): void
+    {
+        $cacheItem->set($total);
+        $cacheItem->expiresAfter(self::CACHE_LIFETIME_PRODUCT_GROUP);
+        $this->cache->save($cacheItem);
     }
 }

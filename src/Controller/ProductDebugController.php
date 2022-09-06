@@ -44,8 +44,6 @@ class ProductDebugController extends ExportController
 
     protected function doExport(): Response
     {
-        $this->warmUpDynamicProductGroups();
-
         $mainProduct = $this->productDebugSearcher->getMainProductById($this->getExportConfig()->getProductId());
         $product = $this->productDebugSearcher->findVisibleProducts(
             null,
