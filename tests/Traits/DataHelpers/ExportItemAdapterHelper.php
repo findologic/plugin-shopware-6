@@ -38,7 +38,6 @@ trait ExportItemAdapterHelper
             ->willReturn($attributeAdapter);
 
         return new ExportItemAdapter(
-            $this->getContainer()->get('service_container'),
             $this->getContainer()->get('router'),
             $this->getContainer()->get('event_dispatcher'),
             $this->getContainer()->get('FINDOLOGIC\FinSearch\Struct\Config'),

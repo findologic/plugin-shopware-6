@@ -165,7 +165,6 @@
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter" public="true">
-            <argument type="service" id="service_container" />
             <argument type="service" id="router" />
             <argument type="service" id="event_dispatcher" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Struct\Config" />
@@ -247,7 +246,9 @@
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService" />
 
-        <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true" />
+        <service id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" autowire="true">
+            <argument key="$categoryRepository" type="service" id="category.repository" />
+        </service>
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Api\SortingService" autowire="true" />
 

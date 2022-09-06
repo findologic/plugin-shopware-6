@@ -24,14 +24,12 @@ use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Event\ShopwareEvent;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class FindologicSearchService
 {
     private const FILTER_REQUEST_LIMIT = 0;
-
-    private ContainerInterface $container;
 
     private ApiClient $apiClient;
 
@@ -45,22 +43,40 @@ class FindologicSearchService
 
     private SortingHandlerService $sortingHandlerService;
 
+    private ServiceConfigResource $serviceConfigResource;
+
+    private SearchRequestFactory $searchRequestFactory;
+
+    private NavigationRequestFactory $navigationRequestFactory;
+
+    private SystemAware $systemAware;
+
+    private EntityRepository $categoryRepository;
+
     public function __construct(
-        ContainerInterface $container,
         ApiClient $apiClient,
         ApiConfig $apiConfig,
         PluginConfig $pluginConfig,
         SortingService $sortingService,
         PaginationService $paginationService,
-        SortingHandlerService $sortingHandlerService
+        SortingHandlerService $sortingHandlerService,
+        ServiceConfigResource $serviceConfigResource,
+        SearchRequestFactory $searchRequestFactory,
+        NavigationRequestFactory $navigationRequestFactory,
+        SystemAware $systemAware,
+        EntityRepository $categoryRepository
     ) {
-        $this->container = $container;
         $this->apiClient = $apiClient;
         $this->apiConfig = $apiConfig;
         $this->pluginConfig = $pluginConfig;
         $this->sortingService = $sortingService;
         $this->paginationService = $paginationService;
         $this->sortingHandlerService = $sortingHandlerService;
+        $this->serviceConfigResource = $serviceConfigResource;
+        $this->searchRequestFactory = $searchRequestFactory;
+        $this->navigationRequestFactory = $navigationRequestFactory;
+        $this->systemAware = $systemAware;
+        $this->categoryRepository = $categoryRepository;
     }
 
     public function doSearch(ProductSearchCriteriaEvent $event, ?int $limitOverride = null): void
@@ -120,7 +136,7 @@ class FindologicSearchService
         return Utils::shouldHandleRequest(
             $event->getRequest(),
             $event->getContext(),
-            $this->container->get(ServiceConfigResource::class),
+            $this->serviceConfigResource,
             $this->pluginConfig,
             !($event instanceof ProductSearchCriteriaEvent)
         );
@@ -146,8 +162,8 @@ class FindologicSearchService
     protected function buildSearchRequestHandler(): SearchRequestHandler
     {
         return new SearchRequestHandler(
-            $this->container->get(ServiceConfigResource::class),
-            $this->container->get(SearchRequestFactory::class),
+            $this->serviceConfigResource,
+            $this->searchRequestFactory,
             $this->pluginConfig,
             $this->apiConfig,
             $this->apiClient,
@@ -158,22 +174,19 @@ class FindologicSearchService
     protected function buildNavigationRequestHandler(): NavigationRequestHandler
     {
         return new NavigationRequestHandler(
-            $this->container->get(ServiceConfigResource::class),
-            $this->container->get(NavigationRequestFactory::class),
+            $this->serviceConfigResource,
+            $this->navigationRequestFactory,
             $this->pluginConfig,
             $this->apiConfig,
             $this->apiClient,
             $this->sortingHandlerService,
-            $this->container
+            $this->categoryRepository
         );
     }
 
     protected function setSystemAwareExtension(ShopwareEvent $event): void
     {
-        /** @var SystemAware $systemAware */
-        $systemAware = $this->container->get(SystemAware::class);
-
-        $event->getContext()->addExtension(SystemAware::IDENTIFIER, $systemAware);
+        $event->getContext()->addExtension(SystemAware::IDENTIFIER, $this->systemAware);
     }
 
     protected function isCategoryPage(NavigationRequestHandler $handler, ProductListingCriteriaEvent $event): bool
@@ -233,17 +246,16 @@ class FindologicSearchService
         Response $response,
         ProductListingCriteriaEvent $event
     ): FiltersExtension {
-        $serviceConfigResource = $this->container->get(ServiceConfigResource::class);
         $responseParser = ResponseParser::getInstance(
             $response,
-            $serviceConfigResource,
+            $this->serviceConfigResource,
             $this->pluginConfig
         );
         $filters = $responseParser->getFiltersExtension();
 
         return $responseParser->getFiltersWithSmartSuggestBlocks(
             $filters,
-            $serviceConfigResource->getSmartSuggestBlocks($this->pluginConfig->getShopkey()),
+            $this->serviceConfigResource->getSmartSuggestBlocks($this->pluginConfig->getShopkey()),
             $event->getRequest()->query->all()
         );
     }
