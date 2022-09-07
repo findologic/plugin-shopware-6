@@ -6,12 +6,10 @@ namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\DynamicProductGroupsConfiguration;
-use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryCollection;
-use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Context;
@@ -29,7 +27,7 @@ class DynamicProductGroupService
 
     protected EntityRepositoryInterface $productRepository;
 
-    private EntityRepositoryInterface $categoryRepository;
+    protected EntityRepositoryInterface $categoryRepository;
 
     protected ProductStreamBuilderInterface $productStreamBuilder;
 
@@ -39,7 +37,7 @@ class DynamicProductGroupService
 
     protected ExportConfigurationBase $exportConfig;
 
-    private SalesChannelEntity $salesChannel;
+    protected SalesChannelEntity $salesChannel;
 
     private function __construct(
         EntityRepository $productRepository,
@@ -52,10 +50,10 @@ class DynamicProductGroupService
         $this->productRepository = $productRepository;
         $this->categoryRepository = $categoryRepository;
         $this->productStreamBuilder = $productStreamBuilder;
+        $this->cacheHandler = $cacheHandler;
         $this->context = $context;
         $this->exportConfig = $exportConfig;
 
-        $this->cacheHandler = $cacheHandler;
         $this->cacheHandler->setShopkey($exportConfig->getShopkey());
     }
 
@@ -252,6 +250,7 @@ class DynamicProductGroupService
     protected function isLastPage(): bool
     {
         $currentTotal = $this->exportConfig->getStart() + $this->exportConfig->getCount();
+
         return $currentTotal >= $this->getDynamicProductGroupsTotal();
     }
 }
