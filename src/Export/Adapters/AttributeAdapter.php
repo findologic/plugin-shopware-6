@@ -97,7 +97,7 @@ class AttributeAdapter
         $this->parseCategoryAttributes($productCategories->getElements(), $catUrls, $categories);
         if ($this->dynamicProductGroupService) {
             $dynamicGroupCategories = $this->dynamicProductGroupService->getCategories($product->getId());
-            $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
+            $this->parseCategoryAttributes($dynamicGroupCategories->getElements(), $catUrls, $categories);
         }
 
         $attributes = [];

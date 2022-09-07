@@ -27,6 +27,12 @@ abstract class ExportConfigurationBase
                     $request->query->getInt('count', ExportConfiguration::DEFAULT_COUNT_PARAM),
                     $request->query->get('productId')
                 );
+            case '/findologic/dynamic-product-groups':
+                return new DynamicProductGroupsConfiguration(
+                    $request->query->get('shopkey', ''),
+                    $request->query->getInt('start', ExportConfiguration::DEFAULT_START_PARAM),
+                    DynamicProductGroupsConfiguration::DEFAULT_COUNT_PARAM
+                );
             case '/findologic/debug':
                 return new DebugExportConfiguration(
                     $request->query->get('shopkey', ''),

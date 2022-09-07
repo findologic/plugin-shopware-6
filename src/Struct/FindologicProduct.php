@@ -836,7 +836,7 @@ class FindologicProduct extends Struct
 
         if ($this->dynamicProductGroupService) {
             $dynamicGroupCategories = $this->dynamicProductGroupService->getCategories($this->product->getId());
-            $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
+            $this->parseCategoryAttributes($dynamicGroupCategories->getElements(), $catUrls, $categories);
         }
 
         if ($this->isDirectIntegration() && !Utils::isEmpty($catUrls)) {

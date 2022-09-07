@@ -12,6 +12,7 @@ use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use Monolog\Logger;
+use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -77,9 +78,10 @@ class XmlExportTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $categoryCollection = new CategoryCollection([$category]);
         $dynamicProductGroupServiceMock->expects($this->any())
             ->method('getCategories')
-            ->willReturn([$category->getId() => $category]);
+            ->willReturn($categoryCollection);
 
         $this->getContainer()->set('fin_search.dynamic_product_group', $dynamicProductGroupServiceMock);
 

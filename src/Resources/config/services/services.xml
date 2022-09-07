@@ -161,6 +161,10 @@
         <service id="fin_search.dynamic_product_group" synthetic="true" public="true" />
         <service id="fin_search.export_context" synthetic="true" public="true" />
 
+        <service id="FINDOLOGIC\FinSearch\Export\DynamicProductGroupCacheHandler" public="true">
+            <argument id="serializer.mapping.cache.symfony" type="service" />
+        </service>
+
         <!-- Storefront -->
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory" public="true" />
