@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
+use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\XmlExport;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
-use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use Monolog\Logger;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -44,6 +47,21 @@ class XmlExportTest extends TestCase
         $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->crossSellCategories = [];
 
+        DynamicProductGroupService::getInstance(
+            $this->getContainer(),
+            $this->getContainer()->get('product.repository'),
+            $this->getContainer()->get('category.repository'),
+            $this->getContainer()->get('serializer.mapping.cache.symfony'),
+            Context::createDefaultContext(),
+            new ExportConfiguration('ABCDABCDABCDABCDABCDABCDABCDABCD', 0, 100)
+        );
+
+        $this->getContainer()->set('fin_search.export_context', new ExportContext(
+            'ABCDABCDABCDABCDABCDABCDABCDABCD',
+            [],
+            $this->getCategory()
+        ));
+
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
         $this->logger->pushHandler($this->productErrorHandler);
     }
@@ -53,6 +71,8 @@ class XmlExportTest extends TestCase
         $product = $this->createTestProduct();
 
         $items = $this->getExport()->buildItems([$product]);
+        $this->getExport()->buildResponse($items, 0, 1);
+
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());
     }
@@ -91,6 +111,7 @@ class XmlExportTest extends TestCase
     public function buildItemsAndAssertError(ProductEntity $product, CategoryEntity $category)
     {
         $items = $this->getExport()->buildItems([$product]);
+        $this->getExport()->buildResponse($items, 0, 1);
         $this->assertEmpty($items);
 
         $errors = $this->productErrorHandler->getExportErrors()->getProductError($product->getId())->getErrors();
@@ -111,9 +132,22 @@ class XmlExportTest extends TestCase
     {
         $product = $this->createVisibleTestProduct(['tags' => []]);
         $items = $this->getExport()->buildItems([$product]);
+        $this->getExport()->buildResponse($items, 0, 1);
 
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());
+    }
+
+    public function testFallbackToValidVariant(): void
+    {
+        $product = $this->createProductWithMultipleVariants();
+        $product->setCategories(new CategoryCollection());
+
+        $items = $this->getExport()->buildItems([$product]);
+        $this->getExport()->buildResponse($items, 0, 1);
+
+        $this->assertCount(1, $items);
+        $this->assertNotEquals($product->getId(), $items[0]->getId());
     }
 
     protected function getExport(): XmlExport
