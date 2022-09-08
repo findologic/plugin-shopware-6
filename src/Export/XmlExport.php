@@ -173,7 +173,7 @@ class XmlExport extends Export
             foreach ($variants->getElements() as $variant) {
                 if ($item) {
                     $adaptedItem = $this->exportItemAdapter->adaptVariant($item, $variant);
-                } else if ($adaptedItem = $this->exportItemAdapter->adapt($initialItem, $variant)) {
+                } elseif ($adaptedItem = $this->exportItemAdapter->adapt($initialItem, $variant)) {
                     $adaptedItem->setId($variant->getId());
                 }
 
