@@ -140,24 +140,14 @@ class XmlExportTest extends TestCase
 
     public function testFallbackToValidVariant(): void
     {
-        $parentId = Uuid::randomHex();
-        $variantId = Uuid::randomHex();
-        $variant2Id = Uuid::randomHex();
-        $variant3Id = Uuid::randomHex();
-        $product = $this->createProductWithMultipleVariants($parentId, $variantId, $variant2Id, $variant3Id);
-
-        var_dump($parentId);
-        var_dump($variantId);
-        var_dump($variant2Id);
-        var_dump($variant3Id);
-
+        $product = $this->createProductWithMultipleVariants();
         $product->setCategories(new CategoryCollection());
 
         $items = $this->getExport()->buildItems([$product]);
         $this->getExport()->buildResponse($items, 0, 1);
 
         $this->assertCount(1, $items);
-        $this->assertSame($variantId, $items[0]->getId());
+        $this->assertNotEquals($product->getId(), $items[0]->getId());
     }
 
     protected function getExport(): XmlExport
