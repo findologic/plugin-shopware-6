@@ -10,6 +10,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
       inputTimeout: 500,
       minKey: 'min-price',
       maxKey: 'max-price',
+      mainFilterButtonSelector: '.filter-panel-item-toggle',
       price: {
           min: 0,
           max: 1,
@@ -22,6 +23,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
           filterRangeActiveMinLabel: '',
           filterRangeActiveMaxLabel: '',
           filterRangeErrorMessage: '',
+          disabledFilterText: 'Filter not active',
       },
   });
 
@@ -328,9 +330,75 @@ export default class FilterSliderRange extends FilterBasePlugin {
       }
   }
 
-  setMaxKnobValue() {
+  refreshDisabledState(filter) {
+      const properties = filter[this.options.name];
+      const entities = properties.entities;
+
+      if (!entities) {
+          this.disableFilter();
+
+          return;
+      }
+
+      const property = entities.find(entity => entity.translated.name === this.options.propertyName);
+      const totalRangePrices = property.options[0].totalRange;
+      const selectedRangePrices = property.options[0].selectedRange;
+
+      console.log(property.options[0]);
+
+      if (totalRangePrices.min === totalRangePrices.max) {
+          this.disableFilter();
+
+          return;
+      }
+
+      if (this.options.min !== totalRangePrices.min || this.options.max !== totalRangePrices.max) {
+          this.updateMinAndMaxValues(totalRangePrices.min, totalRangePrices.max);
+      }
+
+      this.enableFilter();
+  }
+
+  updateMinAndMaxValues(minPrice, maxPrice) {
+      this.options.price.min = minPrice;
+      this.options.price.max = maxPrice;
+      this._inputMin.value = minPrice;
+      this._inputMax.value = maxPrice;
+
+      noUiSlider.updateOptions({
+          range: {
+              'min': minPrice,
+              'max': maxPrice
+          }
+      });
+
+      this.setBothKnobValues();
+  }
+
+  disableFilter() {
+        const mainFilterButton = DomAccess.querySelector(this.el, this.options.mainFilterButtonSelector);
+        mainFilterButton.classList.add('fl-disabled');
+        mainFilterButton.setAttribute('disabled', 'disabled');
+        mainFilterButton.setAttribute('title', this.options.snippets.disabledFilterText);
+  }
+
+  enableFilter() {
+        const mainFilterButton = DomAccess.querySelector(this.el, this.options.mainFilterButtonSelector);
+        mainFilterButton.classList.remove('fl-disabled');
+        mainFilterButton.removeAttribute('disabled');
+        mainFilterButton.removeAttribute('title');
+    }
+
+
+    setMaxKnobValue() {
       if (this.slider) {
           this.slider.noUiSlider.set([null, this._inputMax.value]);
+      }
+  }
+
+  setBothKnobValues() {
+      if (this.slider) {
+          this.slider.noUiSlider.set([this._inputMin.value, this._inputMax.value]);
       }
   }
 }
