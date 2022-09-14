@@ -371,7 +371,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
             range: {
                 'min': minPrice,
                 'max': maxPrice,
-            }
+            },
         });
 
         this.updateInputsAndSliderValues(minPrice, maxPrice);
