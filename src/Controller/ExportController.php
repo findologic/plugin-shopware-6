@@ -18,6 +18,7 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
+use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -59,6 +60,8 @@ class ExportController extends AbstractController
 
     private EntityRepository $productRepository;
 
+    private ProductStreamBuilder $productStreamBuilder;
+
     private ?SalesChannelContext $salesChannelContext;
 
     private ExportConfigurationBase $exportConfig;
@@ -87,7 +90,8 @@ class ExportController extends AbstractController
         EntityRepository $customerGroupRepository,
         EntityRepository $categoryRepository,
         EntityRepository $pluginRepository,
-        EntityRepository $productRepository
+        EntityRepository $productRepository,
+        ProductStreamBuilder $productStreamBuilder
     ) {
         $this->logger = $logger;
         $this->router = $router;
@@ -98,6 +102,7 @@ class ExportController extends AbstractController
         $this->categoryRepository = $categoryRepository;
         $this->pluginRepository = $pluginRepository;
         $this->productRepository = $productRepository;
+        $this->productStreamBuilder = $productStreamBuilder;
     }
 
     /**
@@ -176,6 +181,7 @@ class ExportController extends AbstractController
         $this->productSearcher = $this->container->get(ProductSearcher::class);
 
         $this->dynamicProductGroupService = $this->getDynamicProductGroupService();
+        $this->container->set('fin_search.dynamic_product_group', $this->dynamicProductGroupService);
 
         $this->manipulateRequestWithSalesChannelInformation($request);
     }
@@ -328,18 +334,14 @@ class ExportController extends AbstractController
 
     protected function getDynamicProductGroupService(): DynamicProductGroupService
     {
-        $dynamicProductGroupService = DynamicProductGroupService::getInstance(
-            $this->container,
+        return new DynamicProductGroupService(
             $this->productRepository,
             $this->categoryRepository,
+            $this->productStreamBuilder,
+            $this->salesChannelContext,
+            $this->exportConfig,
             $this->cache,
-            $this->salesChannelContext->getContext(),
-            $this->exportConfig
         );
-
-        $dynamicProductGroupService->setSalesChannel($this->salesChannelContext->getSalesChannel());
-
-        return $dynamicProductGroupService;
     }
 
     private function buildExportContext(): ExportContext

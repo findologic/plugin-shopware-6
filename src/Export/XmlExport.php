@@ -261,7 +261,7 @@ class XmlExport extends Export
             $dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
 
             if ($dynamicProductGroupService) {
-                return $dynamicProductGroupService->getCategories($productEntity->getId())->getElements();
+                return $dynamicProductGroupService->getCategories($productEntity->getId());
             }
         }
 
