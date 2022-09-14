@@ -7,9 +7,10 @@ namespace FINDOLOGIC\FinSearch\Export;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\DynamicProductGroupsConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
+use FINDOLOGIC\Shopware6Common\Export\Services\AbstractDynamicProductGroupService;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryCollection;
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Context;
@@ -19,103 +20,41 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
-use Shopware\Core\System\SalesChannel\SalesChannelEntity;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
-class DynamicProductGroupService
+class DynamicProductGroupService extends AbstractDynamicProductGroupService
 {
-    public const CONTAINER_ID = 'fin_search.dynamic_product_group';
-
     protected EntityRepositoryInterface $productRepository;
 
     protected EntityRepositoryInterface $categoryRepository;
 
     protected ProductStreamBuilderInterface $productStreamBuilder;
 
-    protected DynamicProductGroupCacheHandler $cacheHandler;
-
     protected Context $context;
+
+    protected SalesChannelContext $salesChannelContext;
 
     protected ExportConfigurationBase $exportConfig;
 
-    protected SalesChannelEntity $salesChannel;
-
-    private function __construct(
+    public function __construct(
         EntityRepository $productRepository,
         EntityRepository $categoryRepository,
         ProductStreamBuilder $productStreamBuilder,
-        DynamicProductGroupCacheHandler $cacheHandler,
-        Context $context,
-        ExportConfigurationBase $exportConfig
+        SalesChannelContext $salesChannelContext,
+        ExportConfigurationBase $exportConfig,
+        CacheItemPoolInterface $cache
     ) {
         $this->productRepository = $productRepository;
         $this->categoryRepository = $categoryRepository;
         $this->productStreamBuilder = $productStreamBuilder;
-        $this->cacheHandler = $cacheHandler;
-        $this->context = $context;
+        $this->context = $salesChannelContext->getContext();
+        $this->salesChannelContext = $salesChannelContext;
         $this->exportConfig = $exportConfig;
 
-        $this->cacheHandler->setShopkey($exportConfig->getShopkey());
+        parent::__construct($cache);
     }
 
-    public static function getInstance(
-        ContainerInterface $container,
-        EntityRepository $productRepository,
-        EntityRepository $categoryRepository,
-        CacheItemPoolInterface $cache,
-        Context $context,
-        ExportConfigurationBase $exportConfig
-    ): DynamicProductGroupService {
-        if ($container->has(self::CONTAINER_ID)) {
-            $dynamicProductGroupService = $container->get(self::CONTAINER_ID);
-        } else {
-            $cacheHandler = new DynamicProductGroupCacheHandler($cache);
-            $dynamicProductGroupService = new DynamicProductGroupService(
-                $productRepository,
-                $categoryRepository,
-                $container->get(ProductStreamBuilder::class),
-                $cacheHandler,
-                $context,
-                $exportConfig
-            );
-            $container->set(self::CONTAINER_ID, $dynamicProductGroupService);
-        }
-
-        return $dynamicProductGroupService;
-    }
-
-    public function setSalesChannel(SalesChannelEntity $salesChannelEntity): void
-    {
-        $this->salesChannel = $salesChannelEntity;
-    }
-
-    public function warmUp(): void
-    {
-        $this->cacheDynamicProductGroupsTotal();
-
-        $products = $this->parseProductGroups();
-        if ($this->isLastPage()) {
-            $this->cacheHandler->setWarmedUpCacheItem();
-        }
-
-        $this->cacheDynamicProductOffset($products);
-    }
-
-    public function areDynamicProductGroupsCached(): bool
-    {
-        return $this->cacheHandler->areDynamicProductGroupsCached();
-    }
-
-    public function getDynamicProductGroupsTotal(): int
-    {
-        return $this->cacheHandler->getDynamicProductGroupsCachedTotal();
-    }
-
-    public function clearGeneralCache(): void
-    {
-        $this->cacheHandler->clearGeneralCache();
-    }
-
-    public function getCategories(string $productId): CategoryCollection
+    public function getCategories(string $productId): array
     {
         $start = 0;
         $categoryCollection = new CategoryCollection();
@@ -125,7 +64,7 @@ class DynamicProductGroupService
 
             if (!Utils::isEmpty($categories) && isset($categories[$productId])) {
                 $categoryIds = $categories[$productId];
-                $criteria = $this->buildCriteria();
+                $criteria = $this->buildCategoryCriteria();
                 $criteria->setIds($categoryIds);
 
                 $categoryCollection->merge(
@@ -136,25 +75,26 @@ class DynamicProductGroupService
             $start += DynamicProductGroupsConfiguration::DEFAULT_COUNT_PARAM;
         }
 
-        return $categoryCollection;
+        return $categoryCollection->getElements();
+    }
+
+    protected function setMainNavigationCategoryId(): void
+    {
+        $this->mainCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+    }
+
+    protected function getShopkey(): string
+    {
+        return $this->exportConfig->getShopkey();
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @inheritDoc
      */
     protected function parseProductGroups(): array
     {
-        $criteria = $this->buildCriteria();
-        $criteria->setOffset($this->exportConfig->getStart())
-            ->setLimit($this->exportConfig->getCount());
-
         /** @var CategoryCollection $categories */
-        $categories = $this->categoryRepository->search($criteria, $this->context)
-            ->getEntities();
-
-        if (!$categories->count()) {
-            return [];
-        }
+        $categories = $this->getProductStreamCategories(true);
 
         $products = [];
         foreach ($categories as $categoryEntity) {
@@ -180,12 +120,18 @@ class DynamicProductGroupService
         return $products;
     }
 
-    protected function buildCriteria(): Criteria
+    protected function getProductStreamCategories(bool $paginated = false): array
     {
-        $mainCategoryId = $this->salesChannel->getNavigationCategoryId();
+        return $this->categoryRepository
+            ->search($this->buildCategoryCriteria($paginated), $this->context)
+            ->getEntities()
+            ->getElements();
+    }
 
+    protected function buildCategoryCriteria(bool $paginated = false): Criteria
+    {
         $criteria = new Criteria();
-        $criteria->addFilter(new ContainsFilter('path', $mainCategoryId));
+        $criteria->addFilter(new ContainsFilter('path', $this->mainCategoryId));
         $criteria->addAssociation('seoUrls');
         $criteria->addAssociation('productStream');
         $criteria->addFilter(
@@ -195,56 +141,25 @@ class DynamicProductGroupService
             )
         );
 
+        if ($paginated) {
+            $criteria->setLimit($this->exportConfig->getCount());
+            $criteria->setOffset($this->exportConfig->getStart());
+        }
+
         return $criteria;
     }
 
     /**
-     * Sets the dynamic product groups total count in cache if it is not already set. This is important
-     * as otherwise we wouldn't know when we're done fetching all dynamic product groups during the export.
+     * @param CategoryEntity $categoryEntity
      */
-    protected function cacheDynamicProductGroupsTotal(): void
+    protected function hasProductStream($categoryEntity): bool
     {
-        if (
-            !$this->cacheHandler->isDynamicProductGroupTotalCached() ||
-            $this->exportConfig->getStart() === 0
-        ) {
-            $total = $this->getTotalDynamicProductGroupsCount();
-            $this->cacheHandler->setDynamicProductGroupTotal($total);
-        }
+        return !!$categoryEntity->getProductStream();
     }
 
-    protected function getTotalDynamicProductGroupsCount(): int
+    protected function isFirstPage(): bool
     {
-        $total = 0;
-        $criteria = $this->buildCriteria();
-        $categories = $this->getCategoriesFromCriteria($criteria);
-        foreach ($categories as $categoryEntity) {
-            $productStream = $categoryEntity->getProductStream();
-            if (!$productStream) {
-                continue;
-            }
-
-            $total++;
-        }
-
-        return $total;
-    }
-
-    /**
-     * Sets the dynamic product groups in cache for each pagination. This is required so that each
-     * subsequent export request fetches the correct dynamic product groups for that offset.
-     */
-    protected function cacheDynamicProductOffset(array $products): void
-    {
-        $this->cacheHandler->setDynamicProductGroupsOffset($products, $this->exportConfig->getStart());
-    }
-
-    protected function getCategoriesFromCriteria(Criteria $criteria): ?CategoryCollection
-    {
-        /** @var CategoryCollection $categories */
-        $categories = $this->categoryRepository->search($criteria, $this->context)->getEntities();
-
-        return $categories->count() ? $categories : null;
+        return $this->exportConfig->getStart() === 0;
     }
 
     protected function isLastPage(): bool
@@ -252,5 +167,10 @@ class DynamicProductGroupService
         $currentTotal = $this->exportConfig->getStart() + $this->exportConfig->getCount();
 
         return $currentTotal >= $this->getDynamicProductGroupsTotal();
+    }
+
+    protected function getCurrentOffset(): int
+    {
+        return $this->exportConfig->getStart();
     }
 }

@@ -18,6 +18,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
+use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -105,7 +106,6 @@ class DynamicProductGroupServiceTest extends TestCase
         $products = [];
         $salesChannelContext = $this->getDefaultSalesChannelContextMock();
         $context = $salesChannelContext->getContext();
-        $salesChannel = $salesChannelContext->getSalesChannel();
         [$categoryOne, $categoryTwo] = $this->getProductStreamCategories($context);
 
         $productId = Uuid::randomHex();
@@ -132,7 +132,7 @@ class DynamicProductGroupServiceTest extends TestCase
             ->willReturn($cacheItemMock);
 
         $dynamicService = $this->getDynamicProductGroupService();
-        $dynamicService->setSalesChannel($salesChannel);
+
         $categories = $dynamicService->getCategories($productId);
         $this->assertNotEmpty($categories);
         $this->assertCount(2, $categories);
@@ -141,7 +141,6 @@ class DynamicProductGroupServiceTest extends TestCase
     public function testNoCategoriesAreReturnedForUnAssignedProduct(): void
     {
         $salesChannelContext = $this->getDefaultSalesChannelContextMock();
-        $salesChannel = $salesChannelContext->getSalesChannel();
         $context = $salesChannelContext->getContext();
         [$categoryOne, $categoryTwo] = $this->getProductStreamCategories($context);
         $unassignedProductId = Uuid::randomHex();
@@ -168,7 +167,7 @@ class DynamicProductGroupServiceTest extends TestCase
             ->willReturn($cacheItemMock);
 
         $dynamicService = $this->getDynamicProductGroupService();
-        $dynamicService->setSalesChannel($salesChannel);
+
         $categories = $dynamicService->getCategories($unassignedProductId);
         $this->assertEmpty($categories);
     }
@@ -208,13 +207,13 @@ class DynamicProductGroupServiceTest extends TestCase
 
     private function getDynamicProductGroupService(): DynamicProductGroupService
     {
-        return DynamicProductGroupService::getInstance(
-            $this->containerMock,
+        return new DynamicProductGroupService(
             $this->getContainer()->get('product.repository'),
             $this->getContainer()->get('category.repository'),
+            $this->getContainer()->get(ProductStreamBuilder::class),
+            $this->getDefaultSalesChannelContextMock(),
+            $this->exportConfig,
             $this->cache,
-            $this->defaultContext,
-            $this->exportConfig
         );
     }
 

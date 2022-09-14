@@ -4,14 +4,22 @@
   "version": "4.0.0-RC2",
   "license": "GPL-3.0-or-later",
   "type": "shopware-platform-plugin",
+    "minimum-stability": "dev",
   "authors": [
     {
       "name": "FINDOLOGIC GmbH"
     }
   ],
+    "repositories": [
+        {
+            "type" : "path",
+            "url" : "/home/tgraml/Documents/code/shopware6-common"
+        }
+    ],
   "require": {
     "findologic/libflexport": "^2.8",
-    "findologic/findologic-api": "^1.6"
+    "findologic/findologic-api": "^1.6",
+    "findologic/shopware6-common": "*"
   },
   "extra": {
     "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
