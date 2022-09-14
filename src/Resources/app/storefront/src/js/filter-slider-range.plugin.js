@@ -343,8 +343,6 @@ export default class FilterSliderRange extends FilterBasePlugin {
         const property = entities.find(entity => entity.translated.name === this.options.propertyName);
         const totalRangePrices = property.options[0].totalRange;
         const alreadySelectedPrices = this.getValues();
-        const alreadySelectedMin = alreadySelectedPrices[this.options.minKey];
-        const alreadySelectedMax = alreadySelectedPrices[this.options.maxKey];
 
         if (totalRangePrices.min === totalRangePrices.max) {
             this.disableFilter();
@@ -360,17 +358,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
             return;
         }
 
-        if (alreadySelectedMin >= totalRangePrices.min && alreadySelectedMax <= totalRangePrices.max) {
-            this.updateInputAndSliderValues(alreadySelectedMin, alreadySelectedMax);
-        } else if (alreadySelectedMin < totalRangePrices.min && alreadySelectedPrices[this.options.maxKey] <= totalRangePrices.max) {
-            this.updateInputAndSliderValues(null, alreadySelectedMax);
-        } else if (alreadySelectedMin >= totalRangePrices.min && alreadySelectedMax > totalRangePrices.max) {
-            this.updateInputAndSliderValues(alreadySelectedMin, null);
-        } else if (typeof alreadySelectedMin === 'undefined' && alreadySelectedMax <= totalRangePrices.max) {
-            this.updateInputAndSliderValues(null, alreadySelectedMax);
-        } else if (alreadySelectedMin >= totalRangePrices.min && typeof alreadySelectedMax === 'undefined') {
-            this.updateInputAndSliderValues(alreadySelectedMin, null);
-        }
+        this.updateSelectedRange(alreadySelectedPrices, totalRangePrices);
 
         this.enableFilter();
     }
@@ -386,10 +374,10 @@ export default class FilterSliderRange extends FilterBasePlugin {
             }
         });
 
-        this.updateInputAndSliderValues(minPrice, maxPrice);
+        this.updateInputsAndSliderValues(minPrice, maxPrice);
     }
 
-    updateInputAndSliderValues(minPrice, maxPrice) {
+    updateInputsAndSliderValues(minPrice, maxPrice) {
         if (minPrice !== null) {
             this._inputMin.value = minPrice;
         }
@@ -399,7 +387,27 @@ export default class FilterSliderRange extends FilterBasePlugin {
         }
 
         this.setBothKnobValues();
-        this.listing.changeListing();
+    }
+
+    /**
+     * @param {Array} alreadySelectedPrices
+     * @param {Object} totalRangePrices
+     */
+    updateSelectedRange(alreadySelectedPrices, totalRangePrices) {
+        const alreadySelectedMin = alreadySelectedPrices[this.options.minKey];
+        const alreadySelectedMax = alreadySelectedPrices[this.options.maxKey];
+
+        if (alreadySelectedMin >= totalRangePrices.min && alreadySelectedMax <= totalRangePrices.max) {
+            this.updateInputsAndSliderValues(alreadySelectedMin, alreadySelectedMax);
+        } else if (alreadySelectedMin < totalRangePrices.min && alreadySelectedPrices[this.options.maxKey] <= totalRangePrices.max) {
+            this.updateInputsAndSliderValues(null, alreadySelectedMax);
+        } else if (alreadySelectedMin >= totalRangePrices.min && alreadySelectedMax > totalRangePrices.max) {
+            this.updateInputsAndSliderValues(alreadySelectedMin, null);
+        } else if (typeof alreadySelectedMin === 'undefined' && alreadySelectedMax <= totalRangePrices.max) {
+            this.updateInputsAndSliderValues(null, alreadySelectedMax);
+        } else if (alreadySelectedMin >= totalRangePrices.min && typeof alreadySelectedMax === 'undefined') {
+            this.updateInputsAndSliderValues(alreadySelectedMin, null);
+        }
     }
 
     disableFilter() {
