@@ -330,6 +330,18 @@ export default class FilterSliderRange extends FilterBasePlugin {
         }
     }
 
+    setMaxKnobValue() {
+        if (this.slider) {
+            this.slider.noUiSlider.set([null, this._inputMax.value]);
+        }
+    }
+
+    setBothKnobValues() {
+        if (this.slider) {
+            this.slider.noUiSlider.set([this._inputMin.value, this._inputMax.value]);
+        }
+    }
+
     refreshDisabledState(filter) {
         const properties = filter[this.options.name];
         const entities = properties.entities;
@@ -342,11 +354,10 @@ export default class FilterSliderRange extends FilterBasePlugin {
 
         const property = entities.find(entity => entity.translated.name === this.options.propertyName);
         const totalRangePrices = property.options[0].totalRange;
-        const alreadySelectedPrices = this.getValues();
+        const currentSelectedPrices = this.getValues();
 
         if (totalRangePrices.min === totalRangePrices.max) {
             this.disableFilter();
-
             return;
         }
 
@@ -354,11 +365,10 @@ export default class FilterSliderRange extends FilterBasePlugin {
             this.updateMinAndMaxValues(totalRangePrices.min, totalRangePrices.max);
         } else {
             this.enableFilter();
-
             return;
         }
 
-        this.updateSelectedRange(alreadySelectedPrices, totalRangePrices);
+        this.updateSelectedRange(currentSelectedPrices, totalRangePrices);
 
         this.enableFilter();
     }
@@ -390,24 +400,20 @@ export default class FilterSliderRange extends FilterBasePlugin {
     }
 
     /**
-     * @param {Array} alreadySelectedPrices
+     * @param {Array} currentSelectedPrices
      * @param {Object} totalRangePrices
      */
-    updateSelectedRange(alreadySelectedPrices, totalRangePrices) {
-        const alreadySelectedMin = alreadySelectedPrices[this.options.minKey];
-        const alreadySelectedMax = alreadySelectedPrices[this.options.maxKey];
+    updateSelectedRange(currentSelectedPrices, totalRangePrices) {
+        const currentSelectedPriceMin = currentSelectedPrices[this.options.minKey];
+        const currentSelectedPriceMax = currentSelectedPrices[this.options.maxKey];
 
-        if (alreadySelectedMin >= totalRangePrices.min && alreadySelectedMax <= totalRangePrices.max) {
-            this.updateInputsAndSliderValues(alreadySelectedMin, alreadySelectedMax);
-        } else if (alreadySelectedMin < totalRangePrices.min && alreadySelectedPrices[this.options.maxKey] <= totalRangePrices.max) {
-            this.updateInputsAndSliderValues(null, alreadySelectedMax);
-        } else if (alreadySelectedMin >= totalRangePrices.min && alreadySelectedMax > totalRangePrices.max) {
-            this.updateInputsAndSliderValues(alreadySelectedMin, null);
-        } else if (typeof alreadySelectedMin === 'undefined' && alreadySelectedMax <= totalRangePrices.max) {
-            this.updateInputsAndSliderValues(null, alreadySelectedMax);
-        } else if (alreadySelectedMin >= totalRangePrices.min && typeof alreadySelectedMax === 'undefined') {
-            this.updateInputsAndSliderValues(alreadySelectedMin, null);
-        }
+        const updateMin = currentSelectedPriceMin && currentSelectedPriceMin >= totalRangePrices.min;
+        const updateMax = currentSelectedPriceMax && currentSelectedPriceMax <= totalRangePrices.max;
+
+        const newSelectedMin = updateMin ? currentSelectedPriceMin : null;
+        const newSelectedMax = updateMax ? currentSelectedPriceMax : null;
+
+        this.updateInputsAndSliderValues(newSelectedMin, newSelectedMax);
     }
 
     disableFilter() {
@@ -422,18 +428,5 @@ export default class FilterSliderRange extends FilterBasePlugin {
         mainFilterButton.classList.remove('fl-disabled');
         mainFilterButton.removeAttribute('disabled');
         mainFilterButton.removeAttribute('title');
-    }
-
-
-    setMaxKnobValue() {
-        if (this.slider) {
-            this.slider.noUiSlider.set([null, this._inputMax.value]);
-        }
-    }
-
-    setBothKnobValues() {
-        if (this.slider) {
-            this.slider.noUiSlider.set([this._inputMin.value, this._inputMax.value]);
-        }
     }
 }
