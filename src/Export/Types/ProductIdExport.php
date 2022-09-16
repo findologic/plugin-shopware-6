@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export;
+namespace FINDOLOGIC\FinSearch\Export\Types;
 
-use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
-use FINDOLOGIC\Shopware6Common\Export\AbstractExport;
+use FINDOLOGIC\Shopware6Common\Export\Logger\Handler\ProductErrorHandler;
+use FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
 use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductSearcher;
 use FINDOLOGIC\Shopware6Common\Export\Services\AbstractDynamicProductGroupService;

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export\Debug;
+namespace FINDOLOGIC\FinSearch\Export\Search;
 
-use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
+use FINDOLOGIC\Shopware6Common\Export\Search\ProductDebugSearcherInterface;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 
-class ProductDebugSearcher extends ProductSearcher
+class ProductDebugSearcher extends ProductSearcher implements ProductDebugSearcherInterface
 {
     public function buildCriteria(?int $limit = null, ?int $offset = null, ?string $productId = null): Criteria
     {
@@ -43,19 +43,14 @@ class ProductDebugSearcher extends ProductSearcher
         return $this->searchProduct($criteria);
     }
 
-    public function searchProducts(Criteria $criteria): EntitySearchResult
-    {
-        return $this->productRepository->search(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        );
-    }
-
     public function searchProduct(Criteria $criteria): ?ProductEntity
     {
         return $this->searchProducts($criteria)->first();
     }
 
+    /**
+     * @return ProductEntity[]
+     */
     public function getSiblings(string $parentId, int $count): array
     {
         $parentProduct = $this->getProductById($parentId);
@@ -68,5 +63,13 @@ class ProductDebugSearcher extends ProductSearcher
             ->build();
 
         return $this->searchProducts($criteria)->getElements();
+    }
+
+    public function searchProducts(Criteria $criteria): EntitySearchResult
+    {
+        return $this->productRepository->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        );
     }
 }

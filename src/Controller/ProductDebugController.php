@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\Export\XML\XMLItem;
-use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher;
-use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
+use FINDOLOGIC\FinSearch\Export\Search\ProductDebugSearcher;
+use FINDOLOGIC\FinSearch\Export\Services\ProductDebugService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\HttpFoundation\Request;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export\Adapters;
 
 use FINDOLOGIC\Export\Data\Name;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Exceptions\Product\ProductHasNoNameException;
 use Shopware\Core\Content\Product\ProductEntity;
 
 class NameAdapter

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export;
+namespace FINDOLOGIC\FinSearch\Export\Types;
 
-use FINDOLOGIC\Shopware6Common\Export\AbstractXmlExport;
+use FINDOLOGIC\Shopware6Common\Export\Types\AbstractXmlExport;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 

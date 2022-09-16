@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
-use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
-use FINDOLOGIC\FinSearch\Export\Export;
+use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
-use FINDOLOGIC\FinSearch\Export\ProductIdExport;
 use FINDOLOGIC\FinSearch\Export\Responses\PreconditionFailedResponse;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
-use FINDOLOGIC\FinSearch\Export\XmlExport;
-use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
+use FINDOLOGIC\FinSearch\Export\Types\Export;
+use FINDOLOGIC\FinSearch\Export\Types\ProductIdExport;
+use FINDOLOGIC\FinSearch\Export\Types\XmlExport;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
-use FINDOLOGIC\Shopware6Common\Export\AbstractExport;
+use FINDOLOGIC\Shopware6Common\Export\AbstractHeaderHandler;
+use FINDOLOGIC\Shopware6Common\Export\Logger\Handler\ProductErrorHandler;
+use FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -116,13 +117,19 @@ class ExportController extends AbstractController
 
         $total = $this->warmUpDynamicProductGroupsAndGetTotal();
 
-        return new JsonResponse([
-            'meta' => [
-                'start' => $this->exportConfig->getStart(),
-                'count' => $this->exportConfig->getCount(),
-                'total' => $total
-            ]
-        ]);
+        return new JsonResponse(
+            [
+                'meta' => [
+                    'start' => $this->exportConfig->getStart(),
+                    'count' => $this->exportConfig->getCount(),
+                    'total' => $total
+                ]
+            ],
+            200,
+            $this->headerHandler->getHeaders([
+                AbstractHeaderHandler::HEADER_CONTENT_TYPE => AbstractHeaderHandler::CONTENT_TYPE_JSON
+            ])
+        );
     }
 
     protected function initialize(Request $request, ?SalesChannelContext $context): ?Response
@@ -189,7 +196,8 @@ class ExportController extends AbstractController
             $navigationCategory ? $navigationCategory->getId() : '',
             $navigationCategory ? $navigationCategory->getBreadcrumb() : '',
             $this->getAllCustomerGroups(),
-            true // TODO: Fetch real value
+            true, // TODO: Fetch real value
+            $this->salesChannelContext->getSalesChannel()->getDomains()->first()->getUrl()
         );
         $this->container->set(ExportContext::class, $this->exportContext);
     }
@@ -260,19 +268,6 @@ class ExportController extends AbstractController
         return $messages;
     }
 
-    protected function warmUpDynamicProductGroupsAndGetTotal(): int
-    {
-        if ($this->exportConfig->getStart() === 0) {
-            $this->dynamicProductGroupService->clearGeneralCache();
-        }
-
-        if (!$this->dynamicProductGroupService->areDynamicProductGroupsCached()) {
-            $this->dynamicProductGroupService->warmUp();
-        }
-
-        return $this->dynamicProductGroupService->getDynamicProductGroupsTotal();
-    }
-
     protected function validateExportConfiguration(): array
     {
         $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
@@ -286,6 +281,19 @@ class ExportController extends AbstractController
         }
 
         return $messages;
+    }
+
+    protected function warmUpDynamicProductGroupsAndGetTotal(): int
+    {
+        if ($this->exportConfig->getStart() === 0) {
+            $this->dynamicProductGroupService->clearGeneralCache();
+        }
+
+        if (!$this->dynamicProductGroupService->areDynamicProductGroupsCached()) {
+            $this->dynamicProductGroupService->warmUp();
+        }
+
+        return $this->dynamicProductGroupService->getDynamicProductGroupsTotal();
     }
 
     protected function doExport(): Response
