@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export\Adapters;
 
 use FINDOLOGIC\Export\Data\Item;
-use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Events\AfterItemAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\AfterVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\BeforeItemAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\BeforeVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Logger\ExportExceptionLogger;
+use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter as OriginalExportItemAdapter;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Content\Product\ProductEntity;

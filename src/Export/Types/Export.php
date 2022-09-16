@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export;
+namespace FINDOLOGIC\FinSearch\Export\Types;
 
-use FINDOLOGIC\Export\Data\Item;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
-use FINDOLOGIC\Shopware6Common\Export\AbstractExport;
+use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
+use FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Content\Product\ProductEntity;
-use Symfony\Component\HttpFoundation\Response;
 
 abstract class Export
 {

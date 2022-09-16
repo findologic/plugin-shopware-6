@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export\Adapters;
 
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Export\Adapters\NameAdapter;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Exceptions\Product\ProductHasNoNameException;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\Aggregate\ProductTranslation\ProductTranslationCollection;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export\Adapters;
 
 use FINDOLOGIC\Export\Data\Price;
-use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Exceptions\Product\ProductHasNoPricesException;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
