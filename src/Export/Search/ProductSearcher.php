@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
-use FINDOLOGIC\FinSearch\Findologic\MainVariant;
-use FINDOLOGIC\FinSearch\Struct\Config;
-use InvalidArgumentException;
+use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductSearcher;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
@@ -14,34 +12,48 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\TermsAggregation;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\Bucket\TermsResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
-class ProductSearcher
+class ProductSearcher extends AbstractProductSearcher
 {
     protected SalesChannelContext $salesChannelContext;
 
     protected EntityRepository $productRepository;
 
-    protected ProductCriteriaBuilder $productCriteriaBuilder;
-
-    protected Config $config;
-
     public function __construct(
         SalesChannelContext $salesChannelContext,
         EntityRepository $productRepository,
-        ProductCriteriaBuilder $productCriteriaBuilder,
-        Config $config
+        ProductCriteriaBuilder $productCriteriaBuilder
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->productRepository = $productRepository;
-        $this->productCriteriaBuilder = $productCriteriaBuilder;
-        $this->config = $config;
+
+        parent::__construct($productCriteriaBuilder);
     }
 
-    public function setConfig(Config $config): void
+    protected function fetchProducts(?int $limit = null, ?int $offset = null, ?string $productId = null): array
     {
-        $this->config = $config;
+        $criteria = $this->buildCriteria($limit, $offset, $productId);
+
+        $productResult = $this->productRepository->search(
+            $criteria,
+            $this->salesChannelContext->getContext()
+        );
+        /** @var ProductCollection $products */
+        $products = $productResult->getEntities();
+
+        return $products->getElements();
+    }
+
+    protected function buildCriteria(
+        ?int $limit = null,
+        ?int $offset = null,
+        ?string $productId = null
+    ): Criteria {
+        $this->productCriteriaBuilder->withDefaultCriteria($limit, $offset, $productId);
+        $this->adaptCriteriaBasedOnConfiguration();
+
+        return $this->productCriteriaBuilder->build();
     }
 
     public function findTotalProductCount(): int
@@ -56,9 +68,9 @@ class ProductSearcher
         return $idResult->getTotal();
     }
 
-    public function findMaxPropertiesCount(ProductEntity $productEntity): int
+    public function findMaxPropertiesCount(string $productId, ?string $parentId, ?array $propertyIds): int
     {
-        $criteria = new Criteria([$productEntity->getParentId() ?? $productEntity->getId()]);
+        $criteria = new Criteria([$parentId ?? $productId]);
 
         $criteria->addAggregation(
             new TermsAggregation(
@@ -80,7 +92,7 @@ class ProductSearcher
             ->aggregate($criteria, $this->salesChannelContext->getContext())
             ->get('per-children');
 
-        $maxCount = $productEntity->getPropertyIds() ? count($productEntity->getPropertyIds()) : 0;
+        $maxCount = $propertyIds ? count($propertyIds) : 0;
         foreach ($aggregation->getBuckets() as $bucket) {
             if ($bucket->getCount() > $maxCount) {
                 $maxCount = $bucket->getCount();
@@ -90,71 +102,11 @@ class ProductSearcher
         return $maxCount;
     }
 
-    public function findVisibleProducts(
-        ?int $limit = null,
-        ?int $offset = null,
-        ?string $productId = null
-    ): EntitySearchResult {
-        $criteria = $this->buildCriteria($limit, $offset, $productId);
-
-        $productResult = $this->productRepository->search(
-            $criteria,
-            $this->salesChannelContext->getContext()
-        );
-        /** @var ProductCollection $products */
-        $products = $productResult->getEntities();
-
-        $mainVariantConfig = $this->config->getMainVariant();
-        if ($mainVariantConfig === MainVariant::CHEAPEST) {
-            return $this->getCheapestProducts($products);
-        }
-
-        return $this->getConfiguredMainVariants($products) ?: $productResult;
-    }
-
-    protected function buildCriteria(
-        ?int $limit = null,
-        ?int $offset = null,
-        ?string $productId = null
-    ): Criteria {
-        $this->productCriteriaBuilder->withDefaultCriteria($limit, $offset, $productId);
-        $this->adaptCriteriaBasedOnConfiguration();
-
-        return $this->productCriteriaBuilder->build();
-    }
-
-    protected function adaptCriteriaBasedOnConfiguration(): void
-    {
-        $mainVariantConfig = $this->config->getMainVariant();
-
-        switch ($mainVariantConfig) {
-            case MainVariant::SHOPWARE_DEFAULT:
-                $this->adaptParentCriteriaByShopwareDefault();
-                break;
-            case MainVariant::MAIN_PARENT:
-            case MainVariant::CHEAPEST:
-                $this->adaptParentCriteriaByMainOrCheapestProduct();
-                break;
-            default:
-                throw new InvalidArgumentException($mainVariantConfig);
-        }
-    }
-
-    protected function adaptParentCriteriaByShopwareDefault(): void
-    {
-        $this->productCriteriaBuilder
-            ->withPriceZeroFilter()
-            ->withVisibilityFilter()
-            ->withDisplayGroupFilter();
-    }
-
-    protected function adaptParentCriteriaByMainOrCheapestProduct(): void
-    {
-        $this->productCriteriaBuilder
-            ->withActiveParentOrInactiveParentWithVariantsFilter();
-    }
-
-    protected function getCheapestProducts(ProductCollection $products): EntitySearchResult
+    /**
+     * @param ProductEntity[] $products
+     * @return ProductEntity[]
+     */
+    protected function getCheapestProducts(array $products): array
     {
         $cheapestVariants = new ProductCollection();
 
@@ -183,10 +135,14 @@ class ProductSearcher
             $cheapestVariants->add($realCheapestProduct);
         }
 
-        return EntitySearchResult::createFrom($cheapestVariants);
+        return $cheapestVariants->getElements();
     }
 
-    protected function getConfiguredMainVariants(ProductCollection $products): ?EntitySearchResult
+    /**
+     * @param ProductEntity[] $products
+     * @return ?ProductEntity[]
+     */
+    protected function getConfiguredMainVariants(array $products): ?array
     {
         $realProductIds = [];
 
@@ -239,7 +195,11 @@ class ProductSearcher
         )->firstId();
     }
 
-    protected function getRealMainVariants(array $productIds): EntitySearchResult
+    /**
+     * @param string[] $productIds
+     * @return ?ProductEntity[]
+     */
+    protected function getRealMainVariants(array $productIds): array
     {
         $this->productCriteriaBuilder->reset();
         $this->productCriteriaBuilder
@@ -250,7 +210,7 @@ class ProductSearcher
         return $this->productRepository->search(
             $this->productCriteriaBuilder->build(),
             $this->salesChannelContext->getContext()
-        );
+        )->getEntities()->getElements();
     }
 
     public function buildVariantIterator(ProductEntity $product, int $pageSize): RepositoryIterator
@@ -258,7 +218,7 @@ class ProductSearcher
         $this->productCriteriaBuilder->reset();
         $this->productCriteriaBuilder
             ->withLimit($pageSize)
-            ->withParentIdFilterWithVisibility($product)
+            ->withParentIdFilterWithVisibility($product->getId(), $product->getParentId())
             ->withOutOfStockFilter()
             ->withPriceZeroFilter()
             ->withVariantAssociations();

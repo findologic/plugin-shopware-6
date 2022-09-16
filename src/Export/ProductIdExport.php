@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export;
 
-use FINDOLOGIC\Export\XML\XMLExporter;
 use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
+use FINDOLOGIC\Shopware6Common\Export\AbstractExport;
+use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
+use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductSearcher;
+use FINDOLOGIC\Shopware6Common\Export\Services\AbstractDynamicProductGroupService;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\RouterInterface;
 
 class ProductIdExport extends XmlExport
 {
     private ProductErrorHandler $errorHandler;
 
     public function __construct(
-        RouterInterface $router,
+        AbstractDynamicProductGroupService $dynamicProductGroupService,
+        AbstractProductSearcher $productSearcher,
+        ExportItemAdapter $exportItemAdapter,
         ContainerInterface $container,
-        LoggerInterface $logger,
-        EventDispatcherInterface $eventDispatcher,
-        array $crossSellingCategories = [],
-        ?XMLExporter $xmlFileConverter = null
+        ?LoggerInterface $logger = null
     ) {
-        parent::__construct($router, $container, $logger, $eventDispatcher, $crossSellingCategories, $xmlFileConverter);
+        parent::__construct($dynamicProductGroupService, $productSearcher, $exportItemAdapter, $container, $logger);
 
         $this->errorHandler = $this->pushErrorHandler();
     }
@@ -34,13 +34,13 @@ class ProductIdExport extends XmlExport
         return $this->errorHandler;
     }
 
-    public function buildItems(array $productEntities): array
+    public function buildItems(array $products): array
     {
-        if (count($productEntities) === 0) {
-            $this->getLogger()->warning('Product could not be found or is not available for search.');
+        if (count($products) === 0) {
+            $this->logger->warning('Product could not be found or is not available for search.');
         }
 
-        return parent::buildItems($productEntities);
+        return parent::buildItems($products);
     }
 
     public function buildResponse(array $items, int $start, int $total, array $headers = []): Response
@@ -49,13 +49,13 @@ class ProductIdExport extends XmlExport
             return parent::buildResponse($items, $start, $total, $headers);
         }
 
-        return $this->buildErrorResponse($this->errorHandler, $headers);
+        return AbstractExport::buildErrorResponse($this->errorHandler, $headers);
     }
 
     private function pushErrorHandler(): ProductErrorHandler
     {
         $errorHandler = new ProductErrorHandler();
-        $this->getLogger()->pushHandler($errorHandler);
+        $this->logger->pushHandler($errorHandler);
 
         return $errorHandler;
     }

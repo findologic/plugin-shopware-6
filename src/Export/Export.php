@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export;
 
 use FINDOLOGIC\Export\Data\Item;
-use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
+use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
+use FINDOLOGIC\Shopware6Common\Export\AbstractExport;
+use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Content\Product\ProductEntity;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\RouterInterface;
 
 abstract class Export
 {
@@ -31,52 +30,31 @@ abstract class Export
 
     public static function getInstance(
         int $type,
-        RouterInterface $router,
+        DynamicProductGroupService $dynamicProductGroupService,
+        ProductSearcher $productSearcher,
+        ExportItemAdapter $exportItemAdapter,
         ContainerInterface $container,
-        LoggerInterface $logger,
-        EventDispatcherInterface $eventDispatcher,
-        array $crossSellingCategories = []
-    ): Export {
+        ?LoggerInterface $logger = null
+    ): AbstractExport {
         switch ($type) {
-            case self::TYPE_XML:
+            case AbstractExport::TYPE_XML:
                 return new XmlExport(
-                    $router,
+                    $dynamicProductGroupService,
+                    $productSearcher,
+                    $exportItemAdapter,
                     $container,
-                    $logger,
-                    $eventDispatcher,
-                    $crossSellingCategories
+                    $logger
                 );
-            case self::TYPE_PRODUCT_ID:
+            case AbstractExport::TYPE_PRODUCT_ID:
                 return new ProductIdExport(
-                    $router,
+                    $dynamicProductGroupService,
+                    $productSearcher,
+                    $exportItemAdapter,
                     $container,
-                    $logger,
-                    $eventDispatcher,
-                    $crossSellingCategories
+                    $logger
                 );
             default:
                 throw new InvalidArgumentException(sprintf('Unknown export type %d.', $type));
         }
     }
-
-    public function buildErrorResponse(ProductErrorHandler $errorHandler, array $headers): JsonResponse
-    {
-        $headers[HeaderHandler::HEADER_CONTENT_TYPE] = HeaderHandler::CONTENT_TYPE_JSON;
-
-        return new JsonResponse(
-            $errorHandler->getExportErrors()->buildErrorResponse(),
-            Response::HTTP_UNPROCESSABLE_ENTITY,
-            $headers
-        );
-    }
-
-    /**
-     * @param ProductEntity[] $productEntities
-     */
-    abstract public function buildItems(array $productEntities): array;
-
-    /**
-     * @param Item[] $items
-     */
-    abstract public function buildResponse(array $items, int $start, int $total, array $headers = []): Response;
 }
