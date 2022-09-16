@@ -61,7 +61,7 @@ class ProductDebugSearcher extends ProductSearcher
         $parentProduct = $this->getProductById($parentId);
         $criteria = $this->productCriteriaBuilder
             ->withLimit($count)
-            ->withParentIdFilterWithVisibility($parentProduct)
+            ->withParentIdFilterWithVisibility($parentProduct->getId())
             ->withOutOfStockFilter()
             ->withPriceZeroFilter()
             ->withVariantAssociations()

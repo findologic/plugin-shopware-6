@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Export;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\DynamicProductGroupsConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
+use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Services\AbstractDynamicProductGroupService;
 use Psr\Cache\CacheItemPoolInterface;
 use Shopware\Core\Content\Category\CategoryCollection;
@@ -36,13 +37,16 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
 
     protected ExportConfigurationBase $exportConfig;
 
+    protected ExportContext $exportContext;
+
     public function __construct(
         EntityRepository $productRepository,
         EntityRepository $categoryRepository,
         ProductStreamBuilder $productStreamBuilder,
         SalesChannelContext $salesChannelContext,
         ExportConfigurationBase $exportConfig,
-        CacheItemPoolInterface $cache
+        CacheItemPoolInterface $cache,
+        ExportContext $exportContext
     ) {
         $this->productRepository = $productRepository;
         $this->categoryRepository = $categoryRepository;
@@ -51,7 +55,7 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
         $this->salesChannelContext = $salesChannelContext;
         $this->exportConfig = $exportConfig;
 
-        parent::__construct($cache);
+        parent::__construct($cache, $exportContext);
     }
 
     public function getCategories(string $productId): array
@@ -131,7 +135,7 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
     protected function buildCategoryCriteria(bool $paginated = false): Criteria
     {
         $criteria = new Criteria();
-        $criteria->addFilter(new ContainsFilter('path', $this->mainCategoryId));
+        $criteria->addFilter(new ContainsFilter('path', $this->exportContext->getNavigationCategoryId()));
         $criteria->addAssociation('seoUrls');
         $criteria->addAssociation('productStream');
         $criteria->addFilter(

@@ -30,13 +30,9 @@ class ProductDebugController extends ExportController
         return parent::export($request, $context);
     }
 
-    protected function initialize(Request $request, ?SalesChannelContext $context): void
+    protected function postInitialize(Request $request): void
     {
-        parent::initialize($request, $context);
-
-        if (!$this->getSalesChannelContext()) {
-            return;
-        }
+        parent::postInitialize($request);
 
         $this->productDebugSearcher = $this->container->get(ProductDebugSearcher::class);
         $this->productDebugService = $this->container->get(ProductDebugService::class);
@@ -44,22 +40,23 @@ class ProductDebugController extends ExportController
 
     protected function doExport(): Response
     {
-        $mainProduct = $this->productDebugSearcher->getMainProductById($this->getExportConfig()->getProductId());
-        $product = $this->productDebugSearcher->findVisibleProducts(
+        $mainProduct = $this->productDebugSearcher->getMainProductById($this->exportConfig->getProductId());
+        $products = $this->productDebugSearcher->findVisibleProducts(
             null,
             null,
-            $mainProduct ? $mainProduct->getId() : $this->getExportConfig()->getProductId()
-        )->first();
+            $mainProduct ? $mainProduct->getId() : $this->exportConfig->getProductId()
+        );
+        $firstProduct = $products ? array_values($products)[0] : null;
 
         /** @var XMLItem[] $xmlProducts */
-        $xmlProducts = $this->getExport()->buildItems($product ? [$product] : []);
+        $xmlProducts = $this->export->buildItems($firstProduct ? [$firstProduct] : []);
 
         return $this->productDebugService->getDebugInformation(
-            $this->getExportConfig()->getProductId(),
-            $this->getExportConfig()->getShopkey(),
+            $this->exportConfig->getProductId(),
+            $this->exportConfig->getShopkey(),
             count($xmlProducts) ? $xmlProducts[0] : null,
-            $product,
-            $this->getExport()->getErrorHandler()->getExportErrors()
+            $firstProduct,
+            $this->export->getErrorHandler()->getExportErrors()
         );
     }
 }
