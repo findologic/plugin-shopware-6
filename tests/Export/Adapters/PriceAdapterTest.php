@@ -164,11 +164,9 @@ class PriceAdapterTest extends TestCase
         $expectedGroupPrices = count($expectedPrices);
         $actualGroupPrices = 0;
         foreach ($customerGroups as $customerGroup) {
-            $userGroup = Utils::calculateUserGroupHash($exportContext->getShopkey(), $customerGroup->getId());
-
             foreach ($prices as $price) {
                 foreach ($price->getValues() as $group => $value) {
-                    if ($userGroup === $group) {
+                    if ($group === $customerGroup->getId()) {
                         $this->assertEquals($expectedPrices[$customerGroup->getId()], $value);
                         $actualGroupPrices++;
                     }

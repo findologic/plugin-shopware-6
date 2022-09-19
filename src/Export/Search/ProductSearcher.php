@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductSearcher;
-use Shopware\Core\Content\Product\ProductCollection;
-use Shopware\Core\Content\Product\ProductEntity;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
 use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\TermsAggregation;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\Bucket\TermsResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Vin\ShopwareSdk\Data\Entity\Product\ProductCollection;
+use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity;
 
 class ProductSearcher extends AbstractProductSearcher
 {
@@ -31,18 +33,26 @@ class ProductSearcher extends AbstractProductSearcher
         parent::__construct($productCriteriaBuilder);
     }
 
-    protected function fetchProducts(?int $limit = null, ?int $offset = null, ?string $productId = null): array
-    {
+    protected function fetchProducts(
+        ?int $limit = null,
+        ?int $offset = null,
+        ?string $productId = null
+    ): ProductCollection {
         $criteria = $this->buildCriteria($limit, $offset, $productId);
 
         $productResult = $this->productRepository->search(
             $criteria,
             $this->salesChannelContext->getContext()
         );
-        /** @var ProductCollection $products */
-        $products = $productResult->getEntities();
 
-        return $products->getElements();
+        /** @var ProductCollection $products */
+        $products = Utils::createSdkCollection(
+            ProductCollection::class,
+            ProductEntity::class,
+            $productResult->getEntities()
+        );
+
+        return $products;
     }
 
     protected function buildCriteria(
@@ -102,32 +112,28 @@ class ProductSearcher extends AbstractProductSearcher
         return $maxCount;
     }
 
-    /**
-     * @param ProductEntity[] $products
-     * @return ProductEntity[]
-     */
-    protected function getCheapestProducts(array $products): array
+    protected function getCheapestProducts(ProductCollection $products): ProductCollection
     {
         $cheapestVariants = new ProductCollection();
 
         foreach ($products as $product) {
             $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
-            $productPrice = $product->getCurrencyPrice($currencyId);
+            $productPrice = CommonUtils::getCurrencyPrice($product->price, $currencyId);
 
-            if (!$cheapestVariant = $this->getCheapestChild($product->getId())) {
-                if ($productPrice->getGross() > 0.0 && $product->getActive()) {
+            if (!$cheapestVariant = $this->getCheapestChild($product->id)) {
+                if ($productPrice['gross'] > 0.0 && $product->active) {
                     $cheapestVariants->add($product);
                 }
 
                 continue;
             }
 
-            $cheapestVariantPrice = $cheapestVariant->getCurrencyPrice($currencyId);
+            $cheapestVariantPrice = CommonUtils::getCurrencyPrice($cheapestVariant->price, $currencyId);
 
-            if ($productPrice->getGross() === 0.0) {
+            if ($productPrice['gross'] === 0.0) {
                 $realCheapestProduct = $cheapestVariant;
             } else {
-                $realCheapestProduct = $productPrice->getGross() <= $cheapestVariantPrice->getGross()
+                $realCheapestProduct = $productPrice['gross'] <= $cheapestVariantPrice['gross']
                     ? $product
                     : $cheapestVariant;
             }
@@ -135,19 +141,15 @@ class ProductSearcher extends AbstractProductSearcher
             $cheapestVariants->add($realCheapestProduct);
         }
 
-        return $cheapestVariants->getElements();
+        return $cheapestVariants;
     }
 
-    /**
-     * @param ProductEntity[] $products
-     * @return ?ProductEntity[]
-     */
-    protected function getConfiguredMainVariants(array $products): ?array
+    protected function getConfiguredMainVariants(ProductCollection $products): ?ProductCollection
     {
         $realProductIds = [];
 
         foreach ($products as $product) {
-            if ($mainVariantId = $product->getMainVariantId()) {
+            if ($mainVariantId = $product->mainVariantId) {
                 $realProductIds[] = $mainVariantId;
 
                 continue;
@@ -157,9 +159,9 @@ class ProductSearcher extends AbstractProductSearcher
              * If product is inactive, try to fetch first variant product.
              * This is related to main product by parent configuration.
              */
-            if ($product->getActive()) {
-                $realProductIds[] = $product->getId();
-            } elseif ($childrenProductId = $this->getFirstVisibleChildId($product->getId())) {
+            if ($product->active) {
+                $realProductIds[] = $product->id;
+            } elseif ($childrenProductId = $this->getFirstVisibleChildId($product->id)) {
                 $realProductIds[] = $childrenProductId;
             }
         }
@@ -197,9 +199,8 @@ class ProductSearcher extends AbstractProductSearcher
 
     /**
      * @param string[] $productIds
-     * @return ?ProductEntity[]
      */
-    protected function getRealMainVariants(array $productIds): array
+    protected function getRealMainVariants(array $productIds): ProductCollection
     {
         $this->productCriteriaBuilder->reset();
         $this->productCriteriaBuilder
@@ -207,10 +208,19 @@ class ProductSearcher extends AbstractProductSearcher
             ->withDefaultCriteria()
             ->withVisibilityFilter();
 
-        return $this->productRepository->search(
+        $productResult = $this->productRepository->search(
             $this->productCriteriaBuilder->build(),
             $this->salesChannelContext->getContext()
-        )->getEntities()->getElements();
+        );
+
+        /** @var ProductCollection $products */
+        $products = Utils::createSdkCollection(
+            ProductCollection::class,
+            ProductEntity::class,
+            $productResult->getEntities()
+        );
+
+        return $products;
     }
 
     public function buildVariantIterator(ProductEntity $product, int $pageSize): RepositoryIterator
@@ -218,7 +228,7 @@ class ProductSearcher extends AbstractProductSearcher
         $this->productCriteriaBuilder->reset();
         $this->productCriteriaBuilder
             ->withLimit($pageSize)
-            ->withParentIdFilterWithVisibility($product->getId(), $product->getParentId())
+            ->withParentIdFilterWithVisibility($product->id, $product->parentId)
             ->withOutOfStockFilter()
             ->withPriceZeroFilter()
             ->withVariantAssociations();

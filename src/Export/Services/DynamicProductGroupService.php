@@ -9,9 +9,8 @@ use FINDOLOGIC\FinSearch\Validators\DynamicProductGroupsConfiguration;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Services\AbstractDynamicProductGroupService;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
 use Psr\Cache\CacheItemPoolInterface;
-use Shopware\Core\Content\Category\CategoryCollection;
-use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Context;
@@ -22,6 +21,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Vin\ShopwareSdk\Data\Entity\Category\CategoryCollection;
+use Vin\ShopwareSdk\Data\Entity\Category\CategoryEntity;
 
 class DynamicProductGroupService extends AbstractDynamicProductGroupService
 {
@@ -58,7 +59,7 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
         parent::__construct($cache, $exportContext);
     }
 
-    public function getCategories(string $productId): array
+    public function getCategories(string $productId): CategoryCollection
     {
         $start = 0;
         $categoryCollection = new CategoryCollection();
@@ -66,20 +67,27 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
         while ($this->cacheHandler->isOffsetCacheWarmedUp($start)) {
             $categories = $this->cacheHandler->getCachedCategoriesForCurrentOffset($start);
 
-            if (!Utils::isEmpty($categories) && isset($categories[$productId])) {
+            if (!CommonUtils::isEmpty($categories) && isset($categories[$productId])) {
                 $categoryIds = $categories[$productId];
                 $criteria = $this->buildCategoryCriteria();
                 $criteria->setIds($categoryIds);
 
-                $categoryCollection->merge(
-                    $this->categoryRepository->search($criteria, $this->context)->getEntities()
+                $categoryResult = $this->categoryRepository->search($criteria, $this->context);
+
+                /** @var CategoryCollection $categories */
+                $categories = Utils::createSdkCollection(
+                    CategoryCollection::class,
+                    CategoryEntity::class,
+                    $categoryResult->getEntities(),
                 );
+
+                $categoryCollection->merge($categories);
             }
 
             $start += DynamicProductGroupsConfiguration::DEFAULT_COUNT_PARAM;
         }
 
-        return $categoryCollection->getElements();
+        return $categoryCollection;
     }
 
     protected function setMainNavigationCategoryId(): void

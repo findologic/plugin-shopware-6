@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Config;
 
 use Doctrine\DBAL\Connection;
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;

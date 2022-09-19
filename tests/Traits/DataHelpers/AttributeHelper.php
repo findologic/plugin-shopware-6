@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\Export\Data\Attribute;
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils;
 use Shopware\Core\Content\Product\ProductEntity;
 
 trait AttributeHelper
