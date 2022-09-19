@@ -9,13 +9,13 @@ use FINDOLOGIC\FinSearch\Export\Events\AfterItemAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\AfterVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\BeforeItemAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\BeforeVariantAdaptEvent;
-use FINDOLOGIC\FinSearch\Export\Logger\ExportExceptionLogger;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter as OriginalExportItemAdapter;
+use FINDOLOGIC\Shopware6Common\Export\Logger\ExportExceptionLogger;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Content\Product\ProductEntity;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity;
 
 class ExportItemAdapter extends OriginalExportItemAdapter
 {
@@ -34,10 +34,7 @@ class ExportItemAdapter extends OriginalExportItemAdapter
         $this->logger = $logger;
     }
 
-    /**
-     * @param ProductEntity $product
-     */
-    public function adaptProduct(Item $item, $product): ?Item
+    public function adaptProduct(Item $item, ProductEntity $product): ?Item
     {
         $this->eventDispatcher->dispatch(new BeforeItemAdaptEvent($product, $item), BeforeItemAdaptEvent::NAME);
 
@@ -55,10 +52,7 @@ class ExportItemAdapter extends OriginalExportItemAdapter
         return $item;
     }
 
-    /**
-     * @param ProductEntity $product
-     */
-    public function adaptVariant(Item $item, $product): ?Item
+    public function adaptVariant(Item $item, ProductEntity $product): ?Item
     {
         $this->eventDispatcher->dispatch(new BeforeVariantAdaptEvent($product, $item), BeforeVariantAdaptEvent::NAME);
 
