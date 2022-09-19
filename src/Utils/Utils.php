@@ -14,12 +14,14 @@ use InvalidArgumentException;
 use PackageVersions\Versions;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
@@ -27,7 +29,8 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Throwable;
-
+use Vin\ShopwareSdk\Data\Entity\Entity as SdkEntity;
+use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity as SdkProductEntity;
 use function array_unique;
 
 use const SORT_REGULAR;
@@ -485,5 +488,23 @@ class Utils
     public static function flattenWithUnique(array $array): array
     {
         return array_unique(static::flat($array), SORT_REGULAR);
+    }
+
+    public static function createSdkEntity(string $sdkEntityClass, Entity $entity): SdkEntity
+    {
+        return SdkProductEntity::createFromArray($sdkEntityClass, self::serializeStruct($entity));
+    }
+
+    private static function serializeStruct(Struct $struct): array
+    {
+        $data = $struct->jsonSerialize();
+
+        foreach ($data as $key => $value) {
+            if ($value instanceof Struct) {
+                $data[$key] = self::serializeStruct($value);
+            }
+        }
+
+        return $data;
     }
 }

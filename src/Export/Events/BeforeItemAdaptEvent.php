@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export\Events;
 
 use FINDOLOGIC\Export\Data\Item;
-use Shopware\Core\Content\Product\ProductEntity;
 use Symfony\Contracts\EventDispatcher\Event;
+use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity;
 
 class BeforeItemAdaptEvent extends Event
 {
