@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductSearcher;
 use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
 use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
@@ -22,13 +23,17 @@ class ProductSearcher extends AbstractProductSearcher
 
     protected EntityRepository $productRepository;
 
+    protected ExportContext $exportContext;
+
     public function __construct(
         SalesChannelContext $salesChannelContext,
         EntityRepository $productRepository,
-        ProductCriteriaBuilder $productCriteriaBuilder
+        ProductCriteriaBuilder $productCriteriaBuilder,
+        ExportContext $exportContext
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->productRepository = $productRepository;
+        $this->exportContext = $exportContext;
 
         parent::__construct($productCriteriaBuilder);
     }
@@ -112,67 +117,6 @@ class ProductSearcher extends AbstractProductSearcher
         return $maxCount;
     }
 
-    protected function getCheapestProducts(ProductCollection $products): ProductCollection
-    {
-        $cheapestVariants = new ProductCollection();
-
-        foreach ($products as $product) {
-            $currencyId = $this->salesChannelContext->getSalesChannel()->getCurrencyId();
-            $productPrice = CommonUtils::getCurrencyPrice($product->price, $currencyId);
-
-            if (!$cheapestVariant = $this->getCheapestChild($product->id)) {
-                if ($productPrice['gross'] > 0.0 && $product->active) {
-                    $cheapestVariants->add($product);
-                }
-
-                continue;
-            }
-
-            $cheapestVariantPrice = CommonUtils::getCurrencyPrice($cheapestVariant->price, $currencyId);
-
-            if ($productPrice['gross'] === 0.0) {
-                $realCheapestProduct = $cheapestVariant;
-            } else {
-                $realCheapestProduct = $productPrice['gross'] <= $cheapestVariantPrice['gross']
-                    ? $product
-                    : $cheapestVariant;
-            }
-
-            $cheapestVariants->add($realCheapestProduct);
-        }
-
-        return $cheapestVariants;
-    }
-
-    protected function getConfiguredMainVariants(ProductCollection $products): ?ProductCollection
-    {
-        $realProductIds = [];
-
-        foreach ($products as $product) {
-            if ($mainVariantId = $product->mainVariantId) {
-                $realProductIds[] = $mainVariantId;
-
-                continue;
-            }
-
-            /**
-             * If product is inactive, try to fetch first variant product.
-             * This is related to main product by parent configuration.
-             */
-            if ($product->active) {
-                $realProductIds[] = $product->id;
-            } elseif ($childrenProductId = $this->getFirstVisibleChildId($product->id)) {
-                $realProductIds[] = $childrenProductId;
-            }
-        }
-
-        if (empty($realProductIds)) {
-            return null;
-        }
-
-        return $this->getRealMainVariants($realProductIds);
-    }
-
     protected function getCheapestChild(string $productId): ?ProductEntity
     {
         $this->productCriteriaBuilder->reset();
@@ -180,10 +124,15 @@ class ProductSearcher extends AbstractProductSearcher
             ->withChildCriteria($productId)
             ->withProductAssociations();
 
-        return $this->productRepository->search(
+        $product = $this->productRepository->search(
             $this->productCriteriaBuilder->build(),
             $this->salesChannelContext->getContext()
         )->first();
+
+        /** @var ?ProductEntity $product */
+        $product = Utils::createSdkEntity(ProductEntity::class, $product);
+
+        return $product;
     }
 
     protected function getFirstVisibleChildId(string $productId): ?string

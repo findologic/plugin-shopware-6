@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Search\ProductDebugSearcher;
-use FINDOLOGIC\FinSearch\Export\Services\ProductDebugService;
+use FINDOLOGIC\Shopware6Common\Export\Services\ProductDebugService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,21 +41,20 @@ class ProductDebugController extends ExportController
     protected function doExport(): Response
     {
         $mainProduct = $this->productDebugSearcher->getMainProductById($this->exportConfig->getProductId());
-        $products = $this->productDebugSearcher->findVisibleProducts(
+        $product = $this->productDebugSearcher->findVisibleProducts(
             null,
             null,
-            $mainProduct ? $mainProduct->getId() : $this->exportConfig->getProductId()
-        );
-        $firstProduct = $products ? array_values($products)[0] : null;
+            $mainProduct ? $mainProduct->id : $this->exportConfig->getProductId()
+        )->first();
 
         /** @var XMLItem[] $xmlProducts */
-        $xmlProducts = $this->export->buildItems($firstProduct ? [$firstProduct] : []);
+        $xmlProducts = $this->export->buildItems($product ? [$product] : []);
 
         return $this->productDebugService->getDebugInformation(
             $this->exportConfig->getProductId(),
             $this->exportConfig->getShopkey(),
             count($xmlProducts) ? $xmlProducts[0] : null,
-            $firstProduct,
+            $product,
             $this->export->getErrorHandler()->getExportErrors()
         );
     }

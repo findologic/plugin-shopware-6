@@ -90,16 +90,6 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
         return $categoryCollection;
     }
 
-    protected function setMainNavigationCategoryId(): void
-    {
-        $this->mainCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
-    }
-
-    protected function getShopkey(): string
-    {
-        return $this->exportConfig->getShopkey();
-    }
-
     /**
      * @inheritDoc
      */
@@ -110,12 +100,12 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
 
         $products = [];
         foreach ($categories as $categoryEntity) {
-            if (!$productStream = $categoryEntity->getProductStream()) {
+            if (!$productStream = $categoryEntity->productStream) {
                 continue;
             }
 
             $filters = $this->productStreamBuilder->buildFilters(
-                $productStream->getId(),
+                $productStream->id,
                 $this->context
             );
 
@@ -125,7 +115,7 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
             /** @var string[] $productIds */
             $productIds = $this->productRepository->searchIds($criteria, $this->context)->getIds();
             foreach ($productIds as $productId) {
-                $products[$productId][$categoryEntity->getId()] = $categoryEntity->getId();
+                $products[$productId][$categoryEntity->id] = $categoryEntity->id;
             }
         }
 
@@ -166,7 +156,7 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
      */
     protected function hasProductStream($categoryEntity): bool
     {
-        return !!$categoryEntity->getProductStream();
+        return !!$categoryEntity->productStream;
     }
 
     protected function isFirstPage(): bool
