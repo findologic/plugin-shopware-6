@@ -45,9 +45,7 @@ class UserGroupsAdapterTest extends TestCase
         $exportContext = $this->getContainer()->get('fin_search.export_context');
         $exportContext->setCustomerGroups([$userGroup]);
 
-        $expectedUserGroup = new Usergroup(
-            Utils::calculateUserGroupHash($exportContext->getShopkey(), $userGroup->getId())
-        );
+        $expectedUserGroup = new Usergroup($userGroup->getId());
 
         $adapter = $this->getContainer()->get(UserGroupsAdapter::class);
         $product = $this->createTestProduct([]);

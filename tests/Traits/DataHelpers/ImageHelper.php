@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\Export\Data\Image;
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailCollection;
 use Shopware\Core\Content\Media\Aggregate\MediaThumbnail\MediaThumbnailEntity;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -73,7 +73,7 @@ trait ImageHelper
     {
         $parsedUrl = parse_url($url);
         $urlPath = explode('/', $parsedUrl['path']);
-        $encodedPath = array_map('\FINDOLOGIC\FinSearch\Utils\Utils::multiByteRawUrlEncode', $urlPath);
+        $encodedPath = array_map('\FINDOLOGIC\Shopware6Common\Export\Utils\Utils::multiByteRawUrlEncode', $urlPath);
         $parsedUrl['path'] = implode('/', $encodedPath);
 
         return Utils::buildUrl($parsedUrl);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Constants;
 use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
@@ -374,8 +375,8 @@ trait ProductHelper
         $id = current($productInfo)['id'];
         try {
             $criteria = new Criteria([$id]);
-            $criteria = Utils::addProductAssociations($criteria);
-            $criteria = Utils::addChildrenAssociations($criteria);
+            $criteria->addAssociations(Constants::PRODUCT_ASSOCIATIONS);
+            $criteria->addAssociations(Constants::VARIANT_ASSOCIATIONS);
             $criteria->addAssociation('visibilities');
 
             return $this->getContainer()->get('product.repository')->search($criteria, $context)->first();

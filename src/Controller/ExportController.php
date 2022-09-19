@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
-use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
+use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Export\Types\Export;
-use FINDOLOGIC\FinSearch\Export\Types\ProductIdExport;
-use FINDOLOGIC\FinSearch\Export\Types\XmlExport;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
@@ -20,6 +18,8 @@ use FINDOLOGIC\Shopware6Common\Export\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\Shopware6Common\Export\Responses\PreconditionFailedResponse;
 use FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
+use FINDOLOGIC\Shopware6Common\Export\Types\ProductIdExport;
+use FINDOLOGIC\Shopware6Common\Export\Types\XmlExport;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -34,6 +34,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
+use Vin\ShopwareSdk\Data\Entity\Category\CategoryEntity;
+use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupCollection;
+use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupEntity;
+use Vin\ShopwareSdk\Data\Entity\SalesChannel\SalesChannelEntity;
 
 /**
  * @RouteScope(scopes={"storefront"})
@@ -189,15 +193,21 @@ class ExportController extends AbstractController
             $this->salesChannelContext->getSalesChannel()
         );
 
+        /** @var SalesChannelEntity $salesChannelEntity */
+        $salesChannelEntity = Utils::createSdkEntity(
+            SalesChannelEntity::class,
+            $this->salesChannelContext->getSalesChannel()
+        );
+        /** @var CategoryEntity $navigationCategoryEntity */
+        $navigationCategoryEntity = Utils::createSdkEntity(CategoryEntity::class, $navigationCategory);
+
         $this->exportContext = new ExportContext(
             $this->exportConfig->getShopkey(),
-            $this->salesChannelContext->getSalesChannelId(),
-            $this->salesChannelContext->getCurrencyId(),
-            $navigationCategory ? $navigationCategory->getId() : '',
-            $navigationCategory ? $navigationCategory->getBreadcrumb() : '',
+            $salesChannelEntity,
+            $navigationCategoryEntity,
             $this->getAllCustomerGroups(),
             true, // TODO: Fetch real value
-            $this->salesChannelContext->getSalesChannel()->getDomains()->first()->getUrl()
+            $this->pluginConfig->isIntegrationTypeApi()
         );
         $this->container->set(ExportContext::class, $this->exportContext);
     }
@@ -320,10 +330,19 @@ class ExportController extends AbstractController
         $originalRequest->attributes->replace($attributes);
     }
 
-    protected function getAllCustomerGroups(): array
+    protected function getAllCustomerGroups(): CustomerGroupCollection
     {
-        return $this->customerGroupRepository
+        $customerGroups = $this->customerGroupRepository
             ->search(new Criteria(), $this->salesChannelContext->getContext())
-            ->getElements();
+            ->getEntities();
+
+        /** @var CustomerGroupCollection $customerGroupCollection */
+        $customerGroupCollection = Utils::createSdkCollection(
+            CustomerGroupCollection::class,
+            CustomerGroupEntity::class,
+            $customerGroups
+        );
+
+        return $customerGroupCollection;
     }
 }

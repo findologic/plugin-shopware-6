@@ -9,7 +9,7 @@ use FINDOLOGIC\FinSearch\Export\Events\AfterItemAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\AfterVariantAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\BeforeItemAdaptEvent;
 use FINDOLOGIC\FinSearch\Export\Events\BeforeVariantAdaptEvent;
-use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
+use FINDOLOGIC\Shopware6Common\Export\Adapters\AdapterFactory;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter as OriginalExportItemAdapter;
 use FINDOLOGIC\Shopware6Common\Export\Logger\ExportExceptionLogger;
 use Psr\Log\LoggerInterface;
@@ -24,11 +24,11 @@ class ExportItemAdapter extends OriginalExportItemAdapter
     private LoggerInterface $logger;
 
     public function __construct(
-        DynamicProductGroupService $dynamicProductGroupService,
+        AdapterFactory $adapterFactory,
         EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger
     ) {
-        parent::__construct($dynamicProductGroupService);
+        parent::__construct($adapterFactory);
 
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger;

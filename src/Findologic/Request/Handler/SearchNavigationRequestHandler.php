@@ -145,10 +145,6 @@ abstract class SearchNavigationRequestHandler
             return;
         }
 
-        $usergroup = Utils::calculateUserGroupHash(
-            $this->apiConfig->getServiceId(),
-            $group->getId()
-        );
-        $request->addUserGroup($usergroup);
+        $request->addUserGroup($group->getId());
     }
 }

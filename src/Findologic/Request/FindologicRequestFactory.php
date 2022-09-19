@@ -9,7 +9,7 @@ use FINDOLOGIC\Api\Exceptions\InvalidParamException;
 use FINDOLOGIC\Api\Requests\Request as FindologicApiRequest;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Context;

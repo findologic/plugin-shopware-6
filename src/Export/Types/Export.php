@@ -8,6 +8,8 @@ use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
+use FINDOLOGIC\Shopware6Common\Export\Types\ProductIdExport;
+use FINDOLOGIC\Shopware6Common\Export\Types\XmlExport;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
