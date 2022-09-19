@@ -7,7 +7,6 @@ namespace FINDOLOGIC\FinSearch\Controller;
 use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
-use FINDOLOGIC\FinSearch\Export\Responses\PreconditionFailedResponse;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Export\Types\Export;
@@ -18,6 +17,7 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use FINDOLOGIC\Shopware6Common\Export\AbstractHeaderHandler;
 use FINDOLOGIC\Shopware6Common\Export\Logger\Handler\ProductErrorHandler;
+use FINDOLOGIC\Shopware6Common\Export\Responses\PreconditionFailedResponse;
 use FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
@@ -245,7 +245,7 @@ class ExportController extends AbstractController
     {
         $excludeProductGroups = $request->query->getBoolean('excludeProductGroups');
         if (!$excludeProductGroups && !$this->dynamicProductGroupService->areDynamicProductGroupsCached()) {
-            return new PreconditionFailedResponse();
+            return new PreconditionFailedResponse('findologic');
         }
 
         return null;
