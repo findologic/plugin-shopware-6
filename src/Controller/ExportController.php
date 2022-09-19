@@ -312,7 +312,7 @@ class ExportController extends AbstractController
             $this->exportConfig->getCount(),
             $this->exportConfig->getStart(),
             $this->exportConfig->getProductId()
-        );
+        )->getElements();
 
         return $this->export->buildResponse(
             $this->export->buildItems($products),

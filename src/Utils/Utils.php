@@ -256,9 +256,9 @@ class Utils
         });
     }
 
-    public static function createSdkEntity(string $sdkEntityClass, Entity $entity): SdkEntity
+    public static function createSdkEntity(string $sdkEntityClass, ?Entity $entity): ?SdkEntity
     {
-        return SdkEntity::createFromArray($sdkEntityClass, self::serializeStruct($entity));
+        return $entity ? SdkEntity::createFromArray($sdkEntityClass, self::serializeStruct($entity)) : null;
     }
 
     public static function createSdkCollection(

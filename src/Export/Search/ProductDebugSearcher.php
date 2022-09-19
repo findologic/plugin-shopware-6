@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Search\ProductDebugSearcherInterface;
-use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Vin\ShopwareSdk\Data\Entity\Product\ProductCollection;
+use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity;
 
 class ProductDebugSearcher extends ProductSearcher implements ProductDebugSearcherInterface
 {
@@ -28,8 +29,8 @@ class ProductDebugSearcher extends ProductSearcher implements ProductDebugSearch
     {
         $product = $this->getProductById($productId);
 
-        return $product && $product->getParentId()
-            ? $this->getProductById($product->getParentId())
+        return $product && $product->parentId
+            ? $this->getProductById($product->parentId)
             : $product;
     }
 
@@ -56,7 +57,7 @@ class ProductDebugSearcher extends ProductSearcher implements ProductDebugSearch
         $parentProduct = $this->getProductById($parentId);
         $criteria = $this->productCriteriaBuilder
             ->withLimit($count)
-            ->withParentIdFilterWithVisibility($parentProduct->getId())
+            ->withParentIdFilterWithVisibility($parentProduct->id)
             ->withOutOfStockFilter()
             ->withPriceZeroFilter()
             ->withVariantAssociations()
@@ -65,11 +66,20 @@ class ProductDebugSearcher extends ProductSearcher implements ProductDebugSearch
         return $this->searchProducts($criteria)->getElements();
     }
 
-    public function searchProducts(Criteria $criteria): EntitySearchResult
+    public function searchProducts(Criteria $criteria): ProductCollection
     {
-        return $this->productRepository->search(
+        $productResult = $this->productRepository->search(
             $criteria,
             $this->salesChannelContext->getContext()
         );
+
+        /** @var ProductCollection $products */
+        $products = Utils::createSdkCollection(
+            ProductCollection::class,
+            ProductEntity::class,
+            $productResult->getEntities()
+        );
+
+        return $products;
     }
 }
