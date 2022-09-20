@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
-use FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter;
 use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
@@ -13,6 +12,7 @@ use FINDOLOGIC\FinSearch\Export\Types\Export;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
+use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use FINDOLOGIC\Shopware6Common\Export\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\Shopware6Common\Export\Responses\PreconditionFailedResponse;
