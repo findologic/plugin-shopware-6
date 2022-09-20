@@ -1,3 +1,10 @@
+# 3.1.1
+- [SW-737] Filterwerte von Farbfilter müssen durch Klick auf den Text selektierbar sein.
+- [SW-739] Farbbilder von selektierten Filterwerten müssen geladen werden.
+- [SW-740] Ungültige SEO Urls müssen ignoriert werden.
+- [SW-746] Es sollte kein Exportfehler auftreten, wenn keine "canonical" SEO Url existiert.
+- [PH-719] Shopware 6.4.14.0 wurde zur Test-Matrix hinzugefügt.
+
 # 3.1.0
 - [SW-659] Eine neue Route für Export Debug Informationen wurde hinzugefügt (`/findologic/debug`)
 - [SW-442] ESLint für unsere JavaScript Dateien hinzugefügt
