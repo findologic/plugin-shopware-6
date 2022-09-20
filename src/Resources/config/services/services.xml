@@ -27,32 +27,28 @@
 
         <!-- Export -->
 
-        <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true">
-            <argument type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
+        <service id="FINDOLOGIC\FinSearch\Controller\ExportController" public="true" autowire="true">
+            <argument key="$logger" type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
             <tag name="monolog.logger" channel="file" />
             <call method="setContainer">
                 <argument type="service" id="service_container" />
             </call>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
-            <argument type="service" id="serializer.mapping.cache.symfony" />
-            <argument type="service" id="customer_group.repository" />
-            <argument type="service" id="category.repository" />
-            <argument type="service" id="product.repository" />
-            <argument type="service" id="Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder" />
+            <argument key="$cache" type="service" id="serializer.mapping.cache.symfony" />
+            <argument key="$customerGroupRepository" type="service" id="customer_group.repository" />
+            <argument key="$categoryRepository" type="service" id="category.repository" />
+            <argument key="$productRepository" type="service" id="product.repository" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Controller\ProductDebugController" public="true">
-            <argument type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
+        <service id="FINDOLOGIC\FinSearch\Controller\ProductDebugController" public="true" autowire="true">
+            <argument key="$logger" type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
             <tag name="monolog.logger" channel="file" />
             <call method="setContainer">
                 <argument type="service" id="service_container" />
             </call>
-            <argument type="service" id="FINDOLOGIC\FinSearch\Export\HeaderHandler" />
-            <argument id="serializer.mapping.cache.symfony" type="service" />
-            <argument type="service" id="customer_group.repository" />
-            <argument type="service" id="category.repository" />
-            <argument type="service" id="product.repository" />
-            <argument type="service" id="Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder" />
+            <argument key="$cache" type="service" id="serializer.mapping.cache.symfony" />
+            <argument key="$customerGroupRepository" type="service" id="customer_group.repository" />
+            <argument key="$categoryRepository" type="service" id="category.repository" />
+            <argument key="$productRepository" type="service" id="product.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">

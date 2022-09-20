@@ -24,6 +24,7 @@ use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
@@ -58,6 +59,8 @@ class ExportController extends AbstractController
 
     protected ProductStreamBuilder $productStreamBuilder;
 
+    protected SystemConfigService $systemConfigService;
+
     protected ExportConfigurationBase $exportConfig;
 
     protected ?SalesChannelService $salesChannelService;
@@ -84,7 +87,8 @@ class ExportController extends AbstractController
         EntityRepository $customerGroupRepository,
         EntityRepository $categoryRepository,
         EntityRepository $productRepository,
-        ProductStreamBuilder $productStreamBuilder
+        ProductStreamBuilder $productStreamBuilder,
+        SystemConfigService $systemConfigService
     ) {
         $this->logger = $logger;
         $this->headerHandler = $headerHandler;
@@ -93,6 +97,7 @@ class ExportController extends AbstractController
         $this->categoryRepository = $categoryRepository;
         $this->productRepository = $productRepository;
         $this->productStreamBuilder = $productStreamBuilder;
+        $this->systemConfigService = $systemConfigService;
     }
 
     /**
@@ -203,7 +208,7 @@ class ExportController extends AbstractController
             $salesChannelEntity,
             $navigationCategoryEntity,
             $this->getAllCustomerGroups(),
-            true, // TODO: Fetch real value
+            $this->shouldHideProductsOutOfStock(),
         );
         $this->container->set(ExportContext::class, $this->exportContext);
     }
@@ -340,5 +345,13 @@ class ExportController extends AbstractController
         );
 
         return $customerGroupCollection;
+    }
+
+    protected function shouldHideProductsOutOfStock()
+    {
+        return !!$this->systemConfigService->get(
+            'core.listing.hideCloseoutProductsWhenOutOfStock',
+            $this->salesChannelContext->getSalesChannelId()
+        );
     }
 }
