@@ -13,7 +13,7 @@ use FINDOLOGIC\FinSearch\Export\Types\Export;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
-use FINDOLOGIC\Shopware6Common\Export\AbstractHeaderHandler;
+use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use FINDOLOGIC\Shopware6Common\Export\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\Shopware6Common\Export\Responses\PreconditionFailedResponse;
 use FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport;
@@ -64,7 +64,7 @@ class ExportController extends AbstractController
 
     protected ?SalesChannelContext $salesChannelContext;
 
-    protected Config $pluginConfig;
+    protected PluginConfig $pluginConfig;
 
     protected ExportContext $exportContext;
 
@@ -179,7 +179,8 @@ class ExportController extends AbstractController
             $config->initializeBySalesChannel($this->salesChannelContext);
         }
 
-        $this->pluginConfig = $config;
+        $this->pluginConfig = PluginConfig::createFromArray($config->jsonSerialize());
+        $this->container->set(PluginConfig::class, $this->pluginConfig);
     }
 
     protected function buildExportContext(): void
@@ -203,7 +204,6 @@ class ExportController extends AbstractController
             $navigationCategoryEntity,
             $this->getAllCustomerGroups(),
             true, // TODO: Fetch real value
-            $this->pluginConfig->isIntegrationTypeApi()
         );
         $this->container->set(ExportContext::class, $this->exportContext);
     }
@@ -228,8 +228,8 @@ class ExportController extends AbstractController
             $this->exportConfig->getProductId() ? AbstractExport::TYPE_PRODUCT_ID : AbstractExport::TYPE_XML,
             $this->dynamicProductGroupService,
             $this->productSearcher,
+            $this->pluginConfig,
             $this->exportItemAdapter,
-            $this->container,
             $this->logger
         );
     }
