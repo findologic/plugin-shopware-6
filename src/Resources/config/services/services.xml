@@ -123,9 +123,10 @@
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UserGroupsAdapter" public="true" autowire="true">
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Adapters\ExportItemAdapter" public="true" autowire="true">
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter" public="true" autowire="true">
             <argument key="$logger" type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
             <tag name="monolog.logger" channel="file" />
+            <argument key="$eventDispatcher" type="service" id="event_dispatcher" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" public="true" autowire="true" />
