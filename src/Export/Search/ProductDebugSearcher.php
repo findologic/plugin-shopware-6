@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Export\Search;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Search\ProductDebugSearcherInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Vin\ShopwareSdk\Data\Entity\EntityCollection;
 use Vin\ShopwareSdk\Data\Entity\Product\ProductCollection;
 use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity;
 
@@ -44,7 +45,10 @@ class ProductDebugSearcher extends ProductSearcher implements ProductDebugSearch
         return $this->searchProduct($criteria);
     }
 
-    public function searchProduct(Criteria $criteria): ?ProductEntity
+    /**
+     * @param Criteria $criteria
+     */
+    public function searchProduct($criteria): ?ProductEntity
     {
         return $this->searchProducts($criteria)->first();
     }
@@ -66,7 +70,10 @@ class ProductDebugSearcher extends ProductSearcher implements ProductDebugSearch
         return $this->searchProducts($criteria)->getElements();
     }
 
-    public function searchProducts(Criteria $criteria): ProductCollection
+    /**
+     * @param Criteria $criteria
+     */
+    public function searchProducts($criteria): EntityCollection
     {
         $productResult = $this->productRepository->search(
             $criteria,
