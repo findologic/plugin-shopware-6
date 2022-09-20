@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
@@ -18,15 +16,10 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\InvalidArgumentException;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Defaults;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SalesChannel\SalesChannelEntity;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
+use Symfony\Component\HttpFoundation\Request;
 
 class FrontendSubscriberTest extends TestCase
 {
@@ -54,6 +47,15 @@ class FrontendSubscriberTest extends TestCase
         $headerPageletMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $request = new Request(
+            ['search' => 't-shirt'],
+            [],
+            [],
+            [],
+            [],
+            ['REQUEST_URI' => 'https://example.com/search']
+        );
 
         $headerPageletMock->expects($this->any())
             ->method('addExtension')
@@ -96,19 +98,22 @@ class FrontendSubscriberTest extends TestCase
                     }
                 ),
                 $this->callback(
-                    function (PageInformation $pageInformation) use ($shopkey) {
-                        $this->assertSame($shopkey, $pageInformation->getShopkey());
+                    function (PageInformation $pageInformation) {
+                        $this->assertTrue($pageInformation->getIsSearchPage());
+                        $this->assertFalse($pageInformation->getIsNavigationPage());
 
                         return true;
                     }
-                )
+                ),
             ]);
 
         $salesChannelContext = $this->buildSalesChannelContext();
-        $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')
+        $headerPageletLoadedEventMock->expects($this->exactly(3))->method('getPagelet')
             ->willReturn($headerPageletMock);
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')
             ->willReturn($salesChannelContext);
+        $headerPageletLoadedEventMock->expects($this->once())->method('getRequest')
+            ->willReturn($request);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
         $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
