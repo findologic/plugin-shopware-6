@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductSearcher;
-use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
 use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\TermsAggregation;
@@ -29,13 +29,14 @@ class ProductSearcher extends AbstractProductSearcher
         SalesChannelContext $salesChannelContext,
         EntityRepository $productRepository,
         ProductCriteriaBuilder $productCriteriaBuilder,
-        ExportContext $exportContext
+        ExportContext $exportContext,
+        PluginConfig $pluginConfig
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->productRepository = $productRepository;
         $this->exportContext = $exportContext;
 
-        parent::__construct($productCriteriaBuilder);
+        parent::__construct($pluginConfig, $productCriteriaBuilder);
     }
 
     protected function fetchProducts(
