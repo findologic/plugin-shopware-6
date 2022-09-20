@@ -128,11 +128,7 @@ class ExportController extends AbstractController
                     'count' => $this->exportConfig->getCount(),
                     'total' => $total
                 ]
-            ],
-            200,
-            $this->headerHandler->getHeaders([
-                AbstractHeaderHandler::HEADER_CONTENT_TYPE => AbstractHeaderHandler::CONTENT_TYPE_JSON
-            ])
+            ]
         );
     }
 
@@ -229,7 +225,7 @@ class ExportController extends AbstractController
     protected function buildExport(): void
     {
         $this->export = Export::getInstance(
-            $this->exportConfig->getProductId() ? Export::TYPE_PRODUCT_ID : Export::TYPE_XML,
+            $this->exportConfig->getProductId() ? AbstractExport::TYPE_PRODUCT_ID : AbstractExport::TYPE_XML,
             $this->dynamicProductGroupService,
             $this->productSearcher,
             $this->exportItemAdapter,
@@ -246,16 +242,6 @@ class ExportController extends AbstractController
             $errorHandler->getExportErrors()->addGeneralErrors($messages);
 
             return AbstractExport::buildErrorResponse($errorHandler, $this->headerHandler->getHeaders());
-        }
-
-        return null;
-    }
-
-    protected function validateDynamicGroupPrecondition(Request $request): ?Response
-    {
-        $excludeProductGroups = $request->query->getBoolean('excludeProductGroups');
-        if (!$excludeProductGroups && !$this->dynamicProductGroupService->areDynamicProductGroupsCached()) {
-            return new PreconditionFailedResponse('findologic');
         }
 
         return null;
@@ -291,6 +277,16 @@ class ExportController extends AbstractController
         }
 
         return $messages;
+    }
+
+    protected function validateDynamicGroupPrecondition(Request $request): ?Response
+    {
+        $excludeProductGroups = $request->query->getBoolean('excludeProductGroups');
+        if (!$excludeProductGroups && !$this->dynamicProductGroupService->areDynamicProductGroupsCached()) {
+            return new PreconditionFailedResponse('findologic');
+        }
+
+        return null;
     }
 
     protected function warmUpDynamicProductGroupsAndGetTotal(): int
