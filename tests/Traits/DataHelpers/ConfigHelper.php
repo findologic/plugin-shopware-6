@@ -7,7 +7,9 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psalm\PhpUnitPlugin\Plugin;
 use Shopware\Core\Defaults;
 
 trait ConfigHelper
@@ -122,14 +124,12 @@ trait ConfigHelper
         return $configServiceMock;
     }
 
-    public function getMockedConfig(string $integrationType = 'Direct Integration'): Config
+    public function getMockedConfig(?array $overrides = []): PluginConfig
     {
-        $override = [
-            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
-            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
-        ];
-
-        return $this->getFindologicConfig($override, $integrationType === 'Direct Integration');
+        return PluginConfig::createFromArray(array_merge([
+            'shopkey' => 'ABCDABCDABCDABCDABCDABCDABCDABCD',
+            'active' => true
+        ], $overrides));
     }
 
     public function getFindologicConfig(array $override = [], bool $isDirectIntegration = true): Config
