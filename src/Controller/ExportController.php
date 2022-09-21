@@ -8,7 +8,6 @@ use FINDOLOGIC\FinSearch\Export\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
-use FINDOLOGIC\FinSearch\Export\Types\Export;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
@@ -25,6 +24,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
@@ -47,19 +47,21 @@ class ExportController extends AbstractController
 {
     protected LoggerInterface $logger;
 
-    protected HeaderHandler $headerHandler;
+    protected EventDispatcherInterface $eventDispatcher;
 
     protected CacheItemPoolInterface $cache;
+
+    protected HeaderHandler $headerHandler;
+
+    protected ProductStreamBuilder $productStreamBuilder;
+
+    protected SystemConfigService $systemConfigService;
 
     protected EntityRepository $customerGroupRepository;
 
     protected EntityRepository $categoryRepository;
 
     protected EntityRepository $productRepository;
-
-    protected ProductStreamBuilder $productStreamBuilder;
-
-    protected SystemConfigService $systemConfigService;
 
     protected ExportConfigurationBase $exportConfig;
 
@@ -82,22 +84,24 @@ class ExportController extends AbstractController
 
     public function __construct(
         LoggerInterface $logger,
-        HeaderHandler $headerHandler,
+        EventDispatcherInterface $eventDispatcher,
         CacheItemPoolInterface $cache,
+        HeaderHandler $headerHandler,
+        ProductStreamBuilder $productStreamBuilder,
+        SystemConfigService $systemConfigService,
         EntityRepository $customerGroupRepository,
         EntityRepository $categoryRepository,
-        EntityRepository $productRepository,
-        ProductStreamBuilder $productStreamBuilder,
-        SystemConfigService $systemConfigService
+        EntityRepository $productRepository
     ) {
         $this->logger = $logger;
-        $this->headerHandler = $headerHandler;
+        $this->eventDispatcher = $eventDispatcher;
         $this->cache = $cache;
+        $this->headerHandler = $headerHandler;
+        $this->productStreamBuilder = $productStreamBuilder;
+        $this->systemConfigService = $systemConfigService;
         $this->customerGroupRepository = $customerGroupRepository;
         $this->categoryRepository = $categoryRepository;
         $this->productRepository = $productRepository;
-        $this->productStreamBuilder = $productStreamBuilder;
-        $this->systemConfigService = $systemConfigService;
     }
 
     /**
@@ -229,13 +233,14 @@ class ExportController extends AbstractController
 
     protected function buildExport(): void
     {
-        $this->export = Export::getInstance(
+        $this->export = AbstractExport::getInstance(
             $this->exportConfig->getProductId() ? AbstractExport::TYPE_PRODUCT_ID : AbstractExport::TYPE_XML,
             $this->dynamicProductGroupService,
             $this->productSearcher,
             $this->pluginConfig,
             $this->exportItemAdapter,
-            $this->logger
+            $this->logger,
+            $this->eventDispatcher
         );
     }
 
