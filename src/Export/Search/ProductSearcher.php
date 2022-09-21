@@ -173,7 +173,7 @@ class ProductSearcher extends AbstractProductSearcher
         return $products;
     }
 
-    public function buildVariantIterator(ProductEntity $product, int $pageSize): RepositoryIterator
+    public function buildVariantIterator(ProductEntity $product, int $pageSize): VariantIterator
     {
         $this->productCriteriaBuilder->reset();
         $this->productCriteriaBuilder
@@ -183,7 +183,7 @@ class ProductSearcher extends AbstractProductSearcher
             ->withPriceZeroFilter()
             ->withVariantAssociations();
 
-        return new RepositoryIterator(
+        return new VariantIterator(
             $this->productRepository,
             $this->salesChannelContext->getContext(),
             $this->productCriteriaBuilder->build()
