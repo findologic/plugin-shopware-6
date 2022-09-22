@@ -61,7 +61,7 @@
             <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" public="true" autowire="true">
+        <service id="FINDOLOGIC\FinSearch\Export\CatUrlBuilderService" public="true" autowire="true">
             <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
             <argument key="$categoryRepository" type="service" id="category.repository" />
         </service>
@@ -73,6 +73,7 @@
         </service>
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Services\ProductImageService" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Services\ProductUrlService" public="true" autowire="true" />
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\AdapterFactory" autowire="true">
             <argument key="$salesFrequencyAdapter" type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter" />
@@ -80,7 +81,7 @@
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\AttributeAdapter" public="true" autowire="true">
             <argument key="$dynamicProductGroupService" type="service" id="FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService" />
-            <argument key="$urlBuilderService" type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" />
+            <argument key="$catUrlBuilderService" type="service" id="FINDOLOGIC\FinSearch\Export\CatUrlBuilderService" />
         </service>
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\BonusAdapter" public="true" autowire="true" />
@@ -116,9 +117,7 @@
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\SummaryAdapter" public="true" autowire="true" />
 
-        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UrlAdapter" public="true" autowire="true">
-            <argument key="$urlBuilderService" type="service" id="FINDOLOGIC\FinSearch\Export\UrlBuilderService" />
-        </service>
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UrlAdapter" public="true" autowire="true" />
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UserGroupsAdapter" public="true" autowire="true">
         </service>

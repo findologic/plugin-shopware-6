@@ -7,7 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Export\Adapters;
 use FINDOLOGIC\Export\Data\Attribute;
 use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
-use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
+use FINDOLOGIC\FinSearch\Export\CatUrlBuilderService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\AttributeHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportItemAdapterHelper;
@@ -393,7 +393,7 @@ class AttributeAdapterTest extends TestCase
     {
         return new AttributeAdapter(
             $this->getContainer()->get(DynamicProductGroupService::class),
-            $this->getContainer()->get(UrlBuilderService::class),
+            $this->getContainer()->get(CatUrlBuilderService::class),
             $this->getContainer()->get(ExportContext::class),
             $config ?? $this->getContainer()->get(PluginConfig::class),
         );

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
-use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
+use FINDOLOGIC\FinSearch\Export\CatUrlBuilderService;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\AdapterFactory;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\AttributeAdapter;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
@@ -23,7 +23,7 @@ trait ExportItemAdapterHelper
 
         $attributeAdapter = new AttributeAdapter(
             $this->getContainer()->get(DynamicProductGroupService::class),
-            $this->getContainer()->get(UrlBuilderService::class),
+            $this->getContainer()->get(CatUrlBuilderService::class),
             $this->getContainer()->get(ExportContext::class),
             $config ?? $this->getContainer()->get(PluginConfig::class),
         );

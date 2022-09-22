@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
-use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
+use FINDOLOGIC\FinSearch\Export\CatUrlBuilderService;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -40,7 +40,7 @@ class UrlBuilderServiceTest extends TestCase
         $categoryRepository = $this->getContainer()->get('category.repository');
         $this->salesChannelContext = $this->buildSalesChannelContext();
 
-        $this->urlBuilderService = new UrlBuilderService($routerMock, $categoryRepository);
+        $this->urlBuilderService = new CatUrlBuilderService($routerMock, $categoryRepository);
         $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
     }
 
