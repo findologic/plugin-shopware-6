@@ -28,10 +28,45 @@ class FrontendSubscriberTest extends TestCase
     use SalesChannelHelper;
     use CategoryHelper;
 
+    public function headerPageletLoadedEventProvider(): array
+    {
+        return [
+            'Search Request' => [
+                'requestParams' => [
+                    ['search' => 't-shirt'],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/search']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => true,
+                    'isNavigationPage' => false
+                ]
+            ],
+            'Category Request' => [
+                'requestParams' => [
+                    [],
+                    [],
+                    ['navigationId' => 5],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/categoryFive']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => false,
+                    'isNavigationPage' => true
+                ]
+            ]
+        ];
+    }
+
     /**
      * @throws InvalidArgumentException
+     * @dataProvider headerPageletLoadedEventProvider
      */
-    public function testHeaderPageletLoadedEvent(): void
+    public function testHeaderPageletLoadedEvent(array $requestParams, array $expectedPageInformation): void
     {
         $shopkey = $this->getShopkey();
 
@@ -49,12 +84,12 @@ class FrontendSubscriberTest extends TestCase
             ->getMock();
 
         $request = new Request(
-            ['search' => 't-shirt'],
-            [],
-            [],
-            [],
-            [],
-            ['REQUEST_URI' => 'https://example.com/search']
+            $requestParams[0],
+            $requestParams[1],
+            $requestParams[2],
+            $requestParams[3],
+            $requestParams[4],
+            $requestParams[5]
         );
 
         $headerPageletMock->expects($this->any())
@@ -98,9 +133,15 @@ class FrontendSubscriberTest extends TestCase
                     }
                 ),
                 $this->callback(
-                    function (PageInformation $pageInformation) {
-                        $this->assertTrue($pageInformation->getIsSearchPage());
-                        $this->assertFalse($pageInformation->getIsNavigationPage());
+                    function (PageInformation $pageInformation) use ($expectedPageInformation) {
+                        $this->assertSame(
+                            $expectedPageInformation['isSearchPage'],
+                            $pageInformation->getIsSearchPage()
+                        );
+                        $this->assertSame(
+                            $expectedPageInformation['isNavigationPage'],
+                            $pageInformation->getIsNavigationPage()
+                        );
 
                         return true;
                     }
