@@ -81,8 +81,8 @@ class FrontendSubscriber implements EventSubscriberInterface
         $event->getPagelet()->addExtension('flSnippet', $snippet);
 
         $request = $event->getRequest();
-        $isSearchPage = $request->query->get('search') !== null && str_contains($request->getRequestUri(), '/search');
-        $isNavigationPage = boolval($request->attributes->get('navigationId'));
+        $isSearchPage = $request->query->has('search') && str_contains($request->getRequestUri(), '/search');
+        $isNavigationPage = $request->attributes->has('navigationId');
         $pageInformation = new PageInformation($isSearchPage, $isNavigationPage);
 
         // Prepare pageInformation for usage in template

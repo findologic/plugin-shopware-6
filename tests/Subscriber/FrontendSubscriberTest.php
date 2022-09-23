@@ -83,14 +83,7 @@ class FrontendSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $request = new Request(
-            $requestParams[0],
-            $requestParams[1],
-            $requestParams[2],
-            $requestParams[3],
-            $requestParams[4],
-            $requestParams[5]
-        );
+        $request = new Request(... $requestParams);
 
         $headerPageletMock->expects($this->any())
             ->method('addExtension')
