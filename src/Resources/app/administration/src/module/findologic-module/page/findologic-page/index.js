@@ -4,6 +4,9 @@ import './findologic-page.scss';
 const { Component, Mixin, Application } = Shopware;
 const { Criteria } = Shopware.Data;
 
+/**
+ * @private
+ */
 Component.register('findologic-page', {
     template,
 

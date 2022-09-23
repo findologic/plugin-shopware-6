@@ -48,4 +48,7 @@ class FinsearchConfigApiService extends ApiService {
     }
 }
 
+/**
+ * @private
+ */
 export default FinsearchConfigApiService;

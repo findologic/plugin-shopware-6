@@ -11,6 +11,7 @@ use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoCategoriesExcepti
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoNameException;
 use FINDOLOGIC\FinSearch\Exceptions\Export\Product\ProductHasNoPricesException;
 use FINDOLOGIC\FinSearch\Export\Adapters\AttributeAdapter;
+use FINDOLOGIC\FinSearch\Export\DynamicProductGroupCacheHandler;
 use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\ExportContext;
 use FINDOLOGIC\FinSearch\Export\UrlBuilderService;
@@ -22,7 +23,9 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportItemAdapterHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\CacheItemPoolInterface;
 use ReflectionClass;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Adapter\Translation\Translator;
@@ -60,8 +63,7 @@ class AttributeAdapterTest extends TestCase
             $this->getContainer()->get('category.repository'),
             $this->getContainer()->get('serializer.mapping.cache.symfony'),
             Context::createDefaultContext(),
-            'ABCDABCDABCDABCDABCDABCDABCDABCD',
-            0
+            new ExportConfiguration('ABCDABCDABCDABCDABCDABCDABCDABCD', 0, 100)
         );
         $this->getContainer()->set(
             'fin_search.export_context',

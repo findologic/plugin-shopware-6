@@ -171,7 +171,13 @@ class XmlExport extends Export
             /** @var ProductCollection $variants */
             $variants = $variantsResult->getEntities();
             foreach ($variants->getElements() as $variant) {
-                if ($adaptedItem = $this->exportItemAdapter->adaptVariant($item ?: $initialItem, $variant)) {
+                if ($item) {
+                    $adaptedItem = $this->exportItemAdapter->adaptVariant($item, $variant);
+                } elseif ($adaptedItem = $this->exportItemAdapter->adapt($initialItem, $variant)) {
+                    $adaptedItem->setId($variant->getId());
+                }
+
+                if ($adaptedItem) {
                     $item = $adaptedItem;
                 }
             }
@@ -251,10 +257,11 @@ class XmlExport extends Export
     private function getDynamicProductGroupCategories(ProductEntity $productEntity): array
     {
         if ($this->container->has('fin_search.dynamic_product_group')) {
+            /** @var DynamicProductGroupService $dynamicProductGroupService */
             $dynamicProductGroupService = $this->container->get('fin_search.dynamic_product_group');
 
             if ($dynamicProductGroupService) {
-                return $dynamicProductGroupService->getCategories($productEntity->getId());
+                return $dynamicProductGroupService->getCategories($productEntity->getId())->getElements();
             }
         }
 

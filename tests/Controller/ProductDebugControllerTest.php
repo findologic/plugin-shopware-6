@@ -119,7 +119,8 @@ class ProductDebugControllerTest extends TestCase
     protected function sendExportRequest(array $overrides = []): Response
     {
         $defaults = [
-            'shopkey' => self::VALID_SHOPKEY
+            'shopkey' => self::VALID_SHOPKEY,
+            'excludeProductGroups' => 1
         ];
 
         $params = array_merge($defaults, $overrides);
