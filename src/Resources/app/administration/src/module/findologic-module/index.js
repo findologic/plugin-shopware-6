@@ -7,6 +7,9 @@ import deDE from './snippet/de-DE.json';
 
 const { Module } = Shopware;
 
+/**
+ * @private
+ */
 Module.register('findologic-module', {
     type: 'plugin',
     name: 'FinSearch',
