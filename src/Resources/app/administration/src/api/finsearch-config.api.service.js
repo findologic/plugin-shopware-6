@@ -3,7 +3,6 @@ const ApiService = Shopware.Classes.ApiService;
 /**
  * @class
  * @extends ApiService
- * @private
  */
 class FinsearchConfigApiService extends ApiService {
     constructor(httpClient, loginService, apiEndpoint = 'finsearch') {
@@ -49,4 +48,7 @@ class FinsearchConfigApiService extends ApiService {
     }
 }
 
+/**
+ * @private
+ */
 export default FinsearchConfigApiService;
