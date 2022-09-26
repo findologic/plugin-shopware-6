@@ -18,7 +18,8 @@ trait ServicesHelper
 {
     public function getExportContext(
         SalesChannelContext $salesChannelContext,
-        CategoryEntity $navigationCategory
+        CategoryEntity $navigationCategory,
+        ?string $shopkey = 'ABCDABCDABCDABCDABCDABCDABCDABCD'
     ): ExportContext {
         /** @var SalesChannelEntity $salesChannel */
         $salesChannel = Utils::createSdkEntity(
@@ -33,7 +34,7 @@ trait ServicesHelper
         );
 
         return new ExportContext(
-            'ABCDABCDABCDABCDABCDABCDABCDABCD',
+            $shopkey,
             $salesChannel,
             $sdkNavigationCategory,
             new CustomerGroupCollection(),

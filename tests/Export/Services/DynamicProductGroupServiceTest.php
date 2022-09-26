@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
-use FINDOLOGIC\FinSearch\Export\DynamicProductGroupCacheHandler;
-use FINDOLOGIC\FinSearch\Export\DynamicProductGroupService;
+use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
-use FINDOLOGIC\FinSearch\Validators\ExportConfiguration;
-use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ServicesHelper;
+use FINDOLOGIC\Shopware6Common\Export\ExportContext;
+use FINDOLOGIC\Shopware6Common\Export\Validation\ExportConfigurationBase;
+use FINDOLOGIC\Shopware6Common\Export\Validation\OffsetExportConfiguration;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -33,6 +34,7 @@ class DynamicProductGroupServiceTest extends TestCase
     use ConfigHelper;
     use ExportHelper;
     use ProductHelper;
+    use ServicesHelper;
 
     protected Context $defaultContext;
 
@@ -50,11 +52,14 @@ class DynamicProductGroupServiceTest extends TestCase
 
     private ExportConfigurationBase $exportConfig;
 
+    private ExportContext $exportContext;
+
     private ?string $productId;
 
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->cache = $this->getMockBuilder(CacheItemPoolInterface::class)->disableOriginalConstructor()->getMock();
         $services['product.repository'] = $this->getContainer()->get('product.repository');
         $this->start = 0;
@@ -63,7 +68,12 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->validShopkey = $this->getShopkey();
         $this->createTestProductStreams();
         $this->containerMock = $this->getContainerMock($services);
-        $this->exportConfig = new ExportConfiguration($this->validShopkey, 0, 100);
+        $this->exportConfig = new OffsetExportConfiguration($this->validShopkey, 0, 100);
+        $this->exportContext = $this->getExportContext(
+            $this->getDefaultSalesChannelContextMock(),
+            $this->getCategory($this->getDefaultSalesChannelContextMock()->getSalesChannel()->getNavigationCategoryId()),
+            $this->validShopkey
+        );
     }
 
     public function cacheWarmUpProvider(): array
@@ -214,6 +224,7 @@ class DynamicProductGroupServiceTest extends TestCase
             $this->getDefaultSalesChannelContextMock(),
             $this->exportConfig,
             $this->cache,
+            $this->exportContext
         );
     }
 
