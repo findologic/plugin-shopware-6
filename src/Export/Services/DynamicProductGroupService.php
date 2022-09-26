@@ -6,10 +6,10 @@ namespace FINDOLOGIC\FinSearch\Export\Services;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\FinSearch\Validators\DynamicProductGroupsConfiguration;
-use FINDOLOGIC\FinSearch\Validators\ExportConfigurationBase;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Services\AbstractDynamicProductGroupService;
 use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
+use FINDOLOGIC\Shopware6Common\Export\Validation\ExportConfigurationBase;
 use Psr\Cache\CacheItemPoolInterface;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
@@ -84,7 +84,7 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
                 $categoryCollection->merge($categories);
             }
 
-            $start += DynamicProductGroupsConfiguration::DEFAULT_COUNT_PARAM;
+            $start += ExportConfigurationBase::DEFAULT_COUNT_PARAM;
         }
 
         return $categoryCollection;
