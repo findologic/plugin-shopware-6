@@ -15,7 +15,7 @@ use Monolog\Logger;
 
 trait ExportItemAdapterHelper
 {
-    public function getExportItemAdapter(PluginConfig $config): ExportItemAdapter
+    public function getExportItemAdapter(Config $config): ExportItemAdapter
     {
         $loggerMock = $this->getMockBuilder(Logger::class)
             ->disableOriginalConstructor()
@@ -37,9 +37,12 @@ trait ExportItemAdapterHelper
             ->willReturn($attributeAdapter);
 
         return new ExportItemAdapter(
-            $adapterFactoryMock,
-            $loggerMock,
+            $this->getContainer()->get('router'),
             $this->getContainer()->get('event_dispatcher'),
+            $this->getContainer()->get('FINDOLOGIC\FinSearch\Struct\Config'),
+            $adapterFactoryMock,
+            $this->getContainer()->get('fin_search.export_context'),
+            $loggerMock
         );
     }
 }
