@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
-use FINDOLOGIC\FinSearch\Export\SalesChannelService;
+use FINDOLOGIC\FinSearch\Export\Services\SalesChannelService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
@@ -57,7 +57,7 @@ class ExportControllerTest extends TestCase
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
         $parsedResponse = new SimpleXMLElement($response->getContent());
 
-        $this->assertSame($product->getId(), $parsedResponse->items->item->attributes()->id->__toString());
+        $this->assertSame($product->id, $parsedResponse->items->item->attributes()->id->__toString());
     }
 
     public function testSingleProductIsExportedWhenProductIdIsGiven(): void
@@ -68,7 +68,7 @@ class ExportControllerTest extends TestCase
 
         $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
 
-        $response = $this->sendExportRequest(['productId' => $product->getId()]);
+        $response = $this->sendExportRequest(['productId' => $product->id]);
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
@@ -76,7 +76,7 @@ class ExportControllerTest extends TestCase
 
         $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
         $this->assertSame(2, (int)$parsedResponse->items->attributes()->total);
-        $this->assertSame($product->getId(), $parsedResponse->items->item->attributes()->id->__toString());
+        $this->assertSame($product->id, $parsedResponse->items->item->attributes()->id->__toString());
     }
 
     public function testExportWithUnknownShopkey(): void
@@ -128,8 +128,8 @@ class ExportControllerTest extends TestCase
                     'shopkey' => 'I do not follow the shopkey schema'
                 ],
                 'errorMessages' => [
-                    'shopkey: Invalid key provided.',
                     'start: This value should be greater than or equal to 0.',
+                    'shopkey: Invalid key provided.',
                 ],
             ],
             'Sales channel is searched when shopkey is valid but is not assigned to a sales channel' => [
@@ -228,7 +228,7 @@ class ExportControllerTest extends TestCase
             $this->salesChannelContext,
             $anotherShopkey
         );
-        $response = $this->sendExportRequest(['productId' => $product->getId(), 'shopkey' => $anotherShopkey]);
+        $response = $this->sendExportRequest(['productId' => $product->id, 'shopkey' => $anotherShopkey]);
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
@@ -259,7 +259,7 @@ class ExportControllerTest extends TestCase
             $salesChannelContext,
             self::VALID_SHOPKEY
         );
-        $response = $this->sendExportRequest(['productId' => $product->getId()]);
+        $response = $this->sendExportRequest(['productId' => $product->id]);
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
@@ -346,9 +346,9 @@ class ExportControllerTest extends TestCase
         $parsedResponse = new SimpleXMLElement($response->getContent());
 
         $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
-        $this->assertSame($product->getId(), $parsedResponse->items->item->attributes()->id->__toString());
+        $this->assertSame($product->id, $parsedResponse->items->item->attributes()->id->__toString());
         $this->assertSame(
-            'http://localhost/german/detail/' . $product->getId(),
+            'http://localhost/german/detail/' . $product->id,
             $parsedResponse->items->item->urls->url->__toString()
         );
     }

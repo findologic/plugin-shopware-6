@@ -98,7 +98,7 @@ class ProductDebugControllerTest extends TestCase
     {
         if (!isset($params['productId'])) {
             $product = $this->createVisibleTestProduct();
-            $params['productId'] = $product->getId();
+            $params['productId'] = $product->id;
         }
 
         $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
