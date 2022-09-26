@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export;
+namespace FINDOLOGIC\FinSearch\Export\Services;
 
 use FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigEntity;
 use FINDOLOGIC\FinSearch\Utils\Utils;

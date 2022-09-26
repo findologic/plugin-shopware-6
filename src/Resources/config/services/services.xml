@@ -56,17 +56,17 @@
             <argument type="string">findologic_finsearch</argument>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\HeaderHandler" public="true">
+        <service id="FINDOLOGIC\FinSearch\Export\Handlers\HeaderHandler" public="true">
             <argument type="service" id="plugin.repository" />
             <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\CatUrlBuilderService" public="true" autowire="true">
+        <service id="FINDOLOGIC\FinSearch\Export\Services\CatUrlBuilderService" public="true" autowire="true">
             <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
             <argument key="$categoryRepository" type="service" id="category.repository" />
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\SalesChannelService" public="true">
+        <service id="FINDOLOGIC\FinSearch\Export\Services\SalesChannelService" public="true">
             <argument type="service" id="finsearch_config.repository" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
             <argument type="service" id="Shopware\Core\Framework\Routing\RequestTransformerInterface" />
@@ -81,7 +81,7 @@
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\AttributeAdapter" public="true" autowire="true">
             <argument key="$dynamicProductGroupService" type="service" id="FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService" />
-            <argument key="$catUrlBuilderService" type="service" id="FINDOLOGIC\FinSearch\Export\CatUrlBuilderService" />
+            <argument key="$catUrlBuilderService" type="service" id="FINDOLOGIC\FinSearch\Export\Services\CatUrlBuilderService" />
         </service>
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\BonusAdapter" public="true" autowire="true" />

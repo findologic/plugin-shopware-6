@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Export;
+namespace FINDOLOGIC\FinSearch\Export\Handlers;
 
 use FINDOLOGIC\Shopware6Common\Export\AbstractHeaderHandler;
 use Shopware\Core\Framework\Context;
