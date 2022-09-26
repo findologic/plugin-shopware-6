@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Controller;
 
-use FINDOLOGIC\FinSearch\Export\HeaderHandler;
+use FINDOLOGIC\FinSearch\Export\Handlers\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
-use FINDOLOGIC\FinSearch\Export\SalesChannelService;
+use FINDOLOGIC\FinSearch\Export\Services\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -251,7 +251,7 @@ class ExportController extends AbstractController
             $errorHandler = new ProductErrorHandler();
             $errorHandler->getExportErrors()->addGeneralErrors($messages);
 
-            return AbstractExport::buildErrorResponse($errorHandler, $this->headerHandler->getHeaders());
+            return AbstractExport::buildErrorResponse($errorHandler);
         }
 
         return null;
