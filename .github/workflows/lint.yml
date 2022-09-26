@@ -27,20 +27,14 @@ jobs:
           coverage: xdebug
           tools: composer:v2
 
-      - name: Validate composer.json
-        uses: php-actions/composer@v6
-        with:
-          command: validate
+      - name: Add HTTP basic auth credentials
+        run: echo '${{ secrets.GIT_PAT }}' > $GITHUB_WORKSPACE/auth.json
+
+      - name: Validate dependencies
+        run: composer validate
 
       - name: Install dependencies
-        uses: php-actions/composer@v6
-        with:
-          args: --optimize-autoloader
-          php_version: ${{ matrix.php-versions }}
-          version: 2
-          # Necessary to access private dependencies:
-          ssh_key: ${{ secrets.COMPOSER_SSH_PRIVATE_KEY }}
-          ssh_key_pub: ${{ secrets.COMPOSER_SSH_PUBLIC_KEY }}
+        run: composer install
 
       - name: Run Lint
         run: composer lint
