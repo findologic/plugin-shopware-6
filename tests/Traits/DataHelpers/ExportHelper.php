@@ -82,7 +82,6 @@ trait ExportHelper
             ['fin_search.sales_channel_context', $salesChannelContextMock],
             ['category.repository', $this->getContainer()->get('category.repository')],
             [ProductStreamBuilder::class, $this->getContainer()->get(ProductStreamBuilder::class)],
-            [FindologicProductFactory::class, new FindologicProductFactory()]
         ];
 
         foreach ($services as $key => $service) {
