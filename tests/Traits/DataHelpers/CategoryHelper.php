@@ -40,10 +40,13 @@ trait CategoryHelper
         return $result->first();
     }
 
-    public function getCategory(): CategoryEntity
+    public function getCategory(?string $categoryId = null): CategoryEntity
     {
+        $criteria = new Criteria();
+        $criteria->setIds([$categoryId]);
+
         $categoryRepo = $this->getContainer()->get('category.repository');
-        $categories = $categoryRepo->search(new Criteria(), Context::createDefaultContext());
+        $categories = $categoryRepo->search($criteria, Context::createDefaultContext());
 
         /** @var CategoryEntity $expectedCategory */
         return $categories->first();

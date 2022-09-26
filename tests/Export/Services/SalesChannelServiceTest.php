@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
-use FINDOLOGIC\FinSearch\Export\SalesChannelService;
+use FINDOLOGIC\FinSearch\Export\Services\SalesChannelService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\TestCase;

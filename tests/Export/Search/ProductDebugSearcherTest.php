@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export\Debug;
 
-use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher;
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
+use FINDOLOGIC\FinSearch\Export\Search\ProductDebugSearcher;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
-use Shopware\Core\Content\Product\ProductEntity;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ServicesHelper;
+use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ProductDebugSearcherTest extends TestCase
 {
@@ -22,8 +22,11 @@ class ProductDebugSearcherTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
     use ConfigHelper;
+    use ServicesHelper;
 
     private SalesChannelContext $salesChannelContext;
+
+    private ExportContext $exportContext;
 
     private ProductCriteriaBuilder $productCriteriaBuilder;
 
@@ -34,18 +37,18 @@ class ProductDebugSearcherTest extends TestCase
         parent::setUp();
 
         $this->salesChannelContext = $this->buildSalesChannelContext();
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'default']);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
-        $this->productCriteriaBuilder = new ProductCriteriaBuilder(
+        $this->exportContext = $this->getExportContext(
             $this->salesChannelContext,
-            $this->getContainer()->get(SystemConfigService::class)
+            $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId())
         );
+
+        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext);
         $this->defaultProductDebugSearcher = new ProductDebugSearcher(
             $this->salesChannelContext,
             $this->getContainer()->get('product.repository'),
             $this->productCriteriaBuilder,
-            $mockedConfig
+            $this->exportContext,
+            $this->getPluginConfig()
         );
     }
 
@@ -66,12 +69,10 @@ class ProductDebugSearcherTest extends TestCase
         );
 
         $products = $this->defaultProductDebugSearcher->findVisibleProducts(null, null, $productId);
-
-        $this->assertCount(1, $products);
-        /** @var ProductEntity $product */
         $product = $products->first();
 
-        $this->assertSame($product->getId(), $variantId1);
+        $this->assertCount(1, $products);
+        $this->assertSame($product->id, $variantId1);
     }
 
     public function testGetMainProductById(): void
@@ -93,11 +94,11 @@ class ProductDebugSearcherTest extends TestCase
 
         $this->assertSame(
             $parentId,
-            $this->defaultProductDebugSearcher->getMainProductById($parentId)->getId()
+            $this->defaultProductDebugSearcher->getMainProductById($parentId)->id
         );
         $this->assertSame(
             $parentId,
-            $this->defaultProductDebugSearcher->getMainProductById($variantId)->getId()
+            $this->defaultProductDebugSearcher->getMainProductById($variantId)->id
         );
     }
 
@@ -120,11 +121,11 @@ class ProductDebugSearcherTest extends TestCase
 
         $this->assertSame(
             $parentId,
-            $this->defaultProductDebugSearcher->getProductById($parentId)->getId()
+            $this->defaultProductDebugSearcher->getProductById($parentId)->id
         );
         $this->assertSame(
             $variantId,
-            $this->defaultProductDebugSearcher->getProductById($variantId)->getId()
+            $this->defaultProductDebugSearcher->getProductById($variantId)->id
         );
     }
 
@@ -134,11 +135,11 @@ class ProductDebugSearcherTest extends TestCase
 
         $this->assertSame(
             3,
-            count($this->defaultProductDebugSearcher->getSiblings($parent->getId(), 100))
+            count($this->defaultProductDebugSearcher->getSiblings($parent->id, 100))
         );
         $this->assertSame(
             1,
-            count($this->defaultProductDebugSearcher->getSiblings($parent->getId(), 1))
+            count($this->defaultProductDebugSearcher->getSiblings($parent->id, 1))
         );
     }
 }
