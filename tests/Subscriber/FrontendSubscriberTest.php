@@ -31,6 +31,48 @@ class FrontendSubscriberTest extends TestCase
     public function headerPageletLoadedEventProvider(): array
     {
         return [
+            'Home page Request' => [
+                'requestParams' => [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => false,
+                    'isNavigationPage' => false
+                ]
+            ],
+            'Checkout Request' => [
+                'requestParams' => [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/checkout']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => false,
+                    'isNavigationPage' => false
+                ]
+            ],
+            'Empty Search Request' => [
+                'requestParams' => [
+                    ['search' => ''],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/search']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => true,
+                    'isNavigationPage' => false
+                ]
+            ],
             'Search Request' => [
                 'requestParams' => [
                     ['search' => 't-shirt'],
