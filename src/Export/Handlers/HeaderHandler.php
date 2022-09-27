@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Handlers;
 
-use FINDOLOGIC\Shopware6Common\Export\AbstractHeaderHandler;
+use FINDOLOGIC\Shopware6Common\Export\Handlers\AbstractHeaderHandler;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;

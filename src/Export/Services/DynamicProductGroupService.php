@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export\Services;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use FINDOLOGIC\FinSearch\Validators\DynamicProductGroupsConfiguration;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Services\AbstractDynamicProductGroupService;
 use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
 use FINDOLOGIC\Shopware6Common\Export\Validation\ExportConfigurationBase;
+use FINDOLOGIC\Shopware6Common\Export\Validation\OffsetExportConfiguration;
 use Psr\Cache\CacheItemPoolInterface;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
@@ -36,7 +36,7 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
 
     protected SalesChannelContext $salesChannelContext;
 
-    protected ExportConfigurationBase $exportConfig;
+    protected OffsetExportConfiguration $exportConfig;
 
     protected ExportContext $exportContext;
 
@@ -45,7 +45,7 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
         EntityRepository $categoryRepository,
         ProductStreamBuilder $productStreamBuilder,
         SalesChannelContext $salesChannelContext,
-        ExportConfigurationBase $exportConfig,
+        OffsetExportConfiguration $exportConfig,
         CacheItemPoolInterface $cache,
         ExportContext $exportContext
     ) {
