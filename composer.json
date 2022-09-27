@@ -1,68 +1,67 @@
 {
-  "name": "findologic/plugin-shopware-6",
-  "description": "Findologic plugin for Shopware 6",
-  "version": "4.0.0-RC2",
-  "license": "GPL-3.0-or-later",
-  "type": "shopware-platform-plugin",
-    "minimum-stability": "dev",
-  "authors": [
-    {
-      "name": "FINDOLOGIC GmbH"
-    }
-  ],
-    "repositories": [
+    "name": "findologic/plugin-shopware-6",
+    "description": "Findologic plugin for Shopware 6",
+    "version": "4.0.0-RC2",
+    "license": "GPL-3.0-or-later",
+    "type": "shopware-platform-plugin",
+    "authors": [
         {
-            "type" : "path",
-            "url" : "/home/tgraml/Documents/code/shopware6-common"
+            "name": "FINDOLOGIC GmbH"
         }
     ],
-  "require": {
-    "findologic/libflexport": "^2.8",
-    "findologic/findologic-api": "^1.6",
-    "findologic/shopware6-common": "*",
-    "vin-sw/shopware-sdk": "^1.5"
-  },
-  "extra": {
-    "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
-    "plugin-icon": "src/Resources/config/plugin.png",
-    "copyright": "(c) by FINDOLOGIC GmbH",
-    "label": {
-      "de-DE": "FINDOLOGIC Suche & Navigation",
-      "en-GB": "FINDOLOGIC Search & Navigation"
+    "repositories": [
+        {
+            "type" : "git",
+            "url" : "git@github.com:findologic/shopware6-common.git"
+        }
+    ],
+    "require": {
+        "findologic/libflexport": "^2.8",
+        "findologic/findologic-api": "^1.6",
+        "findologic/shopware6-common": "^0.1",
+        "vin-sw/shopware-sdk": "^1.5"
     },
-    "description": {
-      "de-DE": "Findologic Plugin für das Shopware 6 E-Commerce System. Features: Personalisierung, Suche, Navigation, User Interface, Merchandising. Shopware Technology Partner.",
-      "en-GB": "Findologic plugin for the Shopware 6 e-commerce system. Features: Personalization, Search, Navigation, User Interface, Merchandising. Shopware Technology Partner."
+    "extra": {
+        "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
+        "plugin-icon": "src/Resources/config/plugin.png",
+        "copyright": "(c) by FINDOLOGIC GmbH",
+        "label": {
+            "de-DE": "FINDOLOGIC Suche & Navigation",
+            "en-GB": "FINDOLOGIC Search & Navigation"
+        },
+        "description": {
+            "de-DE": "Findologic Plugin für das Shopware 6 E-Commerce System. Features: Personalisierung, Suche, Navigation, User Interface, Merchandising. Shopware Technology Partner.",
+            "en-GB": "Findologic plugin for the Shopware 6 e-commerce system. Features: Personalization, Search, Navigation, User Interface, Merchandising. Shopware Technology Partner."
+        },
+        "supportLink": {
+            "de-DE": "https://support.findologic.com/hc/de/requests/new",
+            "en-GB": "https://support.findologic.com/hc/en/requests/new"
+        },
+        "manufacturerLink": {
+            "de-DE": "https://www.findologic.com/",
+            "en-GB": "https://www.findologic.com/en/"
+        }
     },
-    "supportLink": {
-      "de-DE": "https://support.findologic.com/hc/de/requests/new",
-      "en-GB": "https://support.findologic.com/hc/en/requests/new"
+    "autoload": {
+        "psr-4": {
+            "FINDOLOGIC\\FinSearch\\": "src/"
+        }
     },
-    "manufacturerLink": {
-      "de-DE": "https://www.findologic.com/",
-      "en-GB": "https://www.findologic.com/en/"
+    "autoload-dev": {
+        "psr-4": {
+            "FINDOLOGIC\\FinSearch\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.5",
+        "monolog/monolog": "^2.0",
+        "bramus/monolog-colored-line-formatter": "^3.0"
+    },
+    "scripts": {
+        "lint": "./vendor/bin/phpcs --standard=phpcs.xml .",
+        "fix": "./vendor/bin/phpcbf --standard=phpcs.xml .",
+        "test": "../../../vendor/bin/phpunit -c phpunit.xml.dist --colors=always",
+        "release": "release/bin/release",
+        "build-release": "release/bin/build-release"
     }
-  },
-  "autoload": {
-    "psr-4": {
-      "FINDOLOGIC\\FinSearch\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "FINDOLOGIC\\FinSearch\\Tests\\": "tests/"
-    }
-  },
-  "require-dev": {
-    "squizlabs/php_codesniffer": "^3.5",
-    "monolog/monolog": "^2.0",
-    "bramus/monolog-colored-line-formatter": "^3.0"
-  },
-  "scripts": {
-    "lint": "./vendor/bin/phpcs --standard=phpcs.xml .",
-    "fix": "./vendor/bin/phpcbf --standard=phpcs.xml .",
-    "test": "../../../vendor/bin/phpunit -c phpunit.xml.dist --colors=always",
-    "release": "release/bin/release",
-    "build-release": "release/bin/build-release"
-  }
 }
