@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://symfony.com/schema/dic/services"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
+>
+    <services>
+        <!-- Services -->
+
+        <service id="FINDOLOGIC\Shopware6Common\Export\ExportContext" synthetic="true" public="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig" synthetic="true" public="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Services\ProductImageService" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Services\ProductUrlService" public="true" autowire="true" />
+
+        <service id="FINDOLOGIC\Shopware6Common\Export\Services\ProductDebugService" public="true" autowire="true">
+            <argument key="$productCriteriaBuilder" type="service" id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" />
+            <argument key="$basePath" type="string">findologic</argument>
+        </service>
+
+        <service
+            id="FINDOLOGIC\Shopware6Common\Export\Search\ProductDebugSearcherInterface"
+            alias="FINDOLOGIC\FinSearch\Export\Search\ProductDebugSearcher"
+        />
+
+        <!-- Adapters -->
+
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter" public="true" autowire="true">
+            <argument key="$logger" type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
+            <tag name="monolog.logger" channel="file" />
+            <argument key="$eventDispatcher" type="service" id="event_dispatcher" />
+        </service>
+
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\AdapterFactory" autowire="true">
+            <argument key="$salesFrequencyAdapter" type="service" id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter" />
+        </service>
+
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\AttributeAdapter" public="true" autowire="true">
+            <argument key="$dynamicProductGroupService" type="service" id="FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService" />
+            <argument key="$catUrlBuilderService" type="service" id="FINDOLOGIC\FinSearch\Export\Services\CatUrlBuilderService" />
+        </service>
+
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\BonusAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\DateAddedAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\DescriptionAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\ImagesAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\KeywordsAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\NameAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\OrderNumberAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\PriceAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\DefaultPropertiesAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\ShopwarePropertiesAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\SortAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\SummaryAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UrlAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UserGroupsAdapter" public="true" autowire="true" />
+
+    </services>
+</container>
