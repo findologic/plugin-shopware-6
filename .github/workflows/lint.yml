@@ -27,9 +27,6 @@ jobs:
           coverage: xdebug
           tools: composer:v2
 
-      - name: Add HTTP basic auth credentials
-        run: echo '${{ secrets.GIT_PAT }}' > $GITHUB_WORKSPACE/auth.json
-
       - name: Validate dependencies
         run: composer validate
 
