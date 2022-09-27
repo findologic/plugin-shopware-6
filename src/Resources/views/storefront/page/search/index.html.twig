@@ -15,7 +15,7 @@
 {% block page_search_headline %}
     {% if page.header.extensions.flConfig.active == false
         or page.header.extensions.flConfig.staging == true
-        or page.header.extensions.flConfig.directIntegration is constant('\\FINDOLOGIC\\FinSearch\\Findologic\\IntegrationType::DI') %}
+        or page.header.extensions.flConfig.directIntegration is constant('FINDOLOGIC\\Shopware6Common\\Export\\Config\\IntegrationType::DI') %}
         {{ parent() }}
     {% else %}
         {% block page_search_headline_text %}
