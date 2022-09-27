@@ -19,6 +19,7 @@ use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Types\ProductIdExport;
 use FINDOLOGIC\Shopware6Common\Export\Types\XmlExport;
 use FINDOLOGIC\Shopware6Common\Export\Validation\ExportConfigurationBase;
+use FINDOLOGIC\Shopware6Common\Export\Validation\OffsetExportConfiguration;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -63,7 +64,7 @@ class ExportController extends AbstractController
 
     protected EntityRepository $productRepository;
 
-    protected ExportConfigurationBase $exportConfig;
+    protected OffsetExportConfiguration $exportConfig;
 
     protected ?SalesChannelService $salesChannelService;
 
@@ -155,7 +156,9 @@ class ExportController extends AbstractController
 
     protected function preInitialize(Request $request, ?SalesChannelContext $context): void
     {
-        $this->exportConfig = ExportConfigurationBase::getInstance($request);
+        /** @var OffsetExportConfiguration $exportConfig */
+        $exportConfig = ExportConfigurationBase::getInstance($request);
+        $this->exportConfig = $exportConfig;
         $this->buildSalesChannelContext($context);
     }
 
@@ -352,7 +355,7 @@ class ExportController extends AbstractController
         return $customerGroupCollection;
     }
 
-    protected function shouldHideProductsOutOfStock()
+    protected function shouldHideProductsOutOfStock(): bool
     {
         return !!$this->systemConfigService->get(
             'core.listing.hideCloseoutProductsWhenOutOfStock',
