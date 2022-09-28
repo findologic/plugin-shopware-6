@@ -6,8 +6,8 @@ namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
-use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ServicesHelper;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Validation\ExportConfigurationBase;
@@ -16,7 +16,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
@@ -26,15 +25,18 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Cache\Exception\CacheException;
 
 class DynamicProductGroupServiceTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use ConfigHelper;
-    use ExportHelper;
     use ProductHelper;
     use ServicesHelper;
+    use SalesChannelHelper;
+
+    protected SalesChannelContext $salesChannelContext;
 
     protected Context $defaultContext;
 
@@ -44,9 +46,6 @@ class DynamicProductGroupServiceTest extends TestCase
 
     /** @var CacheItemPoolInterface|MockObject */
     private $cache;
-
-    /** @var ContainerInterface|MockObject */
-    private $containerMock;
 
     private int $start;
 
@@ -60,20 +59,17 @@ class DynamicProductGroupServiceTest extends TestCase
     {
         parent::setUp();
 
+        $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->cache = $this->getMockBuilder(CacheItemPoolInterface::class)->disableOriginalConstructor()->getMock();
-        $services['product.repository'] = $this->getContainer()->get('product.repository');
         $this->start = 0;
         $this->productId = null;
         $this->defaultContext = Context::createDefaultContext();
         $this->validShopkey = $this->getShopkey();
         $this->createTestProductStreams();
-        $this->containerMock = $this->getContainerMock($services);
         $this->exportConfig = new OffsetExportConfiguration($this->validShopkey, 0, 100);
         $this->exportContext = $this->getExportContext(
-            $this->getDefaultSalesChannelContextMock(),
-            $this->getCategory(
-                $this->getDefaultSalesChannelContextMock()->getSalesChannel()->getNavigationCategoryId()
-            ),
+            $this->salesChannelContext,
+            $this->getCategory( $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId()),
             $this->validShopkey
         );
     }
@@ -116,8 +112,7 @@ class DynamicProductGroupServiceTest extends TestCase
     public function testCategoriesAreCached(): void
     {
         $products = [];
-        $salesChannelContext = $this->getDefaultSalesChannelContextMock();
-        $context = $salesChannelContext->getContext();
+        $context = $this->salesChannelContext->getContext();
         [$categoryOne, $categoryTwo] = $this->getProductStreamCategories($context);
 
         $productId = Uuid::randomHex();
@@ -152,8 +147,8 @@ class DynamicProductGroupServiceTest extends TestCase
 
     public function testNoCategoriesAreReturnedForUnAssignedProduct(): void
     {
-        $salesChannelContext = $this->getDefaultSalesChannelContextMock();
-        $context = $salesChannelContext->getContext();
+
+        $context = $this->salesChannelContext->getContext();
         [$categoryOne, $categoryTwo] = $this->getProductStreamCategories($context);
         $unassignedProductId = Uuid::randomHex();
         $products = [];
@@ -187,7 +182,7 @@ class DynamicProductGroupServiceTest extends TestCase
     private function createTestProductStreams(): void
     {
         $streamId = Uuid::randomHex();
-        $navigationCategoryId = $this->getNavigationCategoryId();
+        $navigationCategoryId = $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId();
         $randomProductIds = implode('|', array_column($this->createProducts(), 'id'));
 
         // Create multple streams with similar products to test multiple categories are assigned
@@ -223,7 +218,7 @@ class DynamicProductGroupServiceTest extends TestCase
             $this->getContainer()->get('product.repository'),
             $this->getContainer()->get('category.repository'),
             $this->getContainer()->get(ProductStreamBuilder::class),
-            $this->getDefaultSalesChannelContextMock(),
+            $this->salesChannelContext,
             $this->exportConfig,
             $this->cache,
             $this->exportContext

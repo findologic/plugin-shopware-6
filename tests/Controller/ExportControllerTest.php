@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
 use FINDOLOGIC\FinSearch\Export\Services\SalesChannelService;
-use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -35,7 +34,6 @@ class ExportControllerTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
     use PluginConfigHelper;
-    use ExportHelper;
 
     private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
