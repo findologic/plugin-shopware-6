@@ -43,7 +43,7 @@ trait CategoryHelper
     public function getCategory(?string $categoryId = null): CategoryEntity
     {
         $criteria = new Criteria();
-        if($categoryId) {
+        if ($categoryId) {
             $criteria->setIds([$categoryId]);
         }
 
