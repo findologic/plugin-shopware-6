@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "584c9b04bb986b0c1b441cb904e514e6",
+    "content-hash": "c18b6d76c66a214b0f6240359d60224f",
     "packages": [
         {
             "name": "findologic/findologic-api",
@@ -218,7 +218,7 @@
             "version": "0.1.0",
             "source": {
                 "type": "git",
-                "url": "git@github.com:findologic/shopware6-common.git",
+                "url": "https://github.com/findologic/shopware6-common.git",
                 "reference": "3011f8f3f5c91c114e64b7c7feaadc275a658537"
             },
             "require": {

@@ -12,7 +12,7 @@
     "repositories": [
         {
             "type" : "git",
-            "url" : "git@github.com:findologic/shopware6-common.git"
+            "url" : "https://github.com/findologic/shopware6-common.git"
         }
     ],
     "require": {
