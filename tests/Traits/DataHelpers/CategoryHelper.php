@@ -43,7 +43,9 @@ trait CategoryHelper
     public function getCategory(?string $categoryId = null): CategoryEntity
     {
         $criteria = new Criteria();
-        $criteria->setIds([$categoryId]);
+        if($categoryId) {
+            $criteria->setIds([$categoryId]);
+        }
 
         $categoryRepo = $this->getContainer()->get('category.repository');
         $categories = $categoryRepo->search($criteria, Context::createDefaultContext());
