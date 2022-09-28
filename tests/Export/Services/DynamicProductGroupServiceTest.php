@@ -69,7 +69,7 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->exportConfig = new OffsetExportConfiguration($this->validShopkey, 0, 100);
         $this->exportContext = $this->getExportContext(
             $this->salesChannelContext,
-            $this->getCategory( $this->salesChannelContext->getSalesChannel()->getNavigationCategoryId()),
+            $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId()),
             $this->validShopkey
         );
     }
