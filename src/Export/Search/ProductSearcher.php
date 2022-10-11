@@ -177,6 +177,7 @@ class ProductSearcher extends AbstractProductSearcher
     {
         $this->productCriteriaBuilder->reset();
         $this->productCriteriaBuilder
+            ->withIdSorting()
             ->withLimit($pageSize)
             ->withParentIdFilterWithVisibility($product->id, $product->parentId)
             ->withOutOfStockFilter()
