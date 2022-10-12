@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
         php-versions: [ '7.4' ]
-        shopware-versions: [ 'v6.4.14.0' ]
+        shopware-versions: [ 'v6.4.15.1' ]
 
     name: ESLint
     steps:
