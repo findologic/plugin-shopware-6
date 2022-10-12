@@ -6,9 +6,9 @@ namespace FINDOLOGIC\FinSearch\Struct;
 
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
-use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
-use FINDOLOGIC\FinSearch\Findologic\MainVariant;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\Shopware6Common\Export\Config\IntegrationType;
+use FINDOLOGIC\Shopware6Common\Export\Config\MainVariant;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Struct\Struct;
@@ -34,29 +34,29 @@ class Config extends Struct
 
     private FindologicConfigService $systemConfigService;
 
-    private ?string $shopkey;
-
-    private bool $active;
-
-    private bool $activeOnCategoryPages;
-
-    private string $searchResultContainer;
-
-    private string $navigationResultContainer;
-
-    private ?string $integrationType = null;
-
     private ServiceConfigResource $serviceConfigResource;
 
-    private bool $staging;
+    protected ?string $shopkey;
 
-    private bool $initialized = false;
+    protected bool $active;
 
-    private string $filterPosition;
+    protected bool $activeOnCategoryPages;
 
-    private string $mainVariant = MainVariant::SHOPWARE_DEFAULT;
+    protected string $searchResultContainer;
 
-    private array $crossSellingCategories = [];
+    protected string $navigationResultContainer;
+
+    protected ?string $integrationType = null;
+
+    protected bool $staging;
+
+    protected bool $initialized = false;
+
+    protected string $filterPosition;
+
+    protected string $mainVariant = MainVariant::SHOPWARE_DEFAULT;
+
+    protected array $crossSellingCategories = [];
 
     public function __construct(
         FindologicConfigService $systemConfigService,

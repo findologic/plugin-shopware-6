@@ -121,30 +121,4 @@ trait ConfigHelper
 
         return $configServiceMock;
     }
-
-    public function getMockedConfig(string $integrationType = 'Direct Integration'): Config
-    {
-        $override = [
-            'languageId' => $this->salesChannelContext->getSalesChannel()->getLanguageId(),
-            'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId()
-        ];
-
-        return $this->getFindologicConfig($override, $integrationType === 'Direct Integration');
-    }
-
-    public function getFindologicConfig(array $override = [], bool $isDirectIntegration = true): Config
-    {
-        /** @var FindologicConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($override);
-
-        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
-        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $serviceConfigResource->expects($this->once())
-            ->method('isDirectIntegration')
-            ->willReturn($isDirectIntegration);
-
-        return new Config($configServiceMock, $serviceConfigResource);
-    }
 }

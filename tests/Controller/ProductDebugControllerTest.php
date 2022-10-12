@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
-use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -25,7 +24,6 @@ class ProductDebugControllerTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
     use PluginConfigHelper;
-    use ExportHelper;
 
     private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
@@ -98,7 +96,7 @@ class ProductDebugControllerTest extends TestCase
     {
         if (!isset($params['productId'])) {
             $product = $this->createVisibleTestProduct();
-            $params['productId'] = $product->getId();
+            $params['productId'] = $product->id;
         }
 
         $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);

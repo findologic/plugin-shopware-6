@@ -6,7 +6,7 @@ namespace FINDOLOGIC\FinSearch\Migration;
 
 use Doctrine\DBAL\Connection;
 use Exception;
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Migration\MigrationStep;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -54,11 +54,11 @@ SQL;
     private function insertPreviousConfigurationIfExists(Connection $connection): void
     {
         $sql = <<<SQL
-SELECT LOWER(HEX(`id`)) AS `id`, 
-configuration_key, configuration_value, 
-LOWER(HEX(`sales_channel_id`)) AS `sales_channel_id`, 
+SELECT LOWER(HEX(`id`)) AS `id`,
+configuration_key, configuration_value,
+LOWER(HEX(`sales_channel_id`)) AS `sales_channel_id`,
 created_at, updated_at
-FROM `system_config` 
+FROM `system_config`
 WHERE `configuration_key` LIKE '%FinSearch.config%'
 SQL;
 

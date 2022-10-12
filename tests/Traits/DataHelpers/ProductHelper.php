@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Constants;
 use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
-use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity;
 
 trait ProductHelper
 {
@@ -364,8 +365,6 @@ trait ProductHelper
             : array_merge($productData, $overrideData);
     }
 
-
-
     public function upsertProducts(array $productInfo): ?ProductEntity
     {
         $context = Context::createDefaultContext();
@@ -374,37 +373,18 @@ trait ProductHelper
         $id = current($productInfo)['id'];
         try {
             $criteria = new Criteria([$id]);
-            $criteria = Utils::addProductAssociations($criteria);
-            $criteria = Utils::addChildrenAssociations($criteria);
+            $criteria->addAssociations(Constants::PRODUCT_ASSOCIATIONS);
+            $criteria->addAssociations(Constants::VARIANT_ASSOCIATIONS);
             $criteria->addAssociation('visibilities');
 
-            return $this->getContainer()->get('product.repository')->search($criteria, $context)->first();
+            $product = $this->getContainer()->get('product.repository')->search($criteria, $context)->first();
+
+            /** @var ProductEntity $sdkProduct */
+            $sdkProduct = Utils::createSdkEntity(ProductEntity::class, $product);
+            return $sdkProduct;
         } catch (InconsistentCriteriaIdsException $e) {
             return null;
         }
-    }
-
-    public function createProductReview(string $id, float $points, string $productId, bool $active): void
-    {
-        $customerId = Uuid::randomHex();
-        $this->createCustomer($customerId);
-        $salesChannelId = Defaults::SALES_CHANNEL;
-        $languageId = Defaults::LANGUAGE_SYSTEM;
-        $title = 'foo';
-
-        $data = [
-            'id' => $id,
-            'productId' => $productId,
-            'customerId' => $customerId,
-            'salesChannelId' => $salesChannelId,
-            'languageId' => $languageId,
-            'status' => $active,
-            'content' => 'this is a great product',
-            'points' => $points,
-            'title' => $title,
-        ];
-
-        $this->getContainer()->get('product_review.repository')->upsert([$data], Context::createDefaultContext());
     }
 
     public function createCustomer(string $customerId): void

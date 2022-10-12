@@ -18,6 +18,7 @@ use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
@@ -162,7 +163,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             $salesChannelContext->getSalesChannel()
         );
 
-        return Utils::buildCategoryPath($category->getBreadcrumb(), $rootCategory);
+        return CommonUtils::buildCategoryPath($category->getBreadcrumb(), $rootCategory->getBreadcrumb());
     }
 
     private function currentCategoryIsRootCategory(

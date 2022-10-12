@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\Export\XML\XMLItem;
-use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugSearcher;
-use FINDOLOGIC\FinSearch\Export\Debug\ProductDebugService;
+use FINDOLOGIC\FinSearch\Export\Search\ProductDebugSearcher;
+use FINDOLOGIC\Shopware6Common\Export\Services\ProductDebugService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,13 +30,9 @@ class ProductDebugController extends ExportController
         return parent::export($request, $context);
     }
 
-    protected function initialize(Request $request, ?SalesChannelContext $context): void
+    protected function postInitialize(Request $request): void
     {
-        parent::initialize($request, $context);
-
-        if (!$this->getSalesChannelContext()) {
-            return;
-        }
+        parent::postInitialize($request);
 
         $this->productDebugSearcher = $this->container->get(ProductDebugSearcher::class);
         $this->productDebugService = $this->container->get(ProductDebugService::class);
@@ -44,22 +40,22 @@ class ProductDebugController extends ExportController
 
     protected function doExport(): Response
     {
-        $mainProduct = $this->productDebugSearcher->getMainProductById($this->getExportConfig()->getProductId());
+        $mainProduct = $this->productDebugSearcher->getMainProductById($this->exportConfig->getProductId());
         $product = $this->productDebugSearcher->findVisibleProducts(
             null,
             null,
-            $mainProduct ? $mainProduct->getId() : $this->getExportConfig()->getProductId()
+            $mainProduct ? $mainProduct->id : $this->exportConfig->getProductId()
         )->first();
 
         /** @var XMLItem[] $xmlProducts */
-        $xmlProducts = $this->getExport()->buildItems($product ? [$product] : []);
+        $xmlProducts = $this->export->buildItems($product ? [$product] : []);
 
         return $this->productDebugService->getDebugInformation(
-            $this->getExportConfig()->getProductId(),
-            $this->getExportConfig()->getShopkey(),
+            $this->exportConfig->getProductId(),
+            $this->exportConfig->getShopkey(),
             count($xmlProducts) ? $xmlProducts[0] : null,
             $product,
-            $this->getExport()->getErrorHandler()->getExportErrors()
+            $this->export->getErrorHandler()->getExportErrors()
         );
     }
 }

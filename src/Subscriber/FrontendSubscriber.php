@@ -63,12 +63,11 @@ class FrontendSubscriber implements EventSubscriberInterface
 
         $shopkey = $this->config->getShopkey();
         $customerGroupId = $event->getSalesChannelContext()->getCurrentCustomerGroup()->getId();
-        $userGroupHash = Utils::calculateUserGroupHash($shopkey, $customerGroupId);
         $snippet = new Snippet(
             $shopkey,
             $this->config->getSearchResultContainer(),
             $this->config->getNavigationResultContainer(),
-            $userGroupHash
+            $customerGroupId
         );
 
         // Save the snippet for usage in template

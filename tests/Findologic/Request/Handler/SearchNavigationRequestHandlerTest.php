@@ -82,10 +82,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
         );
         $event = $this->buildSearchEvent($this->salesChannelContext);
 
-        $expectedUserGroup = Utils::calculateUserGroupHash(
-            self::VALID_SHOPKEY,
-            $this->salesChannelContext->getCustomer()->getGroupId()
-        );
+        $expectedUserGroup = $this->salesChannelContext->getCustomer()->getGroupId();
 
         $searchRequest = new SearchRequest();
         $this->findologicRequestFactoryMock->expects($this->exactly(2))
@@ -126,10 +123,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
             new Request(['navigationId' => $category->getId()])
         );
 
-        $expectedUserGroup = Utils::calculateUserGroupHash(
-            self::VALID_SHOPKEY,
-            $this->salesChannelContext->getCustomer()->getGroupId()
-        );
+        $expectedUserGroup = $this->salesChannelContext->getCustomer()->getGroupId();
 
         $navigationRequest = new NavigationRequest();
         $this->findologicRequestFactoryMock->expects($this->any())
