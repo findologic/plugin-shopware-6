@@ -22,34 +22,6 @@ class ProductIdExportTest extends XmlExportTest
 {
     use SalesChannelHelper;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        DynamicProductGroupService::getInstance(
-            $this->getContainer(),
-            $this->getContainer()->get('serializer.mapping.cache.symfony'),
-            Context::createDefaultContext(),
-            'ABCDABCDABCDABCDABCDABCDABCDABCD',
-            0
-        );
-        $this->getContainer()->set(
-            'fin_search.export_context',
-            new ExportContext(
-                'ABCDABCDABCDABCDABCDABCDABCDABCD',
-                [],
-                $this->getCategory()
-            )
-        );
-
-        $this->salesChannelContext = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
-            'http://test.de'
-        );
-
-        $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
-    }
-
     public function buildItemsAndAssertError(ProductEntity $product, CategoryEntity $category): void
     {
         $product = $this->createVisibleTestProduct();
@@ -59,9 +31,11 @@ class ProductIdExportTest extends XmlExportTest
 
         $exporter = $this->getExport();
         $items = $exporter->buildItems([$product]);
-        $this->assertEmpty($items);
+        $this->getExport()->buildResponse($items, 0, 1);
 
         $errors = $exporter->getErrorHandler()->getExportErrors()->getProductError($product->getId())->getErrors();
+
+        $this->assertEmpty($items);
         $this->assertCount(1, $errors);
         $this->assertEquals(
             sprintf(
@@ -80,9 +54,10 @@ class ProductIdExportTest extends XmlExportTest
         $export = $this->getExport();
 
         $items = $export->buildItems([]);
-        $this->assertEmpty($items);
+        $this->getExport()->buildResponse($items, 0, 1);
 
         $errors = $export->getErrorHandler()->getExportErrors()->getGeneralErrors();
+        $this->assertEmpty($items);
         $this->assertCount(1, $errors);
         $this->assertSame('Product could not be found or is not available for search.', $errors[0]);
     }
