@@ -108,7 +108,7 @@ class AttributeAdapter
         }
 
         $attributes = [];
-        if ($this->config->isIntegrationTypeDirectIntegration() && !Utils::isEmpty($catUrls)) {
+        if (!Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
             $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flattenWithUnique($catUrls)));
             $attributes[] = $catUrlAttribute;
