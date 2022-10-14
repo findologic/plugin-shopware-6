@@ -856,7 +856,7 @@ class FindologicProduct extends Struct
             $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
         }
 
-        if ($this->isDirectIntegration() && !Utils::isEmpty($catUrls)) {
+        if (!Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
             $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flattenWithUnique($catUrls)));
             $this->attributes[] = $catUrlAttribute;

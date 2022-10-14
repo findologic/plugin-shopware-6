@@ -154,11 +154,6 @@ class AttributeAdapter
                 $categories = array_merge($categories, [$categoryPath]);
             }
 
-            if (!$this->config->isIntegrationTypeDirectIntegration()) {
-                continue;
-            }
-
-            // Only export `cat_url`s recursively if integration type is Direct Integration.
             $this->urlBuilderService->setSalesChannelContext($this->salesChannelContext);
 
             $catUrls = array_merge(

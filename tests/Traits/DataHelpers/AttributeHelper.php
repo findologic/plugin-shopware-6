@@ -13,7 +13,7 @@ trait AttributeHelper
     /**
      * @return Attribute[]
      */
-    public function getAttributes(ProductEntity $productEntity, string $integrationType = 'Direct Integration'): array
+    public function getAttributes(ProductEntity $productEntity): array
     {
         $catUrl1 = '/FINDOLOGIC-Category/';
         $defaultCatUrl = '';
@@ -29,10 +29,7 @@ trait AttributeHelper
         $catAttribute = new Attribute('cat', ['FINDOLOGIC Category']);
         $vendorAttribute = new Attribute('vendor', ['FINDOLOGIC']);
 
-        if ($integrationType === 'Direct Integration') {
-            $attributes[] = $catUrlAttribute;
-        }
-
+        $attributes[] = $catUrlAttribute;
         $attributes[] = $catAttribute;
         $attributes[] = $vendorAttribute;
         $attributes[] = new Attribute(
