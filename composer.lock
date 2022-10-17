@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1bb87019921577897f59ff7045fddf2a",
+    "content-hash": "16665591a4d48acd9f3bed93db5800b2",
     "packages": [
         {
             "name": "findologic/findologic-api",
-            "version": "v1.6.0",
+            "version": "v1.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "1bd4d65cb9bc9b4d833dabcecc0d6abf6387f17b"
+                "reference": "3c3a36134654bdd6610ec43948280a2dc41285a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/1bd4d65cb9bc9b4d833dabcecc0d6abf6387f17b",
-                "reference": "1bd4d65cb9bc9b4d833dabcecc0d6abf6387f17b",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/3c3a36134654bdd6610ec43948280a2dc41285a2",
+                "reference": "3c3a36134654bdd6610ec43948280a2dc41285a2",
                 "shasum": ""
             },
             "require": {
@@ -69,9 +69,9 @@
             "description": "Library for FINDOLOGIC API requests",
             "support": {
                 "issues": "https://github.com/findologic/findologic-api/issues",
-                "source": "https://github.com/findologic/findologic-api/tree/v1.6.0"
+                "source": "https://github.com/findologic/findologic-api/tree/v1.6.1"
             },
-            "time": "2020-10-07T07:22:26+00:00"
+            "time": "2021-10-20T10:12:38+00:00"
         },
         {
             "name": "findologic/guzzle",
@@ -146,16 +146,16 @@
         },
         {
             "name": "findologic/libflexport",
-            "version": "v2.8.0",
+            "version": "v2.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/libflexport.git",
-                "reference": "7669467a15985e84bac001c5f40a47e45f4b3a9b"
+                "reference": "6ba98ae3e89def55b42d27437040b22a4bcfb4f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/libflexport/zipball/7669467a15985e84bac001c5f40a47e45f4b3a9b",
-                "reference": "7669467a15985e84bac001c5f40a47e45f4b3a9b",
+                "url": "https://api.github.com/repos/findologic/libflexport/zipball/6ba98ae3e89def55b42d27437040b22a4bcfb4f9",
+                "reference": "6ba98ae3e89def55b42d27437040b22a4bcfb4f9",
                 "shasum": ""
             },
             "require": {
@@ -209,9 +209,9 @@
             "homepage": "https://github.com/findologic/libflexport",
             "support": {
                 "issues": "https://github.com/findologic/libflexport/issues",
-                "source": "https://github.com/findologic/libflexport/tree/v2.8.0"
+                "source": "https://github.com/findologic/libflexport/tree/v2.9.0"
             },
-            "time": "2020-12-09T15:18:27+00:00"
+            "time": "2021-04-22T14:04:19+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
