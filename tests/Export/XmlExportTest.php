@@ -11,6 +11,7 @@ use FINDOLOGIC\FinSearch\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use Monolog\Logger;
 use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Content\Category\CategoryEntity;
@@ -71,7 +72,10 @@ class XmlExportTest extends TestCase
         $product = $this->createTestProduct();
 
         $items = $this->getExport()->buildItems([$product]);
-        $this->getExport()->buildResponse($items, 0, 1);
+        if (Utils::versionGreaterOrEqual('6.3.0')) {
+            // Domain is not generated for older versions
+            $this->getExport()->buildResponse($items, 0, 1);
+        }
 
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());
@@ -130,8 +134,12 @@ class XmlExportTest extends TestCase
     public function testKeywordsAreNotRequired(): void
     {
         $product = $this->createVisibleTestProduct(['tags' => []]);
+
         $items = $this->getExport()->buildItems([$product]);
-        $this->getExport()->buildResponse($items, 0, 1);
+        if (Utils::versionGreaterOrEqual('6.3.0')) {
+            // Domain is not generated for older versions
+            $this->getExport()->buildResponse($items, 0, 1);
+        }
 
         $this->assertCount(1, $items);
         $this->assertSame($product->getId(), $items[0]->getId());

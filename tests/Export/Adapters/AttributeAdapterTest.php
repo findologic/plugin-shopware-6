@@ -93,8 +93,8 @@ class AttributeAdapterTest extends TestCase
         ]);
 
         $expected = array_merge(
-            $this->getAttributes($product, IntegrationType::API),
-            $this->getAttributes($variantProduct, IntegrationType::API)
+            $this->getAttributes($product),
+            $this->getAttributes($variantProduct)
         );
 
         $attributes = array_merge(
@@ -247,19 +247,13 @@ class AttributeAdapterTest extends TestCase
         $adapter = $this->getAttributeAdapter($config);
         $attributes = $adapter->adapt($productEntity);
 
-        if (count($expectedCatUrls) > 0) {
-            $this->assertSame('cat_url', $attributes[0]->getKey());
-            $this->assertSameSize($expectedCatUrls, $attributes[0]->getValues());
-            $this->assertSame($expectedCatUrls, $attributes[0]->getValues());
+        $this->assertSame('cat_url', $attributes[0]->getKey());
+        $this->assertSameSize($expectedCatUrls, $attributes[0]->getValues());
+        $this->assertSame($expectedCatUrls, $attributes[0]->getValues());
 
-            $this->assertSame('cat', $attributes[1]->getKey());
-            $this->assertSameSize($expectedCategories, $attributes[1]->getValues());
-            $this->assertSame($expectedCategories, $attributes[1]->getValues());
-        } else {
-            $this->assertSame('cat', $attributes[0]->getKey());
-            $this->assertSameSize($expectedCategories, $attributes[0]->getValues());
-            $this->assertSame($expectedCategories, $attributes[0]->getValues());
-        }
+        $this->assertSame('cat', $attributes[1]->getKey());
+        $this->assertSameSize($expectedCategories, $attributes[1]->getValues());
+        $this->assertSame($expectedCategories, $attributes[1]->getValues());
     }
 
     public function testAttributesAreHtmlEntityEncoded(): void
@@ -848,47 +842,53 @@ class AttributeAdapterTest extends TestCase
 
     public function categoryAndCatUrlWithIntegrationTypeProvider(): array
     {
+        $firstLevelCategories = [
+            [
+                'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                'name' => 'Category1'
+            ]
+        ];
+        $nestedCategories = [
+            [
+                'id' => 'cce80a72bc3481d723c38cccf592d45a',
+                'name' => 'Category1',
+                'children' => [
+                    [
+                        'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
+                        'name' => 'Category2'
+                    ]
+                ]
+            ]
+        ];
+
         return [
             'Integration type is API and category is at first level' => [
                 'integrationType' => 'API',
-                'categories' => [
-                    [
-                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
-                        'name' => 'Category1'
-                    ]
-                ],
+                'categories' => $firstLevelCategories,
                 'expectedCategories' => [
                     'Category1'
                 ],
-                'expectedCatUrls' => [],
+                'expectedCatUrls' => [
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
             ],
             'Integration type is API with nested categories' => [
                 'integrationType' => 'API',
-                'categories' => [
-                    [
-                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
-                        'name' => 'Category1',
-                        'children' => [
-                            [
-                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
-                                'name' => 'Category2'
-                            ]
-                        ]
-                    ]
-                ],
+                'categories' => $nestedCategories,
                 'expectedCategories' => [
                     'Category1_Category2'
                 ],
-                'expectedCatUrls' => [],
+                'expectedCatUrls' => [
+                    '/Category1/Category2/',
+                    '/navigation/f03d845e0abf31e72409cf7c5c704a2e',
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
             ],
             'Integration type is DI and category is at first level' => [
                 'integrationType' => 'Direct Integration',
-                'categories' => [
-                    [
-                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
-                        'name' => 'Category1'
-                    ]
-                ],
+                'categories' => $firstLevelCategories,
                 'expectedCategories' => [
                     'Category1'
                 ],
@@ -899,18 +899,7 @@ class AttributeAdapterTest extends TestCase
             ],
             'Integration type is DI with nested categories' => [
                 'integrationType' => 'Direct Integration',
-                'categories' => [
-                    [
-                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
-                        'name' => 'Category1',
-                        'children' => [
-                            [
-                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
-                                'name' => 'Category2'
-                            ]
-                        ]
-                    ]
-                ],
+                'categories' => $nestedCategories,
                 'expectedCategories' => [
                     'Category1_Category2',
                 ],
@@ -923,35 +912,27 @@ class AttributeAdapterTest extends TestCase
             ],
             'Integration type is unknown and category is at first level' => [
                 'integrationType' => 'Unknown',
-                'categories' => [
-                    [
-                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
-                        'name' => 'Category1'
-                    ]
-                ],
+                'categories' => $firstLevelCategories,
                 'expectedCategories' => [
                     'Category1'
                 ],
-                'expectedCatUrls' => [],
+                'expectedCatUrls' => [
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
             ],
             'Integration type is unknown with nested categories' => [
                 'integrationType' => 'Unknown',
-                'categories' => [
-                    [
-                        'id' => 'cce80a72bc3481d723c38cccf592d45a',
-                        'name' => 'Category1',
-                        'children' => [
-                            [
-                                'id' => 'f03d845e0abf31e72409cf7c5c704a2e',
-                                'name' => 'Category2'
-                            ]
-                        ]
-                    ]
-                ],
+                'categories' => $nestedCategories,
                 'expectedCategories' => [
                     'Category1_Category2'
                 ],
-                'expectedCatUrls' => [],
+                'expectedCatUrls' => [
+                    '/Category1/Category2/',
+                    '/navigation/f03d845e0abf31e72409cf7c5c704a2e',
+                    '/Category1/',
+                    '/navigation/cce80a72bc3481d723c38cccf592d45a'
+                ],
             ],
         ];
     }

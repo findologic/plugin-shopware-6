@@ -856,7 +856,7 @@ class FindologicProduct extends Struct
             $this->parseCategoryAttributes($dynamicGroupCategories, $catUrls, $categories);
         }
 
-        if ($this->isDirectIntegration() && !Utils::isEmpty($catUrls)) {
+        if (!Utils::isEmpty($catUrls)) {
             $catUrlAttribute = new Attribute('cat_url');
             $catUrlAttribute->setValues($this->decodeHtmlEntities(Utils::flattenWithUnique($catUrls)));
             $this->attributes[] = $catUrlAttribute;
@@ -1094,13 +1094,10 @@ class FindologicProduct extends Struct
                 }
             }
 
-            // Only export `cat_url`s recursively if integration type is Direct Integration.
-            if ($this->isDirectIntegration()) {
-                $catUrls = array_merge(
-                    $catUrls,
-                    $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
-                );
-            }
+            $catUrls = array_merge(
+                $catUrls,
+                $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
+            );
         }
     }
 
