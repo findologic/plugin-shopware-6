@@ -11,9 +11,7 @@
   ],
   "require": {
     "findologic/libflexport": "^2.8",
-    "findologic/findologic-api": "^1.6",
-    "symfony/polyfill-intl-idn": "v1.20.0",
-    "symfony/polyfill-intl-normalizer": "v1.20.0"
+    "findologic/findologic-api": "^1.6"
   },
   "extra": {
     "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
