@@ -1094,13 +1094,10 @@ class FindologicProduct extends Struct
                 }
             }
 
-            // Only export `cat_url`s recursively if integration type is Direct Integration.
-            if ($this->isDirectIntegration()) {
-                $catUrls = array_merge(
-                    $catUrls,
-                    $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
-                );
-            }
+            $catUrls = array_merge(
+                $catUrls,
+                $this->urlBuilderService->getCategoryUrls($categoryEntity, $this->salesChannelContext->getContext())
+            );
         }
     }
 
