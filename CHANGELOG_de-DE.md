@@ -1,3 +1,9 @@
+# 3.1.2
+- [SW-651] Skripte für den Bereichsslider werden nur mehr auf Such- und Navigationsseiten geladen.
+- [SW-712] Die Limits eines Bereichssliders werden nun aktualisiert, wenn sie sich durch Auswahl anderer Filterwerte ändern.
+- [SW-763] Das Attribut 'cat_url' wird nun für alle Integrationsarten exportiert.
+- [SW-753] Ein Fehler wurde behoben, wodurch es zu einer Exception bei einem invaliden Hauptprodukt mit validen Varianten kam.
+
 # 3.1.1
 - [SW-737] Filterwerte von Farbfilter müssen durch Klick auf den Text selektierbar sein.
 - [SW-739] Farbbilder von selektierten Filterwerten müssen geladen werden.
@@ -6,7 +12,7 @@
 - [PH-719] Shopware 6.4.14.0 wurde zur Test-Matrix hinzugefügt.
 
 # 3.1.0
-- [SW-659] Eine neue Route für Export Debug Informationen wurde hinzugefügt (`/findologic/debug`)
+- [SW-659] Eine neue Route für Export Debug Informationen wurde hinzugefügt ('/findologic/debug')
 - [SW-442] ESLint für unsere JavaScript Dateien hinzugefügt
 - [PH-672] Shopware 6.4.13.0 wurde zur Test-Matrix hinzugefügt.
 - Downgrade der verwendeten Composer Version im internen Test-Runner.

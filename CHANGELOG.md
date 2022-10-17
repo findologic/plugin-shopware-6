@@ -1,3 +1,9 @@
+# 3.1.2
+- [SW-651] Scripts for the range slider are only loaded on search and navigation pages.
+- [SW-712] The limits of the range sliders are now updated, when the values change by selecting other filter values.
+- [SW-763] The attribute 'cat_url' is now exported for all integration types.
+- [SW-753] A bug was fixed, where an exception occurred for invalid main products with valid variants.
+
 # 3.1.1
 - [SW-737] Filter values of color picker should be selectable by clicking on the value next to the tile.
 - [SW-739] Color picker images must be shown for selected colors.
@@ -6,7 +12,7 @@
 - [PH-719] Add 6.4.14.0 to the tested versions in our internal test runner.
 
 # 3.1.0
-- [SW-659] Introduced a new route for export debug information (`/findologic/debug`)
+- [SW-659] Introduced a new route for export debug information ('/findologic/debug')
 - [SW-442] Add linting for the JavaScript files.
 - [PH-672] Add 6.4.13.0 to the tested versions in our internal test runner.
 - Downgrade the used composer version in our internal test runner.
