@@ -180,23 +180,30 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
     }
 
     /** @inheritDoc */
-    public function withVariantAssociations(array $categoryIds, array $propertyIds): ProductCriteriaBuilder
-    {
+    public function withVariantAssociations(
+        ?array $categoryIds = null,
+        ?array $propertyIds = null
+    ): ProductCriteriaBuilder {
         $this->criteria->addAssociations(Constants::VARIANT_ASSOCIATIONS);
 
         $categoryCriteria = $this->criteria->getAssociation('categories');
         $propertiesCriteria = $this->criteria->getAssociation('properties');
 
-        $categoryCriteria->addFilter(
-            new NotFilter(NotFilter::CONNECTION_AND, [
-                new EqualsAnyFilter('id', $categoryIds)
-            ])
-        );
-        $propertiesCriteria->addFilter(
-            new NotFilter(NotFilter::CONNECTION_AND, [
-                new EqualsAnyFilter('id', $propertyIds)
-            ])
-        );
+        if ($categoryIds) {
+            $categoryCriteria->addFilter(
+                new NotFilter(NotFilter::CONNECTION_AND, [
+                    new EqualsAnyFilter('id', $categoryIds)
+                ])
+            );
+        }
+
+        if ($propertyIds) {
+            $propertiesCriteria->addFilter(
+                new NotFilter(NotFilter::CONNECTION_AND, [
+                    new EqualsAnyFilter('id', $propertyIds)
+                ])
+            );
+        }
 
         return $this;
     }
