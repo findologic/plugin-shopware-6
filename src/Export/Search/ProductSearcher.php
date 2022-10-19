@@ -8,7 +8,6 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductSearcher;
-use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\TermsAggregation;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\Bucket\TermsResult;
@@ -182,7 +181,7 @@ class ProductSearcher extends AbstractProductSearcher
             ->withParentIdFilterWithVisibility($product->id, $product->parentId)
             ->withOutOfStockFilter()
             ->withPriceZeroFilter()
-            ->withVariantAssociations();
+            ->withVariantAssociations($product->categoryIds ?? $product->categoryTree, $product->propertyIds);
 
         return new VariantIterator(
             $this->productRepository,

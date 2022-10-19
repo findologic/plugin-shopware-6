@@ -64,7 +64,10 @@ class ProductDebugSearcher extends ProductSearcher implements ProductDebugSearch
             ->withParentIdFilterWithVisibility($parentProduct->id)
             ->withOutOfStockFilter()
             ->withPriceZeroFilter()
-            ->withVariantAssociations()
+            ->withVariantAssociations(
+                $parentProduct->categoryIds ?? $parentProduct->categoryTree,
+                $parentProduct->propertyIds
+            )
             ->build();
 
         return $this->searchProducts($criteria)->getElements();

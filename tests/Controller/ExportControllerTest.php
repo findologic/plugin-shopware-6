@@ -452,4 +452,78 @@ class ExportControllerTest extends TestCase
             $parsedResponse['general']
         );
     }
+
+    public function testAdditionalVariantPropertiesAndCategoriesAreExported(): void
+    {
+        $expectedParentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+
+        $propertyId = Uuid::randomHex();
+        $propertyId2 = Uuid::randomHex();
+        $propertyId3 = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+        $optionGroupId2 = Uuid::randomHex();
+
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'properties' => [
+                [
+                    'id' => $propertyId2,
+                    'name' => 'Green',
+                    'group' => [
+                        'id' => $optionGroupId,
+                        'name' => 'Color',
+                    ],
+                ],
+                [
+                    'id' => $propertyId3,
+                    'name' => 'M',
+                    'group' => [
+                        'id' => $optionGroupId2,
+                        'name' => 'Size',
+                    ],
+                ]
+            ]
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
+            'id' => $expectedParentId,
+            'active' => false,
+            'properties' => [
+                [
+                    'id' => $propertyId,
+                    'name' => 'Blue',
+                    'group' => [
+                        'id' => $optionGroupId,
+                        'name' => 'Color',
+                    ],
+                ]
+            ]
+        ], $variants);
+
+        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
+
+        $response = $this->sendExportRequest();
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
+        $parsedResponse = new SimpleXMLElement($response->getContent());
+
+        foreach ($parsedResponse->items->item->allAttributes->attributes->children() as $attribute) {
+            $values = $attribute->values;
+
+            switch ($attribute->key->__toString()) {
+                case 'Color':
+                    $this->assertEquals(2, $values->value->count());
+                    break;
+                case 'Size':
+                    $this->assertEquals(1, $values->value->count());
+                    break;
+            }
+        }
+    }
 }

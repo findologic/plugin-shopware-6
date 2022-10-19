@@ -10,6 +10,7 @@ use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductCriteriaBuilder;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
@@ -178,9 +179,24 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
         return $this;
     }
 
-    public function withVariantAssociations(): ProductCriteriaBuilder
+    /** @inheritDoc */
+    public function withVariantAssociations(array $categoryIds, array $propertyIds): ProductCriteriaBuilder
     {
         $this->criteria->addAssociations(Constants::VARIANT_ASSOCIATIONS);
+
+        $categoryCriteria = $this->criteria->getAssociation('categories');
+        $propertiesCriteria = $this->criteria->getAssociation('properties');
+
+        $categoryCriteria->addFilter(
+            new NotFilter(NotFilter::CONNECTION_AND, [
+                new EqualsAnyFilter('id', $categoryIds)
+            ])
+        );
+        $propertiesCriteria->addFilter(
+            new NotFilter(NotFilter::CONNECTION_AND, [
+                new EqualsAnyFilter('id', $propertyIds)
+            ])
+        );
 
         return $this;
     }
