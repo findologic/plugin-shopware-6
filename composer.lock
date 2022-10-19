@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b38f07651dddb45f21db732cdf39a286",
+    "content-hash": "127416304480620324b30b34d56b68f1",
     "packages": [
         {
             "name": "findologic/findologic-api",
@@ -215,11 +215,11 @@
         },
         {
             "name": "findologic/shopware6-common",
-            "version": "0.2.2",
+            "version": "0.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "21cc90b71973e3669a620d347dd79ab0518dabaa"
+                "reference": "db8046ac82557e5a1be39a11226d94680e99b5df"
             },
             "require": {
                 "findologic/libflexport": "^2.9",
@@ -236,6 +236,7 @@
                 "phpunit/phpunit": "9.5.x",
                 "symfony/cache": "*",
                 "symfony/routing": "*",
+                "symfony/translation": "*",
                 "symfony/validator": "*"
             },
             "type": "library",
@@ -273,7 +274,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2022-10-12T10:46:21+00:00"
+            "time": "2022-10-19T09:07:41+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
@@ -1791,16 +1792,16 @@
         },
         {
             "name": "vlucas/valitron",
-            "version": "v1.4.10",
+            "version": "v1.4.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vlucas/valitron.git",
-                "reference": "5ebd5d7af82cc0a9d798e816a2ecad63f1b59ceb"
+                "reference": "fadce39f5f235755bb9794b2573af2d5bfcba85f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vlucas/valitron/zipball/5ebd5d7af82cc0a9d798e816a2ecad63f1b59ceb",
-                "reference": "5ebd5d7af82cc0a9d798e816a2ecad63f1b59ceb",
+                "url": "https://api.github.com/repos/vlucas/valitron/zipball/fadce39f5f235755bb9794b2573af2d5bfcba85f",
+                "reference": "fadce39f5f235755bb9794b2573af2d5bfcba85f",
                 "shasum": ""
             },
             "require": {
@@ -1838,7 +1839,7 @@
             ],
             "support": {
                 "issues": "https://github.com/vlucas/valitron/issues",
-                "source": "https://github.com/vlucas/valitron/tree/v1.4.10"
+                "source": "https://github.com/vlucas/valitron/tree/v1.4.11"
             },
             "funding": [
                 {
@@ -1846,7 +1847,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-07-08T16:18:03+00:00"
+            "time": "2022-10-14T11:54:24+00:00"
         }
     ],
     "packages-dev": [
