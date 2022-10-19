@@ -181,7 +181,7 @@ class ProductSearcher extends AbstractProductSearcher
             ->withParentIdFilterWithVisibility($product->id, $product->parentId)
             ->withOutOfStockFilter()
             ->withPriceZeroFilter()
-            ->withVariantAssociations($product->categoryIds, $product->propertyIds);
+            ->withVariantAssociations($product->categoryIds ?? $product->categoryTree, $product->propertyIds);
 
         return new VariantIterator(
             $this->productRepository,
