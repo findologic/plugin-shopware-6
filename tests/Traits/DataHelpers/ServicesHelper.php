@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Config\ImplementationType;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use Psr\Container\ContainerInterface;
@@ -41,6 +42,7 @@ trait ServicesHelper
             $sdkNavigationCategory,
             new CustomerGroupCollection(),
             true,
+            ImplementationType::PLUGIN
         );
     }
 

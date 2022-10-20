@@ -300,17 +300,17 @@ class ExportControllerTest extends TestCase
             Context::createDefaultContext()
         );
 
-        $salesChannelContext = $this->createSalesChannelContext($currencies, $languages, $languageId);
-        $salesChannelContext->getSalesChannel()->setLanguageId($languageId);
+        $this->salesChannelContext = $this->createSalesChannelContext($currencies, $languages, $languageId);
+        $this->salesChannelContext->getSalesChannel()->setLanguageId($languageId);
 
         $this->getContainer()->get('sales_channel.repository')->update([
             [
-                'id' => $salesChannelContext->getSalesChannel()->getId(),
+                'id' => $this->salesChannelContext->getSalesChannel()->getId(),
                 'domains' => [
                     [
                         'currencyId' => $currencies->first()->getId(),
                         'snippetSetId' =>
-                            $salesChannelContext->getSalesChannel()->getDomains()->first()->getSnippetSetId(),
+                            $this->salesChannelContext->getSalesChannel()->getDomains()->first()->getSnippetSetId(),
                         'url' => 'http://cool-url.com/german'
                     ]
                 ]
@@ -320,14 +320,14 @@ class ExportControllerTest extends TestCase
         $this->enableFindologicPlugin(
             $this->getContainer(),
             self::VALID_SHOPKEY,
-            $salesChannelContext
+            $this->salesChannelContext
         );
 
         $product = $this->createVisibleTestProduct([
             'visibilities' => [
                 [
                     'id' => Uuid::randomHex(),
-                    'salesChannelId' => $salesChannelContext->getSalesChannel()->getId(),
+                    'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId(),
                     'visibility' => 20
                 ]
             ],

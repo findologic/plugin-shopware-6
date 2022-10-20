@@ -11,6 +11,7 @@ use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
+use FINDOLOGIC\Shopware6Common\Export\Config\ImplementationType;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use FINDOLOGIC\Shopware6Common\Export\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\Shopware6Common\Export\Responses\PreconditionFailedResponse;
@@ -216,6 +217,7 @@ class ExportController extends AbstractController
             $navigationCategoryEntity,
             $this->getAllCustomerGroups(),
             $this->shouldHideProductsOutOfStock(),
+            ImplementationType::PLUGIN,
         );
         $this->container->set(ExportContext::class, $this->exportContext);
     }
