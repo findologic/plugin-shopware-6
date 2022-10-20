@@ -44,7 +44,7 @@ Component.register('findologic-page', {
     computed: {
         configKey() {
             if (!this.selectedSalesChannelId || !this.selectedLanguageId) {
-                return null;
+                return 'null';
             }
 
             return `${this.selectedSalesChannelId}-${this.selectedLanguageId}`;
@@ -147,7 +147,6 @@ Component.register('findologic-page', {
                 this.isLoading = true;
                 const criteria = new Criteria(null, null);
                 criteria.addAssociation('languages');
-                criteria.addAssociation('domains');
                 criteria.addFilter(Criteria.equals('active', true));
 
                 this.salesChannelRepository.search(criteria, Shopware.Context.api).then(res => {
@@ -169,12 +168,10 @@ Component.register('findologic-page', {
                 if (foundModule) {
                     return;
                 }
-
                 if (module.manifest.title === 'sw-extension-store.title') {
                     foundModule = module;
                 }
             });
-
             if (foundModule) {
                 this.$route.meta.parentPath = 'sw.extension.my-extensions.listing.app';
                 this.$route.meta.$module = foundModule.manifest;
@@ -195,8 +192,7 @@ Component.register('findologic-page', {
                     if (response.data.isStagingShop) {
                         this.isStagingShop = true;
                     }
-                })
-                .catch(() => {
+                }).catch(() => {
                     this.isStagingShop = false;
                 });
         },
@@ -245,7 +241,7 @@ Component.register('findologic-page', {
                 if (res) {
                     this.actualConfigData = res;
                 }
-            }).catch(() => {
+            }).catch((e) => {
                 this.isSaveSuccessful = false;
                 this.isLoading = false;
                 this.shopkeyExists = true;

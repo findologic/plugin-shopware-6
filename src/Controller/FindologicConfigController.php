@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+use function strpos;
 use function in_array;
 
 /**
@@ -66,7 +67,7 @@ class FindologicConfigController extends AbstractController
         $salesChannelId = $request->query->get('salesChannelId');
         $languageId = $request->query->get('languageId');
         $configs = $request->request->all();
-        $this->saveKeyValues($salesChannelId, $languageId, $configs);
+        $this->saveKeyValues($configs, $salesChannelId, $languageId);
 
         return new Response('', Response::HTTP_NO_CONTENT);
     }
@@ -85,8 +86,6 @@ class FindologicConfigController extends AbstractController
         $this->connection->beginTransaction();
         try {
             foreach ($request->request->all() as $key => $config) {
-                [$salesChannelId, $languageId] = explode('-', $key);
-
                 if (isset($config['FinSearch.config.shopkey']) && $config['FinSearch.config.shopkey']) {
                     $shopkey = $config['FinSearch.config.shopkey'];
                     if (!in_array($shopkey, $allShopkeys, false)) {
@@ -96,7 +95,12 @@ class FindologicConfigController extends AbstractController
                     }
                 }
 
-                $this->saveKeyValues($salesChannelId, $languageId, $config);
+                if (strpos($key, '-') !== false) {
+                    [$salesChannelId, $languageId] = explode('-', $key);
+                    $this->saveKeyValues($config, $salesChannelId, $languageId);
+                } else {
+                    $this->saveKeyValues($config);
+                }
             }
         } catch (ShopkeyAlreadyExistsException $e) {
             $this->connection->rollBack();
@@ -108,7 +112,7 @@ class FindologicConfigController extends AbstractController
         return new Response('', Response::HTTP_NO_CONTENT);
     }
 
-    private function saveKeyValues(string $salesChannelId, string $languageId, array $config): void
+    private function saveKeyValues(array $config, ?string $salesChannelId = null, ?string $languageId = null): void
     {
         foreach ($config as $key => $value) {
             $this->findologicConfigService->set($key, $value, $salesChannelId, $languageId);

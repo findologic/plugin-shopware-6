@@ -1,4 +1,5 @@
 import template from './findologic-config.html.twig';
+import './findologic-config.scss';
 
 const { Component, Mixin } = Shopware;
 const { Criteria, EntityCollection } = Shopware.Data;
@@ -18,7 +19,7 @@ Component.register('findologic-config', {
 
     props: {
         actualConfigData: {
-            type: Array,
+            type: Object,
             required: true,
         },
         allConfigs: {
@@ -30,6 +31,11 @@ Component.register('findologic-config', {
             required: true,
         },
         selectedSalesChannelId: {
+            type: String,
+            required: false,
+            default: null,
+        },
+        selectedLanguageId: {
             type: String,
             required: false,
             default: null,
@@ -73,11 +79,19 @@ Component.register('findologic-config', {
         },
 
         showAPIConfig() {
-            return this.integrationType === undefined || this.integrationType === 'API';
+            return this.integrationType === null || this.integrationType === 'API';
         },
 
         showDIConfig() {
-            return this.integrationType === undefined || this.integrationType === 'Direct Integration';
+            return this.integrationType === null || this.integrationType === 'Direct Integration';
+        },
+
+        shopkeyPlaceholder() {
+            return !this.selectedLanguageId ? this.$tc('findologic.selectSalesChannel') : '';
+        },
+
+        disabledClass() {
+            return !this.selectedLanguageId ? 'findologic--text-field-disabled' : '';
         },
 
         filterPositionOptions() {
@@ -196,6 +210,18 @@ Component.register('findologic-config', {
         onCategoryRemove(item) {
             this.actualConfigData['FinSearch.config.crossSellingCategories'] =
         this.actualConfigData['FinSearch.config.crossSellingCategories'].filter(categoryId => categoryId !== item.id);
+        },
+
+        getInheritedValue(key) {
+            return this.selectedSalesChannelId === null ? null : this.allConfigs['null'][key];
+        },
+
+        isBoolean(value) {
+            return typeof value === 'boolean';
+        },
+
+        isString(value) {
+            return typeof value === 'string';
         },
     },
 });

@@ -23,6 +23,7 @@
         <service id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService">
             <argument id="finsearch_config.repository" type="service" />
             <argument type="service" id="Doctrine\DBAL\Connection" />
+            <argument type="service" id="sales_channel.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Struct\Config" public="true">
