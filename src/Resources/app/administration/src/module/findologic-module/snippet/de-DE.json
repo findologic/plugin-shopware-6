@@ -12,7 +12,7 @@
     "settingForm": {
       "salesChannelTitle": "Verkaufskanal & Sprache",
       "directIntegration": {
-        "title": "Direkte Integration / Sofortiges Frontend"
+        "title": "Direct Integration"
       },
       "api": {
         "title": "API"
