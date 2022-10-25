@@ -76,10 +76,6 @@ Component.register('findologic-config', {
             return this.integrationType === undefined || this.integrationType === 'API';
         },
 
-        showDIConfig() {
-            return this.integrationType === undefined || this.integrationType === 'Direct Integration';
-        },
-
         filterPositionOptions() {
             return [
                 {
