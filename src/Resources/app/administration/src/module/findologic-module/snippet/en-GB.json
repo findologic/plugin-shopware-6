@@ -36,12 +36,12 @@
         "searchResultContainer": {
           "label": "CSS class for search result",
           "placeholder": "fl-result",
-          "tooltipText": "This option has an effect for Direct Integration only, when empty fl-result is used."
+          "tooltipText": "This option has an effect for Direct Integration and Instant Frontend only, when empty fl-result is used."
         },
         "navigationResultContainer": {
           "label": "CSS class for navigation",
           "placeholder": "fl-navigation-result",
-          "tooltipText": "This option has an effect for Direct Integration only, when empty fl-navigation-result is used."
+          "tooltipText": "This option has an effect for Direct Integration and Instant Frontend only, when empty fl-navigation-result is used."
         },
         "crossSellingCategories": {
           "label": "Cross-Selling categories",
