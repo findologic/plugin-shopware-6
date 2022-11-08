@@ -12,7 +12,7 @@
     "settingForm": {
       "salesChannelTitle": "Verkaufskanal & Sprache",
       "directIntegration": {
-        "title": "Direct Integration"
+        "title": "Direct Integration / Instant Frontend"
       },
       "api": {
         "title": "API"
@@ -36,12 +36,12 @@
         "searchResultContainer": {
           "label": "CSS-Klasse für Suchresultat",
           "placeholder": "fl-result",
-          "tooltipText": "Diese Option ist nur bei Direct Integration wirksam, wenn kein Wert gegeben ist wird fl-result verwendet"
+          "tooltipText": "Diese Option ist nur bei Direct Integration und Instant Frontend wirksam, wenn kein Wert gegeben ist wird fl-result verwendet"
         },
         "navigationResultContainer": {
           "label": "CSS-Klasse für Navigation",
           "placeholder": "fl-navigation-result",
-          "tooltipText": "Diese Option ist nur bei Direct Integration wirksam, wenn kein Wert gegeben ist wird fl-navigation-result verwendet."
+          "tooltipText": "Diese Option ist nur bei Direct Integration und Instant Frontend wirksam, wenn kein Wert gegeben ist wird fl-navigation-result verwendet."
         },
         "crossSellingCategories": {
           "label": "Cross-Selling Kategorien",

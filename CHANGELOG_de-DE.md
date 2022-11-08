@@ -1,3 +1,6 @@
+# 3.1.3
+- [SW-766] Container Klassen sind nun für alle Integrationsarten konfigurierbar.
+
 # 3.1.2
 - [SW-651] Skripte für den Bereichsslider werden nur mehr auf Such- und Navigationsseiten geladen.
 - [SW-712] Die Limits eines Bereichssliders werden nun aktualisiert, wenn sie sich durch Auswahl anderer Filterwerte ändern.
