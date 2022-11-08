@@ -1,3 +1,6 @@
+# 3.1.3
+- [SW-766] Make container classes configurable for all integration types.
+
 # 3.1.2
 - [SW-651] Scripts for the range slider are only loaded on search and navigation pages.
 - [SW-712] The limits of the range sliders are now updated, when the values change by selecting other filter values.
