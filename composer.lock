@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "371c1ecbd19f195980a7e61657c3b4ef",
+    "content-hash": "bf3b644442629b4433886348ad4434e1",
     "packages": [
         {
             "name": "findologic/findologic-api",
@@ -215,11 +215,11 @@
         },
         {
             "name": "findologic/shopware6-common",
-            "version": "0.3.1",
+            "version": "dev-cache_product_streams_instead_of_products",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "d52ec17b2dbbeecb0bc5d4ff6eef8933a57dff76"
+                "reference": "7983d073b7cb4aa46f6b6ca6c3aa8ff3413c7d01"
             },
             "require": {
                 "findologic/libflexport": "^2.9",
@@ -274,7 +274,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2022-10-20T10:48:28+00:00"
+            "time": "2022-11-09T13:16:38+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
@@ -352,16 +352,16 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "7.4.5",
+            "version": "7.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "1dd98b0564cb3f6bd16ce683cb755f94c10fbd82"
+                "reference": "b50a2a1251152e43f6a37f0fa053e730a67d25ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/1dd98b0564cb3f6bd16ce683cb755f94c10fbd82",
-                "reference": "1dd98b0564cb3f6bd16ce683cb755f94c10fbd82",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/b50a2a1251152e43f6a37f0fa053e730a67d25ba",
+                "reference": "b50a2a1251152e43f6a37f0fa053e730a67d25ba",
                 "shasum": ""
             },
             "require": {
@@ -376,10 +376,10 @@
                 "psr/http-client-implementation": "1.0"
             },
             "require-dev": {
-                "bamarni/composer-bin-plugin": "^1.4.1",
+                "bamarni/composer-bin-plugin": "^1.8.1",
                 "ext-curl": "*",
                 "php-http/client-integration-tests": "^3.0",
-                "phpunit/phpunit": "^8.5.5 || ^9.3.5",
+                "phpunit/phpunit": "^8.5.29 || ^9.5.23",
                 "psr/log": "^1.1 || ^2.0 || ^3.0"
             },
             "suggest": {
@@ -389,8 +389,12 @@
             },
             "type": "library",
             "extra": {
+                "bamarni-bin": {
+                    "bin-links": true,
+                    "forward-command": false
+                },
                 "branch-alias": {
-                    "dev-master": "7.4-dev"
+                    "dev-master": "7.5-dev"
                 }
             },
             "autoload": {
@@ -456,7 +460,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.4.5"
+                "source": "https://github.com/guzzle/guzzle/tree/7.5.0"
             },
             "funding": [
                 {
@@ -472,7 +476,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-06-20T22:16:13+00:00"
+            "time": "2022-08-28T15:39:27+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -1252,16 +1256,16 @@
         },
         {
             "name": "symfony/http-foundation",
-            "version": "v5.4.14",
+            "version": "v5.4.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-foundation.git",
-                "reference": "e7c7b395c3a61d746919c21e915f51f0039c3f75"
+                "reference": "75bd663ff2db90141bfb733682459d5bbe9e29c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/e7c7b395c3a61d746919c21e915f51f0039c3f75",
-                "reference": "e7c7b395c3a61d746919c21e915f51f0039c3f75",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/75bd663ff2db90141bfb733682459d5bbe9e29c3",
+                "reference": "75bd663ff2db90141bfb733682459d5bbe9e29c3",
                 "shasum": ""
             },
             "require": {
@@ -1308,7 +1312,7 @@
             "description": "Defines an object-oriented layer for the HTTP specification",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/http-foundation/tree/v5.4.14"
+                "source": "https://github.com/symfony/http-foundation/tree/v5.4.15"
             },
             "funding": [
                 {
@@ -1324,7 +1328,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-10-01T21:59:28+00:00"
+            "time": "2022-10-12T09:43:19+00:00"
         },
         {
             "name": "symfony/polyfill-intl-idn",
@@ -1741,22 +1745,22 @@
         },
         {
             "name": "vin-sw/shopware-sdk",
-            "version": "1.5.1",
+            "version": "1.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vienthuong/shopware-php-sdk.git",
-                "reference": "58b433597e71c1415b0e41ae172cf3216069127b"
+                "reference": "69eea5cadde06053afb3233659468c24d612fe7b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vienthuong/shopware-php-sdk/zipball/58b433597e71c1415b0e41ae172cf3216069127b",
-                "reference": "58b433597e71c1415b0e41ae172cf3216069127b",
+                "url": "https://api.github.com/repos/vienthuong/shopware-php-sdk/zipball/69eea5cadde06053afb3233659468c24d612fe7b",
+                "reference": "69eea5cadde06053afb3233659468c24d612fe7b",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "guzzlehttp/guzzle": "~7.4.5",
-                "php": "^7.4 || ^8.0",
+                "guzzlehttp/guzzle": "^7.5",
+                "php": "^7.4 || ^8.0 || ^8.1",
                 "psr/http-client": "^1.0"
             },
             "require-dev": {
@@ -1786,9 +1790,9 @@
             "description": "A PHP SDK for Shopware 6 Platform",
             "support": {
                 "issues": "https://github.com/vienthuong/shopware-php-sdk/issues",
-                "source": "https://github.com/vienthuong/shopware-php-sdk/tree/1.5.1"
+                "source": "https://github.com/vienthuong/shopware-php-sdk/tree/1.7.1"
             },
-            "time": "2022-08-17T03:57:27+00:00"
+            "time": "2022-10-26T08:04:35+00:00"
         },
         {
             "name": "vlucas/valitron",
@@ -2000,7 +2004,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "findologic/shopware6-common": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

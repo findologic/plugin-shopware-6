@@ -4,31 +4,21 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Services;
 
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\FinSearch\Export\Search\CategorySearcher;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Services\AbstractDynamicProductGroupService;
-use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
-use FINDOLOGIC\Shopware6Common\Export\Validation\ExportConfigurationBase;
 use FINDOLOGIC\Shopware6Common\Export\Validation\OffsetExportConfiguration;
 use Psr\Cache\CacheItemPoolInterface;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Vin\ShopwareSdk\Data\Entity\Category\CategoryCollection;
-use Vin\ShopwareSdk\Data\Entity\Category\CategoryEntity;
 
 class DynamicProductGroupService extends AbstractDynamicProductGroupService
 {
-    protected EntityRepositoryInterface $productRepository;
-
-    protected EntityRepositoryInterface $categoryRepository;
+    protected EntityRepository $productRepository;
 
     protected ProductStreamBuilderInterface $productStreamBuilder;
 
@@ -42,7 +32,7 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
 
     public function __construct(
         EntityRepository $productRepository,
-        EntityRepository $categoryRepository,
+        CategorySearcher $categorySearcher,
         ProductStreamBuilder $productStreamBuilder,
         SalesChannelContext $salesChannelContext,
         OffsetExportConfiguration $exportConfig,
@@ -50,113 +40,20 @@ class DynamicProductGroupService extends AbstractDynamicProductGroupService
         ExportContext $exportContext
     ) {
         $this->productRepository = $productRepository;
-        $this->categoryRepository = $categoryRepository;
         $this->productStreamBuilder = $productStreamBuilder;
         $this->context = $salesChannelContext->getContext();
         $this->salesChannelContext = $salesChannelContext;
         $this->exportConfig = $exportConfig;
 
-        parent::__construct($cache, $exportContext);
+        parent::__construct($cache, $exportContext, $categorySearcher);
     }
 
-    public function getCategories(string $productId): CategoryCollection
+    protected function getProductStreamCategories(): CategoryCollection
     {
-        $start = 0;
-        $categoryCollection = new CategoryCollection();
-
-        while ($this->cacheHandler->isOffsetCacheWarmedUp($start)) {
-            $categories = $this->cacheHandler->getCachedCategoriesForCurrentOffset($start);
-
-            if (!CommonUtils::isEmpty($categories) && isset($categories[$productId])) {
-                $categoryIds = $categories[$productId];
-                $criteria = $this->buildCategoryCriteria();
-                $criteria->setIds($categoryIds);
-
-                $categoryResult = $this->categoryRepository->search($criteria, $this->context);
-
-                /** @var CategoryCollection $categories */
-                $categories = Utils::createSdkCollection(
-                    CategoryCollection::class,
-                    CategoryEntity::class,
-                    $categoryResult->getEntities(),
-                );
-
-                $categoryCollection->merge($categories);
-            }
-
-            $start += ExportConfigurationBase::DEFAULT_COUNT_PARAM;
-        }
-
-        return $categoryCollection;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function parseProductGroups(): array
-    {
-        /** @var CategoryCollection $categories */
-        $categories = $this->getProductStreamCategories(true);
-
-        $products = [];
-        foreach ($categories as $categoryEntity) {
-            if (!$productStream = $categoryEntity->productStream) {
-                continue;
-            }
-
-            $filters = $this->productStreamBuilder->buildFilters(
-                $productStream->id,
-                $this->context
-            );
-
-            $criteria = new Criteria();
-            $criteria->addFilter(...$filters);
-
-            /** @var string[] $productIds */
-            $productIds = $this->productRepository->searchIds($criteria, $this->context)->getIds();
-            foreach ($productIds as $productId) {
-                $products[$productId][$categoryEntity->id] = $categoryEntity->id;
-            }
-        }
-
-        return $products;
-    }
-
-    protected function getProductStreamCategories(bool $paginated = false): array
-    {
-        return $this->categoryRepository
-            ->search($this->buildCategoryCriteria($paginated), $this->context)
-            ->getEntities()
-            ->getElements();
-    }
-
-    protected function buildCategoryCriteria(bool $paginated = false): Criteria
-    {
-        $criteria = new Criteria();
-        $criteria->addFilter(new ContainsFilter('path', $this->exportContext->getNavigationCategoryId()));
-        $criteria->addAssociation('seoUrls');
-        $criteria->addAssociation('productStream');
-        $criteria->addFilter(
-            new NotFilter(
-                NotFilter::CONNECTION_AND,
-                [new EqualsFilter('productStreamId', null)]
-            )
+        return $this->categorySearcher->getProductStreamCategories(
+            $this->exportConfig->getCount(),
+            $this->exportConfig->getStart()
         );
-
-        if ($paginated) {
-            $criteria->setLimit($this->exportConfig->getCount());
-            $criteria->setOffset($this->exportConfig->getStart());
-        }
-
-        return $criteria;
-    }
-
-    /**
-     * @param CategoryEntity $categoryEntity
-     */
-    protected function hasProductStream($categoryEntity): bool
-    {
-        return !!$categoryEntity->productStream;
     }
 
     protected function isFirstPage(): bool
