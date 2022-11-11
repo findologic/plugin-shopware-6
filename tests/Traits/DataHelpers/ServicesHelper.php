@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
+use FINDOLOGIC\FinSearch\Export\Search\CategorySearcher;
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Utils\Utils;
@@ -67,6 +68,18 @@ trait ServicesHelper
             $productCriteriaBuilder,
             $exportContext,
             $this->getPluginConfig($configOverrides)
+        );
+    }
+
+    public function getCategorySearcher(
+        SalesChannelContext $salesChannelContext,
+        ContainerInterface $container,
+        ExportContext $exportContext
+    ): CategorySearcher {
+        return new CategorySearcher(
+            $salesChannelContext,
+            $container->get('category.repository'),
+            $exportContext,
         );
     }
 }

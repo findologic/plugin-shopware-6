@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use FINDOLOGIC\FinSearch\Export\Search\CategorySearcher;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
@@ -53,6 +54,8 @@ class DynamicProductGroupServiceTest extends TestCase
 
     private ExportContext $exportContext;
 
+    private CategorySearcher $categorySearcher;
+
     private ?string $productId;
 
     protected function setUp(): void
@@ -71,6 +74,11 @@ class DynamicProductGroupServiceTest extends TestCase
             $this->salesChannelContext,
             $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId()),
             $this->validShopkey
+        );
+        $this->categorySearcher = $this->getCategorySearcher(
+            $this->salesChannelContext,
+            $this->getContainer(),
+            $this->exportContext
         );
     }
 
@@ -216,7 +224,7 @@ class DynamicProductGroupServiceTest extends TestCase
     {
         return new DynamicProductGroupService(
             $this->getContainer()->get('product.repository'),
-            $this->getContainer()->get('category.repository'),
+            $this->categorySearcher,
             $this->getContainer()->get(ProductStreamBuilder::class),
             $this->salesChannelContext,
             $this->exportConfig,
