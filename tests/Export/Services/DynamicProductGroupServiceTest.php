@@ -10,6 +10,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ServicesHelper;
+use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Validation\ExportConfigurationBase;
 use FINDOLOGIC\Shopware6Common\Export\Validation\OffsetExportConfiguration;
@@ -17,7 +18,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Defaults;
@@ -28,6 +28,7 @@ use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Cache\Exception\CacheException;
+use Vin\ShopwareSdk\Data\Entity\Category\CategoryEntity;
 
 class DynamicProductGroupServiceTest extends TestCase
 {
@@ -119,72 +120,42 @@ class DynamicProductGroupServiceTest extends TestCase
 
     public function testCategoriesAreCached(): void
     {
-        $products = [];
+        $productStreams = [];
         $context = $this->salesChannelContext->getContext();
         [$categoryOne, $categoryTwo] = $this->getProductStreamCategories($context);
+        $unknownStreamId = Uuid::randomHex();
 
-        $productId = Uuid::randomHex();
-        $products[$productId] = [$categoryOne->getId(), $categoryTwo->getId()];
+        $productStreams[$categoryOne->productStreamId] = [$categoryOne];
+        $productStreams[$categoryTwo->productStreamId] = [$categoryTwo];
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
 
-        $cacheItemMock->expects($this->once())->method('get')->willReturn($products);
+        $cacheItemMock->expects($this->exactly(2))
+            ->method('get')
+            ->willReturnOnConsecutiveCalls([$categoryOne], [$categoryTwo]);
         $cacheItemMock->expects($this->exactly(3))
             ->method('isHit')
             ->willReturnOnConsecutiveCalls(true, true, false);
         $cacheItemMock->expects($this->never())->method('set');
-        $cacheItemMock->expects($this->once())->method('expiresAfter')->with(60 * 11);
 
-        $this->cache->expects($this->once())->method('save')->with($cacheItemMock);
         $this->cache->expects($this->exactly(3))
             ->method('getItem')
             ->withConsecutive(
-                [$this->getCacheKeyByType('offset')],
-                [$this->getCacheKeyByType('offset')],
-                [$this->getCacheKeyByType('offset', '20')]
+                [$this->getCacheKeyByType('streamId', $categoryOne->productStreamId)],
+                [$this->getCacheKeyByType('streamId', $categoryTwo->productStreamId)],
+                [$this->getCacheKeyByType('streamId', $unknownStreamId)],
             )
             ->willReturn($cacheItemMock);
 
         $dynamicService = $this->getDynamicProductGroupService();
 
-        $categories = $dynamicService->getCategories($productId);
-        $this->assertNotEmpty($categories);
-        $this->assertCount(2, $categories);
-    }
-
-    public function testNoCategoriesAreReturnedForUnAssignedProduct(): void
-    {
-
-        $context = $this->salesChannelContext->getContext();
-        [$categoryOne, $categoryTwo] = $this->getProductStreamCategories($context);
-        $unassignedProductId = Uuid::randomHex();
-        $products = [];
-        $products[$this->productId] = [$categoryOne->getId(), $categoryTwo->getId()];
-
-        /** @var CacheItemInterface|MockObject $cacheItemMock */
-        $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
-        $cacheItemMock->expects($this->once())->method('get')->willReturn($products);
-        $cacheItemMock->expects($this->exactly(3))
-            ->method('isHit')
-            ->willReturnOnConsecutiveCalls(true, true, false);
-        $cacheItemMock->expects($this->never())->method('set');
-        $cacheItemMock->expects($this->once())->method('expiresAfter')->with(60 * 11);
-
-        $this->cache->expects($this->once())->method('save')->with($cacheItemMock);
-        $this->cache->expects($this->exactly(3))
-            ->method('getItem')
-            ->withConsecutive(
-                [$this->getCacheKeyByType('offset')],
-                [$this->getCacheKeyByType('offset')],
-                [$this->getCacheKeyByType('offset', '20')]
-            )
-            ->willReturn($cacheItemMock);
-
-        $dynamicService = $this->getDynamicProductGroupService();
-
-        $categories = $dynamicService->getCategories($unassignedProductId);
-        $this->assertEmpty($categories);
+        $streamOneCategories = $dynamicService->getCategories($categoryOne->productStreamId);
+        $streamOTwoCategories = $dynamicService->getCategories($categoryTwo->productStreamId);
+        $unknownStreamCategories = $dynamicService->getCategories($unknownStreamId);
+        $this->assertCount(1, $streamOneCategories);
+        $this->assertCount(1, $streamOTwoCategories);
+        $this->assertEmpty($unknownStreamCategories);
     }
 
     private function createTestProductStreams(): void
@@ -286,11 +257,17 @@ class DynamicProductGroupServiceTest extends TestCase
 
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'Findologic Xtream 1'));
-        $categoryOne = $categoryRepository->search($criteria, $context)->first();
+        $categoryOne = Utils::createSdkEntity(
+            CategoryEntity::class,
+            $categoryRepository->search($criteria, $context)->first(),
+        );
 
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'Findologic Xtream 2'));
-        $categoryTwo = $categoryRepository->search($criteria, $context)->first();
+        $categoryTwo = Utils::createSdkEntity(
+            CategoryEntity::class,
+            $categoryRepository->search($criteria, $context)->first(),
+        );
 
         return [$categoryOne, $categoryTwo];
     }
@@ -298,8 +275,8 @@ class DynamicProductGroupServiceTest extends TestCase
     private function getCacheKeyByType(string $type, ?string $value = null): string
     {
         switch ($type) {
-            case 'offset':
-                return sprintf('fl_product_groups_%s_%d', $this->validShopkey, $value ?? $this->start);
+            case 'streamId':
+                return sprintf('fl_product_groups_%s_%s', $this->validShopkey, $value);
             case 'total':
                 return sprintf('fl_product_groups_%s_total', $this->validShopkey);
             case 'warmup':
