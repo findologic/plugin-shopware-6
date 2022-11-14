@@ -18,7 +18,7 @@
     "require": {
         "findologic/libflexport": "^2.8",
         "findologic/findologic-api": "^1.6",
-        "findologic/shopware6-common": "dev-cache_product_streams_instead_of_products",
+        "findologic/shopware6-common": "^0.4",
         "vin-sw/shopware-sdk": "^1.5"
     },
     "extra": {
