@@ -45,10 +45,7 @@
             <argument type="string">%kernel.shopware_version%</argument>
         </service>
 
-        <service id="FINDOLOGIC\FinSearch\Export\Services\CatUrlBuilderService" public="true" autowire="true">
-            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
-            <argument key="$categoryRepository" type="service" id="category.repository" />
-        </service>
+        <service id="FINDOLOGIC\FinSearch\Export\Services\CatUrlBuilderService" public="true" autowire="true" />
 
         <service id="FINDOLOGIC\FinSearch\Export\Services\SalesChannelService" public="true">
             <argument type="service" id="finsearch_config.repository" />
@@ -61,6 +58,11 @@
         <service id="FINDOLOGIC\FinSearch\Export\Search\ProductSearcher" public="true" autowire="true">
             <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
             <argument key="$productRepository" type="service" id="product.repository" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Search\CategorySearcher" public="true" autowire="true">
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
+            <argument key="$categoryRepository" type="service" id="category.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Search\ProductDebugSearcher" public="true" autowire="true">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\FinSearch\Export\Handlers\HeaderHandler;
+use FINDOLOGIC\FinSearch\Export\Search\CategorySearcher;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Services\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
@@ -78,6 +79,8 @@ class ExportController extends AbstractController
     protected DynamicProductGroupService $dynamicProductGroupService;
 
     protected ProductSearcher $productSearcher;
+
+    protected CategorySearcher $categorySearcher;
 
     protected ExportItemAdapter $exportItemAdapter;
 
@@ -167,6 +170,9 @@ class ExportController extends AbstractController
     {
         $this->buildPluginConfig();
         $this->buildExportContext();
+
+        $this->categorySearcher = $this->container->get(CategorySearcher::class);
+
         $this->buildDynamicProductGroupService();
 
         $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
@@ -226,7 +232,7 @@ class ExportController extends AbstractController
     {
         $this->dynamicProductGroupService = new DynamicProductGroupService(
             $this->productRepository,
-            $this->categoryRepository,
+            $this->categorySearcher,
             $this->productStreamBuilder,
             $this->salesChannelContext,
             $this->exportConfig,

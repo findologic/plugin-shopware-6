@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 
 class ReleaseBundler
 {
-    private const SUPPORTED_SHOPWARE_VERSIONS = '^6.4';
+    private const SUPPORTED_SHOPWARE_VERSIONS = '^6.4.6';
 
     private const SYS_TMP_DIR = '/tmp';
     private const TMP_DIR = self::SYS_TMP_DIR . '/FinSearch';
