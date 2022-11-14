@@ -47,22 +47,39 @@
                      :title="$tc('findologic.settingForm.config.export.title')">
                 <sw-container>
                     <div class="findologic-settings-credentials-fields">
+                        <sw-switch-field
+                            v-model="actualConfigData['FinSearch.config.exportZeroPricedProducts']"
+                            :label="$tc('findologic.settingForm.config.exportZeroPricedProducts.label')"
+                            :helpText="$tc('findologic.settingForm.config.exportZeroPricedProducts.tooltipText')"
+                        >
+                        </sw-switch-field>
+
                         <sw-single-select
-                                v-model="actualConfigData['FinSearch.config.mainVariant']"
-                                :options="mainVariantOptions"
-                                :label="$tc('findologic.settingForm.config.mainVariant.label')"
-                                :placeholder="$tc('findologic.settingForm.config.mainVariant.default.label')"
-                                :helpText="$tc('findologic.settingForm.config.mainVariant.tooltipText')">
+                            v-model="actualConfigData['FinSearch.config.advancedPricing']"
+                            :options="advancedPricingOptions"
+                            :label="$tc('findologic.settingForm.config.advancedPricing.label')"
+                            :placeholder="$tc('findologic.settingForm.config.advancedPricing.off.label')"
+                            :helpText="$tc('findologic.settingForm.config.advancedPricing.tooltipText')"
+                            @change="onAdvancedPricingChange"
+                        >
+                        </sw-single-select>
+
+                        <sw-single-select
+                            v-model="actualConfigData['FinSearch.config.mainVariant']"
+                            :options="mainVariantOptions"
+                            :label="$tc('findologic.settingForm.config.mainVariant.label')"
+                            :placeholder="$tc('findologic.settingForm.config.mainVariant.default.label')"
+                            :helpText="$tc('findologic.settingForm.config.mainVariant.tooltipText')">
                         </sw-single-select>
 
                         <sw-category-tree-field
-                                id="crossSellingCategories"
-                                :categories-collection="categoryCollection"
-                                :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
-                                :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
-                                :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
-                                @selection-add="onCategoryAdd"
-                                @selection-remove="onCategoryRemove"
+                            id="crossSellingCategories"
+                            :categories-collection="categoryCollection"
+                            :label="$tc('findologic.settingForm.config.crossSellingCategories.label')"
+                            :helpText="$tc('findologic.settingForm.config.crossSellingCategories.tooltipText')"
+                            :placeholder="$tc('findologic.settingForm.config.crossSellingCategories.placeholder')"
+                            @selection-add="onCategoryAdd"
+                            @selection-remove="onCategoryRemove"
                         >
                         </sw-category-tree-field>
                     </div>

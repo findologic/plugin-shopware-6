@@ -65,12 +65,38 @@
             <argument key="$categoryRepository" type="service" id="category.repository" />
         </service>
 
+        <service id="FINDOLOGIC\FinSearch\Export\Search\CustomerSearcher" public="true" autowire="true">
+            <argument key="$customerRepository" type="service" id="customer.repository"/>
+        </service>
+
         <service id="FINDOLOGIC\FinSearch\Export\Search\ProductDebugSearcher" public="true" autowire="true">
             <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
             <argument key="$productRepository" type="service" id="product.repository" />
         </service>
 
+        <!-- Providers -->
+
+        <service id="FINDOLOGIC\FinSearch\Export\Providers\AdvancedPriceRulesProvider" public="true">
+            <argument type="service" id="Shopware\Core\Checkout\Cart\CartRuleLoader" />
+        </service>
+
+        <service id="FINDOLOGIC\FinSearch\Export\Providers\CustomerGroupContextProvider" public="true">
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Providers\AdvancedPriceRulesProvider" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Services\SalesChannelService" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Export\Search\CustomerSearcher" />
+        </service>
+
         <!-- Adapters -->
+
+        <service
+            id="FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter"
+            decorates="FINDOLOGIC\Shopware6Common\Export\Adapters\PriceAdapter"
+            public="true"
+            autowire="true"
+        >
+            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
+            <argument key="$shopwareVersion" type="string">%kernel.shopware_version%</argument>
+        </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter" public="true" autowire="true">
             <argument key="$orderLineItemRepository" type="service" id="order_line_item.repository" />
