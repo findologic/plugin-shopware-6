@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
+use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use FINDOLOGIC\Shopware6Common\Export\Constants;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductCriteriaBuilder;
@@ -23,11 +25,15 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
 {
     protected Criteria $criteria;
 
-    public function __construct(ExportContext $exportContext)
-    {
-        parent::__construct($exportContext);
+    protected PluginConfig $config;
 
-        $this->exportContext = $exportContext;
+    public function __construct(
+        ExportContext $exportContext,
+        PluginConfig $config
+    ) {
+        $this->config = $config;
+
+        parent::__construct($exportContext);
     }
 
     public function reset(): void
@@ -210,6 +216,10 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
 
     public function withPriceZeroFilter(): ProductCriteriaBuilder
     {
+        if ($this->config->exportZeroPricedProducts()) {
+            return $this;
+        }
+
         $this->criteria->addFilter(
             new RangeFilter('price', [
                 RangeFilter::GT => 0
@@ -223,19 +233,12 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
     {
         $notActiveOrPriceZeroFilter = new MultiFilter(
             MultiFilter::CONNECTION_OR,
-            [
-                new EqualsFilter('active', false),
-                new EqualsFilter('price', 0)
-            ]
+            $this->getNotActiveFilterBasedOnPriceConfiguration()
         );
 
         $activeParentFilter =  new MultiFilter(
             MultiFilter::CONNECTION_AND,
-            [
-                new EqualsFilter('parentId', null),
-                new EqualsFilter('active', true),
-                new RangeFilter('price', [RangeFilter::GT => 0])
-            ]
+            $this->getActiveFilterBasedOnPriceConfiguration()
         );
 
         /**
@@ -274,6 +277,33 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
                 ]
             )
         );
+    }
+
+    protected function getNotActiveFilterBasedOnPriceConfiguration(): array
+    {
+        $notActiveFilter = [
+            new EqualsFilter('active', false)
+        ];
+
+        if (!$this->config->exportZeroPricedProducts()) {
+            $notActiveFilter[] = new EqualsFilter('price', 0);
+        }
+
+        return $notActiveFilter;
+    }
+
+    protected function getActiveFilterBasedOnPriceConfiguration(): array
+    {
+        $activeFilter = [
+            new EqualsFilter('parentId', null),
+            new EqualsFilter('active', true),
+        ];
+
+        if (!$this->config->exportZeroPricedProducts()) {
+            $activeFilter[] = new RangeFilter('price', [RangeFilter::GT => 0]);
+        }
+
+        return $activeFilter;
     }
 
     protected function adaptProductIdCriteriaWithoutParentId(string $productId, string $parentId): void

@@ -1,89 +1,106 @@
 {
-  "findologic": {
-    "header": "FINDOLOGIC",
-    "general": {
-      "mainMenuDescription": "FINDOLOGIC plugin for Shopware 6 e-commerce system"
-    },
-    "fieldRequired": "Shopkey is required.",
-    "invalidShopkey": "Invalid Shopkey.",
-    "shopkeyExists": "This shopkey is already configured for another language.",
-    "notRegisteredShopkey": "The given shopkey is not associated to any known service.",
-    "selectSalesChannel": "Please select a Sales Channel...",
-    "settingForm": {
-      "salesChannelTitle": "Sales Channel & Language",
-      "directIntegration": {
-        "title": "Direct Integration / Instant Frontend"
-      },
-      "api": {
-        "title": "API"
-      },
-      "configSaved": "Configuration saved.",
-      "testButton": "Test mode",
-      "config": {
-        "title": "Configuration",
-        "shopkey": {
-          "label": "Shopkey",
-          "tooltipText": "FINDOLOGIC shopkey"
+    "findologic": {
+        "header": "FINDOLOGIC",
+        "general": {
+            "mainMenuDescription": "FINDOLOGIC plugin for Shopware 6 e-commerce system"
         },
-        "active": {
-          "label": "Active",
-          "tooltipText": "Activate the FINDOLOGIC search provider."
+        "fieldRequired": "Shopkey is required.",
+        "invalidShopkey": "Invalid Shopkey.",
+        "shopkeyExists": "This shopkey is already configured for another language.",
+        "notRegisteredShopkey": "The given shopkey is not associated to any known service.",
+        "selectSalesChannel": "Please select a Sales Channel...",
+        "settingForm": {
+            "salesChannelTitle": "Sales Channel & Language",
+            "directIntegration": {
+                "title": "Direct Integration / Instant Frontend"
+            },
+            "api": {
+                "title": "API"
+            },
+            "configSaved": "Configuration saved.",
+            "testButton": "Test mode",
+            "config": {
+                "title": "Configuration",
+                "shopkey": {
+                    "label": "Shopkey",
+                    "tooltipText": "FINDOLOGIC shopkey"
+                },
+                "active": {
+                    "label": "Active",
+                    "tooltipText": "Activate the FINDOLOGIC search provider."
+                },
+                "activeOnCategoryPages": {
+                    "label": "Active on category pages",
+                    "tooltipText": "Activate the FINDOLOGIC search provider for category pages."
+                },
+                "searchResultContainer": {
+                    "label": "CSS class for search result",
+                    "placeholder": "fl-result",
+                    "tooltipText": "This option has an effect for Direct Integration and Instant Frontend only, when empty fl-result is used."
+                },
+                "navigationResultContainer": {
+                    "label": "CSS class for navigation",
+                    "placeholder": "fl-navigation-result",
+                    "tooltipText": "This option has an effect for Direct Integration and Instant Frontend only, when empty fl-navigation-result is used."
+                },
+                "crossSellingCategories": {
+                    "label": "Cross-Selling categories",
+                    "placeholder": "Search categories...",
+                    "tooltipText": "If you have multiple subcategories in your Cross-Selling category, make sure to add all subcategories. Products in these categories are excluded from the export"
+                },
+                "integrationType": {
+                    "label": "Integration (read-only)",
+                    "tooltipText": "Currently used integration type. Either one of Direct Integration or API."
+                },
+                "filterPosition": {
+                    "label": "Filter position for search result pages",
+                    "tooltipText": "Top: Shows the filters above the search results. Left: Shows the filters on the left side, next to the search results.",
+                    "top": {
+                        "label": "Top"
+                    },
+                    "left": {
+                        "label": "Left"
+                    }
+                },
+                "export": {
+                    "title": "Export"
+                },
+                "mainVariant": {
+                    "label": "Exported main variant",
+                    "tooltipText": "Select to change the variant that is shown on listing pages.",
+                    "default": {
+                        "label": "Shopware default"
+                    },
+                    "parent": {
+                        "label": "Main-/Parent product"
+                    },
+                    "cheapest": {
+                        "label": "Cheapest variant"
+                    }
+                },
+                "advancedPricing": {
+                    "label": "Considered advanced pricing",
+                    "tooltipText": "Select which advanced price should be considered, or not at all",
+                    "off": {
+                        "label": "No advanced pricing"
+                    },
+                    "cheapest": {
+                        "label": "Cheapest unit price"
+                    },
+                    "unit": {
+                        "label": "Price when buying one unit"
+                    }
+                },
+                "exportZeroPricedProducts": {
+                    "label": "Export products without price",
+                    "tooltipText": "If deactivated, products and variants with a price of 0 are excluded from the export. When parent products have a price of 0, variants with a price are still considered."
+                }
+            },
+            "titleSuccess": "Success",
+            "titleError": "Error"
         },
-        "activeOnCategoryPages": {
-          "label": "Active on category pages",
-          "tooltipText": "Activate the FINDOLOGIC search provider for category pages."
-        },
-        "searchResultContainer": {
-          "label": "CSS class for search result",
-          "placeholder": "fl-result",
-          "tooltipText": "This option has an effect for Direct Integration and Instant Frontend only, when empty fl-result is used."
-        },
-        "navigationResultContainer": {
-          "label": "CSS class for navigation",
-          "placeholder": "fl-navigation-result",
-          "tooltipText": "This option has an effect for Direct Integration and Instant Frontend only, when empty fl-navigation-result is used."
-        },
-        "crossSellingCategories": {
-          "label": "Cross-Selling categories",
-          "placeholder": "Search categories...",
-          "tooltipText": "If you have multiple subcategories in your Cross-Selling category, make sure to add all subcategories. Products in these categories are excluded from the export"
-        },
-        "integrationType": {
-          "label": "Integration (read-only)",
-          "tooltipText": "Currently used integration type. Either one of Direct Integration or API."
-        },
-        "filterPosition": {
-          "label": "Filter position for search result pages",
-          "tooltipText": "Top: Shows the filters above the search results. Left: Shows the filters on the left side, next to the search results.",
-          "top": {
-            "label": "Top"
-          },
-          "left": {
-            "label": "Left"
-          }
-        },
-        "export": {
-          "title": "Export"
-        },
-        "mainVariant": {
-          "label": "Exported main variant",
-          "tooltipText": "Select to change the variant that is shown on listing pages.",
-          "default": {
-            "label": "Shopware default"
-          },
-          "parent": {
-            "label": "Main-/Parent product"
-          },
-          "cheapest": {
-            "label": "Cheapest variant"
-          }
+        "error": {
+            "title": "Error"
         }
-      },
-      "titleSuccess": "Success",
-      "titleError": "Error"
-    },
-    "error": {
-      "title": "Error"
     }
-  }
 }

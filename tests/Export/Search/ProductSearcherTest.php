@@ -49,7 +49,7 @@ class ProductSearcherTest extends TestCase
             $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId())
         );
 
-        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext);
+        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext, $this->getPluginConfig());
         $this->defaultProductSearcher = $this->getProductSearcher(
             $this->salesChannelContext,
             $this->getContainer(),
@@ -812,6 +812,26 @@ class ProductSearcherTest extends TestCase
         $this->assertEquals($productId3, $productsKeyed[4]->id);
         $this->assertEquals($productId1, $productsKeyed[5]->id);
         $this->assertEquals($afterId, $productsKeyed[6]->id);
+    }
+
+    public function testZeroPriceProductIsFoundIfConfigSet(): void
+    {
+        $config = $this->getPluginConfig(['exportZeroPricedProducts' => true]);
+        $productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext, $config);
+        $defaultProductSearcher = $this->getProductSearcher(
+            $this->salesChannelContext,
+            $this->getContainer(),
+            $productCriteriaBuilder,
+            $this->exportContext
+        );
+
+        $this->createVisibleTestProduct(
+            ['price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 0, 'net' => 0, 'linked' => false]]]
+        );
+
+        $products = $defaultProductSearcher->findVisibleProducts(20, 0);
+
+        $this->assertCount(1, $products);
     }
 
     private function setCreatedAtValue($productNumber, $created_at): void
