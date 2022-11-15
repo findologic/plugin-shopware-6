@@ -17,8 +17,8 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class Config extends Struct
 {
-    public const DEFAULT_SEARCH_RESULT_CONTAINER = 'fl-result';
-    public const DEFAULT_NAVIGATION_RESULT_CONTAINER = 'fl-navigation-result';
+    public const DEFAULT_SEARCH_RESULT_CONTAINER = '.fl-result';
+    public const DEFAULT_NAVIGATION_RESULT_CONTAINER = '.fl-navigation-result';
     public const ALLOW_FOR_SERIALIZATION = [
         'shopkey',
         'active',

@@ -13,8 +13,8 @@ class SnippetTest extends TestCase
     public function testSnippetReceivesParamsAsExpected(): void
     {
         $expectedShopkey = 'AB12AB12AB12AB12AB12AB12AB12AB12';
-        $expectedSearchResultContainer = 'fl-special';
-        $expectedNavigationResultContainer = 'fl-special-navigation';
+        $expectedSearchResultContainer = '.fl-special';
+        $expectedNavigationResultContainer = '.fl-special-navigation';
         $expectedUserGroupHash = Uuid::randomHex();
 
         $snippet = new Snippet(
