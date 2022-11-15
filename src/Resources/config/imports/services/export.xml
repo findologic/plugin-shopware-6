@@ -95,6 +95,7 @@
             autowire="true"
         >
             <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
+            <argument key="$productRepository" type="service" id="product.repository" />
             <argument key="$shopwareVersion" type="string">%kernel.shopware_version%</argument>
         </service>
 
