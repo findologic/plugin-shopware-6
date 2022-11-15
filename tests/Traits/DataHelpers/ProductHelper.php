@@ -387,11 +387,15 @@ trait ProductHelper
         }
     }
 
-    public function createCustomer(string $customerId): void
+    public function createCustomer(string $customerId, $customerGroup = null): void
     {
         $password = 'foo';
         $email = 'foo@bar.de';
         $addressId = Uuid::randomHex();
+
+        if ($customerGroup === null) {
+            $customerGroup = Defaults::FALLBACK_CUSTOMER_GROUP;
+        }
 
         $this->getContainer()->get('customer.repository')->upsert(
             [
@@ -414,7 +418,7 @@ trait ProductHelper
                         'description' => 'Default payment method',
                         'handlerIdentifier' => SyncTestPaymentHandler::class,
                     ],
-                    'groupId' => Defaults::FALLBACK_CUSTOMER_GROUP,
+                    'groupId' => $customerGroup,
                     'email' => $email,
                     'password' => $password,
                     'firstName' => 'Max',

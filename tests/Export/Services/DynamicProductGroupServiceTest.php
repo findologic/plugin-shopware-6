@@ -29,6 +29,7 @@ use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Cache\Exception\CacheException;
 use Vin\ShopwareSdk\Data\Entity\Category\CategoryEntity;
+use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupCollection;
 
 class DynamicProductGroupServiceTest extends TestCase
 {
@@ -74,6 +75,7 @@ class DynamicProductGroupServiceTest extends TestCase
         $this->exportContext = $this->getExportContext(
             $this->salesChannelContext,
             $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId()),
+            new CustomerGroupCollection(),
             $this->validShopkey
         );
         $this->categorySearcher = $this->getCategorySearcher(

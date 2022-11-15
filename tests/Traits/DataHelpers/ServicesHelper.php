@@ -23,6 +23,7 @@ trait ServicesHelper
     public function getExportContext(
         SalesChannelContext $salesChannelContext,
         CategoryEntity $navigationCategory,
+        ?CustomerGroupCollection $customerGroupCollection = null,
         ?string $shopkey = 'ABCDABCDABCDABCDABCDABCDABCDABCD'
     ): ExportContext {
         /** @var SalesChannelEntity $salesChannel */
@@ -41,7 +42,7 @@ trait ServicesHelper
             $shopkey,
             $salesChannel,
             $sdkNavigationCategory,
-            new CustomerGroupCollection(),
+            $customerGroupCollection ?? new CustomerGroupCollection(),
             true,
             ImplementationType::PLUGIN
         );

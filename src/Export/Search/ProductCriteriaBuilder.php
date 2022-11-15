@@ -216,6 +216,10 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
 
     public function withPriceZeroFilter(): ProductCriteriaBuilder
     {
+        if ($this->config->exportZeroPricedProducts()) {
+            return $this;
+        }
+
         $this->criteria->addFilter(
             new RangeFilter('price', [
                 RangeFilter::GT => 0
