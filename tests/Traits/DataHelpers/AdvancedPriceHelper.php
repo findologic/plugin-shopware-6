@@ -12,6 +12,8 @@ use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupEntity;
 
 trait AdvancedPriceHelper
 {
+    use ProductHelper;
+
     public function createRules(array $groupsData): void
     {
         foreach ($groupsData as $group) {
@@ -82,7 +84,7 @@ trait AdvancedPriceHelper
         return $prices;
     }
 
-    public function createCustomers(array $groupsData): void
+    public function createCustomersForGroups(array $groupsData): void
     {
         foreach ($groupsData as $groupData) {
             $this->createCustomer($groupData['customerId'], $groupData['groupId']);
