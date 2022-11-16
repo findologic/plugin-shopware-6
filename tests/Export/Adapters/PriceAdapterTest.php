@@ -13,8 +13,6 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ServicesHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use FINDOLOGIC\Shopware6Common\Export\Config\ImplementationType;
-use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
