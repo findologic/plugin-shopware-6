@@ -214,7 +214,7 @@ class PriceAdapterTest extends TestCase
         $this->createRules($groupsData);
         $productEntity = $this->createTestProduct(['prices' => $this->getPrices($groupsData)]);
         $this->createCustomerGroups($groupsData);
-        $this->createCustomers($groupsData);
+        $this->createCustomersForGroups($groupsData);
 
         $prices = $adapter->adapt($productEntity);
 

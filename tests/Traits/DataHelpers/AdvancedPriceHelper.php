@@ -84,7 +84,7 @@ trait AdvancedPriceHelper
         return $prices;
     }
 
-    public function createCustomers(array $groupsData): void
+    public function createCustomersForGroups(array $groupsData): void
     {
         foreach ($groupsData as $groupData) {
             $this->createCustomer($groupData['customerId'], $groupData['groupId']);
