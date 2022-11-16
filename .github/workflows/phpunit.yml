@@ -25,7 +25,9 @@ jobs:
             'v6.4.12.0',
             'v6.4.13.0',
             'v6.4.14.0',
-            'v6.4.15.1',
+            'v6.4.15.2',
+            'v6.4.16.1',
+            'v6.4.17.1',
         ]
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
