@@ -18,7 +18,7 @@
     "require": {
         "findologic/libflexport": "^2.8",
         "findologic/findologic-api": "^1.6",
-        "findologic/shopware6-common": "dev-SW-772_export_variant_options",
+        "findologic/shopware6-common": "^0.5",
         "vin-sw/shopware-sdk": "^1.7"
     },
     "extra": {

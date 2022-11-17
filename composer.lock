@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e478223f25b252a84a117436517d9c23",
+    "content-hash": "aaa6944716533117077fa80fdeddc53d",
     "packages": [
         {
             "name": "findologic/findologic-api",
@@ -216,11 +216,11 @@
         },
         {
             "name": "findologic/shopware6-common",
-            "version": "dev-SW-772_export_variant_options",
+            "version": "0.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "a303537910aabc2493e0c2d704c8d24a8b687b17"
+                "reference": "b09787bd7c5810a2e7ff8e0c7210ef7d10b93794"
             },
             "require": {
                 "findologic/libflexport": "^2.9",
@@ -272,7 +272,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2022-11-17T13:09:31+00:00"
+            "time": "2022-11-17T14:48:18+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
@@ -2002,9 +2002,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "findologic/shopware6-common": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
