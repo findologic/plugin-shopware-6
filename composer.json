@@ -19,7 +19,7 @@
         "findologic/libflexport": "^2.8",
         "findologic/findologic-api": "^1.6",
         "findologic/shopware6-common": "^0.5",
-        "vin-sw/shopware-sdk": "^1.5"
+        "vin-sw/shopware-sdk": "^1.7"
     },
     "extra": {
         "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
