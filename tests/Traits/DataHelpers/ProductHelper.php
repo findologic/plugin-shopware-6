@@ -287,6 +287,7 @@ trait ProductHelper
     ): array {
         $id = Uuid::randomHex();
         $redId = Uuid::randomHex();
+        $blueId = Uuid::randomHex();
         $colorId = Uuid::randomHex();
 
         $container = $this->getContainer();
@@ -337,6 +338,11 @@ trait ProductHelper
                 [
                     'id' => $redId,
                     'name' => 'red',
+                    'group' => ['id' => $colorId, 'name' => $colorId],
+                ],
+                [
+                    'id' => $blueId,
+                    'name' => 'blue',
                     'group' => ['id' => $colorId, 'name' => $colorId],
                 ]
             ],
