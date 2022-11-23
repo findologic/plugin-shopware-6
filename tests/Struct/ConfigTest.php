@@ -35,8 +35,8 @@ class ConfigTest extends TestCase
                     'shopkey' => $this->getShopkey(),
                     'activeOnCategoryPages' => true,
                     'crossSellingCategories' => [],
-                    'searchResultContainer' => 'fl-result',
-                    'navigationResultContainer' => 'fl-navigation-result',
+                    'searchResultContainer' => '.fl-result',
+                    'navigationResultContainer' => '.fl-navigation-result',
                     'integrationType' => 'API',
                     'filterPosition' => FilterPosition::TOP
                 ],
@@ -48,8 +48,8 @@ class ConfigTest extends TestCase
                     'shopkey' => $this->getShopkey(),
                     'activeOnCategoryPages' => true,
                     'crossSellingCategories' => [],
-                    'searchResultContainer' => 'fl-result',
-                    'navigationResultContainer' => 'fl-navigation-result',
+                    'searchResultContainer' => '.fl-result',
+                    'navigationResultContainer' => '.fl-navigation-result',
                     'integrationType' => null,
                     'filterPosition' => FilterPosition::TOP
                 ],

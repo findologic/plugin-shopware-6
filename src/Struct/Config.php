@@ -6,9 +6,10 @@ namespace FINDOLOGIC\FinSearch\Struct;
 
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
-use FINDOLOGIC\FinSearch\Findologic\IntegrationType;
-use FINDOLOGIC\FinSearch\Findologic\MainVariant;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\Shopware6Common\Export\Config\AdvancedPricing;
+use FINDOLOGIC\Shopware6Common\Export\Config\IntegrationType;
+use FINDOLOGIC\Shopware6Common\Export\Config\MainVariant;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Struct\Struct;
@@ -16,8 +17,8 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class Config extends Struct
 {
-    public const DEFAULT_SEARCH_RESULT_CONTAINER = 'fl-result';
-    public const DEFAULT_NAVIGATION_RESULT_CONTAINER = 'fl-navigation-result';
+    public const DEFAULT_SEARCH_RESULT_CONTAINER = '.fl-result';
+    public const DEFAULT_NAVIGATION_RESULT_CONTAINER = '.fl-navigation-result';
     public const ALLOW_FOR_SERIALIZATION = [
         'shopkey',
         'active',
@@ -29,47 +30,40 @@ class Config extends Struct
         'integrationType',
         'initialized',
         'filterPosition',
-        'mainVariant'
+        'mainVariant',
+        'advancedPricing',
+        'exportZeroPricedProducts'
     ];
 
-    /** @var FindologicConfigService */
-    private $systemConfigService;
+    private FindologicConfigService $systemConfigService;
 
-    /** @var string|null */
-    private $shopkey;
+    private ServiceConfigResource $serviceConfigResource;
 
-    /** @var bool */
-    private $active;
+    protected ?string $shopkey;
 
-    /** @var bool */
-    private $activeOnCategoryPages;
+    protected bool $active;
 
-    /** @var string */
-    private $searchResultContainer;
+    protected bool $activeOnCategoryPages;
 
-    /** @var string */
-    private $navigationResultContainer;
+    protected string $searchResultContainer;
 
-    /** @var string|null */
-    private $integrationType;
+    protected string $navigationResultContainer;
 
-    /** @var ServiceConfigResource */
-    private $serviceConfigResource;
+    protected ?string $integrationType = null;
 
-    /** @var bool */
-    private $staging;
+    protected bool $staging;
 
-    /** @var bool */
-    private $initialized = false;
+    protected bool $initialized = false;
 
-    /** @var string */
-    private $filterPosition;
+    protected string $filterPosition;
 
-    /** @var string */
-    private $mainVariant = MainVariant::SHOPWARE_DEFAULT;
+    protected string $mainVariant = MainVariant::SHOPWARE_DEFAULT;
 
-    /** @var array */
-    private $crossSellingCategories = [];
+    protected array $crossSellingCategories = [];
+
+    protected string $advancedPricing = AdvancedPricing::OFF;
+
+    protected bool $exportZeroPricedProducts = false;
 
     public function __construct(
         FindologicConfigService $systemConfigService,
@@ -126,6 +120,31 @@ class Config extends Struct
         return $this->initialized;
     }
 
+    public function getCrossSellingCategories(): array
+    {
+        return $this->crossSellingCategories;
+    }
+
+    public function getMainVariant(): string
+    {
+        return $this->mainVariant;
+    }
+
+    public function getFilterPosition(): string
+    {
+        return $this->filterPosition;
+    }
+
+    public function getAdvancedPricing(): string
+    {
+        return $this->advancedPricing;
+    }
+
+    public function shouldExportZeroPricedProducts(): bool
+    {
+        return $this->exportZeroPricedProducts;
+    }
+
     /**
      * @throws InvalidArgumentException
      */
@@ -173,15 +192,22 @@ class Config extends Struct
             'FinSearch.config.mainVariant',
             MainVariant::SHOPWARE_DEFAULT
         );
+        $this->advancedPricing = $this->getConfig(
+            $salesChannelId,
+            $languageId,
+            'FinSearch.config.advancedPricing',
+            AdvancedPricing::OFF
+        );
+        $this->exportZeroPricedProducts = $this->getConfig(
+            $salesChannelId,
+            $languageId,
+            'FinSearch.config.exportZeroPricedProducts',
+            false
+        );
 
         $this->initializeReadonlyConfig($salesChannelId, $languageId);
 
         $this->initialized = true;
-    }
-
-    public function getCrossSellingCategories(): array
-    {
-        return $this->crossSellingCategories;
     }
 
     /**
@@ -225,7 +251,7 @@ class Config extends Struct
     }
 
     /**
-     * @return string|bool|null
+     * @return string|bool|array|null
      */
     private function getConfig(?string $salesChannelId, ?string $languageId, string $configKey, $default = null)
     {
@@ -235,19 +261,6 @@ class Config extends Struct
         }
 
         return $configValue;
-    }
-
-    public function getMainVariant(): string
-    {
-        return $this->mainVariant;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFilterPosition(): string
-    {
-        return $this->filterPosition;
     }
 
     public function isIntegrationTypeDirectIntegration(): bool

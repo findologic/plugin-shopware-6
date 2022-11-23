@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 
 class ReleaseBundler
 {
-    private const SUPPORTED_SHOPWARE_VERSIONS = '^6.2||^6.3||^6.4';
+    private const SUPPORTED_SHOPWARE_VERSIONS = '^6.4.6';
 
     private const SYS_TMP_DIR = '/tmp';
     private const TMP_DIR = self::SYS_TMP_DIR . '/FinSearch';
@@ -21,15 +21,13 @@ class ReleaseBundler
         'FinSearch/release/\*',
         'FinSearch/composer.lock',
         'FinSearch/phpcs.xml',
-        'FinSearch/phpunit.legacy.xml.dist',
         'FinSearch/phpunit.xml.dist',
         'FinSearch/tests/\*',
         '*.zip',
         '*.phar',
     ];
 
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(LoggerInterface $logger)
     {

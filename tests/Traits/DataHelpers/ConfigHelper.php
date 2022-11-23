@@ -47,13 +47,16 @@ trait ConfigHelper
         }
         $defaultConfig = [
             'active' => true,
+            'isStaging' => false,
             'shopkey' => $this->getShopkey(),
             'activeOnCategoryPages' => true,
             'crossSellingCategories' => [],
-            'searchResultContainer' => 'fl-result',
-            'navigationResultContainer' => 'fl-navigation-result',
+            'searchResultContainer' => '.fl-result',
+            'navigationResultContainer' => '.fl-navigation-result',
             'integrationType' => 'Direct Integration',
             'mainVariant' => 'default',
+            'advancedPricing' => 'OFF',
+            'exportZeroPricedProducts' => false
         ];
 
         $config = array_merge($defaultConfig, $overrides);
@@ -66,6 +69,12 @@ trait ConfigHelper
                         $salesChannelId,
                         $languageId,
                         $config['active']
+                    ],
+                    [
+                        'FinSearch.config.isStaging',
+                        $salesChannelId,
+                        $languageId,
+                        $config['isStaging']
                     ],
                     [
                         'FinSearch.config.shopkey',
@@ -108,26 +117,22 @@ trait ConfigHelper
                         $salesChannelId,
                         $languageId,
                         $config['mainVariant']
+                    ],
+                    [
+                        'FinSearch.config.advancedPricing',
+                        $salesChannelId,
+                        $languageId,
+                        $config['advancedPricing']
+                    ],
+                    [
+                        'FinSearch.config.exportZeroPricedProducts',
+                        $salesChannelId,
+                        $languageId,
+                        $config['exportZeroPricedProducts']
                     ]
                 ]
             );
 
         return $configServiceMock;
-    }
-
-    public function getFindologicConfig(array $override = [], bool $isDirectIntegration = true): Config
-    {
-        /** @var FindologicConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($override);
-
-        /** @var ServiceConfigResource|MockObject $serviceConfigResource */
-        $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $serviceConfigResource->expects($this->once())
-            ->method('isDirectIntegration')
-            ->willReturn($isDirectIntegration);
-
-        return new Config($configServiceMock, $serviceConfigResource);
     }
 }

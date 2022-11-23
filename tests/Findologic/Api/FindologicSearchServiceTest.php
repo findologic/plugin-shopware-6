@@ -10,9 +10,12 @@ use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Api\PaginationService;
 use FINDOLOGIC\FinSearch\Findologic\Api\SortingService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SortingHandlerService;
+use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
+use FINDOLOGIC\FinSearch\Findologic\Request\SearchRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config as PluginConfig;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -22,8 +25,6 @@ use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Storefront\Page\GenericPageLoader;
-use Shopware\Storefront\Page\Page;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -36,8 +37,7 @@ class FindologicSearchServiceTest extends TestCase
     /** @var ApiClient|MockObject */
     private $apiClientMock;
 
-    /** @var ApiConfig */
-    private $apiConfig;
+    private ApiConfig $apiConfig;
 
     /** @var PluginConfig|MockObject */
     private $pluginConfigMock;
@@ -159,13 +159,17 @@ class FindologicSearchServiceTest extends TestCase
             });
 
         $findologicSearchService = new FindologicSearchService(
-            $containerMock,
             $this->apiClientMock,
             $this->apiConfig,
             $this->pluginConfigMock,
             $this->getContainer()->get(SortingService::class),
             $this->getContainer()->get(PaginationService::class),
-            $this->getContainer()->get(SortingHandlerService::class)
+            $this->getContainer()->get(SortingHandlerService::class),
+            $this->serviceConfigResourceMock,
+            $this->getContainer()->get(SearchRequestFactory::class),
+            $this->getContainer()->get(NavigationRequestFactory::class),
+            $this->getContainer()->get(SystemAware::class),
+            $this->getContainer()->get('category.repository'),
         );
 
         $reflector = new ReflectionObject($findologicSearchService);
@@ -178,13 +182,17 @@ class FindologicSearchServiceTest extends TestCase
     public function testAllowedRequestButUnknownCategoryDisablesFindologic(): void
     {
         $findologicSearchService = new FindologicSearchService(
-            $this->getContainer(),
             $this->apiClientMock,
             $this->apiConfig,
             $this->pluginConfigMock,
             $this->getContainer()->get(SortingService::class),
             $this->getContainer()->get(PaginationService::class),
-            $this->getContainer()->get(SortingHandlerService::class)
+            $this->getContainer()->get(SortingHandlerService::class),
+            $this->serviceConfigResourceMock,
+            $this->getContainer()->get(SearchRequestFactory::class),
+            $this->getContainer()->get(NavigationRequestFactory::class),
+            $this->getContainer()->get(SystemAware::class),
+            $this->getContainer()->get('category.repository'),
         );
 
         $this->pluginConfigMock->expects($this->any())->method('isInitialized')->willReturn(true);

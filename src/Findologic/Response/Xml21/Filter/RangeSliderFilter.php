@@ -6,29 +6,21 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter;
 
 class RangeSliderFilter extends Filter
 {
-    /** @var string */
-    private $minKey;
+    private string $minKey;
 
-    /** @var string */
-    private $maxKey;
+    private string $maxKey;
 
-    /** @var float|null */
-    private $min = null;
+    private ?float $min = null;
 
-    /** @var float|null */
-    private $max = null;
+    private ?float $max = null;
 
-    /** @var float|null */
-    private $step = null;
+    private ?float $step = null;
 
-    /** @var string */
-    private $unit = '€';
+    private string $unit = '€';
 
-    /** @var array */
-    private $totalRange = [];
+    private array $totalRange = [];
 
-    /** @var array */
-    private $selectedRange = [];
+    private array $selectedRange = [];
 
     public function __construct(string $id, string $name, array $values = [])
     {
