@@ -76,7 +76,7 @@ corresponding configuration.
 #### Prerequisites
 
 * MySQL >= 8.0
-* PHP >= 7.3
+* PHP >= 7.4
 
 #### Setup
 
@@ -148,6 +148,7 @@ install them yourself.
 * [findologic/libflexport](https://github.com/findologic/libflexport) Helps generating
  the shop's data feed aka. export. We use it to generate an XML based on the product data
  of the shop.
+* [findologic/shopware6-common](https://github.com/findologic/shopware6-common) Includes the basic logic for the export.
 * [findologic/findologic-api](https://github.com/findologic/findologic-api) Handles requests
  to FINDOLOGIC. This includes everything from sending query parameters like selected filters,
  output attributes, to parsing the response with response objects.
