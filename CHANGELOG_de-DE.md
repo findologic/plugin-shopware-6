@@ -1,3 +1,20 @@
+# 4.0.0
+- This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
+- Before upgrading, read our upgrade guide.
+- Be aware, that this version only supports the shop versions starting from v6.4.6.0
+- [SW-582] Implementierung einer neuen Route zum Cachen der Dynamic Product Groups.
+- [SW-736] Support für "Erweiterte Preise" hinzugefügt.
+- [SW-747] Shopware Versionen 6.2.x, 6.3.x und Versionen bis zu 6.4.5.1 werden nicht mehr unterstützt.
+- [SW-749] PHP Code Level von 7.2 auf 7.4 hochgestuft.
+- [SW-752] Lesbarkeit des Codes durch Laden der konkreten Services verbessert.
+- [SW-761] Implementierung einer neuen Export Struktur mithilfe der internen shopware6-common Bibliothek.
+- [SW-765] Performance wurde verbessert, indem man nur Informationen der Varianten ausliest, die nicht bereits im Hauptprodukt inkludiert sind.
+- [SW-768] Performance wurde durch eine Überarbeitung des Cachens der Dynamic Product Groups verbessert.
+- [SW-770] Plugin Konfiguration wurde von Container Klassen zu Container Selektoren geändert.
+- [SW-772] Die konfigurierten Varianten Eigenschaften in "Varianten generieren" werden nun exportiert.
+- [SW-773] Ein Problem wurde behoben für Varianten mit den gleichen Kategorien wie das Hauptprodukt.
+- [SW-774] Nicht mehr unterstütze Erweiterungsplugins werden beim Update deinstalliert.
+
 # 3.1.3
 - [SW-766] Container Klassen sind nun für alle Integrationsarten konfigurierbar.
 
