@@ -14,6 +14,7 @@
 - [SW-772] The properties of variants defined within "Generate variants" are now exported.
 - [SW-773] Fixed variants with the same categories as the main product.
 - [SW-774] Uninstall existing extension plugin when updating to new major version.
+- [SW-764] Fixed a bug that caused the sliders of range sliders to not show without a search query.
 
 # 3.1.3
 - [SW-766] Make container classes configurable for all integration types.
