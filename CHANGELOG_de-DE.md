@@ -1,7 +1,7 @@
 # 4.0.0
-- This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
-- Before upgrading, read our upgrade guide.
-- Be aware, that this version only supports the shop versions starting from v6.4.6.0
+- Diese Version ist ein Major Release und enthält damit brechende Änderungen, wenn ein Erweiterungsplugin installiert ist.
+- Bevor ein Upgrade durchgeführt wird, beachte den Upgrade-Guide.
+- Achtung, diese Version unterstützt nur noch Shop Versionen ab v6.4.6.0!
 - [SW-582] Implementierung einer neuen Route zum Cachen der Dynamic Product Groups.
 - [SW-736] Support für "Erweiterte Preise" hinzugefügt.
 - [SW-747] Shopware Versionen 6.2.x, 6.3.x und Versionen bis zu 6.4.5.1 werden nicht mehr unterstützt.
@@ -14,6 +14,7 @@
 - [SW-772] Die konfigurierten Varianten Eigenschaften in "Varianten generieren" werden nun exportiert.
 - [SW-773] Ein Problem wurde behoben für Varianten mit den gleichen Kategorien wie das Hauptprodukt.
 - [SW-774] Nicht mehr unterstütze Erweiterungsplugins werden beim Update deinstalliert.
+- [SW-764] Ein Fehler wurde behoben, wodurch ohne Suchbegriff die Slider bei Bereichsslidern nicht angezeigt wurden.
 
 # 3.1.3
 - [SW-766] Container Klassen sind nun für alle Integrationsarten konfigurierbar.
