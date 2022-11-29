@@ -51,15 +51,9 @@ abstract class ProductRouteBase extends TestCase
      */
     protected $eventDispatcherMock;
 
-    /**
-     * @var ProductDefinition
-     */
-    protected $productDefinition;
+    protected ProductDefinition $productDefinition;
 
-    /**
-     * @var RequestCriteriaBuilder
-     */
-    protected $criteriaBuilder;
+    protected RequestCriteriaBuilder $criteriaBuilder;
 
     /**
      * @var SalesChannelRepositoryInterface|MockObject
@@ -77,7 +71,7 @@ abstract class ProductRouteBase extends TestCase
     protected $productStreamBuilderMock;
 
     /**
-     * @var ProductSearchBuilderInterface
+     * @var ProductSearchBuilderInterface|MockObject
      */
     protected $productSearchBuilderMock;
 
@@ -181,11 +175,9 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $context->method('getVersionId')->willReturn(Defaults::LIVE_VERSION);
-        if (Utils::versionGreaterOrEqual('6.4.0.0')) {
-            $context->expects($this->any())
-                ->method('addState')
-                ->with(Context::STATE_ELASTICSEARCH_AWARE);
-        }
+        $context->expects($this->any())
+            ->method('addState')
+            ->with(Context::STATE_ELASTICSEARCH_AWARE);
 
         $findologicService = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -225,7 +217,7 @@ abstract class ProductRouteBase extends TestCase
         if ($supportsProductStreams) {
             $productStream = new ProductStreamEntity();
             $productStream->setId($streamId ?? Uuid::randomHex());
-            $productAssignmentType = $productAssignmentType ?? CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT;
+            $productAssignmentType ??= CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT;
 
             $category->setProductAssignmentType($productAssignmentType);
             $category->setProductStream($productStream);

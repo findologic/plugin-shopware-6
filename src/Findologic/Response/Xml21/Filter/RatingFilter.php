@@ -6,8 +6,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter;
 
 class RatingFilter extends Filter
 {
-    /** @var float */
-    private $maxPoints = 0;
+    private float $maxPoints = 0;
 
     public function setMaxPoints(float $maxPoints): RatingFilter
     {

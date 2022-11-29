@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
+use FINDOLOGIC\Shopware6Common\Export\Constants;
+use FINDOLOGIC\Shopware6Common\Export\ExportContext;
+use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductCriteriaBuilder;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
-use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
@@ -16,31 +20,20 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\RangeFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Grouping\FieldGrouping;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 
-class ProductCriteriaBuilder
+class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
 {
-    /**
-     * @var SalesChannelContext
-     */
-    protected $salesChannelContext;
+    protected Criteria $criteria;
 
-    /**
-     * @var SystemConfigService
-     */
-    protected $systemConfigService;
+    protected PluginConfig $config;
 
-    /**
-     * @var Criteria
-     */
-    protected $criteria;
+    public function __construct(
+        ExportContext $exportContext,
+        PluginConfig $config
+    ) {
+        $this->config = $config;
 
-    public function __construct(SalesChannelContext $salesChannelContext, SystemConfigService $systemConfigService)
-    {
-        $this->salesChannelContext = $salesChannelContext;
-        $this->systemConfigService = $systemConfigService;
-        $this->reset();
+        parent::__construct($exportContext);
     }
 
     public function reset(): void
@@ -56,47 +49,7 @@ class ProductCriteriaBuilder
         return $criteria;
     }
 
-    public function fromCriteria(Criteria $criteria): self
-    {
-        $this->criteria = clone $criteria;
-
-        return $this;
-    }
-
-    public function withDefaultCriteria(?int $limit = null, ?int $offset = null, ?string $productId = null): self
-    {
-        $this->withCreatedAtSorting()
-            ->withIdSorting()
-            ->withPagination($limit, $offset)
-            ->withProductIdFilter($productId)
-            ->withOutOfStockFilter()
-            ->withProductAssociations();
-
-        return $this;
-    }
-
-    public function withChildCriteria(string $parentId): self
-    {
-        $this->criteria->addFilter(new EqualsFilter('parentId', $parentId));
-        $this->withPriceSorting()
-            ->withCreatedAtSorting()
-            ->withLimit(1)
-            ->withOutOfStockFilter()
-            ->withPriceZeroFilter()
-            ->withVisibilityFilter();
-
-        return $this;
-    }
-
-    public function withPagination(?int $limit, ?int $offset): self
-    {
-        $this->withLimit($limit);
-        $this->withOffset($offset);
-
-        return $this;
-    }
-
-    public function withLimit(?int $limit): self
+    public function withLimit(?int $limit): ProductCriteriaBuilder
     {
         if ($limit) {
             $this->criteria->setLimit($limit);
@@ -105,7 +58,7 @@ class ProductCriteriaBuilder
         return $this;
     }
 
-    public function withOffset(?int $offset): self
+    public function withOffset(?int $offset): ProductCriteriaBuilder
     {
         if ($offset) {
             $this->criteria->setOffset($offset);
@@ -114,37 +67,37 @@ class ProductCriteriaBuilder
         return $this;
     }
 
-    public function withCreatedAtSorting(): self
+    public function withCreatedAtSorting(): ProductCriteriaBuilder
     {
         $this->criteria->addSorting(new FieldSorting('createdAt'));
 
         return $this;
     }
 
-    public function withIdSorting(): self
+    public function withIdSorting(): ProductCriteriaBuilder
     {
         $this->criteria->addSorting(new FieldSorting('id'));
 
         return $this;
     }
 
-    public function withPriceSorting(): self
+    public function withPriceSorting(): ProductCriteriaBuilder
     {
         $this->criteria->addSorting(new FieldSorting('price'));
 
         return $this;
     }
 
-    public function withIds(array $ids): self
+    public function withIds(array $ids): ProductCriteriaBuilder
     {
         $this->criteria->setIds($ids);
 
         return $this;
     }
 
-    public function withOutOfStockFilter(): self
+    public function withOutOfStockFilter(): ProductCriteriaBuilder
     {
-        if (!$this->shouldHideProductsOutOfStock()) {
+        if (!$this->exportContext->shouldHideProductsOutOfStock()) {
             return $this;
         }
 
@@ -161,21 +114,11 @@ class ProductCriteriaBuilder
         return $this;
     }
 
-    protected function shouldHideProductsOutOfStock(): bool
-    {
-        $salesChannelId = $this->salesChannelContext->getSalesChannel()->getId();
-
-        return !!$this->systemConfigService->get(
-            'core.listing.hideCloseoutProductsWhenOutOfStock',
-            $salesChannelId
-        );
-    }
-
-    public function withVisibilityFilter(): self
+    public function withVisibilityFilter(): ProductCriteriaBuilder
     {
         $this->criteria->addFilter(
             new ProductAvailableFilter(
-                $this->salesChannelContext->getSalesChannel()->getId(),
+                $this->exportContext->getSalesChannelId(),
                 ProductVisibilityDefinition::VISIBILITY_SEARCH
             )
         );
@@ -183,7 +126,7 @@ class ProductCriteriaBuilder
         return $this;
     }
 
-    public function withDisplayGroupFilter(): self
+    public function withDisplayGroupFilter(): ProductCriteriaBuilder
     {
         $this->criteria->addGroupField(new FieldGrouping('displayGroup'));
         $this->criteria->addFilter(
@@ -196,7 +139,14 @@ class ProductCriteriaBuilder
         return $this;
     }
 
-    public function withProductIdFilter(?string $productId, ?bool $considerVariants = false): self
+    public function withParentIdFilter(string $parentId): ProductCriteriaBuilder
+    {
+        $this->criteria->addFilter(new EqualsFilter('parentId', $parentId));
+
+        return $this;
+    }
+
+    public function withProductIdFilter(?string $productId, ?bool $considerVariants = false): ProductCriteriaBuilder
     {
         if ($productId) {
             $productFilter = [
@@ -226,22 +176,50 @@ class ProductCriteriaBuilder
         return $this;
     }
 
-    public function withProductAssociations(): self
+    public function withProductAssociations(): ProductCriteriaBuilder
     {
-        Utils::addProductAssociations($this->criteria);
+        $this->criteria->addAssociations(
+            array_merge(Constants::PRODUCT_ASSOCIATIONS, Constants::VARIANT_ASSOCIATIONS),
+        );
 
         return $this;
     }
 
-    public function withVariantAssociations(): self
-    {
-        Utils::addVariantAssociations($this->criteria);
+    /** @inheritDoc */
+    public function withVariantAssociations(
+        ?array $categoryIds = null,
+        ?array $propertyIds = null
+    ): ProductCriteriaBuilder {
+        $this->criteria->addAssociations(Constants::VARIANT_ASSOCIATIONS);
+
+        $categoryCriteria = $this->criteria->getAssociation('categories');
+        $propertiesCriteria = $this->criteria->getAssociation('properties');
+
+        if ($categoryIds) {
+            $categoryCriteria->addFilter(
+                new NotFilter(NotFilter::CONNECTION_AND, [
+                    new EqualsAnyFilter('id', $categoryIds)
+                ])
+            );
+        }
+
+        if ($propertyIds) {
+            $propertiesCriteria->addFilter(
+                new NotFilter(NotFilter::CONNECTION_AND, [
+                    new EqualsAnyFilter('id', $propertyIds)
+                ])
+            );
+        }
 
         return $this;
     }
 
-    public function withPriceZeroFilter(): self
+    public function withPriceZeroFilter(): ProductCriteriaBuilder
     {
+        if ($this->config->exportZeroPricedProducts()) {
+            return $this;
+        }
+
         $this->criteria->addFilter(
             new RangeFilter('price', [
                 RangeFilter::GT => 0
@@ -251,23 +229,16 @@ class ProductCriteriaBuilder
         return $this;
     }
 
-    public function withActiveParentOrInactiveParentWithVariantsFilter(): self
+    public function withActiveParentOrInactiveParentWithVariantsFilter(): ProductCriteriaBuilder
     {
         $notActiveOrPriceZeroFilter = new MultiFilter(
             MultiFilter::CONNECTION_OR,
-            [
-                new EqualsFilter('active', false),
-                new EqualsFilter('price', 0)
-            ]
+            $this->getNotActiveFilterBasedOnPriceConfiguration()
         );
 
         $activeParentFilter =  new MultiFilter(
             MultiFilter::CONNECTION_AND,
-            [
-                new EqualsFilter('parentId', null),
-                new EqualsFilter('active', true),
-                new RangeFilter('price', [RangeFilter::GT => 0])
-            ]
+            $this->getActiveFilterBasedOnPriceConfiguration()
         );
 
         /**
@@ -295,31 +266,47 @@ class ProductCriteriaBuilder
         return $this;
     }
 
-    public function withParentIdFilterWithVisibility(ProductEntity $productEntity): self
-    {
-        if (!$productEntity->getParentId()) {
-            $this->adaptProductIdCriteriaWithParentId($productEntity);
-        } else {
-            $this->adaptProductIdCriteriaWithoutParentId($productEntity);
-        }
-
-        return $this;
-    }
-
-    protected function adaptProductIdCriteriaWithParentId(ProductEntity $productEntity): void
+    protected function adaptProductIdCriteriaWithParentId(string $productId): void
     {
         $this->criteria->addFilter(
             new MultiFilter(
                 MultiFilter::CONNECTION_AND,
                 [
-                    new EqualsFilter('parentId', $productEntity->getId()),
+                    new EqualsFilter('parentId', $productId),
                     $this->getVisibilityFilterForRealVariants()
                 ]
             )
         );
     }
 
-    protected function adaptProductIdCriteriaWithoutParentId(ProductEntity $productEntity): void
+    protected function getNotActiveFilterBasedOnPriceConfiguration(): array
+    {
+        $notActiveFilter = [
+            new EqualsFilter('active', false)
+        ];
+
+        if (!$this->config->exportZeroPricedProducts()) {
+            $notActiveFilter[] = new EqualsFilter('price', 0);
+        }
+
+        return $notActiveFilter;
+    }
+
+    protected function getActiveFilterBasedOnPriceConfiguration(): array
+    {
+        $activeFilter = [
+            new EqualsFilter('parentId', null),
+            new EqualsFilter('active', true),
+        ];
+
+        if (!$this->config->exportZeroPricedProducts()) {
+            $activeFilter[] = new RangeFilter('price', [RangeFilter::GT => 0]);
+        }
+
+        return $activeFilter;
+    }
+
+    protected function adaptProductIdCriteriaWithoutParentId(string $productId, string $parentId): void
     {
         $this->criteria->addFilter(
             new MultiFilter(
@@ -328,24 +315,24 @@ class ProductCriteriaBuilder
                     new MultiFilter(
                         MultiFilter::CONNECTION_AND,
                         [
-                            new EqualsFilter('parentId', $productEntity->getParentId()),
+                            new EqualsFilter('parentId', $parentId),
                             $this->getVisibilityFilterForRealVariants()
                         ]
                     ),
-                    new EqualsFilter('id', $productEntity->getParentId())
+                    new EqualsFilter('id', $parentId)
                 ]
             )
         );
 
         $this->criteria->addFilter(
-            new NotFilter(NotFilter::CONNECTION_AND, [new EqualsFilter('id', $productEntity->getId())])
+            new NotFilter(NotFilter::CONNECTION_AND, [new EqualsFilter('id', $productId)])
         );
     }
 
     protected function getVisibilityFilterForRealVariants(): ProductAvailableFilter
     {
         return new ProductAvailableFilter(
-            $this->salesChannelContext->getSalesChannel()->getId(),
+            $this->exportContext->getSalesChannelId(),
             ProductVisibilityDefinition::VISIBILITY_SEARCH
         );
     }

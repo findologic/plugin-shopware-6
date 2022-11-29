@@ -74,7 +74,11 @@ class SearchRequestFactoryTest extends TestCase
             ->with($cacheKey)
             ->willReturn($cacheItemMock);
 
-        $searchRequestFactory = new SearchRequestFactory($cachePoolMock, $this->getContainer());
+        $searchRequestFactory = new SearchRequestFactory(
+            $cachePoolMock,
+            $this->getContainer()->get('plugin.repository'),
+            $this->getContainer()->getParameter('kernel.shopware_version')
+        );
 
         $request = new Request();
         $request->headers->set('referer', $expectedReferer);

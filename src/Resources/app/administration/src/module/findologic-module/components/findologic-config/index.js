@@ -105,6 +105,23 @@ Component.register('findologic-config', {
             ];
         },
 
+        advancedPricingOptions() {
+            return [
+                {
+                    label: this.$tc('findologic.settingForm.config.advancedPricing.off.label'),
+                    value: 'off',
+                },
+                {
+                    label: this.$tc('findologic.settingForm.config.advancedPricing.cheapest.label'),
+                    value: 'cheapest',
+                },
+                {
+                    label: this.$tc('findologic.settingForm.config.advancedPricing.unit.label'),
+                    value: 'unit',
+                },
+            ];
+        },
+
         integrationType() {
             return this.actualConfigData['FinSearch.config.integrationType'];
         },
@@ -192,6 +209,14 @@ Component.register('findologic-config', {
         onCategoryRemove(item) {
             this.actualConfigData['FinSearch.config.crossSellingCategories'] =
         this.actualConfigData['FinSearch.config.crossSellingCategories'].filter(categoryId => categoryId !== item.id);
+        },
+
+        onAdvancedPricingChange(newConfig) {
+            const mainVariantConfig = this.actualConfigData['FinSearch.config.mainVariant'];
+
+            if (newConfig !== 'off' && mainVariantConfig === 'cheapest') {
+                this.actualConfigData['FinSearch.config.mainVariant'] = 'default';
+            }
         },
     },
 });

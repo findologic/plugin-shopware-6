@@ -6,20 +6,22 @@ namespace FINDOLOGIC\FinSearch\Tests\Export\Search;
 
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
+use FINDOLOGIC\FinSearch\Export\Search\VariantIterator;
 use FINDOLOGIC\FinSearch\Tests\TestCase;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ServicesHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Config\MainVariant;
+use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use PHPUnit\Framework\AssertionFailedError;
-use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\RepositoryIterator;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity;
 
 class ProductSearcherTest extends TestCase
 {
@@ -27,33 +29,32 @@ class ProductSearcherTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
     use ConfigHelper;
+    use ServicesHelper;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var ProductCriteriaBuilder */
-    private $productCriteriaBuilder;
+    private ExportContext $exportContext;
 
-    /** @var ProductSearcher */
-    private $defaultProductSearcher;
+    private ProductCriteriaBuilder $productCriteriaBuilder;
+
+    private ProductSearcher $defaultProductSearcher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->salesChannelContext = $this->buildSalesChannelContext();
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'default']);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
-        $this->productCriteriaBuilder = new ProductCriteriaBuilder(
+        $this->exportContext = $this->getExportContext(
             $this->salesChannelContext,
-            $this->getContainer()->get(SystemConfigService::class)
+            $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId())
         );
-        $this->defaultProductSearcher = new ProductSearcher(
+
+        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext, $this->getPluginConfig());
+        $this->defaultProductSearcher = $this->getProductSearcher(
             $this->salesChannelContext,
-            $this->getContainer()->get('product.repository'),
+            $this->getContainer(),
             $this->productCriteriaBuilder,
-            $mockedConfig
+            $this->exportContext
         );
     }
 
@@ -62,25 +63,21 @@ class ProductSearcherTest extends TestCase
         $expectedProduct = $this->createVisibleTestProduct();
 
         $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
-
-        $this->assertCount(1, $products);
-        /** @var ProductEntity $product */
         $product = $products->first();
 
-        $this->assertSame($expectedProduct->getId(), $product->getId());
+        $this->assertCount(1, $products);
+        $this->assertSame($expectedProduct->id, $product->id);
     }
 
     public function testFindsProductId(): void
     {
         $expectedProduct = $this->createVisibleTestProduct();
 
-        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0, $expectedProduct->getId());
-
-        $this->assertCount(1, $products);
-        /** @var ProductEntity $product */
+        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0, $expectedProduct->id);
         $product = $products->first();
 
-        $this->assertSame($expectedProduct->getId(), $product->getId());
+        $this->assertCount(1, $products);
+        $this->assertSame($expectedProduct->id, $product->id);
     }
 
     public function testIgnoresProductsWithPriceZero(): void
@@ -122,11 +119,15 @@ class ProductSearcherTest extends TestCase
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 0, 'net' => 0, 'linked' => false]]
         ], [$variantInfo]);
 
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-        $this->defaultProductSearcher->setConfig($mockedConfig);
+        $productSearcher = $this->getProductSearcher(
+            $this->salesChannelContext,
+            $this->getContainer(),
+            $this->productCriteriaBuilder,
+            $this->exportContext,
+            ['mainVariant' => $config]
+        );
 
-        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
+        $products = $productSearcher->findVisibleProducts(20, 0);
 
         $this->assertCount(1, $products);
     }
@@ -150,19 +151,23 @@ class ProductSearcherTest extends TestCase
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]]
         ], [$variantInfo]);
 
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-        $this->defaultProductSearcher->setConfig($mockedConfig);
+        $productSearcher = $this->getProductSearcher(
+            $this->salesChannelContext,
+            $this->getContainer(),
+            $this->productCriteriaBuilder,
+            $this->exportContext,
+            ['mainVariant' => $config]
+        );
 
-        $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
+        $products = $productSearcher->findVisibleProducts(20, 0);
         $product = $products->first();
 
         $this->assertCount(1, $products);
         // They started to return the correct translation, instead of the defined product name
         if (Utils::versionGreaterOrEqual('6.4.11.0')) {
-            $this->assertSame('FINDOLOGIC VARIANT EN', $product->getName());
+            $this->assertSame('FINDOLOGIC VARIANT EN', $product->name);
         } else {
-            $this->assertSame('FINDOLOGIC VARIANT', $product->getName());
+            $this->assertSame('FINDOLOGIC VARIANT', $product->name);
         }
     }
 
@@ -220,14 +225,12 @@ class ProductSearcherTest extends TestCase
         ];
     }
 
-    private function getChildrenVariants(RepositoryIterator $childProductIterator): array
+    private function getChildrenVariants(VariantIterator $childProductIterator): array
     {
         $childVariants = [];
 
-        while (($variantsResult = $childProductIterator->fetch()) !== null) {
-            $variants = $variantsResult->getEntities();
-
-            foreach ($variants->getElements() as $variant) {
+        while (($variants = $childProductIterator->fetch()) !== null) {
+            foreach ($variants as $variant) {
                 $childVariants[] = $variant;
             }
         }
@@ -265,22 +268,23 @@ class ProductSearcherTest extends TestCase
         $expectedChildVariantId = $expectedSecondVariantId;
 
         $childProductIterator = $this->defaultProductSearcher->buildVariantIterator($product, 5);
+        /** @var ProductEntity[] $childVariants */
         $childVariants = $this->getChildrenVariants($childProductIterator);
 
         try {
-            $this->assertSame($expectedFirstVariantId, $product->getId());
+            $this->assertSame($expectedFirstVariantId, $product->id);
         } catch (AssertionFailedError $e) {
-            $this->assertSame($expectedSecondVariantId, $product->getId());
+            $this->assertSame($expectedSecondVariantId, $product->id);
             $expectedChildVariantId = $expectedFirstVariantId;
         }
 
         $this->assertCount($expectedChildCount, $childVariants);
 
         foreach ($childVariants as $child) {
-            if (!$child->getParentId()) {
-                $this->assertSame($mainProduct['id'], $child->getId());
+            if (!$child->parentId) {
+                $this->assertSame($mainProduct['id'], $child->id);
             } else {
-                $this->assertSame($expectedChildVariantId, $child->getId());
+                $this->assertSame($expectedChildVariantId, $child->id);
             }
         }
     }
@@ -354,8 +358,8 @@ class ProductSearcherTest extends TestCase
         $this->assertCount(2, $result->getElements());
 
         $products = array_values($result->getElements());
-        $this->assertSame($expectedFirstVariantId, $products[0]->getId());
-        $this->assertSame($expectedSecondVariantId, $products[1]->getId());
+        $this->assertSame($expectedFirstVariantId, $products[0]->id);
+        $this->assertSame($expectedSecondVariantId, $products[1]->id);
     }
 
     public function testTheMainProductIsBasedOnTheMainVariantIdOfADisplayGroup(): void
@@ -440,17 +444,18 @@ class ProductSearcherTest extends TestCase
         $this->assertCount(1, $result->getElements());
 
         $product = $result->first();
-        $this->assertSame($expectedMainVariantId, $product->getId());
+        $this->assertSame($expectedMainVariantId, $product->id);
 
         $childrenIterator = $this->defaultProductSearcher->buildVariantIterator($product, 20);
+        /** @var ProductEntity[] $childrenVariants */
         $childrenVariants = $this->getChildrenVariants($childrenIterator);
 
         $this->assertCount(2, $childrenVariants);
         foreach ($childrenVariants as $child) {
-            if ($child->getParentId() === null) {
-                $this->assertSame($expectedParentId, $child->getId());
+            if ($child->parentId === null) {
+                $this->assertSame($expectedParentId, $child->id);
             } else {
-                $this->assertSame($expectedFirstVariantId, $child->getId());
+                $this->assertSame($expectedFirstVariantId, $child->id);
             }
         }
     }
@@ -561,17 +566,20 @@ class ProductSearcherTest extends TestCase
             $expectedThirdVariantId
         );
 
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'parent']);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
-        $this->defaultProductSearcher->setConfig($mockedConfig);
-        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
+        $productSearcher = $this->getProductSearcher(
+            $this->salesChannelContext,
+            $this->getContainer(),
+            $this->productCriteriaBuilder,
+            $this->exportContext,
+            ['mainVariant' => MainVariant::MAIN_PARENT]
+        );
+        $result = $productSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
         $this->assertCount(1, $elements);
         $mainVariant = current($elements);
 
-        $this->assertSame($expectedMainVariantId, $mainVariant->getId());
+        $this->assertSame($expectedMainVariantId, $mainVariant->id);
     }
 
     public function testProductWithMultipleVariantsIfExportConfigIsDefault(): void
@@ -589,10 +597,6 @@ class ProductSearcherTest extends TestCase
             $expectedThirdVariantId
         );
 
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'default']);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
-        $this->defaultProductSearcher->setConfig($mockedConfig);
         $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
@@ -682,17 +686,20 @@ class ProductSearcherTest extends TestCase
             $expectedMainVariantId = $expectedFirstVariantId;
         }
 
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'cheapest']);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
-        $this->defaultProductSearcher->setConfig($mockedConfig);
-        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
+        $productSearcher = $this->getProductSearcher(
+            $this->salesChannelContext,
+            $this->getContainer(),
+            $this->productCriteriaBuilder,
+            $this->exportContext,
+            ['mainVariant' => MainVariant::CHEAPEST]
+        );
+        $result = $productSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
         $this->assertCount(1, $elements);
         $mainVariant = current($elements);
 
-        $this->assertSame($expectedMainVariantId, $mainVariant->getId());
+        $this->assertSame($expectedMainVariantId, $mainVariant->id);
     }
 
     /**
@@ -702,11 +709,14 @@ class ProductSearcherTest extends TestCase
     {
         $parentId = Uuid::randomHex();
         $this->createVisibleTestProduct(['id' => $parentId]);
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => $config]);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
-        $this->defaultProductSearcher->setConfig($mockedConfig);
-        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
+        $productSearcher = $this->getProductSearcher(
+            $this->salesChannelContext,
+            $this->getContainer(),
+            $this->productCriteriaBuilder,
+            $this->exportContext,
+            ['mainVariant' => $config]
+        );
+        $result = $productSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
         $this->assertCount(1, $elements);
@@ -714,15 +724,11 @@ class ProductSearcherTest extends TestCase
 
         // If there are no variants, the main product will always be exported as the main variant, irrespective
         // of the export configuration.
-        $this->assertSame($parentId, $mainVariant->getId());
+        $this->assertSame($parentId, $mainVariant->id);
     }
 
     public function testProductIsNotSkippedWhenExportedMainVariantIsNotAvailable(): void
     {
-        if (Utils::versionLowerThan('6.4.4')) {
-            $this->markTestSkipped('Main variant id logic only exists since newer Shopware versions');
-        }
-
         $parentId = Uuid::randomHex();
         $expectedFirstVariantId = Uuid::randomHex();
         $expectedSecondVariantId = Uuid::randomHex();
@@ -758,11 +764,14 @@ class ProductSearcherTest extends TestCase
             ]
         ], Context::createDefaultContext());
 
-        $mockedConfig = $this->getFindologicConfig(['mainVariant' => 'cheapest']);
-        $mockedConfig->initializeBySalesChannel($this->salesChannelContext);
-
-        $this->defaultProductSearcher->setConfig($mockedConfig);
-        $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
+        $productSearcher = $this->getProductSearcher(
+            $this->salesChannelContext,
+            $this->getContainer(),
+            $this->productCriteriaBuilder,
+            $this->exportContext,
+            ['mainVariant' => MainVariant::CHEAPEST]
+        );
+        $result = $productSearcher->findVisibleProducts(20, 0);
         $elements = $result->getElements();
 
         $this->assertCount(1, $elements);
@@ -794,15 +803,35 @@ class ProductSearcherTest extends TestCase
         }
 
         $products = $this->defaultProductSearcher->findVisibleProducts(20, 0);
-        $productsKeyed = array_keys($products->getElements());
+        $productsKeyed = $products->getElements();
 
-        $this->assertEquals($beforeId, $productsKeyed[0]);
-        $this->assertEquals($productId5, $productsKeyed[1]);
-        $this->assertEquals($productId4, $productsKeyed[2]);
-        $this->assertEquals($productId2, $productsKeyed[3]);
-        $this->assertEquals($productId3, $productsKeyed[4]);
-        $this->assertEquals($productId1, $productsKeyed[5]);
-        $this->assertEquals($afterId, $productsKeyed[6]);
+        $this->assertEquals($beforeId, $productsKeyed[0]->id);
+        $this->assertEquals($productId5, $productsKeyed[1]->id);
+        $this->assertEquals($productId4, $productsKeyed[2]->id);
+        $this->assertEquals($productId2, $productsKeyed[3]->id);
+        $this->assertEquals($productId3, $productsKeyed[4]->id);
+        $this->assertEquals($productId1, $productsKeyed[5]->id);
+        $this->assertEquals($afterId, $productsKeyed[6]->id);
+    }
+
+    public function testZeroPriceProductIsFoundIfConfigSet(): void
+    {
+        $config = $this->getPluginConfig(['exportZeroPricedProducts' => true]);
+        $productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext, $config);
+        $defaultProductSearcher = $this->getProductSearcher(
+            $this->salesChannelContext,
+            $this->getContainer(),
+            $productCriteriaBuilder,
+            $this->exportContext
+        );
+
+        $this->createVisibleTestProduct(
+            ['price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 0, 'net' => 0, 'linked' => false]]]
+        );
+
+        $products = $defaultProductSearcher->findVisibleProducts(20, 0);
+
+        $this->assertCount(1, $products);
     }
 
     private function setCreatedAtValue($productNumber, $created_at): void

@@ -6,14 +6,12 @@ namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values;
 
 class CategoryFilterValue extends FilterValue
 {
-    /** @var bool */
-    private $selected = false;
+    private bool $selected = false;
 
     /** @var CategoryFilterValue[] */
-    private $values;
+    private array $values;
 
-    /** @var int */
-    private $frequency = 0;
+    private int $frequency = 0;
 
     public function isSelected(): bool
     {

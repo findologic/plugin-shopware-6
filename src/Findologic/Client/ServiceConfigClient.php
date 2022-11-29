@@ -11,11 +11,9 @@ use GuzzleHttp\Exception\ClientException;
 
 class ServiceConfigClient
 {
-    /** @var string */
-    private $shopkey;
+    private string $shopkey;
 
-    /** @var Client */
-    private $client;
+    private Client $client;
 
     public function __construct(string $shopkey, ?Client $client = null)
     {

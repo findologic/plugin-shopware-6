@@ -9,12 +9,6 @@ use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\PriceSortingHandler;
-use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ProductNameSortingHandler;
-use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ReleaseDateSortingHandler;
-use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\ScoreSortingHandler;
-use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\SortingHandlerInterface;
-use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\SortingHandler\TopSellerSortingHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
@@ -38,40 +32,19 @@ abstract class SearchNavigationRequestHandler
         'title',
     ];
 
-    /**
-     * @var ServiceConfigResource
-     */
-    protected $serviceConfigResource;
+    protected ServiceConfigResource $serviceConfigResource;
 
-    /**
-     * @var Config
-     */
-    protected $config;
+    protected Config $config;
 
-    /**
-     * @var ApiConfig
-     */
-    protected $apiConfig;
+    protected ApiConfig $apiConfig;
 
-    /**
-     * @var ApiClient
-     */
-    protected $apiClient;
+    protected ApiClient $apiClient;
 
-    /**
-     * @var FindologicRequestFactory
-     */
-    protected $findologicRequestFactory;
+    protected FindologicRequestFactory $findologicRequestFactory;
 
-    /**
-     * @var SortingHandlerService
-     */
-    protected $sortingHandlerService;
+    protected SortingHandlerService $sortingHandlerService;
 
-    /**
-     * @var FilterHandler
-     */
-    protected $filterHandler;
+    protected FilterHandler $filterHandler;
 
     public function __construct(
         ServiceConfigResource $serviceConfigResource,
@@ -172,10 +145,6 @@ abstract class SearchNavigationRequestHandler
             return;
         }
 
-        $usergroup = Utils::calculateUserGroupHash(
-            $this->apiConfig->getServiceId(),
-            $group->getId()
-        );
-        $request->addUserGroup($usergroup);
+        $request->addUserGroup($group->getId());
     }
 }

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Controller;
 
-use FINDOLOGIC\FinSearch\Export\SalesChannelService;
-use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExportHelper;
+use FINDOLOGIC\FinSearch\Export\Services\SalesChannelService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -35,12 +34,10 @@ class ExportControllerTest extends TestCase
     use SalesChannelHelper;
     use ProductHelper;
     use PluginConfigHelper;
-    use ExportHelper;
 
     private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
     protected function setUp(): void
     {
@@ -58,7 +55,7 @@ class ExportControllerTest extends TestCase
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
         $parsedResponse = new SimpleXMLElement($response->getContent());
 
-        $this->assertSame($product->getId(), $parsedResponse->items->item->attributes()->id->__toString());
+        $this->assertSame($product->id, $parsedResponse->items->item->attributes()->id->__toString());
     }
 
     public function testSingleProductIsExportedWhenProductIdIsGiven(): void
@@ -69,7 +66,7 @@ class ExportControllerTest extends TestCase
 
         $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
 
-        $response = $this->sendExportRequest(['productId' => $product->getId()]);
+        $response = $this->sendExportRequest(['productId' => $product->id]);
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
@@ -77,7 +74,7 @@ class ExportControllerTest extends TestCase
 
         $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
         $this->assertSame(2, (int)$parsedResponse->items->attributes()->total);
-        $this->assertSame($product->getId(), $parsedResponse->items->item->attributes()->id->__toString());
+        $this->assertSame($product->id, $parsedResponse->items->item->attributes()->id->__toString());
     }
 
     public function testExportWithUnknownShopkey(): void
@@ -96,33 +93,41 @@ class ExportControllerTest extends TestCase
         );
     }
 
+    public function testDynamicProductGroupExportWithUnknownShopkey(): void
+    {
+        $unknownShopkey = '12341234123412341234123412341234';
+        $response = $this->sendDynamicProductGroupRequest(['shopkey' => $unknownShopkey]);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertSame('application/json', $response->headers->get('content-type'));
+        $parsedResponse = json_decode($response->getContent(), true);
+
+        $this->assertCount(1, $parsedResponse['general']);
+        $this->assertSame(
+            sprintf('Shopkey %s is not assigned to any sales channel.', $unknownShopkey),
+            $parsedResponse['general'][0]
+        );
+    }
+
     public function wrongArgumentsProvider(): array
     {
         return [
-            'Count of zero' => [
-                'params' => ['count' => 0],
-                'errorMessages' => ['count: This value should be greater than 0.'],
-            ],
-            'Start is negative and count is zero' => [
+            'Start is negative' => [
                 'params' => [
-                    'start' => -5,
-                    'count' => 0
+                    'start' => -5
                 ],
                 'errorMessages' => [
                     'start: This value should be greater than or equal to 0.',
-                    'count: This value should be greater than 0.'
                 ],
             ],
-            'Sales channel is not searched when start is negative, count is negative and shopkey is invalid' => [
+            'Sales channel is not searched when start is negative and shopkey is invalid' => [
                 'params' => [
                     'start' => -5,
-                    'count' => 0,
                     'shopkey' => 'I do not follow the shopkey schema'
                 ],
                 'errorMessages' => [
-                    'shopkey: Invalid key provided.',
                     'start: This value should be greater than or equal to 0.',
-                    'count: This value should be greater than 0.',
+                    'shopkey: Invalid key provided.',
                 ],
             ],
             'Sales channel is searched when shopkey is valid but is not assigned to a sales channel' => [
@@ -176,12 +181,26 @@ class ExportControllerTest extends TestCase
     protected function sendExportRequest(array $overrides = []): Response
     {
         $defaults = [
-            'shopkey' => self::VALID_SHOPKEY
+            'shopkey' => self::VALID_SHOPKEY,
+            'excludeProductGroups' => 1
         ];
 
         $params = array_merge($defaults, $overrides);
         $client = $this->getTestClient($this->salesChannelContext);
         $client->request('GET', '/findologic?' . http_build_query($params));
+
+        return $client->getResponse();
+    }
+
+    protected function sendDynamicProductGroupRequest(array $overrides = []): Response
+    {
+        $defaults = [
+            'shopkey' => self::VALID_SHOPKEY
+        ];
+
+        $params = array_merge($defaults, $overrides);
+        $client = $this->getTestClient($this->salesChannelContext);
+        $client->request('GET', '/findologic/dynamic-product-groups?' . http_build_query($params));
 
         return $client->getResponse();
     }
@@ -207,7 +226,7 @@ class ExportControllerTest extends TestCase
             $this->salesChannelContext,
             $anotherShopkey
         );
-        $response = $this->sendExportRequest(['productId' => $product->getId(), 'shopkey' => $anotherShopkey]);
+        $response = $this->sendExportRequest(['productId' => $product->id, 'shopkey' => $anotherShopkey]);
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
@@ -238,7 +257,7 @@ class ExportControllerTest extends TestCase
             $salesChannelContext,
             self::VALID_SHOPKEY
         );
-        $response = $this->sendExportRequest(['productId' => $product->getId()]);
+        $response = $this->sendExportRequest(['productId' => $product->id]);
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
@@ -281,17 +300,17 @@ class ExportControllerTest extends TestCase
             Context::createDefaultContext()
         );
 
-        $salesChannelContext = $this->createSalesChannelContext($currencies, $languages, $languageId);
-        $salesChannelContext->getSalesChannel()->setLanguageId($languageId);
+        $this->salesChannelContext = $this->createSalesChannelContext($currencies, $languages, $languageId);
+        $this->salesChannelContext->getSalesChannel()->setLanguageId($languageId);
 
         $this->getContainer()->get('sales_channel.repository')->update([
             [
-                'id' => $salesChannelContext->getSalesChannel()->getId(),
+                'id' => $this->salesChannelContext->getSalesChannel()->getId(),
                 'domains' => [
                     [
                         'currencyId' => $currencies->first()->getId(),
                         'snippetSetId' =>
-                            $salesChannelContext->getSalesChannel()->getDomains()->first()->getSnippetSetId(),
+                            $this->salesChannelContext->getSalesChannel()->getDomains()->first()->getSnippetSetId(),
                         'url' => 'http://cool-url.com/german'
                     ]
                 ]
@@ -301,14 +320,14 @@ class ExportControllerTest extends TestCase
         $this->enableFindologicPlugin(
             $this->getContainer(),
             self::VALID_SHOPKEY,
-            $salesChannelContext
+            $this->salesChannelContext
         );
 
         $product = $this->createVisibleTestProduct([
             'visibilities' => [
                 [
                     'id' => Uuid::randomHex(),
-                    'salesChannelId' => $salesChannelContext->getSalesChannel()->getId(),
+                    'salesChannelId' => $this->salesChannelContext->getSalesChannel()->getId(),
                     'visibility' => 20
                 ]
             ],
@@ -325,9 +344,9 @@ class ExportControllerTest extends TestCase
         $parsedResponse = new SimpleXMLElement($response->getContent());
 
         $this->assertSame(1, (int)$parsedResponse->items->attributes()->count);
-        $this->assertSame($product->getId(), $parsedResponse->items->item->attributes()->id->__toString());
+        $this->assertSame($product->id, $parsedResponse->items->item->attributes()->id->__toString());
         $this->assertSame(
-            'http://localhost/german/detail/' . $product->getId(),
+            'http://localhost/german/detail/' . $product->id,
             $parsedResponse->items->item->urls->url->__toString()
         );
     }
@@ -404,7 +423,6 @@ class ExportControllerTest extends TestCase
                     'name' => 'Cool URL Sales Channel'
                 ]
             ],
-
         ];
 
         return $this->buildSalesChannelContext(
@@ -414,5 +432,98 @@ class ExportControllerTest extends TestCase
             $languages->first()->getId(),
             $overrides
         );
+    }
+
+    /**
+     * @dataProvider wrongArgumentsProvider
+     */
+    public function testDynamicProductGroupExportWithWrongArguments(array $params, array $errorMessages): void
+    {
+        if (!isset($params['shopkey'])) {
+            $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
+        }
+
+        $response = $this->sendDynamicProductGroupRequest($params);
+        $this->assertSame(422, $response->getStatusCode());
+        $parsedResponse = json_decode($response->getContent(), true);
+
+        $this->assertSame(
+            $errorMessages,
+            $parsedResponse['general']
+        );
+    }
+
+    public function testAdditionalVariantPropertiesAndCategoriesAreExported(): void
+    {
+        $expectedParentId = Uuid::randomHex();
+        $expectedFirstVariantId = Uuid::randomHex();
+
+        $propertyId = Uuid::randomHex();
+        $propertyId2 = Uuid::randomHex();
+        $propertyId3 = Uuid::randomHex();
+        $optionGroupId = Uuid::randomHex();
+        $optionGroupId2 = Uuid::randomHex();
+
+        $variants = [];
+        $variants[] = $this->getBasicVariantData([
+            'id' => $expectedFirstVariantId,
+            'parentId' => $expectedParentId,
+            'productNumber' => 'FINDOLOGIC001.1',
+            'name' => 'FINDOLOGIC VARIANT 1',
+            'properties' => [
+                [
+                    'id' => $propertyId2,
+                    'name' => 'Green',
+                    'group' => [
+                        'id' => $optionGroupId,
+                        'name' => 'Color',
+                    ],
+                ],
+                [
+                    'id' => $propertyId3,
+                    'name' => 'M',
+                    'group' => [
+                        'id' => $optionGroupId2,
+                        'name' => 'Size',
+                    ],
+                ]
+            ]
+        ]);
+
+        $this->createVisibleTestProductWithCustomVariants([
+            'id' => $expectedParentId,
+            'active' => false,
+            'properties' => [
+                [
+                    'id' => $propertyId,
+                    'name' => 'Blue',
+                    'group' => [
+                        'id' => $optionGroupId,
+                        'name' => 'Color',
+                    ],
+                ]
+            ]
+        ], $variants);
+
+        $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
+
+        $response = $this->sendExportRequest();
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('text/xml; charset=UTF-8', $response->headers->get('content-type'));
+        $parsedResponse = new SimpleXMLElement($response->getContent());
+
+        foreach ($parsedResponse->items->item->allAttributes->attributes->children() as $attribute) {
+            $values = $attribute->values;
+
+            switch ($attribute->key->__toString()) {
+                case 'Color':
+                    $this->assertEquals(2, $values->value->count());
+                    break;
+                case 'Size':
+                    $this->assertEquals(1, $values->value->count());
+                    break;
+            }
+        }
     }
 }

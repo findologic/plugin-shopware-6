@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
 
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
-use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber
     as ShopwareProductListingFeaturesSubscriber;
@@ -14,14 +13,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ProductListingFeaturesSubscriber implements EventSubscriberInterface
 {
-    /** @var ShopwareProductListingFeaturesSubscriber */
-    protected $decorated;
+    protected ShopwareProductListingFeaturesSubscriber $decorated;
 
-    /** @var FindologicSearchService */
-    protected $findologicSearchService;
+    protected FindologicSearchService $findologicSearchService;
 
-    /** @var bool */
-    protected $isListingRequestHandled = false;
+    protected bool $isListingRequestHandled = false;
 
     public function __construct(
         ShopwareProductListingFeaturesSubscriber $decorated,
@@ -34,12 +30,6 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return ShopwareProductListingFeaturesSubscriber::getSubscribedEvents();
-    }
-
-    public function handleResult(ProductListingResultEvent $event): void
-    {
-        $this->decorated->handleResult($event);
-        $this->findologicSearchService->handleResult($event);
     }
 
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
