@@ -29,23 +29,17 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SearchController extends StorefrontController
 {
-    /** @var ShopwareSearchController */
-    private $decorated;
+    private ShopwareSearchController $decorated;
 
-    /** @var SearchPageLoader */
-    private $searchPageLoader;
+    private SearchPageLoader $searchPageLoader;
 
-    /** @var FilterHandler */
-    private $filterHandler;
+    private FilterHandler $filterHandler;
 
-    /** @var FindologicSearchService */
-    private $findologicSearchService;
+    private FindologicSearchService $findologicSearchService;
 
-    /** @var ServiceConfigResource */
-    private $serviceConfigResource;
+    private ServiceConfigResource $serviceConfigResource;
 
-    /** @var Config */
-    private $config;
+    private Config $config;
 
     public function __construct(
         ShopwareSearchController $decorated,

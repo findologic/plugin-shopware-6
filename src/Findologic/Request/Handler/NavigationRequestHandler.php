@@ -18,21 +18,21 @@ use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class NavigationRequestHandler extends SearchNavigationRequestHandler
 {
-    /** @var ContainerInterface */
-    private $container;
+    private EntityRepository $categoryRepository;
 
     public function __construct(
         ServiceConfigResource $serviceConfigResource,
@@ -41,7 +41,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         ApiConfig $apiConfig,
         ApiClient $apiClient,
         SortingHandlerService $sortingHandlerService,
-        ContainerInterface $container
+        EntityRepository $categoryRepository
     ) {
         parent::__construct(
             $serviceConfigResource,
@@ -52,7 +52,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             $sortingHandlerService
         );
 
-        $this->container = $container;
+        $this->categoryRepository = $categoryRepository;
     }
 
     /**
@@ -147,7 +147,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
      */
     public function fetchCategoryPath(Request $request, SalesChannelContext $salesChannelContext): ?string
     {
-        $navigationCategoryParser = new NavigationCategoryParser($this->container);
+        $navigationCategoryParser = new NavigationCategoryParser($this->categoryRepository);
         $category = $navigationCategoryParser->parse($request, $salesChannelContext);
 
         if (!$category) {
@@ -159,11 +159,11 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         }
 
         $rootCategory = Utils::fetchNavigationCategoryFromSalesChannel(
-            $this->container->get('category.repository'),
+            $this->categoryRepository,
             $salesChannelContext->getSalesChannel()
         );
 
-        return Utils::buildCategoryPath($category->getBreadcrumb(), $rootCategory);
+        return CommonUtils::buildCategoryPath($category->getBreadcrumb(), $rootCategory->getBreadcrumb());
     }
 
     private function currentCategoryIsRootCategory(

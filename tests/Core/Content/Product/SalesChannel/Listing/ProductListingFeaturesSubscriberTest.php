@@ -27,6 +27,7 @@ use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\DefaultInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\SearchTermQueryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
+use FINDOLOGIC\FinSearch\Struct\SystemAware;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ExtensionHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
@@ -43,7 +44,6 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as
     ShopwareProductListingFeaturesSubscriber;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingEntity;
 use Shopware\Core\Defaults;
@@ -60,7 +60,6 @@ use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Shopware\Storefront\Page\GenericPageLoader;
 use Shopware\Storefront\Page\Page;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
 use SimpleXMLElement;
@@ -85,9 +84,6 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
     /** @var EntityRepository|MockObject */
     private $entityRepositoryMock;
-
-    /** @var ProductListingSortingRegistry|MockObject */
-    private $productListingSortingRegistry;
 
     /** @var NavigationRequestFactory|MockObject */
     private $navigationRequestFactoryMock;
@@ -119,11 +115,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     /** @var EventDispatcherInterface|MockObject */
     private $eventDispatcherMock;
 
-    /** @var SalesChannelContext */
-    private $salesChannelContext;
+    private SalesChannelContext $salesChannelContext;
 
-    /** @var ProductSortingCollection */
-    private $sortingCollection;
+    private ProductSortingCollection $sortingCollection;
 
     public function setUp(): void
     {
@@ -185,12 +179,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ],
             'includes' => null,
         ];
-        if (Utils::versionLowerThan('6.3')) {
-            $expectedAssign['source'] = null;
-        }
-        if (Utils::versionLowerThan('6.4')) {
-            $expectedAssign['states'] = [];
-        }
+
         if (Utils::versionGreaterOrEqual('6.4.9.0')) {
             $expectedAssign['fields'] = [];
         }
@@ -570,36 +559,25 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->entityRepositoryMock = $this->getMockBuilder(EntityRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->productListingSortingRegistry = $this->getMockBuilder(ProductListingSortingRegistry::class)
-            ->disableOriginalConstructor()
-            ->getMock();
 
-        // Sorting is handled via database since Shopware 6.3.2.
-        if (Utils::versionGreaterOrEqual('6.3.2')) {
-            $sorting = new ProductSortingEntity();
-            $sorting->setId('score');
-            $sorting->setKey('score');
-            $sorting->setFields(['score' => ['field' => '_score', 'order' => 'asc']]);
-            $sorting->setUniqueIdentifier('score');
-            $this->sortingCollection = new ProductSortingCollection([$sorting]);
+        $sorting = new ProductSortingEntity();
+        $sorting->setId('score');
+        $sorting->setKey('score');
+        $sorting->setFields(['score' => ['field' => '_score', 'order' => 'asc']]);
+        $sorting->setUniqueIdentifier('score');
+        $this->sortingCollection = new ProductSortingCollection([$sorting]);
 
-            if (method_exists($this->productListingSortingRegistry, 'getProductSortingEntities')) {
-                $this->productListingSortingRegistry->expects($this->any())
-                    ->method('getProductSortingEntities')
-                    ->willReturn($this->sortingCollection);
-            }
+        $this->entityRepositoryMock->expects($this->any())->method('search')->willReturn(
+            Utils::buildEntitySearchResult(
+                ProductSortingEntity::class,
+                $this->sortingCollection->count(),
+                $this->sortingCollection,
+                new AggregationResultCollection(),
+                new Criteria(),
+                Context::createDefaultContext()
+            )
+        );
 
-            $this->entityRepositoryMock->expects($this->any())->method('search')->willReturn(
-                Utils::buildEntitySearchResult(
-                    ProductSortingEntity::class,
-                    $this->sortingCollection->count(),
-                    $this->sortingCollection,
-                    new AggregationResultCollection(),
-                    new Criteria(),
-                    Context::createDefaultContext()
-                )
-            );
-        }
         $this->navigationRequestFactoryMock = $this->getMockBuilder(NavigationRequestFactory::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -655,23 +633,6 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     ) {
         if (isset($overrides[ShopwareProductListingFeaturesSubscriber::class])) {
             $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class];
-        } elseif (Utils::versionLowerThan('6.3.2')) {
-            /** @noinspection PhpParamsInspection Parameters are correct for older Shopware versions */
-            $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
-                $this->connectionMock,
-                $this->entityRepositoryMock,
-                $this->productListingSortingRegistry
-            );
-        } elseif (Utils::versionLowerThan('6.4')) {
-            /** @noinspection PhpParamsInspection Parameters are correct for older Shopware versions */
-            $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
-                $this->connectionMock,
-                $this->entityRepositoryMock,
-                $this->entityRepositoryMock,
-                $this->systemConfigServiceMock,
-                $this->productListingSortingRegistry,
-                $this->eventDispatcherMock
-            );
         } else {
             $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
                 $this->connectionMock,
@@ -683,21 +644,22 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         }
 
         $sortingService = new SortingService(
-            $this->productListingSortingRegistry,
             $this->getContainer()->get('translator'),
-            $this->getContainer()->getParameter('kernel.shopware_version')
         );
         $paginationService = new PaginationService();
-        $sortingHandlerService = $this->getContainer()->get(SortingHandlerService::class);
 
-        $findologicSearchService = $findologicSearchService ?? new FindologicSearchService(
-            $this->containerMock,
+        $findologicSearchService ??= new FindologicSearchService(
             $this->apiClientMock,
             $this->apiConfigMock,
             $this->configMock,
             $sortingService,
             $paginationService,
-            $sortingHandlerService
+            $this->getContainer()->get(SortingHandlerService::class),
+            $this->serviceConfigResourceMock,
+            $this->searchRequestFactoryMock,
+            $this->navigationRequestFactoryMock,
+            $this->getContainer()->get(SystemAware::class),
+            $this->entityRepositoryMock
         );
 
         return new ProductListingFeaturesSubscriber(
@@ -1021,12 +983,6 @@ XML;
             ],
             'includes' => null
         ];
-        if (Utils::versionLowerThan('6.3')) {
-            $expectedAssign['source'] = null;
-        }
-        if (Utils::versionLowerThan('6.4')) {
-            $expectedAssign['states'] = [];
-        }
         if (Utils::versionGreaterOrEqual('6.4.9.0')) {
             $expectedAssign['fields'] = [];
         }
@@ -1109,16 +1065,10 @@ XML;
 
     public function testHandleResultDoesNotThrowExceptionWhenCalledManually(): void
     {
-        if (Utils::versionLowerThan('6.3.3') && Utils::versionGreaterOrEqual('6.3.1')) {
-            $this->markTestSkipped('Shopware sorting bug prevents this from properly working.');
-        }
-
         $this->initMocks();
 
         $criteria = new Criteria();
-        if (Utils::versionGreaterOrEqual('6.3.2')) {
-            $criteria->addExtension('sortings', $this->sortingCollection);
-        }
+        $criteria->addExtension('sortings', $this->sortingCollection);
 
         $rawResult = Utils::buildEntitySearchResult(
             ProductEntity::class,
@@ -1131,10 +1081,8 @@ XML;
 
         $result = ProductListingResult::createFrom($rawResult);
 
-        $orderParam = Utils::versionLowerThan('6.2') ? 'sort' : 'order';
-
         $event = new ProductListingResultEvent(
-            new Request([$orderParam => 'score']),
+            new Request(['order' => 'score']),
             $result,
             $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.de')
         );

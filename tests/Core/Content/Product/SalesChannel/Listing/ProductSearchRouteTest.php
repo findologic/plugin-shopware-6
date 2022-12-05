@@ -13,6 +13,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionObject;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
@@ -34,7 +35,7 @@ class ProductSearchRouteTest extends ProductRouteBase
     /** @var AbstractProductSearchRoute|MockObject */
     private $original;
 
-    /** @var MockObject|SalesChannelContext */
+    /** @var SalesChannelContext| MockObject */
     private $salesChannelContext;
 
     protected function setUp(): void
@@ -57,7 +58,6 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->criteriaBuilder,
             $this->serviceConfigResourceMock,
             $this->findologicConfigServiceMock,
-            $this->getContainer()->getParameter('kernel.shopware_version'),
             $this->configMock
         );
     }
@@ -117,7 +117,15 @@ class ProductSearchRouteTest extends ProductRouteBase
         string $expectedProductNumber
     ): void {
         $this->salesChannelContext = $this->getMockedSalesChannelContext(true);
-        $product = $this->createTestProduct([], true);
+
+        $sdkProduct = $this->createTestProduct([], true);
+        $criteria = new Criteria([$sdkProduct->id]);
+        $criteria->addAssociation('children');
+        /** @var ProductEntity $product */
+        $product = $this->getContainer()->get('product.repository')
+            ->search($criteria, Context::createDefaultContext())
+            ->first();
+
         $variant = $product->getChildren()->get($variantId);
         $context = $this->salesChannelContext->getContext();
         $originalCriteria = (new Criteria())->setIds([$product->getId()]);
@@ -196,17 +204,13 @@ class ProductSearchRouteTest extends ProductRouteBase
                 $this->criteriaBuilder,
                 $this->serviceConfigResourceMock,
                 $this->findologicConfigServiceMock,
-                $this->getContainer()->getParameter('kernel.shopware_version'),
                 $this->configMock
             ])
             ->onlyMethods(['addElasticSearchContext'])
             ->getMock();
 
-        if (Utils::versionGreaterOrEqual('6.4.0.0')) {
-            $productSearchRouteMock->expects($this->once())->method('addElasticSearchContext');
-        } else {
-            $productSearchRouteMock->expects($this->never())->method('addElasticSearchContext');
-        }
+        $productSearchRouteMock->expects($this->once())
+            ->method('addElasticSearchContext');
 
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true);
         $context = $salesChannelContextMock->getContext();

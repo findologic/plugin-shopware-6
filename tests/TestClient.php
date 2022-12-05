@@ -12,8 +12,7 @@ use Symfony\Component\BrowserKit\Request as DomRequest;
 
 class TestClient extends KernelBrowser
 {
-    /** @var SalesChannelContext|null */
-    private $salesChannelContext = null;
+    private ?SalesChannelContext $salesChannelContext = null;
 
     protected function filterRequest(DomRequest $request)
     {

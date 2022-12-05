@@ -15,6 +15,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
+use Shopware\Core\Framework\Plugin\Context\UpdateContext;
 
 use function current;
 use function end;
@@ -39,21 +40,9 @@ class FinSearch extends Plugin
     public function uninstall(UninstallContext $uninstallContext): void
     {
         parent::uninstall($uninstallContext);
-        $activePlugins = $this->container->getParameter('kernel.active_plugins');
 
-        // If the Extension plugin is installed we will uninstall it with the FinSearch base plugin
-        if (isset($activePlugins[ExtendFinSearch::class])) {
-            /** @var EntityRepository $repository */
-            $repository = $this->container->get('plugin.repository');
-
-            $criteria = new Criteria();
-            $criteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
-
-            /** @var Plugin\PluginEntity $plugin */
-            $plugin = $repository->search($criteria, $uninstallContext->getContext())->getEntities()->first();
-            if ($plugin !== null && $plugin->getActive()) {
-                $repository->delete([['id' => $plugin->getId()]], $uninstallContext->getContext());
-            }
+        if ($this->hasExtensionInstalled()) {
+            $this->uninstallExtensionPlugin($uninstallContext);
         }
 
         if ($uninstallContext->keepUserData()) {
@@ -61,6 +50,48 @@ class FinSearch extends Plugin
         }
 
         $this->deleteFindologicConfig();
+    }
+
+    public function update(UpdateContext $updateContext): void
+    {
+        parent::update($updateContext);
+
+        if ($this->hasExtensionInstalled()) {
+            $plugin = $this->getExtensionPlugin($updateContext);
+
+            if (self::isVersionLower($plugin->getVersion(), ['4.0'])) {
+                $this->uninstallExtensionPlugin($updateContext);
+            }
+        }
+    }
+
+    public function hasExtensionInstalled(): bool
+    {
+        $activePlugins = $this->container->getParameter('kernel.active_plugins');
+
+        return isset($activePlugins[ExtendFinSearch::class]);
+    }
+
+    public function getExtensionPlugin(InstallContext $context): ?Plugin\PluginEntity
+    {
+        /** @var EntityRepository $repository */
+        $repository = $this->container->get('plugin.repository');
+
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
+
+        return $repository->search($criteria, $context->getContext())->getEntities()->first();
+    }
+
+    public function uninstallExtensionPlugin(InstallContext $context): void
+    {
+        /** @var EntityRepository $repository */
+        $repository = $this->container->get('plugin.repository');
+
+        $plugin = $this->getExtensionPlugin($context);
+        if ($plugin !== null && $plugin->getActive()) {
+            $repository->delete([['id' => $plugin->getId()]], $context->getContext());
+        }
     }
 
     /**

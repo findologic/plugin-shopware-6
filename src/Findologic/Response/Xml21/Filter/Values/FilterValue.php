@@ -11,17 +11,13 @@ class FilterValue extends Struct
 {
     public const DELIMITER = '>';
 
-    /** @var string|null */
-    protected $uuid;
+    protected ?string $uuid;
 
-    /** @var string */
-    private $id;
+    private string $id;
 
-    /** @var string */
-    private $name;
+    private string $name;
 
-    /** @var TranslatedName */
-    private $translated;
+    private TranslatedName $translated;
 
     /**
      * @param string|null $filterName

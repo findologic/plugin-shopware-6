@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Struct;
 
 use FINDOLOGIC\FinSearch\Struct\Snippet;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Uuid\Uuid;
 
@@ -14,9 +13,9 @@ class SnippetTest extends TestCase
     public function testSnippetReceivesParamsAsExpected(): void
     {
         $expectedShopkey = 'AB12AB12AB12AB12AB12AB12AB12AB12';
-        $expectedSearchResultContainer = 'fl-special';
-        $expectedNavigationResultContainer = 'fl-special-navigation';
-        $expectedUserGroupHash = Utils::calculateUserGroupHash($expectedShopkey, Uuid::randomHex());
+        $expectedSearchResultContainer = '.fl-special';
+        $expectedNavigationResultContainer = '.fl-special-navigation';
+        $expectedUserGroupHash = Uuid::randomHex();
 
         $snippet = new Snippet(
             $expectedShopkey,

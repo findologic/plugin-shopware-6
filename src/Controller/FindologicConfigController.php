@@ -21,15 +21,9 @@ use function in_array;
  */
 class FindologicConfigController extends AbstractController
 {
-    /**
-     * @var FindologicConfigService
-     */
-    private $findologicConfigService;
+    private FindologicConfigService $findologicConfigService;
 
-    /**
-     * @var Connection
-     */
-    private $connection;
+    private Connection $connection;
 
     public function __construct(FindologicConfigService $findologicConfigService, Connection $connection)
     {

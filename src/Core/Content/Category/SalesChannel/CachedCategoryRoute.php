@@ -10,22 +10,16 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Category\SalesChannel\AbstractCategoryRoute;
 use Shopware\Core\Content\Category\SalesChannel\CategoryRouteResponse;
-use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
 class CachedCategoryRoute extends AbstractCategoryRoute
 {
-    /** @var AbstractCategoryRoute */
-    protected $decorated;
+    protected AbstractCategoryRoute $decorated;
 
-    /** @var ServiceConfigResource */
-    protected $serviceConfigResource;
+    protected ServiceConfigResource $serviceConfigResource;
 
-    /** @var Config */
-    protected $config;
+    protected Config $config;
 
     public function __construct(
         AbstractCategoryRoute $decorated,
@@ -44,13 +38,13 @@ class CachedCategoryRoute extends AbstractCategoryRoute
     }
 
     public function load(
-        string $categoryId,
+        string $navigationId,
         Request $request,
-        SalesChannelContext $salesChannelContext
+        SalesChannelContext $context
     ): CategoryRouteResponse {
-        $this->initializePluginState($salesChannelContext, $request);
+        $this->initializePluginState($context, $request);
 
-        return $this->getDecorated()->load($categoryId, $request, $salesChannelContext);
+        return $this->getDecorated()->load($navigationId, $request, $context);
     }
 
     /**

@@ -6,57 +6,29 @@ namespace FINDOLOGIC\FinSearch\Findologic\Api;
 
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandler;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
-use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSorting;
-use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingSortingRegistry;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingEntity;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SortingService
 {
     protected const TOPSELLER_SORT_FIELD = 'product.sales';
 
-    /** @var ProductListingSortingRegistry|null */
-    private $legacySortingRegistry;
+    private TranslatorInterface $translator;
 
-    /** @var TranslatorInterface */
-    private $translator;
-
-    /** @var string */
-    private $shopwareVersion;
-
-    public function __construct(
-        ?ProductListingSortingRegistry $legacySortingRegistry,
-        TranslatorInterface $translator,
-        string $shopwareVersion
-    ) {
-        $this->legacySortingRegistry = $legacySortingRegistry;
+    public function __construct(TranslatorInterface $translator)
+    {
         $this->translator = $translator;
-        $this->shopwareVersion = $shopwareVersion;
     }
 
     public function handleRequest(
         ProductListingCriteriaEvent $event,
         SearchNavigationRequestHandler $requestHandler
     ): void {
-        if (
-            $requestHandler instanceof NavigationRequestHandler &&
-            Utils::versionGreaterOrEqual('6.3.3.0', $this->shopwareVersion)
-        ) {
+        if ($requestHandler instanceof NavigationRequestHandler) {
             $this->addTopResultSorting($event);
-        }
-    }
-
-    public function handleResult(ProductListingResultEvent $event): void
-    {
-        if (Utils::versionLowerThan('6.3.3.0', $this->shopwareVersion)) {
-            $this->addLegacyTopResultSorting($event);
         }
     }
 
@@ -103,55 +75,5 @@ class SortingService
         });
 
         return $topsellerSortings !== [];
-    }
-
-    protected function addLegacyTopResultSorting(ProductListingResultEvent $event): void
-    {
-        $currentSorting = $this->getCurrentLegacySorting(
-            $event->getRequest(),
-            $this->getDefaultSort()
-        );
-
-        $event->getResult()->setSorting($currentSorting);
-        $this->legacySortingRegistry->add(
-            new ProductListingSorting('score', 'filter.sortByScore', ['_score' => 'desc'])
-        );
-        $sortings = $this->legacySortingRegistry->getSortings();
-        /** @var ProductListingSorting $sorting */
-        foreach ($sortings as $sorting) {
-            $sorting->setActive($sorting->getKey() === $currentSorting);
-        }
-
-        $event->getResult()->setSortings($sortings);
-    }
-
-    protected function getCurrentLegacySorting(Request $request, string $default): ?string
-    {
-        $key = $request->get('order', $default);
-        if (Utils::versionLowerThan('6.2', $this->shopwareVersion)) {
-            $key = $request->get('sort', $default);
-        }
-
-        if (!$key) {
-            return null;
-        }
-
-        if ($this->legacySortingRegistry->has($key)) {
-            return $key;
-        }
-
-        return $default;
-    }
-
-    protected function getDefaultSort(): string
-    {
-        $legacyDefaultSortConstName =
-            '\Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber::DEFAULT_SORT';
-
-        if (defined($legacyDefaultSortConstName)) {
-            return ProductListingFeaturesSubscriber::DEFAULT_SORT;
-        }
-
-        return 'name-asc';
     }
 }

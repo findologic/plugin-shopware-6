@@ -11,17 +11,13 @@ class SmartDidYouMean extends Struct
     protected const DID_YOU_MEAN = 'did-you-mean';
     protected const IMPROVED = 'improved';
 
-    /** @var string|null */
-    private $type;
+    private ?string $type;
 
-    /** @var string|null */
-    private $link;
+    private ?string $link;
 
-    /** @var string */
-    private $alternativeQuery;
+    private string $alternativeQuery;
 
-    /** @var string */
-    private $originalQuery;
+    private string $originalQuery;
 
     public function __construct(
         ?string $originalQuery,

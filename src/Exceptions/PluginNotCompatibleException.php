@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Exceptions;
 
+use FINDOLOGIC\Shopware6Common\Export\Exceptions\FindologicException;
+
 class PluginNotCompatibleException extends FindologicException
 {
     public function __construct()

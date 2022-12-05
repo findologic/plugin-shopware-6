@@ -11,17 +11,14 @@ class ServiceConfig extends Struct
 {
     private const EXPIRE_TIME = 60 * 60 * 24;
 
-    /** @var array */
-    protected $directIntegration;
+    protected array $directIntegration;
 
-    /** @var bool */
-    protected $isStagingShop;
+    protected bool $isStagingShop;
 
-    /** @var DateTime */
-    protected $expireDateTime;
+    protected DateTime $expireDateTime;
 
     /** @var array<string,string> */
-    protected $blocks;
+    protected array $blocks;
 
     public function __construct()
     {

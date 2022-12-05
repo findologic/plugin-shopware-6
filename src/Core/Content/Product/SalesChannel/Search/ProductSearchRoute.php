@@ -31,48 +31,21 @@ class ProductSearchRoute extends AbstractProductSearchRoute
 {
     use SearchResultHelper;
 
-    /**
-     * @var ProductSearchBuilderInterface
-     */
-    private $searchBuilder;
+    private ProductSearchBuilderInterface $searchBuilder;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
-    /**
-     * @var ProductDefinition
-     */
-    private $definition;
+    private ProductDefinition $definition;
 
-    /**
-     * @var RequestCriteriaBuilder
-     */
-    private $criteriaBuilder;
+    private RequestCriteriaBuilder $criteriaBuilder;
 
-    /**
-     * @var AbstractProductSearchRoute
-     */
-    private $decorated;
+    private AbstractProductSearchRoute $decorated;
 
-    /**
-     * @var SalesChannelRepositoryInterface
-     */
-    private $productRepository;
+    private SalesChannelRepositoryInterface $productRepository;
 
-    /**
-     * @var ServiceConfigResource
-     */
-    private $serviceConfigResource;
+    private ServiceConfigResource $serviceConfigResource;
 
-    /** @var string */
-    private $shopwareVersion;
-
-    /**
-     * @var Config
-     */
-    private $config;
+    private Config $config;
 
     public function __construct(
         AbstractProductSearchRoute $decorated,
@@ -83,7 +56,6 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         RequestCriteriaBuilder $criteriaBuilder,
         ServiceConfigResource $serviceConfigResource,
         FindologicConfigService $findologicConfigService,
-        string $shopwareVersion,
         ?Config $config = null
     ) {
         $this->decorated = $decorated;
@@ -93,7 +65,6 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         $this->definition = $definition;
         $this->criteriaBuilder = $criteriaBuilder;
         $this->serviceConfigResource = $serviceConfigResource;
-        $this->shopwareVersion = $shopwareVersion;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 
@@ -107,12 +78,9 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         SalesChannelContext $context,
         ?Criteria $criteria = null
     ): ProductSearchRouteResponse {
+        $this->addElasticSearchContext($context);
 
-        if (Utils::versionGreaterOrEqual('6.4.0.0', $this->shopwareVersion)) {
-            $this->addElasticSearchContext($context);
-        }
-
-        $criteria = $criteria ?? $this->criteriaBuilder->handleRequest(
+        $criteria ??= $this->criteriaBuilder->handleRequest(
             $request,
             new Criteria(),
             $this->definition,
