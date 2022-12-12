@@ -78,6 +78,9 @@ jobs:
       - name: Build Plugin Relase-Zipfile
         run: composer build-release
 
+      - name: Upload plugin to Shopware Store
+        run: shopware-cli account producer extension upload $(pwd)/${PLUGIN_NAME}.zip
+
       - name: Create GitHub release
         id: create_release
         uses: actions/create-release@v1
@@ -100,6 +103,3 @@ jobs:
           asset_path: ${{ github.workspace }}/${{ env.PLUGIN_NAME }}.zip
           asset_name: ${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
-
-      - name: Upload plugin to Shopware Store
-        run: shopware-cli account producer extension upload $(pwd)/${PLUGIN_NAME}.zip
