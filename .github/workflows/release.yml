@@ -80,10 +80,10 @@ jobs:
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
 
       - name: Build Plugin Release-Zipfile
-        run: shopware-cli extension zip .
+        run: shopware-cli extension zip . --disable-git
 
       - name: Upload plugin to Shopware Store
-        run: shopware-cli account producer extension upload $(pwd)/${PLUGIN_NAME}-${{ steps.get_version.outputs.VERSION }}.zip
+        run: shopware-cli account producer extension upload $(pwd)/${PLUGIN_NAME}.zip
 
       - name: Create GitHub release
         id: create_release
