@@ -83,7 +83,7 @@ jobs:
         run: shopware-cli extension zip .
 
       - name: Upload plugin to Shopware Store
-        run: shopware-cli account producer extension upload $(pwd)/${PLUGIN_NAME}.zip
+        run: shopware-cli account producer extension upload $(pwd)/${PLUGIN_NAME}-${{ steps.get_version.outputs.VERSION }}.zip
 
       - name: Create GitHub release
         id: create_release
