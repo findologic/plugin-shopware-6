@@ -8,7 +8,7 @@ on:
 
 env:
   PLUGIN_NAME: FinSearch
-  PLUGIN_UPLOADER_VERSION: 0.3.16
+  PLUGIN_UPLOADER_VERSION: 0.3.19
 
 jobs:
   build:
