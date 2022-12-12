@@ -1,0 +1,11 @@
+build:
+    zip:
+        pack:
+            excludes:
+                paths:
+                    - .gitignore
+                    - release
+                    - phpcs.xml
+                    - phpunit.xml.dist
+                    - "*.zip"
+                    - "*.phar"
