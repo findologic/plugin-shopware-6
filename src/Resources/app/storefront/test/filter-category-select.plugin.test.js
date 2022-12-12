@@ -263,7 +263,7 @@ describe('filter-category-select.plugin.js', () => {
             checkbox.dispatchEvent(new Event('click'));
         });
         expect(isDisable).toBe(true);
-    })
+    });
 
     test('Ensure the category filter is disabled, when no filter value is available', () => {
         const filters = {
