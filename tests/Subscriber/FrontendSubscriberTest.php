@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Subscriber;
 
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\FinSearch\Struct\PageInformation;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Subscriber\FrontendSubscriber;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\CategoryHelper;
@@ -17,15 +16,10 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\InvalidArgumentException;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupEntity;
-use Shopware\Core\Defaults;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SalesChannel\SalesChannelEntity;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
+use Symfony\Component\HttpFoundation\Request;
 
 class FrontendSubscriberTest extends TestCase
 {
@@ -34,10 +28,101 @@ class FrontendSubscriberTest extends TestCase
     use SalesChannelHelper;
     use CategoryHelper;
 
+    public function headerPageletLoadedEventProvider(): array
+    {
+        return [
+            'Home page Request' => [
+                'requestParams' => [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => false,
+                    'isNavigationPage' => false
+                ]
+            ],
+            'Checkout Request' => [
+                'requestParams' => [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/checkout']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => false,
+                    'isNavigationPage' => false
+                ]
+            ],
+            'Empty Search Request without search querystring' => [
+                'requestParams' => [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/search']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => true,
+                    'isNavigationPage' => false
+                ]
+            ],
+            'Empty Search Request' => [
+                'requestParams' => [
+                    ['search' => ''],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/search']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => true,
+                    'isNavigationPage' => false
+                ]
+            ],
+            'Search Request' => [
+                'requestParams' => [
+                    ['search' => 't-shirt'],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/search']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => true,
+                    'isNavigationPage' => false
+                ]
+            ],
+            'Category Request' => [
+                'requestParams' => [
+                    [],
+                    [],
+                    ['navigationId' => 5],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/categoryFive']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => false,
+                    'isNavigationPage' => true
+                ]
+            ]
+        ];
+    }
+
     /**
      * @throws InvalidArgumentException
+     * @dataProvider headerPageletLoadedEventProvider
      */
-    public function testHeaderPageletLoadedEvent(): void
+    public function testHeaderPageletLoadedEvent(array $requestParams, array $expectedPageInformation): void
     {
         $shopkey = $this->getShopkey();
 
@@ -53,6 +138,8 @@ class FrontendSubscriberTest extends TestCase
         $headerPageletMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $request = new Request(... $requestParams);
 
         $headerPageletMock->expects($this->any())
             ->method('addExtension')
@@ -86,13 +173,37 @@ class FrontendSubscriberTest extends TestCase
                         return true;
                     }
                 )
+            ], [
+                $this->callback(
+                    function (string $name) {
+                        $this->assertEquals('flPageInformation', $name);
+
+                        return true;
+                    }
+                ),
+                $this->callback(
+                    function (PageInformation $pageInformation) use ($expectedPageInformation) {
+                        $this->assertSame(
+                            $expectedPageInformation['isSearchPage'],
+                            $pageInformation->getIsSearchPage()
+                        );
+                        $this->assertSame(
+                            $expectedPageInformation['isNavigationPage'],
+                            $pageInformation->getIsNavigationPage()
+                        );
+
+                        return true;
+                    }
+                ),
             ]);
 
         $salesChannelContext = $this->buildSalesChannelContext();
-        $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getPagelet')
+        $headerPageletLoadedEventMock->expects($this->exactly(3))->method('getPagelet')
             ->willReturn($headerPageletMock);
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')
             ->willReturn($salesChannelContext);
+        $headerPageletLoadedEventMock->expects($this->once())->method('getRequest')
+            ->willReturn($request);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
         $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)

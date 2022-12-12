@@ -14,12 +14,14 @@ use InvalidArgumentException;
 use PackageVersions\Versions;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
@@ -27,140 +29,11 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Throwable;
-
-use function array_unique;
-
-use const SORT_REGULAR;
+use Vin\ShopwareSdk\Data\Collection as SdkCollection;
+use Vin\ShopwareSdk\Data\Entity\Entity as SdkEntity;
 
 class Utils
 {
-    public static function calculateUserGroupHash(string $shopkey, string $customerGroupId): string
-    {
-        return base64_encode($shopkey ^ $customerGroupId);
-    }
-
-    public static function cleanString(?string $string): ?string
-    {
-        if (!$string) {
-            return null;
-        }
-        $string = str_replace('\\', '', addslashes(strip_tags($string)));
-        $string = str_replace(["\n", "\r", "\t"], ' ', $string);
-        // Remove unprintable characters since they would cause an invalid XML.
-        $string = self::removeControlCharacters($string);
-
-        return trim($string);
-    }
-
-    public static function removeControlCharacters(?string $string): string
-    {
-        if ($string === null) {
-            return '';
-        }
-
-        $result = preg_replace('/[\x{0000}-\x{001F}]|[\x{007F}]|[\x{0080}-\x{009F}]/u', '', $string);
-
-        return trim($result) ?? trim($string);
-    }
-
-    public static function removeSpecialChars(?string $string): string
-    {
-        if ($string === null) {
-            return '';
-        }
-
-        return preg_replace('/[^äöüA-Za-z0-9:_-]/u', '', $string);
-    }
-
-    /**
-     * @throws InconsistentCriteriaIdsException
-     */
-    public static function addProductAssociations(Criteria $criteria): Criteria
-    {
-        self::addVariantAssociations($criteria);
-
-        return $criteria->addAssociations(
-            [
-                'seoUrls',
-                'translations',
-                'searchKeywords',
-                'media',
-                'manufacturer',
-                'manufacturer.translations',
-                'cover',
-            ]
-        );
-    }
-
-    public static function addVariantAssociations(Criteria $criteria): Criteria
-    {
-        return $criteria->addAssociations(
-            [
-                'categories',
-                'categories.seoUrls',
-                'properties',
-                'properties.group'
-            ]
-        );
-    }
-
-    /**
-     * @throws InconsistentCriteriaIdsException
-     */
-    public static function addChildrenAssociations(Criteria $criteria): Criteria
-    {
-        return $criteria->addAssociations(
-            [
-                'children',
-                'children.seoUrls',
-                'children.categories',
-                'children.categories.seoUrls',
-                'children.translations',
-                'children.tags',
-                'children.media',
-                'children.manufacturer',
-                'children.manufacturer.translations',
-                'children.cover',
-                'children.properties',
-                'children.properties.group',
-                'children.categories',
-                'children.categories.seoUrls',
-                'children.properties.productConfiguratorSettings',
-                'children.properties.productConfiguratorSettings.option',
-                'children.properties.productConfiguratorSettings.option.group',
-                'children.properties.productConfiguratorSettings.option.group.translations',
-            ]
-        );
-    }
-
-    public static function multiByteRawUrlEncode(string $string): string
-    {
-        $encoded = '';
-        $length = mb_strlen($string);
-        for ($i = 0; $i < $length; ++$i) {
-            $encoded .= '%' . wordwrap(bin2hex(mb_substr($string, $i, 1)), 2, '%', true);
-        }
-
-        return $encoded;
-    }
-
-    public static function buildUrl(array $parsedUrl): string
-    {
-        return sprintf(
-            '%s%s%s%s%s%s%s%s%s%s',
-            isset($parsedUrl['scheme']) ? "{$parsedUrl['scheme']}:" : '',
-            (isset($parsedUrl['user']) || isset($parsedUrl['host'])) ? '//' : '',
-            isset($parsedUrl['user']) ? "{$parsedUrl['user']}" : '',
-            isset($parsedUrl['pass']) ? ":{$parsedUrl['pass']}" : '',
-            isset($parsedUrl['user']) ? '@' : '',
-            isset($parsedUrl['host']) ? "{$parsedUrl['host']}" : '',
-            isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '',
-            isset($parsedUrl['path']) ? "{$parsedUrl['path']}" : '',
-            isset($parsedUrl['query']) ? "?{$parsedUrl['query']}" : '',
-            isset($parsedUrl['fragment']) ? "#{$parsedUrl['fragment']}" : ''
-        );
-    }
-
     public static function versionLowerThan(string $compareVersion, ?string $actualVersion = null): bool
     {
         return version_compare(static::getCleanShopwareVersion($actualVersion), $compareVersion, '<');
@@ -315,7 +188,7 @@ class Utils
         /** @var FindologicService $findologicService */
         $findologicService = $context->getContext()->getExtension('findologicService');
 
-        return $findologicService ? $findologicService->getEnabled() : false;
+        return $findologicService && $findologicService->getEnabled();
     }
 
     public static function disableFindologicWhenEnabled(SalesChannelContext $context): void
@@ -331,51 +204,6 @@ class Utils
         /** @var FindologicService $findologicService */
         $findologicService = $context->getContext()->getExtension('findologicService');
         $findologicService->disable();
-    }
-
-    public static function isEmpty($value): bool
-    {
-        if (is_numeric($value) || is_object($value) || is_bool($value)) {
-            return false;
-        }
-
-        if (is_array($value) && empty(array_filter($value))) {
-            return true;
-        }
-
-        if (is_string($value) && empty(trim($value))) {
-            return true;
-        }
-
-        if (empty($value)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public static function buildCategoryPath(array $categoryBreadCrumb, CategoryEntity $rootCategory): string
-    {
-        $breadcrumb = static::getCategoryBreadcrumb($categoryBreadCrumb, $rootCategory);
-
-        // Build category path and trim all entries.
-        return implode('_', array_map('trim', $breadcrumb));
-    }
-
-    /**
-     * Builds the category path by removing the path of the parent (root) category of the sales channel.
-     * Since Findologic does not care about any root categories, we need to get the difference between the
-     * normal category path and the root category.
-     *
-     * @return string[]
-     */
-    private static function getCategoryBreadcrumb(array $categoryBreadcrumb, CategoryEntity $rootCategory): array
-    {
-        $rootCategoryBreadcrumbs = $rootCategory->getBreadcrumb();
-
-        $path = array_splice($categoryBreadcrumb, count($rootCategoryBreadcrumbs));
-
-        return array_values($path);
     }
 
     public static function fetchNavigationCategoryFromSalesChannel(
@@ -404,34 +232,16 @@ class Utils
         EntityCollection $entities,
         ?AggregationResultCollection $aggregations,
         Criteria $criteria,
-        Context $context,
-        int $page = 1,
-        ?int $limit = null
+        Context $context
     ): EntitySearchResult {
-        try {
-            // Shopware >= 6.4
-            return new EntitySearchResult(
-                $entity,
-                $total,
-                $entities,
-                $aggregations,
-                $criteria,
-                $context,
-                $page,
-                $limit
-            );
-        } catch (Throwable $e) {
-            // Shopware < 6.4
-            return new EntitySearchResult(
-                $total,
-                $entities,
-                $aggregations,
-                $criteria,
-                $context,
-                $page,
-                $limit
-            );
-        }
+        return new EntitySearchResult(
+            $entity,
+            $total,
+            $entities,
+            $aggregations,
+            $criteria,
+            $context,
+        );
     }
 
     /**
@@ -446,44 +256,38 @@ class Utils
         });
     }
 
-    /**
-     * Takes invalid URLs that contain special characters such as umlauts, or special UTF-8 characters and
-     * encodes them.
-     */
-    public static function getEncodedUrl(string $url): string
+    public static function createSdkEntity(string $sdkEntityClass, ?Entity $entity): ?SdkEntity
     {
-        $parsedUrl = (array)parse_url($url);
-        $urlPath = explode('/', $parsedUrl['path']);
-        $encodedPath = [];
-        foreach ($urlPath as $path) {
-            $encodedPath[] = self::multiByteRawUrlEncode($path);
+        return $entity ? SdkEntity::createFromArray($sdkEntityClass, self::serializeStruct($entity)) : null;
+    }
+
+    public static function createSdkCollection(
+        string $sdkCollectionClass,
+        string $sdkEntityClass,
+        EntityCollection $collection
+    ): SdkCollection {
+        /** @var SdkCollection $sdkCollection */
+        $sdkCollection = new $sdkCollectionClass();
+
+        /** @var Entity $item */
+        foreach ($collection as $item) {
+            $sdkItem = Utils::createSdkEntity($sdkEntityClass, $item);
+            $sdkCollection->add($sdkItem);
         }
 
-        $parsedUrl['path'] = implode('/', $encodedPath);
-
-        return self::buildUrl($parsedUrl);
+        return $sdkCollection;
     }
 
-    /**
-     * Flattens a given array. This method is similar to the JavaScript method "Array.prototype.flat()".
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
-     *
-     * @param array $array
-     *
-     * @return array
-     */
-    public static function flat(array $array): array
+    private static function serializeStruct(Struct $struct): array
     {
-        $flattened = [];
-        array_walk_recursive($array, static function ($a) use (&$flattened) {
-            $flattened[] = $a;
-        });
+        $data = $struct->jsonSerialize();
 
-        return $flattened;
-    }
+        foreach ($data as $key => $value) {
+            if ($value instanceof Struct) {
+                $data[$key] = self::serializeStruct($value);
+            }
+        }
 
-    public static function flattenWithUnique(array $array): array
-    {
-        return array_unique(static::flat($array), SORT_REGULAR);
+        return $data;
     }
 }

@@ -13,35 +13,18 @@ class FinSearchConfigEntity extends Entity
 {
     use EntityIdTrait;
 
-    /**
-     * @var string
-     */
-    protected $configurationKey;
+    protected string $configurationKey;
 
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     protected $configurationValue;
 
-    /**
-     * @var string|null
-     */
-    protected $salesChannelId;
+    protected ?string $salesChannelId;
 
-    /**
-     * @var string|null
-     */
-    protected $languageId;
+    protected ?string $languageId;
 
-    /**
-     * @var SalesChannelEntity|null
-     */
-    protected $salesChannel;
+    protected ?SalesChannelEntity $salesChannel;
 
-    /**
-     * @var LanguageEntity|null
-     */
-    protected $language;
+    protected ?LanguageEntity $language;
 
     public function getConfigurationKey(): string
     {

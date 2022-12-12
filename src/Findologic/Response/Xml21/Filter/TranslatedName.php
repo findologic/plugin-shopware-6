@@ -8,8 +8,7 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class TranslatedName extends Struct
 {
-    /** @var string */
-    private $name;
+    private string $name;
 
     public function __construct(string $name)
     {

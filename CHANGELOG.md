@@ -1,5 +1,39 @@
+# 4.0.0
+- This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
+- Before upgrading, read our upgrade guide.
+- Be aware, that this version only supports the shop versions starting from v6.4.6.0
+- [SW-582] Created a separate route to cache Dynamic Product Groups.
+- [SW-736] Added support for Advanced Pricing.
+- [SW-747] Dropped support for 6.2.x, 6.3.x and versions up to 6.4.5.1.
+- [SW-749] Upgraded PHP code level from 7.2 to 7.4.
+- [SW-752] Improved code readability by replacing container injections with service injections.
+- [SW-761] Implemented export using structure from our internal shopware6-common library.
+- [SW-765] Improved performance by only requesting variant properties and categories not assigned to the main product.
+- [SW-768] Improved performance by refactoring dynamic product group caching and reading.
+- [SW-770] Changed plugin configuration of container classes to container selectors.
+- [SW-772] The properties of variants defined within "Generate variants" are now exported.
+- [SW-773] Fixed variants with the same categories as the main product.
+- [SW-774] Uninstall existing extension plugin when updating to new major version.
+- [SW-764] Fixed a bug that caused the sliders of range sliders to not show without a search query.
+
+# 3.1.3
+- [SW-766] Make container classes configurable for all integration types.
+
+# 3.1.2
+- [SW-651] Scripts for the range slider are only loaded on search and navigation pages.
+- [SW-712] The limits of the range sliders are now updated, when the values change by selecting other filter values.
+- [SW-763] The attribute 'cat_url' is now exported for all integration types.
+- [SW-753] A bug was fixed, where an exception occurred for invalid main products with valid variants.
+
+# 3.1.1
+- [SW-737] Filter values of color picker should be selectable by clicking on the value next to the tile.
+- [SW-739] Color picker images must be shown for selected colors.
+- [SW-740] Ignore invalid SEO Urls in export.
+- [SW-746] There should be no export error when no canonical SEO url exists.
+- [PH-719] Add 6.4.14.0 to the tested versions in our internal test runner.
+
 # 3.1.0
-- [SW-659] Introduced a new route for export debug information (`/findologic/debug`)
+- [SW-659] Introduced a new route for export debug information ('/findologic/debug')
 - [SW-442] Add linting for the JavaScript files.
 - [PH-672] Add 6.4.13.0 to the tested versions in our internal test runner.
 - Downgrade the used composer version in our internal test runner.

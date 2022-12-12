@@ -11,18 +11,16 @@ use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaI
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class NavigationCategoryParser
 {
-    /** @var ContainerInterface */
-    private $container;
+    private EntityRepository $categoryRepository;
 
     public function __construct(
-        ContainerInterface $container
+        EntityRepository $categoryRepository
     ) {
-        $this->container = $container;
+        $this->categoryRepository = $categoryRepository;
     }
 
     /**
@@ -48,10 +46,7 @@ class NavigationCategoryParser
             return null;
         }
 
-        /** @var EntityRepository $categoryRepository */
-        $categoryRepository = $this->container->get('category.repository');
-
-        $categories = $categoryRepository->search(
+        $categories = $this->categoryRepository->search(
             new Criteria([$navigationId]),
             $salesChannelContext->getContext()
         );

@@ -12,7 +12,6 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\RandomIdHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Defaults;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -28,17 +27,15 @@ class SalesFrequencyAdapterTest extends TestCase
     use OrderHelper;
     use RandomIdHelper;
 
-    /** @var SalesChannelContext */
-    protected $salesChannelContext;
+    protected SalesChannelContext $salesChannelContext;
 
-    /** @var TestDataCollection */
-    private $ids;
+    private TestDataCollection $ids;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->ids = new TestDataCollection(Context::createDefaultContext());
+        $this->ids = new TestDataCollection();
         $this->salesChannelContext = $this->buildSalesChannelContext();
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
@@ -54,7 +51,7 @@ class SalesFrequencyAdapterTest extends TestCase
             [
                 'orderDateTime' => (new DateTimeImmutable())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
                 'lineItems' => [
-                    $this->buildOrderLineItem(['productId' => $product->getId()])
+                    $this->buildOrderLineItem(['productId' => $product->id])
                 ],
             ]
         );
@@ -115,7 +112,7 @@ class SalesFrequencyAdapterTest extends TestCase
                 [
                     'orderDateTime' => $orderDateTime,
                     'lineItems' => [
-                        $this->buildOrderLineItem(['productId' => $productEntity->getId()])
+                        $this->buildOrderLineItem(['productId' => $productEntity->id])
                     ],
                 ]
             );

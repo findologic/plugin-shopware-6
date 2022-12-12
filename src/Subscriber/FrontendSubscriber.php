@@ -8,27 +8,22 @@ use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FindologicService;
+use FINDOLOGIC\FinSearch\Struct\PageInformation;
 use FINDOLOGIC\FinSearch\Struct\Snippet;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Psr\Cache\InvalidArgumentException;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Pagelet\Header\HeaderPageletLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FrontendSubscriber implements EventSubscriberInterface
 {
-    /** @var Config */
-    private $config;
-
-    /** @var FindologicConfigService */
-    private $serviceConfigResource;
+    private Config $config;
 
     public function __construct(
         FindologicConfigService $systemConfigService,
         ServiceConfigResource $serviceConfigResource,
         ?Config $config = null
     ) {
-        $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($systemConfigService, $serviceConfigResource);
     }
 
@@ -68,15 +63,22 @@ class FrontendSubscriber implements EventSubscriberInterface
 
         $shopkey = $this->config->getShopkey();
         $customerGroupId = $event->getSalesChannelContext()->getCurrentCustomerGroup()->getId();
-        $userGroupHash = Utils::calculateUserGroupHash($shopkey, $customerGroupId);
         $snippet = new Snippet(
             $shopkey,
             $this->config->getSearchResultContainer(),
             $this->config->getNavigationResultContainer(),
-            $userGroupHash
+            $customerGroupId
         );
 
         // Save the snippet for usage in template
         $event->getPagelet()->addExtension('flSnippet', $snippet);
+
+        $request = $event->getRequest();
+        $isSearchPage = str_contains($request->getRequestUri(), '/search');
+        $isNavigationPage = $request->attributes->has('navigationId');
+        $pageInformation = new PageInformation($isSearchPage, $isNavigationPage);
+
+        // Prepare pageInformation for usage in template
+        $event->getPagelet()->addExtension('flPageInformation', $pageInformation);
     }
 }

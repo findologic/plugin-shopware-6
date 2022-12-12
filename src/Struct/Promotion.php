@@ -8,11 +8,9 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class Promotion extends Struct
 {
-    /** @var string */
-    private $image;
+    private string $image;
 
-    /** @var string */
-    private $link;
+    private string $link;
 
     public function __construct(string $image, string $link)
     {

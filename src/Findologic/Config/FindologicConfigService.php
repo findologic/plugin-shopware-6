@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Config;
 
 use Doctrine\DBAL\Connection;
-use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Utils\Utils;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -27,20 +27,11 @@ use function is_array;
 
 class FindologicConfigService
 {
-    /**
-     * @var Connection
-     */
-    protected $connection;
+    protected Connection $connection;
 
-    /**
-     * @var EntityRepositoryInterface
-     */
-    private $finSearchConfigRepository;
+    private EntityRepositoryInterface $finSearchConfigRepository;
 
-    /**
-     * @var array[]
-     */
-    private $configs = [];
+    private array $configs = [];
 
     public function __construct(EntityRepositoryInterface $finSearchConfigRepository, Connection $connection)
     {
