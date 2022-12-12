@@ -264,4 +264,32 @@ describe('filter-category-select.plugin.js', () => {
         });
         expect(isDisable).toBe(true);
     })
+
+    test('Ensure the category filter is disabled, when no filter value is available', () => {
+        const filters = {
+            'cat':
+                {
+                    'entities': [],
+                },
+            'vendor':
+                {'entities': []},
+            'price': {'entities': []},
+            'color': {'entities': []},
+            'shipping_free': {'entities': []},
+            'shoe-color': {'entities': []},
+            'textile': {'entities': []},
+            'width': {'entities': []},
+        };
+        filterCategorySelectPlugin.options.name = 'cat';
+        filterCategorySelectPlugin.refreshDisabledState(filters);
+        let isDisable;
+        const catLiArray = document.querySelectorAll('.filter-category-select-list-item');
+        for(let catLi of catLiArray) {
+            isDisable = catLi.childNodes[0].classList.contains('fl-disabled');
+            if (!isDisable) {
+                break;
+            }
+        }
+        expect(isDisable).toBe(true);
+    })
 });
