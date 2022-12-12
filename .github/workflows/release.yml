@@ -27,20 +27,22 @@ jobs:
           coverage: xdebug
           tools: composer:v2
 
+      - name: Install Shopware-CLI
+        run: |
+          curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
+          sudo apt install shopware-cli
+
       - name: Validate dependencies
         run: composer validate
 
       - name: Install dependencies
         run: composer install
 
-      - name: Download plugin uploader
-        run: wget 'https://github.com/FriendsOfShopware/FroshPluginUploader/releases/download/${{ env.PLUGIN_UPLOADER_VERSION }}/frosh-plugin-upload.phar' -O frosh-plugin-upload.phar
-
       - name: Build plugin release zip file
         run: composer build-release
 
       - name: Validate plugin release zip file
-        run: php frosh-plugin-upload.phar ext:validate $(pwd)/${PLUGIN_NAME}.zip
+        run: shopware-cli extension validate $(pwd)/${PLUGIN_NAME}.zip
 
   storeRelease:
     if: startsWith(github.ref, 'refs/tags/')
