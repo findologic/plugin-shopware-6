@@ -101,8 +101,5 @@ jobs:
           asset_name: ${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
 
-      - name: Select company for Shopware-CLI
-        run: shopware-cli account company use ${{ env.SHOPWARE_CLI_COMPANY_ID }}
-
       - name: Upload plugin to Shopware Store
         run: shopware-cli account producer extension upload $(pwd)/${PLUGIN_NAME}.zip
