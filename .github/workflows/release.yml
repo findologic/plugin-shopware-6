@@ -8,8 +8,9 @@ on:
 
 env:
   PLUGIN_NAME: FinSearch
-  ACCOUNT_USER: ${{ secrets.ACCOUNT_USER }}
-  ACCOUNT_PASSWORD: ${{ secrets.ACCOUNT_PASSWORD }}
+  SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ secrets.ACCOUNT_USER }}
+  SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ secrets.ACCOUNT_PASSWORD }}
+  SHOPWARE_CLI_COMPANY_ID: 11618
   PLUGIN_UPLOADER_VERSION: 0.3.16
 
 jobs:
@@ -59,6 +60,11 @@ jobs:
           coverage: xdebug
           tools: composer:v2
 
+      - name: Install Shopware-CLI
+        run: |
+          curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
+          sudo apt install shopware-cli
+
       - name: Validate dependencies
         run: composer validate
 
@@ -68,9 +74,6 @@ jobs:
       - name: Get version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
-
-      - name: Download plugin uploader
-        run: wget 'https://github.com/FriendsOfShopware/FroshPluginUploader/releases/download/${{ env.PLUGIN_UPLOADER_VERSION }}/frosh-plugin-upload.phar' -O frosh-plugin-upload.phar
 
       - name: Build Plugin Relase-Zipfile
         run: composer build-release
@@ -98,5 +101,8 @@ jobs:
           asset_name: ${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
 
+      - name: Select company for Shopware-CLI
+        run: shopware-cli account company use ${{ env.SHOPWARE_CLI_COMPANY_ID }}
+
       - name: Upload plugin to Shopware Store
-        run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}.zip
+        run: shopware-cli account producer extension upload $(pwd)/${PLUGIN_NAME}.zip
