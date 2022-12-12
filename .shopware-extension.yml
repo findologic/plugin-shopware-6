@@ -7,5 +7,6 @@ build:
                     - release
                     - phpcs.xml
                     - phpunit.xml.dist
+                    - vendor/findologic/shopware6-common/.git
                     - "*.zip"
                     - "*.phar"
