@@ -8,10 +8,10 @@ on:
 
 env:
   PLUGIN_NAME: FinSearch
+  PLUGIN_MIN_REQUIREMENT: ^6.4.6
   SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ secrets.ACCOUNT_USER }}
   SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ secrets.ACCOUNT_PASSWORD }}
   SHOPWARE_CLI_COMPANY_ID: 11618
-  PLUGIN_UPLOADER_VERSION: 0.3.16
 
 jobs:
   validatePlugin:
@@ -37,13 +37,15 @@ jobs:
         run: composer validate
 
       - name: Install dependencies
-        run: composer install
+        run: |
+          composer install
+          composer require shopware/core "${{ env.PLUGIN_MIN_REQUIREMENT }}" --no-update
 
       - name: Build plugin release zip file
-        run: composer build-release
+        run: shopware-cli extension zip .
 
       - name: Validate plugin release zip file
-        run: shopware-cli extension validate $(pwd)/${PLUGIN_NAME}.zip
+        run: shopware-cli extension validate $(pwd)
 
   storeRelease:
     if: startsWith(github.ref, 'refs/tags/')
@@ -69,14 +71,16 @@ jobs:
         run: composer validate
 
       - name: Install dependencies
-        run: composer install
+        run: |
+          composer install
+          composer require shopware/core "${{ env.PLUGIN_MIN_REQUIREMENT }}" --no-update
 
       - name: Get version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
 
-      - name: Build Plugin Relase-Zipfile
-        run: composer build-release
+      - name: Build Plugin Release-Zipfile
+        run: shopware-cli extension zip .
 
       - name: Upload plugin to Shopware Store
         run: shopware-cli account producer extension upload $(pwd)/${PLUGIN_NAME}.zip
