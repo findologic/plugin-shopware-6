@@ -41,11 +41,11 @@ jobs:
           composer install
           composer require shopware/core "${{ env.PLUGIN_MIN_REQUIREMENT }}" --no-update
 
+      - name: Validate plugin files
+        run: shopware-cli extension validate $(pwd)
+
       - name: Build plugin release zip file
         run: shopware-cli extension zip .
-
-      - name: Validate plugin release zip file
-        run: shopware-cli extension validate $(pwd)
 
   storeRelease:
     if: startsWith(github.ref, 'refs/tags/')
