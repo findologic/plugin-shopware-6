@@ -21,6 +21,9 @@
     "findologic/shopware6-common": "^0.5",
     "vin-sw/shopware-sdk": "^1.7"
   },
+  "replace": {
+    "guzzlehttp/guzzle":"*"
+  },
   "extra": {
     "shopware-plugin-class": "FINDOLOGIC\\FinSearch\\FinSearch",
     "plugin-icon": "src/Resources/config/plugin.png",
