@@ -267,12 +267,8 @@ describe('filter-category-select.plugin.js', () => {
 
     test('Ensure the category filter is disabled, when no filter value is available', () => {
         const filters = {
-            'cat':
-                {
-                    'entities': [],
-                },
-            'vendor':
-                {'entities': []},
+            'cat': {'entities': []},
+            'vendor': {'entities': []},
             'price': {'entities': []},
             'color': {'entities': []},
             'shipping_free': {'entities': []},
@@ -282,14 +278,12 @@ describe('filter-category-select.plugin.js', () => {
         };
         filterCategorySelectPlugin.options.name = 'cat';
         filterCategorySelectPlugin.refreshDisabledState(filters);
-        let isDisable;
-        const catLiArray = document.querySelectorAll('.filter-category-select-list-item');
-        for(let catLi of catLiArray) {
-            isDisable = catLi.childNodes[0].classList.contains('fl-disabled');
-            if (!isDisable) {
-                break;
-            }
-        }
-        expect(isDisable).toBe(true);
+
+        const inputList = document.querySelectorAll('.filter-category-select-list-item input');
+        const disabledInputList = document.querySelectorAll('.filter-category-select-list-item input[disabled]');
+        const disabledButton = document.querySelector('.filter-panel-item-toggle.fl-disabled');
+
+        expect(disabledInputList.length).toBe(inputList.length);
+        expect(disabledButton).not.toBe(null);
     })
 });
