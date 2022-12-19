@@ -14,11 +14,11 @@ class FinSearchTest extends TestCase
     {
         return [
             'Plugin is compatible' => [
-                'shopwareVersions' => ['6.1.0', '6.1.6', '6.2.0', '6.2.3', '6.3.0.0', '6.3.3.0', '6.3.5.1'],
+                'shopwareVersions' => ['6.4.6', '6.4.10', '6.4.99.99'],
                 'isCompatible' => true
             ],
             'Plugin is NOT compatible' => [
-                'shopwareVersions' => ['6.4.0.0', '6.4.5.0', '6.5.1.2', '6.7.6.4'],
+                'shopwareVersions' => ['6.4.0.0', '6.4.5.0', '6.5.0-rc.1', '6.5.1.2', '6.7.6.4'],
                 'isCompatible' => false
             ],
         ];
