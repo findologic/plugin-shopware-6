@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch;
 
 use Composer\Autoload\ClassLoader;
 use Composer\Semver\Comparator;
+use Composer\Semver\Semver;
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\ExtendFinSearch\ExtendFinSearch;
 use FINDOLOGIC\FinSearch\Exceptions\PluginNotCompatibleException;
@@ -59,7 +60,7 @@ class FinSearch extends Plugin
         if ($this->hasExtensionInstalled()) {
             $plugin = $this->getExtensionPlugin($updateContext);
 
-            if (self::isVersionLower($plugin->getVersion(), ['4.0'])) {
+            if (Comparator::lessThan($plugin->getVersion(), '4.0')) {
                 $this->uninstallExtensionPlugin($updateContext);
             }
         }
@@ -115,11 +116,7 @@ class FinSearch extends Plugin
             return true;
         }
 
-        $compatibleVersions = explode('||', $requiredPackages['shopware/core']);
-        $isLower = self::isVersionLower($currentVersion, $compatibleVersions);
-        $isHigher = self::isVersionHigher($currentVersion, $compatibleVersions);
-
-        return !($isLower || $isHigher);
+        return Semver::satisfies($currentVersion, $requiredPackages['shopware/core']);
     }
 
     private function deleteFindologicConfig(): void
@@ -130,24 +127,6 @@ class FinSearch extends Plugin
         } else {
             $connection->executeUpdate('DROP TABLE IF EXISTS `finsearch_config`');
         }
-    }
-
-    protected static function isVersionLower(string $currentVersion, array $compatibleVersions): bool
-    {
-        $compatibleVersion = current($compatibleVersions);
-
-        return Comparator::lessThan($currentVersion, $compatibleVersion);
-    }
-
-    protected static function isVersionHigher(string $currentVersion, array $compatibleVersions): bool
-    {
-        $compatibleVersion = end($compatibleVersions);
-        $highestCompatible = ltrim($compatibleVersion, '^');
-        if (is_numeric($highestCompatible)) {
-            $highestCompatible += 0.1;
-        }
-
-        return Comparator::greaterThan($currentVersion, $highestCompatible);
     }
 }
 
