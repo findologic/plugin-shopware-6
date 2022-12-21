@@ -40,6 +40,7 @@ class ConfigTest extends TestCase
                     'integrationType' => 'API',
                     'filterPosition' => FilterPosition::TOP
                 ],
+                'removeKeys' => [],
                 'exception' => null
             ],
             'Integration type is null due to ClientException' => [
@@ -53,8 +54,14 @@ class ConfigTest extends TestCase
                     'integrationType' => null,
                     'filterPosition' => FilterPosition::TOP
                 ],
+                'removeKeys' => [],
                 'exception' => new ClientException('some message', new Request('GET', 'some url'), new Response())
-            ]
+            ],
+            'Without isStaging value' => [
+                'data' => [],
+                'removeKeys' => ['isStaging'],
+                'exception' => null
+            ],
         ];
     }
 
@@ -63,10 +70,13 @@ class ConfigTest extends TestCase
      *
      * @throws InvalidArgumentException
      */
-    public function testConfigPropertiesInitialization(array $data, ?ClientException $exception): void
-    {
+    public function testConfigPropertiesInitialization(
+        array $data,
+        array $removeKeys,
+        ?ClientException $exception
+    ): void {
         /** @var FindologicConfigService|MockObject $configServiceMock */
-        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($data);
+        $configServiceMock = $this->getDefaultFindologicConfigServiceMock($data, $removeKeys);
 
         /** @var ServiceConfigResource|MockObject $serviceConfigResource */
         $serviceConfigResource = $this->getMockBuilder(ServiceConfigResource::class)
