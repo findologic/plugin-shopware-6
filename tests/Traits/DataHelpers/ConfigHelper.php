@@ -31,10 +31,13 @@ trait ConfigHelper
      * Creates a system config service mock with default findologic config values initialized
      * Passing the data array will override any default values if needed
      */
-    private function getDefaultFindologicConfigServiceMock(array $overrides = []): FindologicConfigService
-    {
+    private function getDefaultFindologicConfigServiceMock(
+        array $overrides = [],
+        array $removeKeys = []
+    ): FindologicConfigService {
         /** @var FindologicConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->createMock(FindologicConfigService::class);
+
         $salesChannelId = Defaults::SALES_CHANNEL;
         $languageId = Defaults::LANGUAGE_SYSTEM;
         if (isset($overrides['salesChannelId'])) {
@@ -45,6 +48,7 @@ trait ConfigHelper
             $languageId = $overrides['languageId'];
             unset($overrides['languageId']);
         }
+
         $defaultConfig = [
             'active' => true,
             'isStaging' => false,
@@ -61,77 +65,20 @@ trait ConfigHelper
 
         $config = array_merge($defaultConfig, $overrides);
 
+        $returnMap = [];
+        foreach ($config as $configName => $configValue) {
+            if(!in_array($configName, $removeKeys)) {
+                $returnMap[] = [
+                    'FinSearch.config.' . $configName,
+                    $salesChannelId,
+                    $languageId,
+                    $configValue
+                ];
+            }
+        }
+
         $configServiceMock->method('get')
-            ->willReturnMap(
-                [
-                    [
-                        'FinSearch.config.active',
-                        $salesChannelId,
-                        $languageId,
-                        $config['active']
-                    ],
-                    [
-                        'FinSearch.config.isStaging',
-                        $salesChannelId,
-                        $languageId,
-                        $config['isStaging']
-                    ],
-                    [
-                        'FinSearch.config.shopkey',
-                        $salesChannelId,
-                        $languageId,
-                        $config['shopkey']
-                    ],
-                    [
-                        'FinSearch.config.activeOnCategoryPages',
-                        $salesChannelId,
-                        $languageId,
-                        $config['activeOnCategoryPages']
-                    ],
-                    [
-                        'FinSearch.config.crossSellingCategories',
-                        $salesChannelId,
-                        $languageId,
-                        $config['crossSellingCategories']
-                    ],
-                    [
-                        'FinSearch.config.searchResultContainer',
-                        $salesChannelId,
-                        $languageId,
-                        $config['searchResultContainer']
-                    ],
-                    [
-                        'FinSearch.config.navigationResultContainer',
-                        $salesChannelId,
-                        $languageId,
-                        $config['navigationResultContainer']
-                    ],
-                    [
-                        'FinSearch.config.integrationType',
-                        $salesChannelId,
-                        $languageId,
-                        $config['integrationType']
-                    ],
-                    [
-                        'FinSearch.config.mainVariant',
-                        $salesChannelId,
-                        $languageId,
-                        $config['mainVariant']
-                    ],
-                    [
-                        'FinSearch.config.advancedPricing',
-                        $salesChannelId,
-                        $languageId,
-                        $config['advancedPricing']
-                    ],
-                    [
-                        'FinSearch.config.exportZeroPricedProducts',
-                        $salesChannelId,
-                        $languageId,
-                        $config['exportZeroPricedProducts']
-                    ]
-                ]
-            );
+            ->willReturnMap($returnMap);
 
         return $configServiceMock;
     }
