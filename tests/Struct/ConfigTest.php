@@ -96,14 +96,16 @@ class ConfigTest extends TestCase
         $config = new Config($configServiceMock, $serviceConfigResource);
         $config->initializeBySalesChannel($this->buildSalesChannelContext());
 
-        $this->assertSame($data['active'], $config->isActive());
-        $this->assertSame($data['shopkey'], $config->getShopkey());
-        $this->assertSame($data['activeOnCategoryPages'], $config->isActiveOnCategoryPages());
-        $this->assertSame($data['crossSellingCategories'], $config->getCrossSellingCategories());
-        $this->assertSame($data['searchResultContainer'], $config->getSearchResultContainer());
-        $this->assertSame($data['navigationResultContainer'], $config->getNavigationResultContainer());
-        $this->assertSame($data['integrationType'], $config->getIntegrationType());
-        $this->assertSame($data['filterPosition'], $config->getFilterPosition());
+        if (count($data)) {
+            $this->assertSame($data['active'], $config->isActive());
+            $this->assertSame($data['shopkey'], $config->getShopkey());
+            $this->assertSame($data['activeOnCategoryPages'], $config->isActiveOnCategoryPages());
+            $this->assertSame($data['crossSellingCategories'], $config->getCrossSellingCategories());
+            $this->assertSame($data['searchResultContainer'], $config->getSearchResultContainer());
+            $this->assertSame($data['navigationResultContainer'], $config->getNavigationResultContainer());
+            $this->assertSame($data['integrationType'], $config->getIntegrationType());
+            $this->assertSame($data['filterPosition'], $config->getFilterPosition());
+        }
         $this->assertTrue($config->isInitialized());
     }
 
