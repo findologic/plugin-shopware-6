@@ -62,8 +62,7 @@ jobs:
           php-version: ${{ matrix.php-versions }}
           extensions: dom, gd, mbstring, pdo_mysql, zip
           coverage: xdebug
-          tools: composer:v2
-        if: matrix.shopware-versions != 6.1
+          tools: composer:2.1.5
 
       - name: Validate dependencies
         run: |
