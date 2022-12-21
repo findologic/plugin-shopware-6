@@ -59,6 +59,20 @@ class FrontendSubscriberTest extends TestCase
                     'isNavigationPage' => false
                 ]
             ],
+            'Empty Search Request without search querystring' => [
+                'requestParams' => [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    ['REQUEST_URI' => 'https://example.com/search']
+                ],
+                'expectedPageInformation' => [
+                    'isSearchPage' => true,
+                    'isNavigationPage' => false
+                ]
+            ],
             'Empty Search Request' => [
                 'requestParams' => [
                     ['search' => ''],

@@ -8,7 +8,6 @@ use FINDOLOGIC\FinSearch\Release\Utils;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-require_once __DIR__ . '/../src/ReleaseBundler.php';
 require_once __DIR__ . '/../src/ReleaseTagger.php';
 require_once __DIR__ . '/../src/ShopwarePluginRelease.php';
 require_once __DIR__ . '/../src/Utils.php';

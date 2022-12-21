@@ -10,25 +10,14 @@ class ShopwarePluginRelease
 {
     private LoggerInterface $logger;
 
-    private ReleaseBundler $releaseBundler;
-
     private ReleaseTagger $releaseTagger;
 
     public function __construct(
         LoggerInterface $logger,
-        ?ReleaseBundler $releaseBundler = null,
         ?ReleaseTagger $releaseTagger = null
     ) {
         $this->logger = $logger;
-        $this->releaseBundler = $releaseBundler ?? new ReleaseBundler($logger);
         $this->releaseTagger = $releaseTagger ?? new ReleaseTagger($logger);
-    }
-
-    public function buildReleaseZipFile(): string
-    {
-        $this->releaseBundler->resetStateToTagInComposerJson();
-
-        return $this->releaseBundler->bundleToZip();
     }
 
     /**
