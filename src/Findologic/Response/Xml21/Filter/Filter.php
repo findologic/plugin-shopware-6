@@ -109,14 +109,14 @@ abstract class Filter extends BaseFilter
         if ($filter->getAttributes()->getTotalRange()) {
             $customFilter->setTotalRange([
                 self::FILTER_RANGE_MIN => round($filter->getAttributes()->getTotalRange()->getMin(), 2),
-                self::FILTER_RANGE_MAX => $filter->getAttributes()->getTotalRange()->getMax(),
+                self::FILTER_RANGE_MAX => round($filter->getAttributes()->getTotalRange()->getMax(), 2),
             ]);
         }
 
         if ($filter->getAttributes()->getSelectedRange()) {
             $customFilter->setSelectedRange([
                 self::FILTER_RANGE_MIN => round($filter->getAttributes()->getSelectedRange()->getMin(), 2),
-                self::FILTER_RANGE_MAX => $filter->getAttributes()->getSelectedRange()->getMax(),
+                self::FILTER_RANGE_MAX => round($filter->getAttributes()->getSelectedRange()->getMax(), 2),
             ]);
         }
 
@@ -127,7 +127,7 @@ abstract class Filter extends BaseFilter
 
         if ($attributes !== null) {
             $customFilter->setMin(round($attributes->getTotalRange()->getMin(), 2));
-            $customFilter->setMax($attributes->getTotalRange()->getMax());
+            $customFilter->setMax(round($attributes->getTotalRange()->getMax(), 2));
         } else {
             /** @var RangeSliderItem[] $filterItems */
             $filterItems = array_values($filter->getItems());
