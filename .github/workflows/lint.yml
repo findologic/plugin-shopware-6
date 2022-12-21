@@ -81,6 +81,7 @@ jobs:
         run: |
           cp plugin-shopware-6/.github/.psh.yaml.override development
           cd development
+          composer update
           ./psh.phar init
           ./psh.phar administration:init --APP_ENV="dev"
 
