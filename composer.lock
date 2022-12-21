@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "15bb96004e9d890e4ff988209b7233f5",
+    "content-hash": "2e264f2044b5a83841d41ac960f93d83",
     "packages": [
         {
             "name": "composer/semver",
@@ -297,11 +297,11 @@
         },
         {
             "name": "findologic/shopware6-common",
-            "version": "0.5.0",
+            "version": "0.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "b09787bd7c5810a2e7ff8e0c7210ef7d10b93794"
+                "reference": "1f02574cbfd422c9a432567f538b10d021189b4c"
             },
             "require": {
                 "findologic/libflexport": "^2.9",
@@ -309,7 +309,7 @@
                 "php": "^7.4 || ^8.0",
                 "symfony/event-dispatcher": "*",
                 "symfony/http-foundation": "*",
-                "vin-sw/shopware-sdk": "^1.7"
+                "vin-sw/shopware-sdk": "^1.7.3"
             },
             "require-dev": {
                 "doctrine/annotations": "^1.13",
@@ -353,7 +353,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2022-11-17T14:48:18+00:00"
+            "time": "2022-12-21T08:46:50+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
@@ -1696,21 +1696,21 @@
         },
         {
             "name": "vin-sw/shopware-sdk",
-            "version": "1.7.2",
+            "version": "1.7.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vienthuong/shopware-php-sdk.git",
-                "reference": "fef66e537ef3fc3cd1426b98f184965a1876a403"
+                "reference": "772876c243b64003094a7bd648d5e92ae446089d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vienthuong/shopware-php-sdk/zipball/fef66e537ef3fc3cd1426b98f184965a1876a403",
-                "reference": "fef66e537ef3fc3cd1426b98f184965a1876a403",
+                "url": "https://api.github.com/repos/vienthuong/shopware-php-sdk/zipball/772876c243b64003094a7bd648d5e92ae446089d",
+                "reference": "772876c243b64003094a7bd648d5e92ae446089d",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "guzzlehttp/guzzle": "^7.5",
+                "guzzlehttp/guzzle": "^7.0",
                 "php": "^7.4 || ^8.0 || ^8.1",
                 "psr/http-client": "^1.0"
             },
@@ -1741,9 +1741,9 @@
             "description": "A PHP SDK for Shopware 6 Platform",
             "support": {
                 "issues": "https://github.com/vienthuong/shopware-php-sdk/issues",
-                "source": "https://github.com/vienthuong/shopware-php-sdk/tree/1.7.2"
+                "source": "https://github.com/vienthuong/shopware-php-sdk/tree/1.7.3"
             },
-            "time": "2022-11-16T16:35:27+00:00"
+            "time": "2022-12-21T06:52:44+00:00"
         },
         {
             "name": "vlucas/valitron",
