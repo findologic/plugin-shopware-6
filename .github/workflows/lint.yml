@@ -81,7 +81,6 @@ jobs:
         run: |
           cp plugin-shopware-6/.github/.psh.yaml.override development
           cd development
-          composer require "shopware/platform:${{ matrix.shopware-versions }}@dev || trunk" --no-update
           ./psh.phar init
           ./psh.phar administration:init --APP_ENV="dev"
 
