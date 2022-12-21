@@ -67,7 +67,7 @@ trait ConfigHelper
 
         $returnMap = [];
         foreach ($config as $configName => $configValue) {
-            if(!in_array($configName, $removeKeys)) {
+            if (!in_array($configName, $removeKeys)) {
                 $returnMap[] = [
                     'FinSearch.config.' . $configName,
                     $salesChannelId,
