@@ -1,7 +1,7 @@
 {% set filterItemId = 'filter-' ~ name ~ '-' ~ random() %}
 
 {% if currencySymbol is not defined %}
-    {% set currencySymbol = page.header.activeCurrency.symbol %}
+    {% set currencySymbol = '' %}
 {% endif %}
 
 {% if filterRangeActiveMinLabel is not defined %}

@@ -16,7 +16,7 @@ class RangeSliderFilter extends Filter
 
     private ?float $step = null;
 
-    private string $unit = '€';
+    private string $unit = '';
 
     private array $totalRange = [];
 

@@ -22,7 +22,6 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterV
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
-use GuzzleHttp\Client;
 
 abstract class Filter extends BaseFilter
 {
@@ -108,15 +107,15 @@ abstract class Filter extends BaseFilter
 
         if ($filter->getAttributes()->getTotalRange()) {
             $customFilter->setTotalRange([
-                self::FILTER_RANGE_MIN => round($filter->getAttributes()->getTotalRange()->getMin(), 2),
-                self::FILTER_RANGE_MAX => round($filter->getAttributes()->getTotalRange()->getMax(), 2),
+                self::FILTER_RANGE_MIN => $filter->getAttributes()->getTotalRange()->getMin(),
+                self::FILTER_RANGE_MAX => $filter->getAttributes()->getTotalRange()->getMax(),
             ]);
         }
 
         if ($filter->getAttributes()->getSelectedRange()) {
             $customFilter->setSelectedRange([
-                self::FILTER_RANGE_MIN => round($filter->getAttributes()->getSelectedRange()->getMin(), 2),
-                self::FILTER_RANGE_MAX => round($filter->getAttributes()->getSelectedRange()->getMax(), 2),
+                self::FILTER_RANGE_MIN => $filter->getAttributes()->getSelectedRange()->getMin(),
+                self::FILTER_RANGE_MAX => $filter->getAttributes()->getSelectedRange()->getMax(),
             ]);
         }
 
@@ -126,8 +125,8 @@ abstract class Filter extends BaseFilter
         }
 
         if ($attributes !== null) {
-            $customFilter->setMin(round($attributes->getTotalRange()->getMin(), 2));
-            $customFilter->setMax(round($attributes->getTotalRange()->getMax(), 2));
+            $customFilter->setMin($attributes->getTotalRange()->getMin());
+            $customFilter->setMax($attributes->getTotalRange()->getMax());
         } else {
             /** @var RangeSliderItem[] $filterItems */
             $filterItems = array_values($filter->getItems());

@@ -42,15 +42,21 @@ export default class FilterSliderRange extends FilterBasePlugin {
 
         const start = this._inputMin.value.length ? this._inputMin.value : this.options.price.min;
         const end = this._inputMax.value.length ? this._inputMax.value : this.options.price.max;
+        const min = this.options.price.min;
+        const max = this.getMax();
+
+        const startPrecision = this.getPrecision(min);
+        const endPrecision = this.getPrecision(max);
 
         noUiSlider.create(this.slider, {
             start: [start, end],
             connect: true,
             step: this.options.price.step,
-            range: {
-                min: this.options.price.min,
-                max: this.getMax(),
-            },
+            range: { min, max },
+            format: {
+                to: (v) => parseFloat(v).toFixed(startPrecision),
+                from: (v) => parseFloat(v).toFixed(endPrecision),
+            }
         });
 
         this._registerEvents();
@@ -82,7 +88,18 @@ export default class FilterSliderRange extends FilterBasePlugin {
     }
 
     /**
-     * @returns {float}
+     * @param {number} number
+     */
+    getPrecision(number) {
+        const numberString = number.toString();
+        const precision = numberString.indexOf('.') > -1 ? numberString.split('.')[1].length : 2;
+
+        // Show at least 2 decimal places
+        return Math.max(2, precision);
+    }
+
+    /**
+     * @returns {number}
      */
     getMax() {
         return this.options.price.max === this.options.price.min ? this.options.price.min + 1 : this.options.price.max;
@@ -316,12 +333,12 @@ export default class FilterSliderRange extends FilterBasePlugin {
 
     hasMinValueSet() {
         this.validateMinInput();
-        return this._inputMin.value.length && parseFloat(this._inputMin.value) !== this.options.price.min;
+        return this._inputMin.value.length && parseFloat(this._inputMin.value) > this.options.price.min;
     }
 
     hasMaxValueSet() {
         this.validateMaxInput();
-        return this._inputMax.value.length && parseFloat(this._inputMax.value) !== this.options.price.max;
+        return this._inputMax.value.length && parseFloat(this._inputMax.value) < this.options.price.max;
     }
 
     setMinKnobValue() {
@@ -346,13 +363,17 @@ export default class FilterSliderRange extends FilterBasePlugin {
         const properties = filter[this.options.name];
         const entities = properties.entities;
 
-        if (!entities) {
+        if (!entities || !entities.length) {
             this.disableFilter();
-
             return;
         }
 
         const property = entities.find(entity => entity.translated.name === this.options.propertyName);
+        if (!property) {
+            this.disableFilter();
+            return;
+        }
+
         const totalRangePrices = property.options[0].totalRange;
         const currentSelectedPrices = this.getValues();
 
