@@ -17,7 +17,7 @@ jobs:
       matrix:
         php-versions: [ '8.0' ]
         shopware-versions: [
-            'v6.4.6.0',
+#            'v6.4.6.0',
 #            'v6.4.7.0',
 #            'v6.4.8.2',
 #            'v6.4.9.0',
@@ -71,6 +71,7 @@ jobs:
 
       - name: Install Shopware
         run: |
+          cp plugin-shopware-6/.github/.psh.yaml.override shopware
           cd shopware
           ./bin/console system:install --basic-setup
 
