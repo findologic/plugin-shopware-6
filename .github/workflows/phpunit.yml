@@ -67,7 +67,7 @@ jobs:
           composer require shopware/core "${{ matrix.shopware-versions }}" --no-update
           composer require shopware/elasticsearch "${{ matrix.shopware-versions }}" --no-update
           composer require shopware/storefront "${{ matrix.shopware-versions }}" --no-update
-          composer require phpunit/phpunit
+          composer require phpunit/phpunit --no-update
           composer update
 
       - name: Install Shopware
