@@ -57,23 +57,18 @@ jobs:
           composer validate
 
       - name: Create shop
-        uses: php-actions/composer@v6
-        with:
-          command: create-project shopware/production:dev-flex shopware
-          interaction: no
+        run: composer create-project shopware/production:dev-flex shopware --no-interaction
 
       - name: Use correct SW version
-        uses: php-actions/composer@v6
-        with:
-          command: require shopware/core "${{ matrix.shopware-versions }}"
+        run: |
+          cd shopware
+          composer require shopware/administration "${{ matrix.shopware-versions }}"
+          composer require shopware/core "${{ matrix.shopware-versions }}"
+          composer require shopware/storefront "${{ matrix.shopware-versions }}"
 
       - name: Install Shopware
         run: |
           cd shopware
-          composer require "ext-gd:*" --ignore-platform-reqs
-          composer require shopware/administration "${{ matrix.shopware-versions }}"
-          composer require shopware/core "${{ matrix.shopware-versions }}"
-          composer require shopware/storefront "${{ matrix.shopware-versions }}"
           ./bin/console system:install --basic-setup
 
       - name: Install dependencies
