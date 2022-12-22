@@ -62,6 +62,7 @@ jobs:
       - name: Use correct SW version
         run: |
           cd shopware
+          composer remove shopware/elasticsearch --no-update
           composer require shopware/administration "${{ matrix.shopware-versions }}" --no-update
           composer require shopware/core "${{ matrix.shopware-versions }}" --no-update
           composer require shopware/storefront "${{ matrix.shopware-versions }}" --no-update
