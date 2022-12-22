@@ -1,9 +1,5 @@
 {% set filterItemId = 'filter-' ~ name ~ '-' ~ random() %}
 
-{% if currencySymbol is not defined %}
-    {% set currencySymbol = '' %}
-{% endif %}
-
 {% if filterRangeActiveMinLabel is not defined %}
     {% set filterRangeActiveMinLabel = 'listing.filterRangeActiveMinLabel'|trans|sw_sanitize %}
 {% endif %}
@@ -83,9 +79,11 @@
                                 {% endblock %}
 
                                 {% block component_filter_range_min_currency_symbol %}
-                                    <span class="filter-range-currency-symbol">
-                                        {{ currencySymbol }}
-                                    </span>
+                                    {% if currencySymbol %}
+                                        <span class="filter-range-currency-symbol">
+                                            {{ currencySymbol }}
+                                        </span>
+                                    {% endif %}
                                 {% endblock %}
                             </label>
                         {% endblock %}
@@ -113,9 +111,11 @@
                                 {% endblock %}
 
                                 {% block component_filter_range_max_currency_symbol %}
-                                    <span class="filter-range-currency-symbol">
-                                        {{ currencySymbol }}
-                                    </span>
+                                    {% if currencySymbol %}
+                                        <span class="filter-range-currency-symbol">
+                                            {{ currencySymbol }}
+                                        </span>
+                                    {% endif %}
                                 {% endblock %}
                             </label>
                         {% endblock %}
