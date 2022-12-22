@@ -71,7 +71,7 @@ jobs:
 
       - name: Install Shopware
         run: |
-          cp plugin-shopware-6/.github/.psh.yaml.override shopware
+          cp plugin-shopware-6/.github/.env.local shopware
           cd shopware
           ./bin/console system:install --basic-setup
 
