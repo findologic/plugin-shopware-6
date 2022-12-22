@@ -87,12 +87,12 @@
                 <type>range-slider</type>
                 <attributes>
                     <selectedRange>
-                        <min>0.39</min>
-                        <max>2239.1</max>
+                        <min>0.395</min>
+                        <max>2239.144</max>
                     </selectedRange>
                     <totalRange>
-                        <min>0.39</min>
-                        <max>2239.1</max>
+                        <min>0.355</min>
+                        <max>3239.145</max>
                     </totalRange>
                     <stepSize>0.1</stepSize>
                     <unit>€</unit>
