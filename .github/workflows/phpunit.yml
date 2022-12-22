@@ -57,14 +57,19 @@ jobs:
           composer validate
 
       - name: Create shop
-        run: composer create-project shopware/production:dev-flex shopware --no-interaction
+        uses: php-actions/composer@v6
+        with:
+          command: create-project shopware/production:dev-flex shopware
+          interaction: no
+          php_version: 8.0
 
       - name: Use correct SW version
         run: |
           cd shopware
-          composer require shopware/administration "${{ matrix.shopware-versions }}"
-          composer require shopware/core "${{ matrix.shopware-versions }}"
-          composer require shopware/storefront "${{ matrix.shopware-versions }}"
+          composer require shopware/administration "${{ matrix.shopware-versions }}" --no-update
+          composer require shopware/core "${{ matrix.shopware-versions }}" --no-update
+          composer require shopware/storefront "${{ matrix.shopware-versions }}" --no-update
+          composer update
 
       - name: Install Shopware
         run: |
