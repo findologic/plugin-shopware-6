@@ -70,6 +70,7 @@ jobs:
       - name: Install Shopware
         run: |
           cd shopware
+          composer require "ext-gd:*" --ignore-platform-reqs
           composer require shopware/administration "${{ matrix.shopware-versions }}"
           composer require shopware/core "${{ matrix.shopware-versions }}"
           composer require shopware/storefront "${{ matrix.shopware-versions }}"
