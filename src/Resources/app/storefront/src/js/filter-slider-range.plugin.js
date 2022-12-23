@@ -56,7 +56,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
             format: {
                 to: (v) => parseFloat(v).toFixed(startPrecision),
                 from: (v) => parseFloat(v).toFixed(endPrecision),
-            }
+            },
         });
 
         this._registerEvents();
