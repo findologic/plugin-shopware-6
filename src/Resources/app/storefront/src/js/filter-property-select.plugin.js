@@ -11,7 +11,7 @@ export default class FlFilterPropertySelectPlugin extends FilterPropertySelectPl
         const properties = filter[this.options.name];
         const entities = properties.entities;
 
-        if (!entities) {
+        if (!entities || !entities.length) {
             this.disableFilter();
             return;
         }
