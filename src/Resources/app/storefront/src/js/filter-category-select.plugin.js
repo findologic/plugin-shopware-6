@@ -337,11 +337,13 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
         const activeItems = [];
         const properties = filter[this.options.name];
         const entities = properties.entities;
-        if (entities.length === 0) {
+
+        if (!entities || !entities.length) {
             this._disableAll();
             this.disableFilter();
             return;
         }
+
         const property = entities.find(entity => entity.translated.name === this.options.name);
         if (property) {
             activeItems.push(...property.options);
