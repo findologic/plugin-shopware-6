@@ -1,3 +1,9 @@
+# 4.0.2
+
+* [SW-777] Ein Problem wurde behoben, wodurch es bei Bereichsslidern mit mehr als 2 Kommastellen zu Fehlern kam.
+* [SW-779] Ein Problem wurde behoben, wodurch spezielle UTF-8 Symbole in der Beschreibung den Import abgebrochen haben.
+* [SW-786] Ein Fehler wurde behoben, wodurch es zu einer Fehlermeldung bei neu aufgesetzten Shops kam.
+
 # 4.0.1
 
 - [SW-780] Ein Problem wurde behoben, wodurch unterstützte Shopware Versionen beim Installieren als inkompatible deklariert wurden.
