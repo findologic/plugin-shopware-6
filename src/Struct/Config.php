@@ -51,7 +51,7 @@ class Config extends Struct
 
     protected ?string $integrationType = null;
 
-    protected bool $staging;
+    protected ?bool $staging = null;
 
     protected bool $initialized = false;
 
