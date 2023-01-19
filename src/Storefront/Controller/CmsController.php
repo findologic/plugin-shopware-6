@@ -122,7 +122,8 @@ class CmsController extends StorefrontController
                 $request,
                 $salesChannelContext->getContext(),
                 $this->serviceConfigResource,
-                $this->config
+                $this->config,
+                true
             )
         ) {
             return $this->decorated->filter($navigationId, $request, $salesChannelContext);
