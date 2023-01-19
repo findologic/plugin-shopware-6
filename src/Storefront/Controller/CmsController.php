@@ -116,7 +116,6 @@ class CmsController extends StorefrontController
      */
     public function filter(string $navigationId, Request $request, SalesChannelContext $salesChannelContext): Response
     {
-        $event = new ProductListingCriteriaEvent($request, new Criteria(), $salesChannelContext);
         $this->config->initializeBySalesChannel($salesChannelContext);
         if (
             !Utils::shouldHandleRequest(
@@ -124,12 +123,13 @@ class CmsController extends StorefrontController
                 $salesChannelContext->getContext(),
                 $this->serviceConfigResource,
                 $this->config,
-                !($event instanceof ProductSearchCriteriaEvent)
+                true
             )
         ) {
             return $this->decorated->filter($navigationId, $request, $salesChannelContext);
         }
 
+        $event = new ProductListingCriteriaEvent($request, new Criteria(), $salesChannelContext);
         $this->findologicSearchService->doFilter($event);
 
         $result = $this->filterHandler->handleAvailableFilters($event);
