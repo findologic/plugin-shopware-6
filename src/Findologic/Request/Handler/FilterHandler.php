@@ -193,7 +193,12 @@ class FilterHandler
      */
     protected function getFilterValues(string $filterValues): array
     {
-        return explode(self::FILTER_DELIMITER, $filterValues);
+        $delimiter = self::FILTER_DELIMITER;
+        if (str_contains($filterValues, ">")) {
+            $delimiter = " ";
+        }
+
+        return explode($delimiter, $filterValues);
     }
 
     private function isMinRangeSlider(string $name): bool
