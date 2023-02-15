@@ -1,3 +1,8 @@
+# 4.0.3
+
+* [SW-788] Fixed a bug where invalid filter values on navigation pages were not disabled
+* [SW-789] Fixed a bug that caused generic URLs to be exported for SEO Urls without a "/"
+
 # 4.0.2
 
 * [SW-777] Fixed a bug that caused errors for range slider values with more than 2 decimal places.
