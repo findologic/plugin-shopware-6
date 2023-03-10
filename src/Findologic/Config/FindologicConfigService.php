@@ -7,7 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Config;
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\Shopware6Common\Export\Utils\Utils;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -29,11 +29,11 @@ class FindologicConfigService
 {
     protected Connection $connection;
 
-    private EntityRepositoryInterface $finSearchConfigRepository;
+    private EntityRepository $finSearchConfigRepository;
 
     private array $configs = [];
 
-    public function __construct(EntityRepositoryInterface $finSearchConfigRepository, Connection $connection)
+    public function __construct(EntityRepository $finSearchConfigRepository, Connection $connection)
     {
         $this->finSearchConfigRepository = $finSearchConfigRepository;
         $this->connection = $connection;

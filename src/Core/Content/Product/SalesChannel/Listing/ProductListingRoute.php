@@ -20,12 +20,12 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -42,9 +42,9 @@ class ProductListingRoute extends AbstractProductListingRoute
 
     private AbstractProductListingRoute $decorated;
 
-    private SalesChannelRepositoryInterface $productRepository;
+    private EntityRepository $productRepository;
 
-    private EntityRepositoryInterface $categoryRepository;
+    private EntityRepository $categoryRepository;
 
     private ProductStreamBuilderInterface $productStreamBuilder;
 
@@ -54,8 +54,8 @@ class ProductListingRoute extends AbstractProductListingRoute
 
     public function __construct(
         AbstractProductListingRoute $decorated,
-        SalesChannelRepositoryInterface $productRepository,
-        EntityRepositoryInterface $categoryRepository,
+        EntityRepository $productRepository,
+        EntityRepository $categoryRepository,
         ProductStreamBuilderInterface $productStreamBuilder,
         EventDispatcherInterface $eventDispatcher,
         ProductDefinition $definition,
@@ -128,7 +128,7 @@ class ProductListingRoute extends AbstractProductListingRoute
             new ProductListingCriteriaEvent($request, $criteria, $salesChannelContext)
         );
 
-        $result = $this->doSearch($criteria, $salesChannelContext);
+        $result = $this->doSearch($criteria, $salesChannelContext->getContext());
         /** @var ProductListingResult $productListing */
         $productListing = ProductListingResult::createFrom($result);
         $productListing->addCurrentFilter('navigationId', $categoryId);
@@ -146,7 +146,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         return new ProductListingRouteResponse($productListing);
     }
 
-    protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
+    protected function doSearch(Criteria $criteria, Context $context): EntitySearchResult
     {
         $this->assignPaginationToCriteria($criteria);
         $this->addOptionsGroupAssociation($criteria);

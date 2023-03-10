@@ -7,18 +7,18 @@ namespace FINDOLOGIC\FinSearch\Traits;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
 trait SearchResultHelper
 {
-    protected function createEmptySearchResult(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
+    protected function createEmptySearchResult(Criteria $criteria, Context $context): EntitySearchResult
     {
         // Return an empty response, as Shopware would search for all products if no explicit
         // product ids are submitted.
@@ -28,7 +28,7 @@ trait SearchResultHelper
             new EntityCollection(),
             new AggregationResultCollection(),
             $criteria,
-            $context->getContext()
+            $context
         );
     }
 
@@ -51,7 +51,7 @@ trait SearchResultHelper
 
     protected function fetchProducts(
         Criteria $criteria,
-        SalesChannelContext $context,
+        Context $context,
         ?string $query = null
     ): EntitySearchResult {
         if ($query !== null && count($criteria->getIds()) === 1) {
@@ -130,7 +130,7 @@ trait SearchResultHelper
     private function modifyCriteriaFromQuery(
         string $query,
         Criteria $criteria,
-        SalesChannelContext $context
+        Context $context
     ): void {
         $productCriteria = new Criteria();
         $productCriteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_OR, [

@@ -19,10 +19,10 @@ use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -41,7 +41,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
 
     private AbstractProductSearchRoute $decorated;
 
-    private SalesChannelRepositoryInterface $productRepository;
+    private EntityRepository $productRepository;
 
     private ServiceConfigResource $serviceConfigResource;
 
@@ -51,7 +51,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         AbstractProductSearchRoute $decorated,
         ProductSearchBuilderInterface $searchBuilder,
         EventDispatcherInterface $eventDispatcher,
-        SalesChannelRepositoryInterface $productRepository,
+        EntityRepository $productRepository,
         ProductDefinition $definition,
         RequestCriteriaBuilder $criteriaBuilder,
         ServiceConfigResource $serviceConfigResource,
@@ -75,56 +75,56 @@ class ProductSearchRoute extends AbstractProductSearchRoute
 
     public function load(
         Request $request,
-        SalesChannelContext $context,
+        SalesChannelContext $salesChannelContext,
         ?Criteria $criteria = null
     ): ProductSearchRouteResponse {
-        $this->addElasticSearchContext($context);
+        $this->addElasticSearchContext($salesChannelContext);
 
         $criteria ??= $this->criteriaBuilder->handleRequest(
             $request,
             new Criteria(),
             $this->definition,
-            $context->getContext()
+            $salesChannelContext->getContext()
         );
 
-        $this->config->initializeBySalesChannel($context);
+        $this->config->initializeBySalesChannel($salesChannelContext);
         $shouldHandleRequest = Utils::shouldHandleRequest(
             $request,
-            $context->getContext(),
+            $salesChannelContext->getContext(),
             $this->serviceConfigResource,
             $this->config
         );
 
         $criteria->addFilter(
             new ProductAvailableFilter(
-                $context->getSalesChannel()->getId(),
+                $salesChannelContext->getSalesChannel()->getId(),
                 ProductVisibilityDefinition::VISIBILITY_SEARCH
             )
         );
 
-        $this->searchBuilder->build($request, $criteria, $context);
+        $this->searchBuilder->build($request, $criteria, $salesChannelContext);
 
         $this->eventDispatcher->dispatch(
-            new ProductSearchCriteriaEvent($request, $criteria, $context)
+            new ProductSearchCriteriaEvent($request, $criteria, $salesChannelContext)
         );
 
         if (!$shouldHandleRequest) {
-            return $this->decorated->load($request, $context, $criteria);
+            return $this->decorated->load($request, $salesChannelContext, $criteria);
         }
 
         $query = $request->query->get('search');
-        $result = $this->doSearch($criteria, $context, $query);
+        $result = $this->doSearch($criteria, $salesChannelContext->getContext(), $query);
         $result = ProductListingResult::createFrom($result);
         $result->addCurrentFilter('search', $query);
 
         $this->eventDispatcher->dispatch(
-            new ProductSearchResultEvent($request, $result, $context)
+            new ProductSearchResultEvent($request, $result, $salesChannelContext)
         );
 
         return new ProductSearchRouteResponse($result);
     }
 
-    protected function doSearch(Criteria $criteria, SalesChannelContext $context, ?string $query): EntitySearchResult
+    protected function doSearch(Criteria $criteria, Context $context, ?string $query): EntitySearchResult
     {
         $this->assignPaginationToCriteria($criteria);
         $this->addOptionsGroupAssociation($criteria);
@@ -138,6 +138,6 @@ class ProductSearchRoute extends AbstractProductSearchRoute
 
     public function addElasticSearchContext(SalesChannelContext $context): void
     {
-        $context->getContext()->addState(Context::STATE_ELASTICSEARCH_AWARE);
+        $context->getContext()->addState(Criteria::STATE_ELASTICSEARCH_AWARE);
     }
 }
