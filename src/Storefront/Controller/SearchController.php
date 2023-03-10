@@ -14,12 +14,10 @@ use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
 use Shopware\Storefront\Controller\StorefrontController;
-use Shopware\Storefront\Framework\Cache\Annotation\HttpCache;
 use Shopware\Storefront\Page\Search\SearchPageLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -69,9 +67,15 @@ class SearchController extends StorefrontController
     }
 
     /**
-     * @HttpCache()
-     * @RouteScope(scopes={"storefront"})
-     * @Route("/search", name="frontend.search.page", methods={"GET"})
+     * @Route(
+     *     "/search",
+     *     name="frontend.search.page",
+     *     methods={"GET"},
+     *     defaults={
+     *          "_routeScope"={"storefront"},
+     *          "_httpCache"=true
+     *     }
+     * )
      */
     public function search(SalesChannelContext $context, Request $request): Response
     {
@@ -99,9 +103,16 @@ class SearchController extends StorefrontController
     }
 
     /**
-     * @HttpCache()
-     * @RouteScope(scopes={"storefront"})
-     * @Route("/suggest", name="frontend.search.suggest", methods={"GET"}, defaults={"XmlHttpRequest"=true})
+     * @Route(
+     *     "/suggest",
+     *     name="frontend.search.suggest",
+     *     methods={"GET"},
+     *     defaults={
+     *          "_routeScope"={"storefront"},
+     *          "XmlHttpRequest"=true,
+     *          "_httpCache"=true
+     *     }
+     * )
      */
     public function suggest(SalesChannelContext $context, Request $request): Response
     {
@@ -109,11 +120,18 @@ class SearchController extends StorefrontController
     }
 
     /**
-     * @HttpCache()
      * Route to load the listing filters
-     * @RouteScope(scopes={"storefront"})
-     * @Route("/widgets/search/{search}", name="widgets.search.pagelet", methods={"GET", "POST"},
-     *     defaults={"XmlHttpRequest"=true})
+     *
+     * @Route(
+     *     "/widgets/search/{search}",
+     *     name="widgets.search.pagelet",
+     *     methods={"GET", "POST"},
+     *     defaults={
+     *          "_routeScope"={"storefront"},
+     *          "XmlHttpRequest"=true,
+     *          "_httpCache"=true
+     *     }
+     * )
      *
      * @throws MissingRequestParameterException
      */
@@ -123,14 +141,17 @@ class SearchController extends StorefrontController
     }
 
     /**
-     * @HttpCache()
      * Route to load the listing filters
-     * @RouteScope(scopes={"storefront"})
+     *
      * @Route(
-     *      "/widgets/search",
-     *      name="widgets.search.pagelet.v2",
-     *      methods={"GET", "POST"},
-     *      defaults={"XmlHttpRequest"=true}
+     *     "/widgets/search",
+     *     name="widgets.search.pagelet.v2",
+     *     methods={"GET", "POST"},
+     *     defaults={
+     *          "_routeScope"={"storefront"},
+     *          "XmlHttpRequest"=true,
+     *          "_httpCache"=true
+     *     }
      * )
      *
      * @throws MissingRequestParameterException
@@ -141,11 +162,18 @@ class SearchController extends StorefrontController
     }
 
     /**
-     * @HttpCache()
-     * Route to load the available listing filters
-     * @RouteScope(scopes={"storefront"})
-     * @Route("/widgets/search/filter", name="widgets.search.filter", methods={"GET", "POST"},
-     *     defaults={"XmlHttpRequest"=true})
+     * Route to load the listing filters
+     *
+     * @Route(
+     *     "/widgets/search/filter",
+     *     name="widgets.search.filter",
+     *     methods={"GET", "POST"},
+     *     defaults={
+     *          "_routeScope"={"storefront"},
+     *          "XmlHttpRequest"=true,
+     *          "_httpCache"=true
+     *     }
+     * )
      */
     public function filter(Request $request, SalesChannelContext $salesChannelContext): Response
     {

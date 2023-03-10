@@ -25,7 +25,6 @@ use FINDOLOGIC\Shopware6Common\Export\Validation\OffsetExportConfiguration;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -43,9 +42,6 @@ use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupCollection;
 use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupEntity;
 use Vin\ShopwareSdk\Data\Entity\SalesChannel\SalesChannelEntity;
 
-/**
- * @RouteScope(scopes={"storefront"})
- */
 class ExportController extends AbstractController
 {
     protected LoggerInterface $logger;
@@ -110,7 +106,13 @@ class ExportController extends AbstractController
     }
 
     /**
-     * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
+     * @Route(
+     *     "/findologic",
+     *     name="frontend.findologic.export",
+     *     options={"seo"="false"},
+     *     methods={"GET"},
+     *     defaults={"_routeScope"={"storefront"}}
+     * )
      */
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
@@ -123,8 +125,13 @@ class ExportController extends AbstractController
     }
 
     /**
-     * @Route("/findologic/dynamic-product-groups", name="frontend.findologic.export.dynamic_product_groups",
-     *     options={"seo"="false"}, methods={"GET"})
+     * @Route(
+     *     "/findologic/dynamic-product-groups",
+     *     name="frontend.findologic.export.dynamic_product_groups",
+     *     options={"seo"="false"},
+     *     methods={"GET"},
+     *     defaults={"_routeScope"={"storefront"}}
+     * )
      */
     public function exportProductGroup(Request $request, ?SalesChannelContext $context): Response
     {
