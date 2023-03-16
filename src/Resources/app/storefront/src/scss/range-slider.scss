@@ -11,6 +11,8 @@
 // Hide arrows for input field.
 .filter-range {
     .filter-range-container {
+        min-width: 280px;
+
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
