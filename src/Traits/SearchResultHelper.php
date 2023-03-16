@@ -14,6 +14,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
 trait SearchResultHelper
@@ -51,14 +52,14 @@ trait SearchResultHelper
 
     protected function fetchProducts(
         Criteria $criteria,
-        Context $context,
+        SalesChannelContext $salesChannelContext,
         ?string $query = null
     ): EntitySearchResult {
         if ($query !== null && count($criteria->getIds()) === 1) {
-            $this->modifyCriteriaFromQuery($query, $criteria, $context);
+            $this->modifyCriteriaFromQuery($query, $criteria, $salesChannelContext);
         }
 
-        $result = $this->productRepository->search($criteria, $context);
+        $result = $this->salesChannelProductRepository->search($criteria, $salesChannelContext);
 
         return $this->fixResultOrder($result, $criteria);
     }
@@ -130,7 +131,7 @@ trait SearchResultHelper
     private function modifyCriteriaFromQuery(
         string $query,
         Criteria $criteria,
-        Context $context
+        SalesChannelContext $salesChannelContext
     ): void {
         $productCriteria = new Criteria();
         $productCriteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_OR, [
@@ -138,7 +139,7 @@ trait SearchResultHelper
             new EqualsFilter('ean', $query),
             new EqualsFilter('manufacturerNumber', $query),
         ]));
-        $product = $this->productRepository->search($productCriteria, $context)->first();
+        $product = $this->salesChannelProductRepository->search($productCriteria, $salesChannelContext)->first();
         if ($product) {
             $criteria->setIds([$product->getId()]);
         }
