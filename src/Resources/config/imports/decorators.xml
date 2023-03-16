@@ -32,6 +32,9 @@
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
+            <call method="setTwig">
+                <argument type="service" id="twig"/>
+            </call>
         </service>
 
         <service

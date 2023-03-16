@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Traits;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\AggregationResultCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -18,7 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 trait SearchResultHelper
 {
-    protected function createEmptySearchResult(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
+    protected function createEmptySearchResult(Criteria $criteria, Context $context): EntitySearchResult
     {
         // Return an empty response, as Shopware would search for all products if no explicit
         // product ids are submitted.
@@ -28,7 +29,7 @@ trait SearchResultHelper
             new EntityCollection(),
             new AggregationResultCollection(),
             $criteria,
-            $context->getContext()
+            $context
         );
     }
 
@@ -51,14 +52,14 @@ trait SearchResultHelper
 
     protected function fetchProducts(
         Criteria $criteria,
-        SalesChannelContext $context,
+        SalesChannelContext $salesChannelContext,
         ?string $query = null
     ): EntitySearchResult {
         if ($query !== null && count($criteria->getIds()) === 1) {
-            $this->modifyCriteriaFromQuery($query, $criteria, $context);
+            $this->modifyCriteriaFromQuery($query, $criteria, $salesChannelContext);
         }
 
-        $result = $this->productRepository->search($criteria, $context);
+        $result = $this->salesChannelProductRepository->search($criteria, $salesChannelContext);
 
         return $this->fixResultOrder($result, $criteria);
     }
@@ -130,7 +131,7 @@ trait SearchResultHelper
     private function modifyCriteriaFromQuery(
         string $query,
         Criteria $criteria,
-        SalesChannelContext $context
+        SalesChannelContext $salesChannelContext
     ): void {
         $productCriteria = new Criteria();
         $productCriteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_OR, [
@@ -138,7 +139,7 @@ trait SearchResultHelper
             new EqualsFilter('ean', $query),
             new EqualsFilter('manufacturerNumber', $query),
         ]));
-        $product = $this->productRepository->search($productCriteria, $context)->first();
+        $product = $this->salesChannelProductRepository->search($productCriteria, $salesChannelContext)->first();
         if ($product) {
             $criteria->setIds([$product->getId()]);
         }

@@ -22,7 +22,6 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterV
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
-use GuzzleHttp\Client;
 
 abstract class Filter extends BaseFilter
 {

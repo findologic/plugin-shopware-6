@@ -8,14 +8,10 @@ use FINDOLOGIC\Export\XML\XMLItem;
 use FINDOLOGIC\FinSearch\Export\Search\ProductDebugSearcher;
 use FINDOLOGIC\Shopware6Common\Export\Services\ProductDebugService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @RouteScope(scopes={"storefront"})
- */
 class ProductDebugController extends ExportController
 {
     private ProductDebugSearcher $productDebugSearcher;
@@ -23,7 +19,13 @@ class ProductDebugController extends ExportController
     private ProductDebugService $productDebugService;
 
     /**
-     * @Route("/findologic/debug", name="frontend.findologic.debug", options={"seo"="false"}, methods={"GET"})
+     * @Route(
+     *     "/findologic/debug",
+     *     name="frontend.findologic.debug",
+     *     options={"seo"="false"},
+     *     methods={"GET"},
+     *     defaults={"_routeScope"={"storefront"}}
+     * )
      */
     public function export(Request $request, ?SalesChannelContext $context): Response
     {

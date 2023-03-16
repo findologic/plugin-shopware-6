@@ -1,3 +1,14 @@
+# 4.0.3
+
+* [SW-788] Fixed a bug where invalid filter values on navigation pages were not disabled
+* [SW-789] Fixed a bug that caused generic URLs to be exported for SEO Urls without a "/"
+
+# 4.0.2
+
+* [SW-777] Fixed a bug that caused errors for range slider values with more than 2 decimal places.
+* [SW-779] Fixed a bug that caused the import to fail with special UTF-8 characters in the description.
+* [SW-786] Fixed a bug that cause an exception for some newly setup shops.
+
 # 4.0.1
 
 - [SW-780] A bug was fixed, where supported Shopware versions were declared incompatible during installation.

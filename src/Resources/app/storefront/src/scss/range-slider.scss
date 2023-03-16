@@ -7,3 +7,18 @@
 .noUi-connect {
   background: $sw-color-brand-primary !important;
 }
+
+// Hide arrows for input field.
+.filter-range {
+    .filter-range-container {
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .min-input, .max-input {
+            -moz-appearance: textfield;
+        }
+    }
+}

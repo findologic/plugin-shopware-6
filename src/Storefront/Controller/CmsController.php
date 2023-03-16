@@ -16,21 +16,16 @@ use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Exception\ProductNotFoundException;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\CmsController as ShopwareCmsController;
 use Shopware\Storefront\Controller\StorefrontController;
-use Shopware\Storefront\Framework\Cache\Annotation\HttpCache;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @RouteScope(scopes={"storefront"})
- */
 class CmsController extends StorefrontController
 {
     private ShopwareCmsController $decorated;
@@ -62,12 +57,16 @@ class CmsController extends StorefrontController
     /**
      * Route for cms data (used in XmlHttpRequest)
      *
-     * @HttpCache()
      * @Route(
      *     "/widgets/cms/{id}",
      *     name="frontend.cms.page",
      *     methods={"GET", "POST"},
-     *     defaults={"id"=null, "XmlHttpRequest"=true}
+     *     defaults={
+     *          "id"=null,
+     *          "_routeScope"={"storefront"},
+     *          "XmlHttpRequest"=true,
+     *          "_httpCache"=true
+     *     }
      * )
      *
      * @throws InconsistentCriteriaIdsException
@@ -87,7 +86,11 @@ class CmsController extends StorefrontController
      *     "/widgets/cms/navigation/{navigationId}",
      *      name="frontend.cms.navigation.page",
      *      methods={"GET", "POST"},
-     *      defaults={"navigationId"=null,"XmlHttpRequest"=true}
+     *      defaults={
+     *          "navigationId"=null,
+     *          "_routeScope"={"storefront"},
+     *          "XmlHttpRequest"=true
+     *     }
      * )
      *
      * @throws CategoryNotFoundException
@@ -104,13 +107,18 @@ class CmsController extends StorefrontController
     }
 
     /**
-     * @HttpCache()
-     *
      * Route to load the listing filters
      *
-     * @RouteScope(scopes={"storefront"})
-     * @Route("/widgets/cms/navigation/{navigationId}/filter", name="frontend.cms.navigation.filter",
-     *      methods={"GET", "POST"}, defaults={"XmlHttpRequest"=true})
+     * @Route(
+     *     "/widgets/cms/navigation/{navigationId}/filter",
+     *     name="frontend.cms.navigation.filter",
+     *     methods={"GET", "POST"},
+     *     defaults={
+     *          "_routeScope"={"storefront"},
+     *          "XmlHttpRequest"=true,
+     *          "_httpCache"=true
+     *     }
+     * )
      *
      * @throws MissingRequestParameterException
      */
@@ -122,7 +130,8 @@ class CmsController extends StorefrontController
                 $request,
                 $salesChannelContext->getContext(),
                 $this->serviceConfigResource,
-                $this->config
+                $this->config,
+                true
             )
         ) {
             return $this->decorated->filter($navigationId, $request, $salesChannelContext);
@@ -140,17 +149,19 @@ class CmsController extends StorefrontController
     }
 
     /**
-     * @HttpCache()
-     *
      * Route to load the cms element buy box product config which assigned to the provided product id.
      * Product id is required to load the slot config for the buy box
      *
-     * @RouteScope(scopes={"storefront"})
      * @Route(
      *     "/widgets/cms/buybox/{productId}/switch",
      *     name="frontend.cms.buybox.switch",
      *     methods={"GET"},
-     *     defaults={"productId"=null, "XmlHttpRequest"=true}
+     *     defaults={
+     *          "productId"=null,
+     *          "_routeScope"={"storefront"},
+     *          "XmlHttpRequest"=true,
+     *          "_httpCache"=true
+     *     }
      * )
      *
      * @throws MissingRequestParameterException

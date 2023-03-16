@@ -4,6 +4,7 @@ build:
             excludes:
                 paths:
                     - .gitignore
+                    - docs
                     - release
                     - phpcs.xml
                     - phpunit.xml.dist

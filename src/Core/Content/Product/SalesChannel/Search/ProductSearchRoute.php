@@ -19,10 +19,11 @@ use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -41,7 +42,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
 
     private AbstractProductSearchRoute $decorated;
 
-    private SalesChannelRepositoryInterface $productRepository;
+    private SalesChannelRepository $salesChannelProductRepository;
 
     private ServiceConfigResource $serviceConfigResource;
 
@@ -51,7 +52,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         AbstractProductSearchRoute $decorated,
         ProductSearchBuilderInterface $searchBuilder,
         EventDispatcherInterface $eventDispatcher,
-        SalesChannelRepositoryInterface $productRepository,
+        SalesChannelRepository $salesChannelProductRepository,
         ProductDefinition $definition,
         RequestCriteriaBuilder $criteriaBuilder,
         ServiceConfigResource $serviceConfigResource,
@@ -61,7 +62,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         $this->decorated = $decorated;
         $this->searchBuilder = $searchBuilder;
         $this->eventDispatcher = $eventDispatcher;
-        $this->productRepository = $productRepository;
+        $this->salesChannelProductRepository = $salesChannelProductRepository;
         $this->definition = $definition;
         $this->criteriaBuilder = $criteriaBuilder;
         $this->serviceConfigResource = $serviceConfigResource;
@@ -124,20 +125,20 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         return new ProductSearchRouteResponse($result);
     }
 
-    protected function doSearch(Criteria $criteria, SalesChannelContext $context, ?string $query): EntitySearchResult
+    protected function doSearch(Criteria $criteria, SalesChannelContext $salesChannelContext, ?string $query): EntitySearchResult
     {
         $this->assignPaginationToCriteria($criteria);
         $this->addOptionsGroupAssociation($criteria);
 
         if (empty($criteria->getIds())) {
-            return $this->createEmptySearchResult($criteria, $context);
+            return $this->createEmptySearchResult($criteria, $salesChannelContext->getContext());
         }
 
-        return $this->fetchProducts($criteria, $context, $query);
+        return $this->fetchProducts($criteria, $salesChannelContext, $query);
     }
 
     public function addElasticSearchContext(SalesChannelContext $context): void
     {
-        $context->getContext()->addState(Context::STATE_ELASTICSEARCH_AWARE);
+        $context->getContext()->addState(Criteria::STATE_ELASTICSEARCH_AWARE);
     }
 }
