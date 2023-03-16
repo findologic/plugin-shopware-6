@@ -21,7 +21,7 @@ class ResponseParserTest extends TestCase
     use MockResponseHelper;
     use ConfigHelper;
 
-    public function unsupportedResponseInstanceProvider(): array
+    public static function unsupportedResponseInstanceProvider(): array
     {
         return [
             'generic HTML response' => [
@@ -44,7 +44,7 @@ class ResponseParserTest extends TestCase
         ResponseParser::getInstance($response);
     }
 
-    public function supportedResponseInstanceProvider(): array
+    public static function supportedResponseInstanceProvider(): array
     {
         return [
             'XML 2.1 response' => [

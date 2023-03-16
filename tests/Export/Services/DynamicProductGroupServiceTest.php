@@ -85,7 +85,7 @@ class DynamicProductGroupServiceTest extends TestCase
         );
     }
 
-    public function cacheWarmUpProvider(): array
+    public static function cacheWarmUpProvider(): array
     {
         return [
             'Cache is warmed up' => [

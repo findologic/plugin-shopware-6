@@ -56,7 +56,7 @@ class Xml21ResponseParserTest extends TestCase
         $this->serviceConfigResource = $this->createMock(ServiceConfigResource::class);
     }
 
-    public function productIdsResponseProvider(): array
+    public static function productIdsResponseProvider(): array
     {
         return [
             'default mock ids' => [
@@ -175,7 +175,7 @@ class Xml21ResponseParserTest extends TestCase
         $this->assertEquals('https://promotion.com/promotion.png', $promotion->getImage());
     }
 
-    public function filterResponseProvider(): array
+    public static function filterResponseProvider(): array
     {
         $expectedCategoryFilter = new CategoryFilter('cat', 'Kategorie');
         $expectedCategoryFilter->addValue(
@@ -327,7 +327,7 @@ class Xml21ResponseParserTest extends TestCase
         $this->assertEquals($expectedFilters, $filters);
     }
 
-    public function smartSuggestBlocksProvider()
+    public static function smartSuggestBlocksProvider()
     {
         return [
             'No smart suggest blocks are sent and category filter is not in response' => [
@@ -424,7 +424,7 @@ class Xml21ResponseParserTest extends TestCase
         }
     }
 
-    public function paginationResponseProvider(): array
+    public static function paginationResponseProvider(): array
     {
         return [
             'first page pagination with default values' => [
@@ -474,7 +474,7 @@ class Xml21ResponseParserTest extends TestCase
         $this->assertEquals($expectedLimit, $pagination->getLimit());
     }
 
-    public function queryInfoMessageResponseProvider(): array
+    public static function queryInfoMessageResponseProvider(): array
     {
         return [
             'alternative query is used' => [

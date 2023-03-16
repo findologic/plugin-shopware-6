@@ -44,7 +44,7 @@ class SearchControllerTest extends TestCase
         $this->salesChannelContext = $this->buildSalesChannelContext();
     }
 
-    public function availableFilterProvider()
+    public static function availableFilterProvider()
     {
         return [
             'Available filters are returned in response' => [

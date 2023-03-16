@@ -109,7 +109,7 @@ class ExportControllerTest extends TestCase
         );
     }
 
-    public function wrongArgumentsProvider(): array
+    public static function wrongArgumentsProvider(): array
     {
         return [
             'Start is negative' => [

@@ -67,7 +67,7 @@ class ProductSearchRouteTest extends ProductRouteBase
         return $this->original;
     }
 
-    public function queryProvider(): array
+    public static function queryProvider(): array
     {
         return [
             'Searching for first variant number' => [

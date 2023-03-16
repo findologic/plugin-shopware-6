@@ -123,7 +123,7 @@ class SalesFrequencyAdapterTest extends TestCase
         $this->assertSame($expectedSalesFrequency, $actualSalesFrequency->getValues()['']);
     }
 
-    public function salesFrequencyProvider(): array
+    public static function salesFrequencyProvider(): array
     {
         return [
             'Product with order in the last 30 days' => [

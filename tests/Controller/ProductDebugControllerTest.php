@@ -34,7 +34,7 @@ class ProductDebugControllerTest extends TestCase
         $this->salesChannelContext = $this->buildSalesChannelContext();
     }
 
-    public function wrongArgumentsProvider(): array
+    public static function wrongArgumentsProvider(): array
     {
         $productId = Uuid::randomHex();
 

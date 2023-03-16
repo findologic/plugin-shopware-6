@@ -19,7 +19,7 @@ class SearchRequestFactoryTest extends TestCase
 {
     use IntegrationTestBehaviour;
 
-    public function pluginVersionProvider(): array
+    public static function pluginVersionProvider(): array
     {
         return [
             'Plugin version is cached' => [

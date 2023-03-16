@@ -40,7 +40,7 @@ class PriceAdapterTest extends TestCase
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
-    public function advancedPricesTestProvider(): array
+    public static function advancedPricesTestProvider(): array
     {
         $grossCustomerGroupId = Uuid::randomHex();
         $netCustomerGroupId = Uuid::randomHex();

@@ -91,7 +91,7 @@ class ProductSearcherTest extends TestCase
         $this->assertCount(0, $products);
     }
 
-    public function mainVariantDefaultConfigProvider(): array
+    public static function mainVariantDefaultConfigProvider(): array
     {
         return [
             'export shopware default' => ['config' => 'default'],
@@ -171,7 +171,7 @@ class ProductSearcherTest extends TestCase
         }
     }
 
-    public function variantProvider(): array
+    public static function variantProvider(): array
     {
         $expectedParentId = Uuid::randomHex();
 
@@ -610,7 +610,7 @@ class ProductSearcherTest extends TestCase
         ]);
     }
 
-    public function mainVariantCheapestProvider(): array
+    public static function mainVariantCheapestProvider(): array
     {
         return [
             'export cheapest real price with one having 0' => [

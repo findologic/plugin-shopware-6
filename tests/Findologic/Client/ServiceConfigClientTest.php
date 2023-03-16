@@ -18,7 +18,7 @@ class ServiceConfigClientTest extends TestCase
 {
     use ConfigHelper;
 
-    public function responseDataProvider(): array
+    public static function responseDataProvider(): array
     {
         return [
             'Response is successful' => [200, $this->getConfig(false)],

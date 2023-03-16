@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class SmartDidYouMeanTest extends TestCase
 {
-    public function queryParameterProvider(): array
+    public static function queryParameterProvider(): array
     {
         return [
             'Query type is "did-you-mean"' => [

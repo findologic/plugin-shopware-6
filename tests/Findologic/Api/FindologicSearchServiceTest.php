@@ -59,7 +59,7 @@ class FindologicSearchServiceTest extends TestCase
             ->getMock();
     }
 
-    public function stagingQueryParameterProvider()
+    public static function stagingQueryParameterProvider()
     {
         return [
             'Shop is not staging and no query parameter was submitted' => [

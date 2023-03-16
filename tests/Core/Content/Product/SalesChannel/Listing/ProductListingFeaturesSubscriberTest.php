@@ -127,7 +127,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->initMocks();
     }
 
-    public function requestProvider(): array
+    public static function requestProvider(): array
     {
         return [
             'search request' => [
@@ -194,7 +194,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->{$endpoint}($eventMock);
     }
 
-    public function sortingProvider(): array
+    public static function sortingProvider(): array
     {
         return [
             'ProductNameSorting is ASC' => [
@@ -290,7 +290,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->{$endpoint}($eventMock);
     }
 
-    public function promotionRequestProvider()
+    public static function promotionRequestProvider()
     {
         return [
             'Search response has promotion' => ['search' => true, 'endpoint' => 'handleSearchRequest'],
@@ -448,7 +448,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->handleSearchRequest($eventMock);
     }
 
-    public function queryInfoMessageProvider()
+    public static function queryInfoMessageProvider()
     {
         return [
             'Submitting an empty search' => [
@@ -911,7 +911,7 @@ XML;
         return $sessionMock;
     }
 
-    public function criteriaLimitProvider(): array
+    public static function criteriaLimitProvider(): array
     {
         return [
             'search request with custom limit' => [

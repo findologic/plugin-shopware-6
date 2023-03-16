@@ -18,7 +18,7 @@ class FindologicRequestFactoryTest extends TestCase
 {
     use IntegrationTestBehaviour;
 
-    public function ipAddressProvider(): array
+    public static function ipAddressProvider(): array
     {
         return [
             'Single IP' => [
@@ -49,7 +49,7 @@ class FindologicRequestFactoryTest extends TestCase
         ];
     }
 
-    public function reverseProxyIpAddressProvider(): array
+    public static function reverseProxyIpAddressProvider(): array
     {
         return [
             'Single IP' => [

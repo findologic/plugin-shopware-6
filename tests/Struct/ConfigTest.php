@@ -26,7 +26,7 @@ class ConfigTest extends TestCase
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
 
-    public function configValuesProvider(): array
+    public static function configValuesProvider(): array
     {
         return [
             'All properties are accessed after initialization' => [

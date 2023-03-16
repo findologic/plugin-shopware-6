@@ -66,7 +66,7 @@ class ProductListingRouteTest extends ProductRouteBase
         $this->call($productRoute, $request, $salesChannelContextMock, $expectedMainCategoryId);
     }
 
-    public function requestFromHomePageProvider(): array
+    public static function requestFromHomePageProvider(): array
     {
         $sessionMock = $this->getSessionMock();
         $homePageRequest = Request::create('http://your-shop.de/');

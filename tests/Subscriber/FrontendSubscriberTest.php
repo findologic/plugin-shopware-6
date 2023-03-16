@@ -28,7 +28,7 @@ class FrontendSubscriberTest extends TestCase
     use SalesChannelHelper;
     use CategoryHelper;
 
-    public function headerPageletLoadedEventProvider(): array
+    public static function headerPageletLoadedEventProvider(): array
     {
         return [
             'Home page Request' => [

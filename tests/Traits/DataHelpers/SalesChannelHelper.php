@@ -9,7 +9,7 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -21,7 +21,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 trait SalesChannelHelper
 {
     public function buildSalesChannelContext(
-        string $salesChannelId = Defaults::SALES_CHANNEL,
+        string $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
         string $url = 'http://test.uk',
         ?CustomerEntity $customerEntity = null,
         string $languageId = Defaults::LANGUAGE_SYSTEM,
@@ -89,7 +89,7 @@ trait SalesChannelHelper
 
     protected function getLocaleIdOfLanguage(string $languageId = Defaults::LANGUAGE_SYSTEM): string
     {
-        /** @var EntityRepositoryInterface $repository */
+        /** @var EntityRepository $repository */
         $repository = $this->getContainer()->get('language.repository');
 
         /** @var LanguageEntity $language */
@@ -100,7 +100,7 @@ trait SalesChannelHelper
 
     public function getLocaleOfLanguage(string $languageId = Defaults::LANGUAGE_SYSTEM): ?string
     {
-        /** @var EntityRepositoryInterface $repository */
+        /** @var EntityRepository $repository */
         $repository = $this->getContainer()->get('language.repository');
 
         $criteria = new Criteria([$languageId]);
@@ -114,7 +114,7 @@ trait SalesChannelHelper
 
     public function createLanguage(string $id, ?string $parentId = Defaults::LANGUAGE_SYSTEM): void
     {
-        /* @var EntityRepositoryInterface $languageRepository */
+        /* @var EntityRepository $languageRepository */
         $languageRepository = $this->getContainer()->get('language.repository');
 
         $languageRepository->create(
@@ -125,7 +125,7 @@ trait SalesChannelHelper
                     'localeId' => $this->getLocaleIdOfLanguage(),
                     'parentId' => $parentId,
                     'salesChannels' => [
-                        ['id' => Defaults::SALES_CHANNEL],
+                        ['id' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT],
                     ]
                 ],
             ],
@@ -135,7 +135,7 @@ trait SalesChannelHelper
 
     public function getEnGbLanguageId(): string
     {
-        /** @var EntityRepositoryInterface $repository */
+        /** @var EntityRepository $repository */
         $repository = $this->getContainer()->get('language.repository');
 
         $criteria = new Criteria();
@@ -157,7 +157,7 @@ trait SalesChannelHelper
             'roundForNet' => false
         ];
 
-        /** @var EntityRepositoryInterface $currencyRepo */
+        /** @var EntityRepository $currencyRepo */
         $currencyRepo = $this->getContainer()->get('currency.repository');
         $currencyRepo->upsert(
             [
