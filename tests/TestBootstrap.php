@@ -43,4 +43,4 @@ if (is_callable([Dotenv::class, 'usePutenv'])) {
     (new Dotenv())->usePutenv(true)->load(TEST_PROJECT_DIR . '/.env');
 }
 
-putenv('DATABASE_URL=' . getenv('DATABASE_URL') . '_test');
+//putenv('DATABASE_URL=' . getenv('DATABASE_URL') . '_test');
