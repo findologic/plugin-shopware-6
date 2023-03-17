@@ -166,7 +166,7 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $salesChannelMock->expects($this->any())->method('getNavigationCategoryId')->willReturn($categoryId);
-        $salesChannelMock->expects($this->any())->method('getId')->willReturn(Defaults::SALES_CHANNEL);
+        $salesChannelMock->expects($this->any())->method('getId')->willReturn(Defaults::SALES_CHANNEL_TYPE_STOREFRONT);
 
         $salesChannelContextMock->expects($this->any())->method('getSalesChannel')->willReturn($salesChannelMock);
 

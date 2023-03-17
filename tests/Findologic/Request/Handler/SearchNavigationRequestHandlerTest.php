@@ -76,7 +76,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
     {
         $customer = $this->createAndGetCustomer();
         $this->salesChannelContext = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.at',
             $customer
         );
@@ -103,7 +103,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
     {
         $customer = $this->createAndGetCustomer();
         $this->salesChannelContext = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.at',
             $customer
         );

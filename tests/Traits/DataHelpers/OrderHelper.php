@@ -45,7 +45,7 @@ trait OrderHelper
             'paymentMethodId' => $this->fetchFirstIdFromTable('payment_method'),
             'currencyId' => Defaults::CURRENCY,
             'currencyFactor' => 1.0,
-            'salesChannelId' => Defaults::SALES_CHANNEL,
+            'salesChannelId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'billingAddressId' => Uuid::randomHex(),
             'addresses' => [
                 [

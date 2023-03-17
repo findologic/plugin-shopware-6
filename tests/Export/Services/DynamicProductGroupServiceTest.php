@@ -209,7 +209,7 @@ class DynamicProductGroupServiceTest extends TestCase
     private function createProducts(): array
     {
         $productRepository = $this->getContainer()->get('product.repository');
-        $salesChannelId = Defaults::SALES_CHANNEL;
+        $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT;
         $products = [];
 
         $names = [

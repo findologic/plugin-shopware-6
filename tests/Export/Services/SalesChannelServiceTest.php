@@ -64,7 +64,7 @@ class SalesChannelServiceTest extends TestCase
 
         $salesChannelService = $this->getSalesChannelService();
         $currentSalesChannel = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.de',
             null,
             $languageId

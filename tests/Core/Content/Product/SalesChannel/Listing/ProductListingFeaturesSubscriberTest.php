@@ -1084,7 +1084,7 @@ XML;
         $event = new ProductListingResultEvent(
             new Request(['order' => 'score']),
             $result,
-            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.de')
+            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL_TYPE_STOREFRONT, 'http://test.de')
         );
 
         $subscriber = $this->getProductListingFeaturesSubscriber();

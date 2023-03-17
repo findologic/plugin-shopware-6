@@ -494,7 +494,7 @@ class ProductSearcherTest extends TestCase
             'visibilities' => [
                 [
                     'id' => Uuid::randomHex(),
-                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'salesChannelId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
                     'visibility' => 0
                 ]
             ]
