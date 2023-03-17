@@ -14,21 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.4' ]
+        php-versions: [ '8.1' ]
         shopware-versions: [
-            'v6.4.6.0',
-            'v6.4.7.0',
-            'v6.4.8.2',
-            'v6.4.9.0',
-            'v6.4.10.1',
-            'v6.4.11.1',
-            'v6.4.12.0',
-            'v6.4.13.0',
-            'v6.4.14.0',
-            'v6.4.15.2',
-            'v6.4.16.1',
-            'v6.4.17.2',
-            'v6.4.18.0',
+            '6.5.0.0-rc1',
         ]
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }})
@@ -43,10 +31,10 @@ jobs:
         with:
           path: plugin-shopware-6
 
-      - name: Setup Node 14
+      - name: Setup Node 18
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '18'
 
       - name: Setup PHP with Composer 2
         uses: shivammathur/setup-php@v2
@@ -65,24 +53,16 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: shopware/development
-          ref: ${{ matrix.shopware-versions }}
           path: development
-
-      - name: Add dependency conflicts
-        if: |
-          matrix.shopware-versions == 'v6.4.6.0' ||
-          matrix.shopware-versions == 'v6.4.7.0'
-        run: |
-          cd development
-          mv composer.json temp.json
-          jq -r '.conflict."symfony/framework-bundle" |= ">=5.3.14"' temp.json > composer.json
-          rm temp.json
 
       - name: Install Shopware
         run: |
           cp plugin-shopware-6/.github/.psh.yaml.override development
+          cp plugin-shopware-6/.github/docker-compose.yml development
+          cp plugin-shopware-6/.github/composer.json development
+          cp plugin-shopware-6/.github/bundles.php development/config
+          cp plugin-shopware-6/.github/Dockerfile development/dev-ops/docker/containers/app
           cd development
-          composer require "shopware/platform:${{ matrix.shopware-versions }}@dev || trunk" --no-update
           ./psh.phar init
           ./psh.phar storefront:install-dependencies
 

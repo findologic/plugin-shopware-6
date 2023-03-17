@@ -1,0 +1,82 @@
+{
+    "name": "shopware/development",
+    "type": "project",
+    "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "custom/plugins/*",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "custom/plugins/*/packages/*",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "platform",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "config": {
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.1"
+        },
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "symfony/runtime": true
+        }
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Shopware\\Development\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^8.1",
+        "composer-runtime-api": "^2.0",
+        "enqueue/enqueue-bundle": "^0.10.16",
+        "sensio/framework-extra-bundle": "^6.2",
+        "shopware/platform": "6.5.0.0-rc1",
+        "sroze/messenger-enqueue-transport": "^0.7.0"
+    },
+    "scripts": {
+        "post-update-cmd": [
+            "[ ! -d platform/.git ] || [ -L vendor/shopware/platform ] || (echo 'vendor/shopware/platform should be a symlink to platform'; exit 1)",
+            "[ ! -d vendor/shopware/platform/.git ] || ln -sf $PWD/dev-ops/pre-commit vendor/shopware/platform/.git/hooks/pre-commit"
+        ]
+    },
+    "require-dev": {
+        "ext-tokenizer": "*",
+        "ext-xmlwriter": "*",
+        "maltyxx/images-generator": "1.0.0",
+        "brianium/paratest": "^v7.1.1",
+        "fakerphp/faker": "^v1.21.0",
+        "league/flysystem-memory": "^3.10.3",
+        "mbezhanov/faker-provider-collection": "2.0.1",
+        "nikic/php-parser": "^v4.15.4",
+        "opis/json-schema": "1.0.19",
+        "phpunit/php-code-coverage": "^10.0.2",
+        "phpunit/phpunit": "10.0.16",
+        "smalot/pdfparser": "0.14.0",
+        "symfony/browser-kit": "~6.2.0",
+        "symfony/dependency-injection": "~6.2.0",
+        "symfony/phpunit-bridge": "~6.2.0",
+        "symfony/process": "~6.2.0",
+        "symfony/stopwatch": "~6.2.0",
+        "symfony/var-dumper": "~6.2.0",
+        "symfony/web-profiler-bundle": "~6.2.0",
+        "symfony/dom-crawler": "~6.2.0"
+    }
+}
