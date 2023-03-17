@@ -125,8 +125,11 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         return new ProductSearchRouteResponse($result);
     }
 
-    protected function doSearch(Criteria $criteria, SalesChannelContext $salesChannelContext, ?string $query): EntitySearchResult
-    {
+    protected function doSearch(
+        Criteria $criteria,
+        SalesChannelContext $salesChannelContext,
+        ?string $query
+    ): EntitySearchResult {
         $this->assignPaginationToCriteria($criteria);
         $this->addOptionsGroupAssociation($criteria);
 
