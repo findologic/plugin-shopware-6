@@ -43,4 +43,11 @@ if (is_callable([Dotenv::class, 'usePutenv'])) {
     (new Dotenv())->usePutenv(true)->load(TEST_PROJECT_DIR . '/.env');
 }
 
-//putenv('DATABASE_URL=' . getenv('DATABASE_URL') . '_test');
+putenv(
+    sprintf(
+        'DATABASE_URL=mysql://%s:%s@%s/shopware_test',
+        getenv('DB_USER'),
+        getenv('DB_PASSWORD'),
+        getenv('DB_HOST')
+    )
+);
