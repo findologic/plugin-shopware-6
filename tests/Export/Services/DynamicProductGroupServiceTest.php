@@ -90,11 +90,11 @@ class DynamicProductGroupServiceTest extends TestCase
         return [
             'Cache is warmed up' => [
                 'isWarmup' => true,
-                'invokeCount' => $this->atLeastOnce(),
+                'invokeCount' => static::atLeastOnce(),
             ],
             'Cache is not warmed up' => [
                 'isWarmup' => false,
-                'invokeCount' => $this->never(),
+                'invokeCount' => static::never(),
             ],
         ];
     }
