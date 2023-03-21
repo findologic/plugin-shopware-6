@@ -57,6 +57,12 @@ jobs:
           cd shopware
           ./bin/console system:install --basic-setup
 
+      - name: Install test dependencies for SW
+        run: |
+          cd shopware
+          composer config repositories.repo-name vcs https://github.com/jmatthiesen81/shopware65-tests.git
+          composer require --dev jmatthiesen/shopware65-tests:5.0.0-rc2
+
       - name: Install dependencies
         run: |
           cd plugin-shopware-6
