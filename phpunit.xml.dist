@@ -3,7 +3,7 @@
 <!-- Testing configuration for Shopware versions >= 6.4 and >= PHPUnit 9 -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
-         bootstrap="tests/TestBootstrap.php"
+         bootstrap="../../../vendor/shopware/core/TestBootstrap.php"
          cacheResult="false"
 >
     <coverage>
@@ -21,6 +21,7 @@
         <env name="APP_SECRET" value="s$cretf0rt3st"/>
         <env name="SHELL_VERBOSITY" value="-1"/>
         <env name="LOCK_DSN" value="flock"/>
+        <env name="DATABASE_URL" value="mysql://root:!ChangeMe!@0.0.0.0:49155/shopware"/>
     </php>
 
     <testsuites>
