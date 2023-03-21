@@ -29,14 +29,51 @@ trait SalesChannelHelper
         string $currencyId = Defaults::CURRENCY
     ): SalesChannelContext {
         $locale = $this->getLocaleOfLanguage($languageId);
+
         if ($locale) {
             $snippetSet = $this->getSnippetSetIdForLocale($locale);
         } else {
             $snippetSet = $this->fetchIdFromDatabase('snippet_set');
         }
+
+        $countryId = $this->getContainer()->get('country.repository')->searchIds(
+            new Criteria(),
+            Context::createDefaultContext()
+        )->firstId();
+
+        $paymentMethodId = $this->getContainer()->get('payment_method.repository')->searchIds(
+            new Criteria(),
+            Context::createDefaultContext()
+        )->firstId();
+
+        $shippingMethodId = $this->getContainer()->get('shipping_method.repository')->searchIds(
+            new Criteria(),
+            Context::createDefaultContext()
+        )->firstId();
+
+        $customerGroupId = $this->getContainer()->get('customer_group.repository')->searchIds(
+            new Criteria(),
+            Context::createDefaultContext()
+        )->firstId();
+
+        $catCriteria = new Criteria();
+        $catCriteria->addFilter(
+            new EqualsFilter('parentId', null)
+        );
+        $navigationCategoryId = $this->getContainer()->get('category.repository')->searchIds(
+            $catCriteria,
+            Context::createDefaultContext()
+        )->firstId();
+
         $salesChannel = array_merge([
             'id' => $salesChannelId,
-            'languageId' => $languageId,
+            'customerGroupId' => $customerEntity?->getGroupId() ?? $customerGroupId,
+            'currencyId' => $currencyId,
+            'paymentMethodId' => $paymentMethodId,
+            'shippingMethodId' => $shippingMethodId,
+            'countryId' => $countryId,
+            'navigationCategoryId' => $navigationCategoryId,
+            'accessKey' => 'KEY',
             'domains' => [
                 [
                     'url' => $url,
@@ -45,7 +82,15 @@ trait SalesChannelHelper
                     'snippetSetId' => $snippetSet
                 ]
             ],
-            'typeId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT
+            'typeId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
+            'translations' => [
+                $languageId => [
+                    'name' => 'Storefront'
+                ]
+            ],
+            'languages' => [
+                ['id' => $languageId]
+            ]
         ], $overrides);
 
         $this->getContainer()->get('sales_channel.repository')->upsert(

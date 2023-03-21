@@ -41,9 +41,4 @@ if (!class_exists(Dotenv::class)) {
 if (is_callable([Dotenv::class, 'usePutenv'])) {
     // Symfony >= 5
     (new Dotenv())->usePutenv(true)->load(TEST_PROJECT_DIR . '/.env');
-} else {
-    // Symfony 4
-    (new Dotenv(true))->load(TEST_PROJECT_DIR . '/.env');
 }
-
-putenv('DATABASE_URL=' . getenv('DATABASE_URL') . '_test');
