@@ -14,6 +14,6 @@ trait RandomIdHelper
     {
         $connection = $this->getContainer()->get(Connection::class);
 
-        return Uuid::fromBytesToHex((string)$connection->fetchColumn("SELECT id FROM {$table} LIMIT 1"));
+        return Uuid::fromBytesToHex((string)$connection->fetchOne("SELECT id FROM {$table} LIMIT 1"));
     }
 }

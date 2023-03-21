@@ -19,7 +19,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Development\Kernel;
+use Shopware\Core\Kernel;
 use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -247,7 +247,7 @@ class ExportControllerTest extends TestCase
         $this->getContainer()->set('fin_search.product_service_separate_variants', null);
 
         $salesChannelContext = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.abc',
             null,
             $this->getDeDeLanguageId()
@@ -444,6 +444,7 @@ class ExportControllerTest extends TestCase
         }
 
         $response = $this->sendDynamicProductGroupRequest($params);
+        var_dump($response->getContent());
         $this->assertSame(422, $response->getStatusCode());
         $parsedResponse = json_decode($response->getContent(), true);
 

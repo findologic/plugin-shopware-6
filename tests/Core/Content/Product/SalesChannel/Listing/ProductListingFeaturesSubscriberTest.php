@@ -694,7 +694,11 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
         $queryMock->expects($this->any())
             ->method('getInt')
-            ->willReturnOnConsecutiveCalls(24, 1);
+            ->willReturnOnConsecutiveCalls(
+                24, // SW limit
+                1, // SW page
+                1 // Plugin page
+            );
         $queryMock->expects($this->any())->method('get')->willReturn('');
         $queryMock->expects($this->any())->method('all')->willReturn([]);
 

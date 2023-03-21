@@ -389,12 +389,12 @@ trait ProductHelper
 
     public function createCustomer(string $customerId, $customerGroup = null): void
     {
-        $password = 'foo';
+        $password = 'foofoofoo';
         $email = 'foo@bar.de';
         $addressId = Uuid::randomHex();
 
         if ($customerGroup === null) {
-            $customerGroup = Defaults::FALLBACK_CUSTOMER_GROUP;
+            $customerGroup = 'cfbd5018d38d41d8adca10d94fc8bdd6';
         }
 
         $this->getContainer()->get('customer.repository')->upsert(

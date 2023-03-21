@@ -26,13 +26,13 @@ use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SalesChannel\StoreApiResponse;
@@ -56,12 +56,12 @@ abstract class ProductRouteBase extends TestCase
     protected RequestCriteriaBuilder $criteriaBuilder;
 
     /**
-     * @var SalesChannelRepositoryInterface|MockObject
+     * @var SalesChannelRepository|MockObject
      */
     protected $productRepositoryMock;
 
     /**
-     * @var EntityRepositoryInterface|MockObject
+     * @var EntityRepository|MockObject
      */
     protected $categoryRepositoryMock;
 
@@ -105,11 +105,11 @@ abstract class ProductRouteBase extends TestCase
 
         $this->criteriaBuilder = $this->getContainer()->get(RequestCriteriaBuilder::class);
 
-        $this->productRepositoryMock = $this->getMockBuilder(SalesChannelRepositoryInterface::class)
+        $this->productRepositoryMock = $this->getMockBuilder(SalesChannelRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->categoryRepositoryMock = $this->getMockBuilder(EntityRepositoryInterface::class)
+        $this->categoryRepositoryMock = $this->getMockBuilder(EntityRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -177,7 +177,7 @@ abstract class ProductRouteBase extends TestCase
         $context->method('getVersionId')->willReturn(Defaults::LIVE_VERSION);
         $context->expects($this->any())
             ->method('addState')
-            ->with(Context::STATE_ELASTICSEARCH_AWARE);
+            ->with(Criteria::STATE_ELASTICSEARCH_AWARE);
 
         $findologicService = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()

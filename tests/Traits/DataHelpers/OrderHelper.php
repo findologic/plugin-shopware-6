@@ -80,6 +80,16 @@ trait OrderHelper
             'deliveries' => [],
             'context' => '{}',
             'payload' => '{}',
+            'itemRounding' => [
+                'decimals' => 2,
+                'interval' => 0.01,
+                'roundForNet' => true
+            ],
+            'totalRounding' => [
+                'decimals' => 2,
+                'interval' => 0.01,
+                'roundForNet' => true
+            ],
         ];
 
         $data = array_merge($data, $overrideData);
