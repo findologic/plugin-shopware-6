@@ -54,6 +54,7 @@ jobs:
       - name: Install Shopware
         run: |
           cp plugin-shopware-6/.github/.env.local shopware
+          cp plugin-shopware-6/.github/.env.test shopware
           cd shopware
           ./bin/console system:install --basic-setup
 
