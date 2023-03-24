@@ -22,7 +22,7 @@ class SortingServiceTest extends TestCase
     use SalesChannelHelper;
     use IntegrationTestBehaviour;
 
-    public static function availableSortingOptionsProvider(): array
+    public function availableSortingOptionsProvider(): array
     {
         $topsellerSorting = new ProductSortingEntity();
         $topsellerSorting->setId(Uuid::randomHex());

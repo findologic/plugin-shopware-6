@@ -44,7 +44,7 @@ class ResponseParserTest extends TestCase
         ResponseParser::getInstance($response);
     }
 
-    public static function supportedResponseInstanceProvider(): array
+    public function supportedResponseInstanceProvider(): array
     {
         return [
             'XML 2.1 response' => [

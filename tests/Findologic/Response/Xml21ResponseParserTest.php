@@ -56,7 +56,7 @@ class Xml21ResponseParserTest extends TestCase
         $this->serviceConfigResource = $this->createMock(ServiceConfigResource::class);
     }
 
-    public static function productIdsResponseProvider(): array
+    public function productIdsResponseProvider(): array
     {
         return [
             'default mock ids' => [
@@ -175,7 +175,7 @@ class Xml21ResponseParserTest extends TestCase
         $this->assertEquals('https://promotion.com/promotion.png', $promotion->getImage());
     }
 
-    public static function filterResponseProvider(): array
+    public function filterResponseProvider(): array
     {
         $expectedCategoryFilter = new CategoryFilter('cat', 'Kategorie');
         $expectedCategoryFilter->addValue(
@@ -424,7 +424,7 @@ class Xml21ResponseParserTest extends TestCase
         }
     }
 
-    public static function paginationResponseProvider(): array
+    public function paginationResponseProvider(): array
     {
         return [
             'first page pagination with default values' => [
@@ -474,7 +474,7 @@ class Xml21ResponseParserTest extends TestCase
         $this->assertEquals($expectedLimit, $pagination->getLimit());
     }
 
-    public static function queryInfoMessageResponseProvider(): array
+    public function queryInfoMessageResponseProvider(): array
     {
         return [
             'alternative query is used' => [
