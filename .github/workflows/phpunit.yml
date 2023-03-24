@@ -79,6 +79,9 @@ jobs:
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Run PHPUnit test suite
         run: |
           cd shopware/custom/plugins/plugin-shopware-6
