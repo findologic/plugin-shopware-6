@@ -63,7 +63,7 @@ jobs:
           cd shopware
           composer config repositories.repo-name vcs https://github.com/jmatthiesen81/shopware65-tests.git
           composer require --dev jmatthiesen/shopware65-tests:5.0.0-rc2
-          composer require --dev phpunit/phpunit:^9.5
+          composer require --dev symfony/test-pack
 
       - name: Install dependencies
         run: |
