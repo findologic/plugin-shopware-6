@@ -21,7 +21,6 @@
         <env name="APP_SECRET" value="s$cretf0rt3st"/>
         <env name="SHELL_VERBOSITY" value="-1"/>
         <env name="LOCK_DSN" value="flock"/>
-        <env name="DATABASE_URL" value="mysql://root:!ChangeMe!@0.0.0.0:49155/shopware"/>
     </php>
 
     <testsuites>
