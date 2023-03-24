@@ -23,7 +23,7 @@ jobs:
       - uses: mirromutth/mysql-action@v1.1
         with:
           mysql version: '8.0'
-          mysql database: shopware
+          mysql database: shopware_test
           mysql root password: root
 
       - uses: actions/checkout@v2
@@ -78,6 +78,7 @@ jobs:
           cd shopware
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
+          php bin/console plugin:refresh
 
 #      - name: Setup tmate session
 #        uses: mxschmitt/action-tmate@v3
