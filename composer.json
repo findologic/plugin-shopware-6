@@ -24,7 +24,7 @@
     "php": ">=8.1",
     "findologic/libflexport": "^2.8",
     "findologic/findologic-api": "^1.6",
-    "findologic/shopware6-common": "^0.5.4",
+    "findologic/shopware6-common": "dev-SW-790_support_for_SW_6.5",
     "vin-sw/shopware-sdk": "^1.7.3",
     "composer/semver": "^3.3"
   },
@@ -64,7 +64,7 @@
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.5",
-    "monolog/monolog": "^2.0",
+    "monolog/monolog": "^3.3.1",
     "bramus/monolog-colored-line-formatter": "^3.0"
   },
   "scripts": {
