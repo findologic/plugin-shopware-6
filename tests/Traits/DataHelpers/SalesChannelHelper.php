@@ -93,10 +93,19 @@ trait SalesChannelHelper
             ]
         ], $overrides);
 
-        $this->getContainer()->get('sales_channel.repository')->upsert(
-            [$salesChannel],
-            Context::createDefaultContext()
-        );
+        /** @var EntityRepository $salesChannelRepository */
+        $salesChannelRepository = $this->getContainer()->get('sales_channel.repository');
+        $salesChannelExists = $salesChannelRepository
+            ->searchIds(new Criteria([$salesChannelId]), Context::createDefaultContext())
+            ->firstId();
+
+        if (!$salesChannelExists) {
+            $salesChannelRepository->upsert(
+                [$salesChannel],
+                Context::createDefaultContext()
+            );
+        }
+
 
         /** @var SalesChannelContextFactory $salesChannelContextFactory */
         $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
