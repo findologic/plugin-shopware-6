@@ -19,7 +19,7 @@ class ReleaseDateSortingHandlerTest extends TestCase
         $this->assertTrue($releaseDateSortingHandler->supportsSorting($fieldSorting));
     }
 
-    public function nonSupportedSortingsProvider(): array
+    public static function nonSupportedSortingsProvider(): array
     {
         return [
             'price sorting' => [

@@ -19,7 +19,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Development\Kernel;
+use Shopware\Core\Kernel;
 use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -41,7 +41,7 @@ class ExportControllerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
     }
 
     public function testExportOfSingleProduct(): void
@@ -109,7 +109,7 @@ class ExportControllerTest extends TestCase
         );
     }
 
-    public function wrongArgumentsProvider(): array
+    public static function wrongArgumentsProvider(): array
     {
         return [
             'Start is negative' => [
@@ -246,8 +246,8 @@ class ExportControllerTest extends TestCase
         // @see \FINDOLOGIC\FinSearch\Export\ProductService::getInstance
         $this->getContainer()->set('fin_search.product_service_separate_variants', null);
 
-        $salesChannelContext = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+        $salesChannelContext = $this->buildAndCreateSalesChannelContext(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.abc',
             null,
             $this->getDeDeLanguageId()
@@ -355,7 +355,7 @@ class ExportControllerTest extends TestCase
      * Unlike SalesChannelHelper::buildSalesChannelContext, which by default modifies the default sales channel, this
      * method creates an entirely new Sales Channel and returns an appropriate SalesChannelContext.
      *
-     * @see SalesChannelHelper::buildSalesChannelContext
+     * @see SalesChannelHelper::buildAndCreateSalesChannelContext
      */
     private function createSalesChannelContext(
         EntitySearchResult $currencies,
@@ -425,7 +425,7 @@ class ExportControllerTest extends TestCase
             ],
         ];
 
-        return $this->buildSalesChannelContext(
+        return $this->buildAndCreateSalesChannelContext(
             Uuid::randomHex(),
             'http://cool-url.com',
             null,
@@ -444,6 +444,7 @@ class ExportControllerTest extends TestCase
         }
 
         $response = $this->sendDynamicProductGroupRequest($params);
+
         $this->assertSame(422, $response->getStatusCode());
         $parsedResponse = json_decode($response->getContent(), true);
 

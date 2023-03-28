@@ -64,7 +64,7 @@ class DynamicProductGroupServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->cache = $this->getMockBuilder(CacheItemPoolInterface::class)->disableOriginalConstructor()->getMock();
         $this->start = 0;
         $this->productId = null;
@@ -85,16 +85,16 @@ class DynamicProductGroupServiceTest extends TestCase
         );
     }
 
-    public function cacheWarmUpProvider(): array
+    public static function cacheWarmUpProvider(): array
     {
         return [
             'Cache is warmed up' => [
                 'isWarmup' => true,
-                'invokeCount' => $this->atLeastOnce(),
+                'invokeCount' => static::atLeastOnce(),
             ],
             'Cache is not warmed up' => [
                 'isWarmup' => false,
-                'invokeCount' => $this->never(),
+                'invokeCount' => static::never(),
             ],
         ];
     }
@@ -209,7 +209,7 @@ class DynamicProductGroupServiceTest extends TestCase
     private function createProducts(): array
     {
         $productRepository = $this->getContainer()->get('product.repository');
-        $salesChannelId = Defaults::SALES_CHANNEL;
+        $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT;
         $products = [];
 
         $names = [

@@ -74,10 +74,18 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
     public function testAddsUserGroupHashForSearch(): void
     {
+        $this->upsertSalesChannel();
+
         $customer = $this->createAndGetCustomer();
-        $this->salesChannelContext = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+
+        $this->upsertSalesChannel(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.at',
+            $customer
+        );
+
+        $this->salesChannelContext = $this->buildSalesChannelContext(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             $customer
         );
         $event = $this->buildSearchEvent($this->salesChannelContext);
@@ -101,10 +109,18 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
     public function testAddsUserGroupHashForNavigation(): void
     {
+        $this->upsertSalesChannel();
+
         $customer = $this->createAndGetCustomer();
-        $this->salesChannelContext = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+
+        $this->upsertSalesChannel(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.at',
+            $customer
+        );
+
+        $this->salesChannelContext = $this->buildSalesChannelContext(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             $customer
         );
 
@@ -180,7 +196,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
         ?Request $request = null,
         ?Criteria $criteria = null
     ): ProductSearchCriteriaEvent {
-        $salesChannelContext ??= $this->buildSalesChannelContext();
+        $salesChannelContext ??= $this->buildAndCreateSalesChannelContext();
         $request ??= new Request();
         $criteria ??= new Criteria();
 
@@ -192,7 +208,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
         ?Request $request = null,
         ?Criteria $criteria = null
     ): ProductListingCriteriaEvent {
-        $salesChannelContext ??= $this->buildSalesChannelContext();
+        $salesChannelContext ??= $this->buildAndCreateSalesChannelContext();
         $request ??= new Request();
         $criteria ??= new Criteria();
 

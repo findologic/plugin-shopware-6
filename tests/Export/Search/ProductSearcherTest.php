@@ -43,7 +43,7 @@ class ProductSearcherTest extends TestCase
     {
         parent::setUp();
 
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->exportContext = $this->getExportContext(
             $this->salesChannelContext,
             $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId())
@@ -91,7 +91,7 @@ class ProductSearcherTest extends TestCase
         $this->assertCount(0, $products);
     }
 
-    public function mainVariantDefaultConfigProvider(): array
+    public static function mainVariantDefaultConfigProvider(): array
     {
         return [
             'export shopware default' => ['config' => 'default'],
@@ -171,7 +171,7 @@ class ProductSearcherTest extends TestCase
         }
     }
 
-    public function variantProvider(): array
+    public static function variantProvider(): array
     {
         $expectedParentId = Uuid::randomHex();
 
@@ -345,11 +345,13 @@ class ProductSearcherTest extends TestCase
                     ],
                 ],
             ],
-            'configuratorGroupConfig' => [
-                [
-                    'id' => $optionGroupId,
-                    'expressionForListings' => true,
-                    'representation' => 'box'
+            'variantListingConfig' => [
+                'configuratorGroupConfig' => [
+                    [
+                        'id' => $optionGroupId,
+                        'expressionForListings' => true,
+                        'representation' => 'box'
+                    ]
                 ]
             ]
         ], $variants);
@@ -419,26 +421,18 @@ class ProductSearcherTest extends TestCase
                     ],
                 ],
             ],
-            'configuratorGroupConfig' => [
-                [
-                    'id' => $optionGroupId,
-                    // Explicitly set this to false. This tells Shopware to consider the mainVariationId (if set).
-                    'expressionForListings' => false,
-                    'representation' => 'box'
-                ]
-            ],
-        ], $variants);
-
-        $this->getContainer()->get('product.repository')->update([
-            [
-                'id' => $expectedFirstVariantId,
-                'mainVariantId' => $expectedMainVariantId
-            ],
-            [
-                'id' => $expectedSecondVariantId,
-                'mainVariantId' => $expectedMainVariantId
+            'variantListingConfig' => [
+                'mainVariantId' => $expectedMainVariantId,
+                'configuratorGroupConfig' => [
+                    [
+                        'id' => $optionGroupId,
+                        // Explicitly set this to false. This tells Shopware to consider the mainVariationId (if set).
+                        'expressionForListings' => false,
+                        'representation' => 'box'
+                    ]
+                ],
             ]
-        ], Context::createDefaultContext());
+        ], $variants);
 
         $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $this->assertCount(1, $result->getElements());
@@ -494,7 +488,7 @@ class ProductSearcherTest extends TestCase
             'visibilities' => [
                 [
                     'id' => Uuid::randomHex(),
-                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'salesChannelId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
                     'visibility' => 0
                 ]
             ]
@@ -610,7 +604,7 @@ class ProductSearcherTest extends TestCase
         ]);
     }
 
-    public function mainVariantCheapestProvider(): array
+    public static function mainVariantCheapestProvider(): array
     {
         return [
             'export cheapest real price with one having 0' => [

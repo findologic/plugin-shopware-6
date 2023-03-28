@@ -38,7 +38,7 @@ trait ConfigHelper
         /** @var FindologicConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->createMock(FindologicConfigService::class);
 
-        $salesChannelId = Defaults::SALES_CHANNEL;
+        $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT;
         $languageId = Defaults::LANGUAGE_SYSTEM;
         if (isset($overrides['salesChannelId'])) {
             $salesChannelId = $overrides['salesChannelId'];

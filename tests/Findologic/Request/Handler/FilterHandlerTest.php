@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class FilterHandlerTest extends TestCase
 {
-    public function filterRequestProvider(): array
+    public static function filterRequestProvider(): array
     {
         return [
             'Filter name with special characters' => [

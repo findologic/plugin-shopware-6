@@ -16,7 +16,7 @@ class FindologicConfigControllerTest extends TestCase
 {
     use AdminFunctionalTestBehaviour;
 
-    public function shopkeyProvider(): array
+    public static function shopkeyProvider(): array
     {
         $salesChannelId = Uuid::randomHex();
         $languageOne = Uuid::randomHex();

@@ -18,7 +18,7 @@ class ServiceConfigTest extends TestCase
 {
     use ConfigHelper;
 
-    public function configParameterProvider(): array
+    public static function configParameterProvider(): array
     {
         return [
             'Shop is staging with Direct Integration' => [

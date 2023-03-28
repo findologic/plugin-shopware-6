@@ -37,7 +37,7 @@ class NavigationCategoryParserTest extends TestCase
     {
         $expectedCategory = $this->getCategory();
         $request = new Request(['navigationId' => $expectedCategory->getId()]);
-        $salesChannelContext = $this->buildSalesChannelContext();
+        $salesChannelContext = $this->buildAndCreateSalesChannelContext();
 
         $category = $this->getDefaultNavigationCategoryParser()->parse($request, $salesChannelContext);
 
@@ -66,7 +66,7 @@ class NavigationCategoryParserTest extends TestCase
         $page->setHeader($headerPageletMock);
 
         $request = new Request();
-        $salesChannelContext = $this->buildSalesChannelContext();
+        $salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $category = $this->getDefaultNavigationCategoryParser()->parse($request, $salesChannelContext);
 
         $this->assertEquals($expectedCategory, $category);
@@ -94,7 +94,7 @@ class NavigationCategoryParserTest extends TestCase
         $page->setHeader($headerPageletMock);
 
         $request = new Request();
-        $salesChannelContext = $this->buildSalesChannelContext();
+        $salesChannelContext = $this->buildAndCreateSalesChannelContext();
 
         $category = $this->getDefaultNavigationCategoryParser()->parse($request, $salesChannelContext);
 

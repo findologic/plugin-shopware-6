@@ -36,7 +36,7 @@ class SalesFrequencyAdapterTest extends TestCase
         parent::setUp();
 
         $this->ids = new TestDataCollection();
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
@@ -123,7 +123,7 @@ class SalesFrequencyAdapterTest extends TestCase
         $this->assertSame($expectedSalesFrequency, $actualSalesFrequency->getValues()['']);
     }
 
-    public function salesFrequencyProvider(): array
+    public static function salesFrequencyProvider(): array
     {
         return [
             'Product with order in the last 30 days' => [

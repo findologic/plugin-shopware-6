@@ -25,7 +25,7 @@ class ServiceConfigResourceTest extends TestCase
     use ConfigHelper;
     use IntegrationTestBehaviour;
 
-    public function cacheConfigDataProvider(): array
+    public static function cacheConfigDataProvider(): array
     {
         return [
             'Direct Integration is enabled' => [
@@ -88,7 +88,7 @@ class ServiceConfigResourceTest extends TestCase
         $this->assertSame($isStagingShop, $serviceConfigResource->isStaging($shopkey));
     }
 
-    public function findologicConfigDataProvider(): array
+    public static function findologicConfigDataProvider(): array
     {
         return [
             'Direct Integration is enabled and Shop is live' => [
@@ -161,7 +161,7 @@ class ServiceConfigResourceTest extends TestCase
         $this->assertSame('Hersteller', $smartSuggestBlocks['vendor']);
     }
 
-    public function expiredTimeProvider(): array
+    public static function expiredTimeProvider(): array
     {
         return [
             'Cache is expired and Direct Integration is true' => [

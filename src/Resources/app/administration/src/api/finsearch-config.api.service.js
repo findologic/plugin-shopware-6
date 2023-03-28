@@ -23,12 +23,14 @@ class FinsearchConfigApiService extends ApiService {
 
     saveValues(values, salesChannelId, languageId, additionalParams = {}, additionalHeaders = {}) {
         return this.httpClient
-            .post('_action/finsearch',
+            .post(
+                '_action/finsearch',
                 values,
                 {
                     params: { salesChannelId, languageId, ...additionalParams },
                     headers: this.getBasicHeaders(additionalHeaders),
-                })
+                },
+            )
             .then((response) => {
                 return ApiService.handleResponse(response);
             });
@@ -36,12 +38,14 @@ class FinsearchConfigApiService extends ApiService {
 
     batchSave(values, additionalParams = {}, additionalHeaders = {}) {
         return this.httpClient
-            .post('_action/finsearch/batch',
+            .post(
+                '_action/finsearch/batch',
                 values,
                 {
                     params: { ...additionalParams },
                     headers: this.getBasicHeaders(additionalHeaders),
-                })
+                },
+            )
             .then((response) => {
                 return ApiService.handleResponse(response);
             });
