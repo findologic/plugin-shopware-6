@@ -59,12 +59,12 @@ jobs:
 
       - name: Install administration dependencies
         run: |
-          cd vendor/shopware/administration/Resources/app/administration
+          cd shopware/vendor/shopware/administration/Resources/app/administration
           npm i
 
       - name: Install storefront dependencies
         run: |
-          cd vendor/shopware/storefront/Resources/app/storefront
+          cd shopware/vendor/shopware/storefront/Resources/app/storefront
           npm i
 
       - name: Install Plugin dependencies
