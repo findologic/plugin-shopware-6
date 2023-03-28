@@ -67,8 +67,6 @@ jobs:
           cd shopware/vendor/shopware/storefront/Resources/app/storefront
           npm i
 
-      
-
       - name: Install Plugin
         run: |
           mv plugin-shopware-6 shopware/custom/plugins
