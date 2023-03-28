@@ -28,6 +28,26 @@ trait SalesChannelHelper
         array $overrides = [],
         string $currencyId = Defaults::CURRENCY
     ): SalesChannelContext {
+        $this->upsertSalesChannel($salesChannelId, $url, $customerEntity, $languageId, $overrides, $currencyId);
+
+        /** @var SalesChannelContextFactory $salesChannelContextFactory */
+        $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
+
+        return $salesChannelContextFactory->create(
+            Uuid::randomHex(),
+            $salesChannelId,
+            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId)
+        );
+    }
+
+    private function upsertSalesChannel(
+        string $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
+        string $url = 'http://test.uk',
+        ?CustomerEntity $customerEntity = null,
+        string $languageId = Defaults::LANGUAGE_SYSTEM,
+        array $overrides = [],
+        string $currencyId = Defaults::CURRENCY
+    ): void {
         $locale = $this->getLocaleOfLanguage($languageId);
 
         if ($locale) {
@@ -67,6 +87,7 @@ trait SalesChannelHelper
 
         $salesChannel = array_merge([
             'id' => $salesChannelId,
+            'languageId' => $languageId,
             'customerGroupId' => $customerEntity?->getGroupId() ?? $customerGroupId,
             'currencyId' => $currencyId,
             'paymentMethodId' => $paymentMethodId,
@@ -99,21 +120,17 @@ trait SalesChannelHelper
             ->searchIds(new Criteria([$salesChannelId]), Context::createDefaultContext())
             ->firstId();
 
-        if (!$salesChannelExists) {
-            $salesChannelRepository->upsert(
-                [$salesChannel],
-                Context::createDefaultContext()
-            );
+        if ($languageId !== Defaults::LANGUAGE_SYSTEM) {
+            $salesChannel['translations'][Defaults::LANGUAGE_SYSTEM] = ['name' => 'Storefront Default'];
         }
 
+        if ($salesChannelExists) {
+            unset($salesChannel['languages']);
+        }
 
-        /** @var SalesChannelContextFactory $salesChannelContextFactory */
-        $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
-
-        return $salesChannelContextFactory->create(
-            Uuid::randomHex(),
-            $salesChannelId,
-            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId)
+        $salesChannelRepository->upsert(
+            [$salesChannel],
+            Context::createDefaultContext()
         );
     }
 
@@ -138,7 +155,7 @@ trait SalesChannelHelper
      */
     public function fetchIdFromDatabase(string $table): string
     {
-        return $this->getContainer()->get(Connection::class)->fetchColumn('SELECT LOWER(HEX(id)) FROM ' . $table);
+        return $this->getContainer()->get(Connection::class)->fetchOne('SELECT LOWER(HEX(id)) FROM ' . $table);
     }
 
     protected function getLocaleIdOfLanguage(string $languageId = Defaults::LANGUAGE_SYSTEM): string
@@ -178,9 +195,9 @@ trait SalesChannelHelper
                     'name' => sprintf('name-%s', $id),
                     'localeId' => $this->getLocaleIdOfLanguage(),
                     'parentId' => $parentId,
-                    'salesChannels' => [
-                        ['id' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT],
-                    ]
+//                    'salesChannels' => [
+//                        ['id' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT],
+//                    ]
                 ],
             ],
             Context::createDefaultContext()
