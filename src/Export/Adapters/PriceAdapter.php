@@ -225,7 +225,7 @@ class PriceAdapter extends CommonPriceAdapter
     protected function getCheapestPrice(PriceCollection $priceCollection): CalculatedPrice
     {
         $priceCollection->sort(function (CalculatedPrice $a, CalculatedPrice $b) {
-            return  $a->getUnitPrice() <=> $b->getUnitPrice();
+            return $a->getUnitPrice() <=> $b->getUnitPrice();
         });
 
         return $priceCollection->first();

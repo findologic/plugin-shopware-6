@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -27,6 +28,7 @@ use Symfony\Component\HttpFoundation\Request;
 class ProductSearchRouteTest extends ProductRouteBase
 {
     use SalesChannelFunctionalTestBehaviour;
+    use SalesChannelHelper;
     use SearchResultHelper;
     use ProductHelper {
         ProductHelper::createCustomer insteadof SalesChannelFunctionalTestBehaviour;
@@ -116,6 +118,7 @@ class ProductSearchRouteTest extends ProductRouteBase
         string $variantId,
         string $expectedProductNumber
     ): void {
+        $this->upsertSalesChannel();
         $this->salesChannelContext = $this->getMockedSalesChannelContext(true);
 
         $sdkProduct = $this->createTestProduct([], true);

@@ -323,7 +323,11 @@ trait ProductHelper
             ],
             'cover' => $this->getDefaultCoverData(),
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
-            'tax' => ['id' => Uuid::randomHex(),  'name' => '9%', 'taxRate' => 9],
+            'tax' => [
+                'id' => $this->salesChannelContext->getTaxRules()->first()?->getId() ?? Uuid::randomHex(),
+                'name' => '9%',
+                'taxRate' => 9
+            ],
             'categories' => $this->getDefaultCategories(),
             'seoUrls' => $productSeoUrls,
             'properties' => [
@@ -351,6 +355,13 @@ trait ProductHelper
                     ],
                 ]
             ],
+            'visibilities' => [
+                [
+                    'productId' => $id,
+                    'salesChannelId' => $this->salesChannelContext->getSalesChannelId(),
+                    'visibility' => 30
+                ]
+            ]
         ]);
 
         if ($withManufacturer) {

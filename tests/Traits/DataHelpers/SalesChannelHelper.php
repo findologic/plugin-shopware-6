@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use Doctrine\DBAL\Connection;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
@@ -40,7 +39,7 @@ trait SalesChannelHelper
         );
     }
 
-    private function upsertSalesChannel(
+    public function upsertSalesChannel(
         string $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
         string $url = 'http://test.uk',
         ?CustomerEntity $customerEntity = null,
