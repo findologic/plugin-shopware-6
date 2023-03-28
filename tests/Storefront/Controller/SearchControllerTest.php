@@ -41,7 +41,7 @@ class SearchControllerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
     }
 
     public static function availableFilterProvider()

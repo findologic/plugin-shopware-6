@@ -123,7 +123,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     {
         parent::setUp();
 
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->initMocks();
     }
 
@@ -1088,7 +1088,7 @@ XML;
         $event = new ProductListingResultEvent(
             new Request(['order' => 'score']),
             $result,
-            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL_TYPE_STOREFRONT, 'http://test.de')
+            $this->buildAndCreateSalesChannelContext(Defaults::SALES_CHANNEL_TYPE_STOREFRONT, 'http://test.de')
         );
 
         $subscriber = $this->getProductListingFeaturesSubscriber();

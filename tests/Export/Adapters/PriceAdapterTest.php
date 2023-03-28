@@ -36,7 +36,7 @@ class PriceAdapterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 

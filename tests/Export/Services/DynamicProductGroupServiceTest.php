@@ -64,7 +64,7 @@ class DynamicProductGroupServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->cache = $this->getMockBuilder(CacheItemPoolInterface::class)->disableOriginalConstructor()->getMock();
         $this->start = 0;
         $this->productId = null;

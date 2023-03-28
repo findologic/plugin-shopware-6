@@ -138,7 +138,7 @@ class FindologicSearchServiceTest extends TestCase
         $request->query->set('findologic', $stagingParam);
         $request->setSession($sessionMock);
 
-        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $this->buildSalesChannelContext());
+        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $this->buildAndCreateSalesChannelContext());
 
         $serviceConfigResourceMock = $this->getMockBuilder(ServiceConfigResource::class)
             ->disableOriginalConstructor()
@@ -218,7 +218,7 @@ class FindologicSearchServiceTest extends TestCase
         // The root category is considered unknown, as this is a category, which is not directly
         // indexed by Findologic.
         $request = new Request(['navigationId' => $this->getRootCategory()->getId()]);
-        $salesChannelContext = $this->buildSalesChannelContext();
+        $salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $salesChannelContext->getContext()->addExtension('findologicService', $findologicService);
 
         $event = new ProductSearchCriteriaEvent($request, new Criteria(), $salesChannelContext);

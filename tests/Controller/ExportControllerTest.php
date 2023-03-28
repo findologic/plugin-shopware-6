@@ -41,7 +41,7 @@ class ExportControllerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
     }
 
     public function testExportOfSingleProduct(): void
@@ -246,7 +246,7 @@ class ExportControllerTest extends TestCase
         // @see \FINDOLOGIC\FinSearch\Export\ProductService::getInstance
         $this->getContainer()->set('fin_search.product_service_separate_variants', null);
 
-        $salesChannelContext = $this->buildSalesChannelContext(
+        $salesChannelContext = $this->buildAndCreateSalesChannelContext(
             Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.abc',
             null,
@@ -355,7 +355,7 @@ class ExportControllerTest extends TestCase
      * Unlike SalesChannelHelper::buildSalesChannelContext, which by default modifies the default sales channel, this
      * method creates an entirely new Sales Channel and returns an appropriate SalesChannelContext.
      *
-     * @see SalesChannelHelper::buildSalesChannelContext
+     * @see SalesChannelHelper::buildAndCreateSalesChannelContext
      */
     private function createSalesChannelContext(
         EntitySearchResult $currencies,
@@ -425,7 +425,7 @@ class ExportControllerTest extends TestCase
             ],
         ];
 
-        return $this->buildSalesChannelContext(
+        return $this->buildAndCreateSalesChannelContext(
             Uuid::randomHex(),
             'http://cool-url.com',
             null,

@@ -197,7 +197,7 @@ class FrontendSubscriberTest extends TestCase
                 ),
             ]);
 
-        $salesChannelContext = $this->buildSalesChannelContext();
+        $salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $headerPageletLoadedEventMock->expects($this->exactly(3))->method('getPagelet')
             ->willReturn($headerPageletMock);
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')

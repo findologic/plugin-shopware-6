@@ -21,14 +21,9 @@ trait SalesChannelHelper
 {
     public function buildSalesChannelContext(
         string $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
-        string $url = 'http://test.uk',
         ?CustomerEntity $customerEntity = null,
         string $languageId = Defaults::LANGUAGE_SYSTEM,
-        array $overrides = [],
-        string $currencyId = Defaults::CURRENCY
     ): SalesChannelContext {
-        $this->upsertSalesChannel($salesChannelId, $url, $customerEntity, $languageId, $overrides, $currencyId);
-
         /** @var SalesChannelContextFactory $salesChannelContextFactory */
         $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
 
@@ -37,6 +32,19 @@ trait SalesChannelHelper
             $salesChannelId,
             $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId)
         );
+    }
+
+    public function buildAndCreateSalesChannelContext(
+        string $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
+        string $url = 'http://test.uk',
+        ?CustomerEntity $customerEntity = null,
+        string $languageId = Defaults::LANGUAGE_SYSTEM,
+        array $overrides = [],
+        string $currencyId = Defaults::CURRENCY
+    ): SalesChannelContext {
+        $this->upsertSalesChannel($salesChannelId, $url, $customerEntity, $languageId, $overrides, $currencyId);
+
+        return $this->buildSalesChannelContext($salesChannelId, $customerEntity, $languageId);
     }
 
     public function upsertSalesChannel(

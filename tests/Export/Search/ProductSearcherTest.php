@@ -43,7 +43,7 @@ class ProductSearcherTest extends TestCase
     {
         parent::setUp();
 
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->exportContext = $this->getExportContext(
             $this->salesChannelContext,
             $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId())
