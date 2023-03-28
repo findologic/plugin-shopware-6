@@ -1,4 +1,4 @@
-name: Lint
+name: Lint JS
 
 on:
   push:
@@ -67,11 +67,7 @@ jobs:
           cd shopware/vendor/shopware/storefront/Resources/app/storefront
           npm i
 
-      - name: Install Plugin dependencies
-        run: |
-          cd plugin-shopware-6
-          composer install --no-interaction
-          npm install eslint
+      
 
       - name: Install Plugin
         run: |
