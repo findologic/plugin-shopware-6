@@ -71,7 +71,7 @@ jobs:
         run: |
           cd plugin-shopware-6
           composer install --no-interaction
-          npm ci
+          npm i
           cd src/Resources/app/storefront
           npm ci
 
