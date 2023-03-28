@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '8.1' ]
+        php-versions: [ '8.1', '8.2' ]
         shopware-versions: [
             '6.5.0.0-rc3',
         ]
