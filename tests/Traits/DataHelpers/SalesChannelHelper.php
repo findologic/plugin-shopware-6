@@ -202,9 +202,6 @@ trait SalesChannelHelper
                     'name' => sprintf('name-%s', $id),
                     'localeId' => $this->getLocaleIdOfLanguage(),
                     'parentId' => $parentId,
-//                    'salesChannels' => [
-//                        ['id' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT],
-//                    ]
                 ],
             ],
             Context::createDefaultContext()

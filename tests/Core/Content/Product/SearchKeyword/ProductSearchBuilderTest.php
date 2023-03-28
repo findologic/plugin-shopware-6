@@ -43,7 +43,10 @@ class ProductSearchBuilderTest extends TestCase
             ->onlyMethods(['buildParent', 'doBuild'])
             ->getMock();
 
-        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext(Defaults::SALES_CHANNEL_TYPE_STOREFRONT, 'http://test.de');
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
+            'http://test.de'
+        );
 
         parent::setUp();
     }
