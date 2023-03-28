@@ -345,11 +345,13 @@ class ProductSearcherTest extends TestCase
                     ],
                 ],
             ],
-            'configuratorGroupConfig' => [
-                [
-                    'id' => $optionGroupId,
-                    'expressionForListings' => true,
-                    'representation' => 'box'
+            'variantListingConfig' => [
+                'configuratorGroupConfig' => [
+                    [
+                        'id' => $optionGroupId,
+                        'expressionForListings' => true,
+                        'representation' => 'box'
+                    ]
                 ]
             ]
         ], $variants);
@@ -419,26 +421,18 @@ class ProductSearcherTest extends TestCase
                     ],
                 ],
             ],
-            'configuratorGroupConfig' => [
-                [
-                    'id' => $optionGroupId,
-                    // Explicitly set this to false. This tells Shopware to consider the mainVariationId (if set).
-                    'expressionForListings' => false,
-                    'representation' => 'box'
-                ]
-            ],
-        ], $variants);
-
-        $this->getContainer()->get('product.repository')->update([
-            [
-                'id' => $expectedFirstVariantId,
-                'mainVariantId' => $expectedMainVariantId
-            ],
-            [
-                'id' => $expectedSecondVariantId,
-                'mainVariantId' => $expectedMainVariantId
+            'variantListingConfig' => [
+                'mainVariantId' => $expectedMainVariantId,
+                'configuratorGroupConfig' => [
+                    [
+                        'id' => $optionGroupId,
+                        // Explicitly set this to false. This tells Shopware to consider the mainVariationId (if set).
+                        'expressionForListings' => false,
+                        'representation' => 'box'
+                    ]
+                ],
             ]
-        ], Context::createDefaultContext());
+        ], $variants);
 
         $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $this->assertCount(1, $result->getElements());
