@@ -58,6 +58,16 @@ jobs:
           cd shopware
           ./bin/console system:install --basic-setup
 
+      - name: Install administration dependencies
+        run: |
+          cd shopware/vendor/shopware/administration/Resources/app/administration
+          npm i
+
+      - name: Install storefront dependencies
+        run: |
+          cd shopware/vendor/shopware/storefront/Resources/app/storefront
+          npm i
+
       - name: Install test dependencies for SW
         run: |
           cd shopware
