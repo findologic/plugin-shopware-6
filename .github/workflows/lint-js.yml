@@ -75,7 +75,7 @@ jobs:
 
       - name: Install Plugin
         run: |
-          mv plugin-shopware-6 development/custom/plugins
+          mv plugin-shopware-6 shopware/custom/plugins
           cd shopware
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
