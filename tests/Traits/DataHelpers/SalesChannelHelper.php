@@ -124,7 +124,7 @@ trait SalesChannelHelper
             $salesChannel['translations'][Defaults::LANGUAGE_SYSTEM] = ['name' => 'Storefront Default'];
         }
 
-        if ($salesChannelExists) {
+        if ($salesChannelExists && $languageId === Defaults::LANGUAGE_SYSTEM) {
             unset($salesChannel['languages']);
         }
 
