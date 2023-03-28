@@ -67,6 +67,13 @@ jobs:
           cd shopware/vendor/shopware/storefront/Resources/app/storefront
           npm i
 
+      - name: Install dependencies
+        run: |
+          cd plugin-shopware-6
+          composer install --no-interaction
+          cd src/Resources/app/storefront
+          npm ci
+
       - name: Install Plugin
         run: |
           mv plugin-shopware-6 shopware/custom/plugins
