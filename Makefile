@@ -10,17 +10,17 @@ help:
 .PHONY: help
 
 administration-fix: ## Run eslint on the administration files
-	../../../vendor/shopware/platform/src/Administration/Resources/app/administration/node_modules/.bin/eslint --config .eslintrc-administration.js --ext .js,.vue src/Resources/app/administration --resolve-plugins-relative-to ../../../vendor/shopware/platform/src/Administration/Resources/app/administration --fix
+	node_modules/.bin/eslint --config .eslintrc-administration.js --ext .js,.vue src/Resources/app/administration --resolve-plugins-relative-to ../../../vendor/shopware/administration/Resources/app/administration --fix
 .PHONY: administration-fix
 
 storefront-fix: ## Run eslint on the storefront files
-	../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront/node_modules/.bin/eslint --config .eslintrc-storefront.js --ext .js,.vue src/Resources/app/storefront --resolve-plugins-relative-to ../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront --fix
+	node_modules/.bin/eslint --config .eslintrc-storefront.js --ext .js,.vue src/Resources/app/storefront --resolve-plugins-relative-to ../../../vendor/shopware/storefront/Resources/app/storefront --fix
 .PHONY: storefront-fix
 
 administration-lint: ## Run eslint on the administration files
-	../../../vendor/shopware/platform/src/Administration/Resources/app/administration/node_modules/.bin/eslint --config .eslintrc-administration.js --ext .js,.vue src/Resources/app/administration --resolve-plugins-relative-to ../../../vendor/shopware/platform/src/Administration/Resources/app/administration
+	node_modules/.bin/eslint --config .eslintrc-administration.js --ext .js,.vue src/Resources/app/administration --resolve-plugins-relative-to ../../../vendor/shopware/administration/Resources/app/administration
 .PHONY: administration-lint
 
 storefront-lint: ## Run eslint on the storefront files
-	../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront/node_modules/.bin/eslint --config .eslintrc-storefront.js --ext .js,.vue src/Resources/app/storefront --resolve-plugins-relative-to ../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront
+	node_modules/.bin/eslint --config .eslintrc-storefront.js --ext .js,.vue src/Resources/app/storefront --resolve-plugins-relative-to ../../../vendor/shopware/storefront/Resources/app/storefront
 .PHONY: storefront-lint

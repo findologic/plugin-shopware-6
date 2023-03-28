@@ -7,6 +7,7 @@
     <file>src</file>
     <file>tests</file>
     <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
     <exclude-pattern>tests/TestBootstrap.php</exclude-pattern>
     <exclude-pattern>*/Resources/app/*</exclude-pattern>
     <exclude-pattern>*/Resources/snippet/*</exclude-pattern>

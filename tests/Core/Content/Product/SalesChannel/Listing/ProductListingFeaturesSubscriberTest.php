@@ -123,11 +123,11 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     {
         parent::setUp();
 
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->initMocks();
     }
 
-    public function requestProvider(): array
+    public static function requestProvider(): array
     {
         return [
             'search request' => [
@@ -194,7 +194,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->{$endpoint}($eventMock);
     }
 
-    public function sortingProvider(): array
+    public static function sortingProvider(): array
     {
         return [
             'ProductNameSorting is ASC' => [
@@ -290,7 +290,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->{$endpoint}($eventMock);
     }
 
-    public function promotionRequestProvider()
+    public static function promotionRequestProvider()
     {
         return [
             'Search response has promotion' => ['search' => true, 'endpoint' => 'handleSearchRequest'],
@@ -448,7 +448,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->handleSearchRequest($eventMock);
     }
 
-    public function queryInfoMessageProvider()
+    public static function queryInfoMessageProvider()
     {
         return [
             'Submitting an empty search' => [
@@ -694,7 +694,11 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
         $queryMock->expects($this->any())
             ->method('getInt')
-            ->willReturnOnConsecutiveCalls(24, 1);
+            ->willReturnOnConsecutiveCalls(
+                24, // SW limit
+                1, // SW page
+                1 // Plugin page
+            );
         $queryMock->expects($this->any())->method('get')->willReturn('');
         $queryMock->expects($this->any())->method('all')->willReturn([]);
 
@@ -911,7 +915,7 @@ XML;
         return $sessionMock;
     }
 
-    public function criteriaLimitProvider(): array
+    public static function criteriaLimitProvider(): array
     {
         return [
             'search request with custom limit' => [
@@ -1084,7 +1088,7 @@ XML;
         $event = new ProductListingResultEvent(
             new Request(['order' => 'score']),
             $result,
-            $this->buildSalesChannelContext(Defaults::SALES_CHANNEL, 'http://test.de')
+            $this->buildAndCreateSalesChannelContext(Defaults::SALES_CHANNEL_TYPE_STOREFRONT, 'http://test.de')
         );
 
         $subscriber = $this->getProductListingFeaturesSubscriber();

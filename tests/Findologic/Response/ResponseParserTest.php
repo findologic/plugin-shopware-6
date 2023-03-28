@@ -21,7 +21,7 @@ class ResponseParserTest extends TestCase
     use MockResponseHelper;
     use ConfigHelper;
 
-    public function unsupportedResponseInstanceProvider(): array
+    public static function unsupportedResponseInstanceProvider(): array
     {
         return [
             'generic HTML response' => [

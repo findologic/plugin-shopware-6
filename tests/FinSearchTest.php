@@ -10,7 +10,7 @@ use Shopware\Core\Framework\Plugin\Context\InstallContext;
 
 class FinSearchTest extends TestCase
 {
-    public function compatibleVersionsProvider()
+    public static function compatibleVersionsProvider()
     {
         return [
             'Plugin is compatible' => [

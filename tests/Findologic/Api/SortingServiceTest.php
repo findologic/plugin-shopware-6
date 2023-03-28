@@ -61,7 +61,11 @@ class SortingServiceTest extends TestCase
         array $expectedSortings
     ): void {
         $sortingService = $this->buildSortingService();
-        $event = new ProductListingCriteriaEvent(new Request(), new Criteria(), $this->buildSalesChannelContext());
+        $event = new ProductListingCriteriaEvent(
+            new Request(),
+            new Criteria(),
+            $this->buildAndCreateSalesChannelContext()
+        );
         $searchRequestHandlerMock = $this->getMockBuilder(NavigationRequestHandler::class)
             ->disableOriginalConstructor()
             ->getMock();

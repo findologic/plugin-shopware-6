@@ -9,12 +9,13 @@ use Shopware\Core\SalesChannelRequest;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\BrowserKit\Request as DomRequest;
+use Symfony\Component\HttpFoundation\Request;
 
 class TestClient extends KernelBrowser
 {
     private ?SalesChannelContext $salesChannelContext = null;
 
-    protected function filterRequest(DomRequest $request)
+    protected function filterRequest(DomRequest $request): Request
     {
         $filteredRequest = parent::filterRequest($request);
 

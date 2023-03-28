@@ -94,7 +94,7 @@ class ConfigTest extends TestCase
         }
 
         $config = new Config($configServiceMock, $serviceConfigResource);
-        $config->initializeBySalesChannel($this->buildSalesChannelContext());
+        $config->initializeBySalesChannel($this->buildAndCreateSalesChannelContext());
 
         if (count($data)) {
             $this->assertSame($data['active'], $config->isActive());

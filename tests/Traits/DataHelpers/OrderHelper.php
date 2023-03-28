@@ -45,7 +45,7 @@ trait OrderHelper
             'paymentMethodId' => $this->fetchFirstIdFromTable('payment_method'),
             'currencyId' => Defaults::CURRENCY,
             'currencyFactor' => 1.0,
-            'salesChannelId' => Defaults::SALES_CHANNEL,
+            'salesChannelId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'billingAddressId' => Uuid::randomHex(),
             'addresses' => [
                 [
@@ -80,6 +80,16 @@ trait OrderHelper
             'deliveries' => [],
             'context' => '{}',
             'payload' => '{}',
+            'itemRounding' => [
+                'decimals' => 2,
+                'interval' => 0.01,
+                'roundForNet' => true
+            ],
+            'totalRounding' => [
+                'decimals' => 2,
+                'interval' => 0.01,
+                'roundForNet' => true
+            ],
         ];
 
         $data = array_merge($data, $overrideData);

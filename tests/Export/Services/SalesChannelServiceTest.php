@@ -26,7 +26,7 @@ class SalesChannelServiceTest extends TestCase
         $configShopkey = '12341234123412341234123412341234';
 
         $salesChannelService = $this->getSalesChannelService();
-        $currentSalesChannel = $this->buildSalesChannelContext();
+        $currentSalesChannel = $this->buildAndCreateSalesChannelContext();
 
         $this->enableFindologicPlugin($this->getContainer(), $configShopkey, $currentSalesChannel);
         $salesChannel = $salesChannelService->getSalesChannelContext($currentSalesChannel, $configShopkey);
@@ -38,7 +38,7 @@ class SalesChannelServiceTest extends TestCase
     {
         $salesChannelService = $this->getSalesChannelService();
         $this->assertNull($salesChannelService->getSalesChannelContext(
-            $this->buildSalesChannelContext(),
+            $this->buildAndCreateSalesChannelContext(),
             '12341234123412341234123412341234'
         ));
     }
@@ -63,8 +63,8 @@ class SalesChannelServiceTest extends TestCase
         $configShopkey = '12341234123412341234123412341234';
 
         $salesChannelService = $this->getSalesChannelService();
-        $currentSalesChannel = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+        $currentSalesChannel = $this->buildAndCreateSalesChannelContext(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.de',
             null,
             $languageId

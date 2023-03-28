@@ -12,40 +12,40 @@ Please see [our Shopware 6 documentation](https://docs.findologic.com/doku.php?i
 
 ### Development
 
-1. Set up the [Shopware 6 development template](https://developer.shopware.com/docs/guides/installation/docker)
-2. Navigate to the plugins folder
+1. Install the [shopware-cli](https://sw-cli.fos.gg/install/)
+2. Set up the test shop
+   - https://sw-cli.fos.gg/commands/project/
+   - `shopware-cli project create [folder] [version]`
+3. Install dependencies for tests
+   1. `composer config repositories.repo-name vcs https://github.com/jmatthiesen81/shopware65-tests.git`
+   2. `composer require --dev jmatthiesen/shopware65-tests:<newestVersion>`
+   3. `composer require --dev symfony/test-pack`
+4. Configure test database within the .env.test file (Create file if not present)
+   - If you want to use a docker database, run `docker-compose up -d`
+5. Navigate to the plugins folder
    ```bash
    cd custom/plugins
    ```
-3. Clone this repository
+6. Clone this repository
    ```bash
    git clone git@github.com:findologic/plugin-shopware-6.git
    ```
-4. Install dependencies
+7. Install dependencies
    ```bash
    cd plugin-shopware-6 && composer install
    ```
-5. Navigate back to the development template root
+8. Navigate back to the shop root
    ```bash
    cd ../../..
    ```
-6. Run Shopware if not already done
+9. Refresh plugin list 
    ```bash
-   ./psh.phar docker:start
-   ```
-7. SSH into the Shopware docker container
-   ```bash
-   ./psh.phar docker:ssh
+   bin/console plugin:refresh --env="test"
    ```
 
-8. Refresh plugin list 
+10. Install and activate the plugin
    ```bash
-   bin/console plugin:refresh
-   ```
-
-9. Install and activate the plugin
-   ```bash
-   bin/console plugin:install FinSearch --activate --clearCache
+   bin/console plugin:install FinSearch --activate --clearCache --env="test"
    ```
 
 ### Run linting

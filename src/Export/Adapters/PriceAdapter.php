@@ -20,6 +20,7 @@ use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as CurrencyPrice;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupEntity;
 use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity as SdkProductEntity;
@@ -32,7 +33,7 @@ class PriceAdapter extends CommonPriceAdapter
 
     protected CustomerGroupContextProvider $customerGroupContextProvider;
 
-    protected EntityRepository $productRepository;
+    protected SalesChannelRepository $salesChannelProductRepository;
 
     protected PluginConfig $config;
 
@@ -43,14 +44,14 @@ class PriceAdapter extends CommonPriceAdapter
         SalesChannelContext $salesChannelContext,
         ProductPriceCalculator $productPriceCalculator,
         CustomerGroupContextProvider $customerGroupContextProvider,
-        EntityRepository $productRepository,
+        SalesChannelRepository $salesChannelProductRepository,
         PluginConfig $config,
         string $shopwareVersion
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->calculator = $productPriceCalculator;
         $this->customerGroupContextProvider = $customerGroupContextProvider;
-        $this->productRepository = $productRepository;
+        $this->salesChannelProductRepository = $salesChannelProductRepository;
         $this->config = $config;
         $this->shopwareVersion = $shopwareVersion;
 
@@ -224,7 +225,7 @@ class PriceAdapter extends CommonPriceAdapter
     protected function getCheapestPrice(PriceCollection $priceCollection): CalculatedPrice
     {
         $priceCollection->sort(function (CalculatedPrice $a, CalculatedPrice $b) {
-            return  $a->getUnitPrice() <=> $b->getUnitPrice();
+            return $a->getUnitPrice() <=> $b->getUnitPrice();
         });
 
         return $priceCollection->first();
@@ -241,9 +242,9 @@ class PriceAdapter extends CommonPriceAdapter
         $criteria = new Criteria([$productId]);
         $criteria->addAssociation('prices.rule.conditions');
 
-        return $this->productRepository->search(
+        return $this->salesChannelProductRepository->search(
             $criteria,
-            $this->salesChannelContext->getContext(),
+            $this->salesChannelContext,
         )->first();
     }
 }

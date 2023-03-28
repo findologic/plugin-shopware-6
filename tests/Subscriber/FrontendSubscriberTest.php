@@ -28,7 +28,7 @@ class FrontendSubscriberTest extends TestCase
     use SalesChannelHelper;
     use CategoryHelper;
 
-    public function headerPageletLoadedEventProvider(): array
+    public static function headerPageletLoadedEventProvider(): array
     {
         return [
             'Home page Request' => [
@@ -197,7 +197,7 @@ class FrontendSubscriberTest extends TestCase
                 ),
             ]);
 
-        $salesChannelContext = $this->buildSalesChannelContext();
+        $salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $headerPageletLoadedEventMock->expects($this->exactly(3))->method('getPagelet')
             ->willReturn($headerPageletMock);
         $headerPageletLoadedEventMock->expects($this->exactly(2))->method('getSalesChannelContext')

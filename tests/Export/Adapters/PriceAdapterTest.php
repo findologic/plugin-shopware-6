@@ -36,7 +36,7 @@ class PriceAdapterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
@@ -206,7 +206,7 @@ class PriceAdapterTest extends TestCase
             $this->salesChannelContext,
             $this->getContainer()->get(ProductPriceCalculator::class),
             $this->getContainer()->get(CustomerGroupContextProvider::class),
-            $this->getContainer()->get('product.repository'),
+            $this->getContainer()->get('sales_channel.product.repository'),
             $config,
             '6.4.9.0'
         );
