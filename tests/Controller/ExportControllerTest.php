@@ -444,7 +444,7 @@ class ExportControllerTest extends TestCase
         }
 
         $response = $this->sendDynamicProductGroupRequest($params);
-        var_dump($response->getContent());
+
         $this->assertSame(422, $response->getStatusCode());
         $parsedResponse = json_decode($response->getContent(), true);
 
