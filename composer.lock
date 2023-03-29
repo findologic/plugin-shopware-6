@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "13d4b7d9cd6d94e578f7acb4c0284692",
+    "content-hash": "e19860a5f3c2921b75432569fc559aa1",
     "packages": [
         {
             "name": "composer/semver",
@@ -227,33 +227,34 @@
         },
         {
             "name": "findologic/libflexport",
-            "version": "v2.9.1",
+            "version": "dev-FINDO-9791_fix_issues_with_plugin_usecase",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/libflexport.git",
-                "reference": "aebac7abab35efa581bfb907288f3a0851ff249d"
+                "reference": "ad17cde7cc0a412c6933cb78b6cb15334007f3e2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/libflexport/zipball/aebac7abab35efa581bfb907288f3a0851ff249d",
-                "reference": "aebac7abab35efa581bfb907288f3a0851ff249d",
+                "url": "https://api.github.com/repos/findologic/libflexport/zipball/ad17cde7cc0a412c6933cb78b6cb15334007f3e2",
+                "reference": "ad17cde7cc0a412c6933cb78b6cb15334007f3e2",
                 "shasum": ""
             },
             "require": {
                 "ext-dom": "*",
                 "ext-mbstring": "*",
-                "findologic/xml-export-schema": "^1.4",
-                "php": "^7.1|^8.0"
+                "findologic/xml-export-schema": "^v2.1.1",
+                "php": "^8.1"
             },
             "require-dev": {
                 "nikic/php-parser": "^4.15",
-                "phpunit/phpunit": "^7.5|^8.6|^9.0",
-                "squizlabs/php_codesniffer": "^3.5"
+                "phpunit/phpunit": "^10.0",
+                "squizlabs/php_codesniffer": "^3.7"
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "FINDOLOGIC\\Export\\": "src/"
+                "psr-4": {
+                    "FINDOLOGIC\\Export\\": "src",
+                    "FINDOLOGIC\\Export\\Examples\\": "examples"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -291,9 +292,9 @@
             "homepage": "https://github.com/findologic/libflexport",
             "support": {
                 "issues": "https://github.com/findologic/libflexport/issues",
-                "source": "https://github.com/findologic/libflexport/tree/v2.9.1"
+                "source": "https://github.com/findologic/libflexport/tree/FINDO-9791_fix_issues_with_plugin_usecase"
             },
-            "time": "2022-11-09T15:06:44+00:00"
+            "time": "2023-03-29T12:42:01+00:00"
         },
         {
             "name": "findologic/shopware6-common",
@@ -301,10 +302,10 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "abf2df915098ec5f82ed594d5b6a8044f12e4193"
+                "reference": "0c11b727df8154a4efb15e47bd7331baced3e922"
             },
             "require": {
-                "findologic/libflexport": "^2.9",
+                "findologic/libflexport": "dev-FINDO-9791_fix_issues_with_plugin_usecase",
                 "monolog/monolog": "^3.3.1",
                 "php": "^8.1",
                 "symfony/event-dispatcher": "*",
@@ -353,20 +354,20 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-03-28T14:12:19+00:00"
+            "time": "2023-03-29T13:07:07+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
-            "version": "v1.6.0",
+            "version": "v2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/xml-export.git",
-                "reference": "b0078f4895dbb2953eb4d2d6b17f3d94e17a9c95"
+                "reference": "3774f29c5706994156f72071179887fbe4b48ca3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/xml-export/zipball/b0078f4895dbb2953eb4d2d6b17f3d94e17a9c95",
-                "reference": "b0078f4895dbb2953eb4d2d6b17f3d94e17a9c95",
+                "url": "https://api.github.com/repos/findologic/xml-export/zipball/3774f29c5706994156f72071179887fbe4b48ca3",
+                "reference": "3774f29c5706994156f72071179887fbe4b48ca3",
                 "shasum": ""
             },
             "type": "library",
@@ -388,9 +389,9 @@
             "description": "XML schema for the FINDOLOGIC XML export format.",
             "support": {
                 "issues": "https://github.com/findologic/xml-export/issues",
-                "source": "https://github.com/findologic/xml-export/tree/v1.6.0"
+                "source": "https://github.com/findologic/xml-export/tree/v2.1.1"
             },
-            "time": "2022-04-14T07:44:40+00:00"
+            "time": "2023-03-20T13:45:50+00:00"
         },
         {
             "name": "findologic/xml-response-schema",
@@ -1873,6 +1874,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "findologic/libflexport": 20,
         "findologic/shopware6-common": 20
     },
     "prefer-stable": false,
