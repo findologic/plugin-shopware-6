@@ -4,7 +4,7 @@
     {% if not context.context.extensions.findologicService.enabled %}
         {{ parent() }}
     {% else %}
-        <div class="custom-control custom-checkbox">
+        <div class="form-check">
             {% set id = element.id %}
             {% set name = element.translated.name %}
             {% block component_filter_multi_select_list_item_checkbox_input %}
@@ -12,7 +12,7 @@
                     {{ parent() }}
                 {% else %}
                     <input type="checkbox"
-                           class="custom-control-input filter-multi-select-checkbox"
+                           class="form-check-input filter-multi-select-checkbox"
                            data-label="{{ name }}"
                            value="{{ id }}"
                            id="{{ element.uuid }}">
@@ -23,7 +23,7 @@
                 {% if not context.context.extensions.findologicService.enabled %}
                     {{ parent() }}
                 {% else %}
-                    <label class="filter-multi-select-item-label custom-control-label" for="{{ element.uuid }}">
+                    <label class="filter-multi-select-item-label form-check-label" for="{{ element.uuid }}">
                         {% block component_multi_select_list_item_label %}
                             {{ name }}
                         {% endblock %}

@@ -1,29 +1,49 @@
 {% set filterItemId = 'filter-' ~ name ~ '-' ~ random() %}
 
 {% if filterRangeActiveMinLabel is not defined %}
-    {% set filterRangeActiveMinLabel = 'listing.filterRangeActiveMinLabel'|trans|sw_sanitize %}
+    {% set filterRangeActiveMinLabel = 'listing.filterRangeActiveMinLabel'|trans({'%displayName%': displayName})|sw_sanitize %}
 {% endif %}
 
 {% if filterRangeActiveMaxLabel is not defined %}
-    {% set filterRangeActiveMaxLabel = 'listing.filterRangeActiveMaxLabel'|trans|sw_sanitize %}
+    {% set filterRangeActiveMaxLabel = 'listing.filterRangeActiveMaxLabel'|trans({'%displayName%': displayName})|sw_sanitize %}
 {% endif %}
 
 {% if filterRangeErrorMessage is not defined %}
     {% set filterRangeErrorMessage = 'listing.filterRangeErrorMessage'|trans|sw_sanitize %}
 {% endif %}
 
+{% if filterRangeLowerBoundErrorMessage is not defined %}
+    {% set filterRangeLowerBoundErrorMessage = 'listing.filterRangeLowerBoundErrorMessage'|trans({'%lowerBound%': lowerBound})|sw_sanitize %}
+{% endif %}
+
+{% if minKey is not defined %}
+    {% set minKey = 'min-price' %}
+{% endif %}
+
+{% if maxKey is not defined %}
+    {% set minKey = 'max-price' %}
+{% endif %}
+
+{% if unit is not defined %}
+    {% set unit = page.header.activeCurrency.symbol %}
+{% endif %}
+
+{% if minInputValue is not defined %}
+    {% set minInputValue = 0 %}
+{% endif %}
+
 {% set filterRangeOptions = {
-    name: name,
-    price: price,
-    minKey: minKey,
-    maxKey: maxKey,
-    currencySymbol: currencySymbol,
-    propertyName: propertyName,
+    name,
+    range,
+    minKey,
+    maxKey,
+    unit,
+    propertyName,
     snippets: {
-        filterRangeActiveMinLabel: filterRangeActiveMinLabel,
-        filterRangeActiveMaxLabel: filterRangeActiveMaxLabel,
-        filterRangeErrorMessage: filterRangeErrorMessage,
-        disabledFilterText: 'listing.disabledFilterTooltip'|trans|sw_sanitize
+        filterRangeActiveMinLabel,
+        filterRangeActiveMaxLabel,
+        filterRangeErrorMessage,
+        filterRangeLowerBoundErrorMessage
     }
 } %}
 
@@ -36,14 +56,15 @@
             <button class="filter-panel-item-toggle btn{% if sidebar %} btn-block{% endif %}"
                     aria-expanded="false"
                     {% if sidebar %}
-                data-toggle="collapse"
-                data-target="#{{ filterItemId }}"
-            {% else %}
-                data-toggle="dropdown"
-                data-boundary="viewport"
-                data-offset="0,8"
-                aria-haspopup="true"
-                    {% endif %}>
+                        data-bs-toggle="collapse"
+                        data-bs-target="#{{ filterItemId }}"
+                    {% else %}
+                        data-bs-toggle="dropdown"
+                        data-boundary="viewport"
+                        data-bs-offset="0,8"
+                        aria-haspopup="true"
+                    {% endif %}
+            >
 
                 {% block component_filter_range_display_name %}
                     {{ displayName }}
@@ -78,10 +99,10 @@
                                            max="{{ price.max }}">
                                 {% endblock %}
 
-                                {% block component_filter_range_min_currency_symbol %}
-                                    {% if currencySymbol %}
-                                        <span class="filter-range-currency-symbol">
-                                            {{ currencySymbol }}
+                                {% block component_filter_range_min_unit %}
+                                    {% if unit %}
+                                        <span class="filter-range-unit">
+                                            {{ unit }}
                                         </span>
                                     {% endif %}
                                 {% endblock %}
@@ -111,9 +132,9 @@
                                 {% endblock %}
 
                                 {% block component_filter_range_max_currency_symbol %}
-                                    {% if currencySymbol %}
-                                        <span class="filter-range-currency-symbol">
-                                            {{ currencySymbol }}
+                                    {% if unit %}
+                                        <span class="filter-range-unit">
+                                            {{ unit }}
                                         </span>
                                     {% endif %}
                                 {% endblock %}

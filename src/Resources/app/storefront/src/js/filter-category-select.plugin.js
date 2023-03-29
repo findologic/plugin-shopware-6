@@ -388,7 +388,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     disableOption(input) {
-        const listItem = input.closest('.custom-checkbox');
+        const listItem = input.closest('.form-check');
         listItem.classList.add('fl-disabled');
         listItem.setAttribute('title', this.options.snippets.disabledFilterText);
         input.disabled = true;
@@ -399,7 +399,7 @@ export default class FilterCategorySelectPlugin extends FilterBasePlugin {
      * @public
      */
     enableOption(input) {
-        const listItem = input.closest('.custom-checkbox');
+        const listItem = input.closest('.form-check');
         listItem.removeAttribute('title');
         listItem.classList.remove('fl-disabled');
         input.disabled = false;
