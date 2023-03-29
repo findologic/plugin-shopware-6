@@ -56,7 +56,9 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             $responseParser->getSmartDidYouMeanExtension($event->getRequest())
         );
 
-        $criteria = new Criteria($responseParser->getProductIds());
+        $criteria = new Criteria(
+            $responseParser->getProductIds() === [] ? null : $responseParser->getProductIds()
+        );
         $criteria->addExtensions($event->getCriteria()->getExtensions());
 
         $this->setPromotionExtension($event, $responseParser);
