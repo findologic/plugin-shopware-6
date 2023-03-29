@@ -89,10 +89,6 @@ jobs:
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
 
-      - name: Setup tmate session
-        if: ${{ matrix.php-versions == '8.2' }}
-        uses: mxschmitt/action-tmate@v3
-
       - name: Run PHPUnit test suite
         if: ${{ matrix.php-versions == '8.1' }} # Skip newer PHP versions once we can fix tests getting stuck
         run: |
