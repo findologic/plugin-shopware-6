@@ -163,6 +163,9 @@ Component.register('findologic-page', {
             if (!values['FinSearch.config.exportZeroPricedProducts']) {
                 values['FinSearch.config.exportZeroPricedProducts'] = false;
             }
+            if (!values['FinSearch.config.useXmlVariants']) {
+                values['FinSearch.config.useXmlVariants'] = false;
+            }
 
             return values;
         },
