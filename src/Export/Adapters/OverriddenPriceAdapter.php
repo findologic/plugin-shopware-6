@@ -125,9 +125,7 @@ class OverriddenPriceAdapter extends CommonOverriddenPriceAdapter
 
     protected function getAdvancedPrice(ProductEntity $product, ?string $customerGroupId): ?OverriddenPrice
     {
-        $advancedPrice = $this->calculateAdvancedPrice($product, $customerGroupId);
-
-        if (!$listPrice = $advancedPrice->getListPrice()) {
+        if (!$listPrice = $this->calculateAdvancedPrice($product, $customerGroupId)?->getListPrice()) {
             return null;
         }
 
