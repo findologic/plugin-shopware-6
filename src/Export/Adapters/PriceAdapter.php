@@ -35,8 +35,6 @@ class PriceAdapter extends CommonPriceAdapter
 
     protected SalesChannelRepository $salesChannelProductRepository;
 
-    protected PluginConfig $config;
-
     protected string $shopwareVersion;
 
     public function __construct(
@@ -45,17 +43,16 @@ class PriceAdapter extends CommonPriceAdapter
         ProductPriceCalculator $productPriceCalculator,
         CustomerGroupContextProvider $customerGroupContextProvider,
         SalesChannelRepository $salesChannelProductRepository,
-        PluginConfig $config,
+        PluginConfig $pluginConfig,
         string $shopwareVersion
     ) {
         $this->salesChannelContext = $salesChannelContext;
         $this->calculator = $productPriceCalculator;
         $this->customerGroupContextProvider = $customerGroupContextProvider;
         $this->salesChannelProductRepository = $salesChannelProductRepository;
-        $this->config = $config;
         $this->shopwareVersion = $shopwareVersion;
 
-        parent::__construct($exportContext);
+        parent::__construct($exportContext, $pluginConfig);
     }
 
     /**
@@ -90,9 +87,11 @@ class PriceAdapter extends CommonPriceAdapter
             return [];
         }
 
-        foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
-            if ($price = $this->getStandardPrice($currencyPrice, $customerGroup)) {
-                $prices[] = $price;
+        if (!$this->pluginConfig->useXmlVariants()) {
+            foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
+                if ($price = $this->getStandardPrice($currencyPrice, $customerGroup)) {
+                    $prices[] = $price;
+                }
             }
         }
 
@@ -110,20 +109,22 @@ class PriceAdapter extends CommonPriceAdapter
     {
         $prices = [];
 
-        foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
-            // If no advanced price is provided - use standard price
-            if (!$price = $this->getAdvancedPrice($product, $customerGroup->id)) {
-                if (!$currencyPrice = $this->getCurrencyPrice($product)) {
-                    continue;
+        if (!$this->pluginConfig->useXmlVariants()) {
+            foreach ($this->exportContext->getCustomerGroups() as $customerGroup) {
+                // If no advanced price is provided - use standard price
+                if (!$price = $this->getAdvancedPrice($product, $customerGroup->id)) {
+                    if (!$currencyPrice = $this->getCurrencyPrice($product)) {
+                        continue;
+                    }
+
+                    $price = $this->getStandardPrice($currencyPrice, $customerGroup);
+                    if (!$price) {
+                        continue;
+                    }
                 }
 
-                $price = $this->getStandardPrice($currencyPrice, $customerGroup);
-                if (!$price) {
-                    continue;
-                }
+                $prices[] = $price;
             }
-
-            $prices[] = $price;
         }
 
         // If no advanced price is provided - use standard price
@@ -213,9 +214,9 @@ class PriceAdapter extends CommonPriceAdapter
 
     protected function getPriceBasedOnConfiguration(PriceCollection $priceCollection): ?CalculatedPrice
     {
-        if ($this->config->getAdvancedPricing() === AdvancedPricing::OFF) {
+        if ($this->pluginConfig->getAdvancedPricing() === AdvancedPricing::OFF) {
             return null;
-        } elseif ($this->config->getAdvancedPricing() === AdvancedPricing::UNIT) {
+        } elseif ($this->pluginConfig->getAdvancedPricing() === AdvancedPricing::UNIT) {
             return $priceCollection->first();
         }
 
@@ -234,7 +235,7 @@ class PriceAdapter extends CommonPriceAdapter
     protected function useAdvancedPricing(): bool
     {
         return Utils::versionGreaterOrEqual('6.4.9.0', $this->shopwareVersion)
-            && $this->config->getAdvancedPricing() !== AdvancedPricing::OFF;
+            && $this->pluginConfig->getAdvancedPricing() !== AdvancedPricing::OFF;
     }
 
     protected function getShopwareProduct(string $productId): ProductEntity
