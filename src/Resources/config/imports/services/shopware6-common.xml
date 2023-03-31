@@ -43,9 +43,11 @@
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\DateAddedAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\DescriptionAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\ImagesAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\GroupsAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\KeywordsAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\NameAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\OrderNumberAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\OverriddenPriceAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\PriceAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\DefaultPropertiesAdapter" public="true" autowire="true">
             <argument key="$translator" type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
@@ -54,7 +56,6 @@
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\SortAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\SummaryAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UrlAdapter" public="true" autowire="true" />
-        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\GroupsAdapter" public="true" autowire="true" />
 
     </services>
 </container>
