@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "13d4b7d9cd6d94e578f7acb4c0284692",
+    "content-hash": "08088d31f306d68a098d80cc9ec94a9f",
     "packages": [
         {
             "name": "composer/semver",
@@ -227,33 +227,34 @@
         },
         {
             "name": "findologic/libflexport",
-            "version": "v2.9.1",
+            "version": "3.0.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/libflexport.git",
-                "reference": "aebac7abab35efa581bfb907288f3a0851ff249d"
+                "reference": "e9fc0782b2becf0c21841112284fd7b30ace931d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/libflexport/zipball/aebac7abab35efa581bfb907288f3a0851ff249d",
-                "reference": "aebac7abab35efa581bfb907288f3a0851ff249d",
+                "url": "https://api.github.com/repos/findologic/libflexport/zipball/e9fc0782b2becf0c21841112284fd7b30ace931d",
+                "reference": "e9fc0782b2becf0c21841112284fd7b30ace931d",
                 "shasum": ""
             },
             "require": {
                 "ext-dom": "*",
                 "ext-mbstring": "*",
-                "findologic/xml-export-schema": "^1.4",
-                "php": "^7.1|^8.0"
+                "findologic/xml-export-schema": "^v2.1.1",
+                "php": "^8.1"
             },
             "require-dev": {
                 "nikic/php-parser": "^4.15",
-                "phpunit/phpunit": "^7.5|^8.6|^9.0",
-                "squizlabs/php_codesniffer": "^3.5"
+                "phpunit/phpunit": "^10.0",
+                "squizlabs/php_codesniffer": "^3.7"
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "FINDOLOGIC\\Export\\": "src/"
+                "psr-4": {
+                    "FINDOLOGIC\\Export\\": "src",
+                    "FINDOLOGIC\\Export\\Examples\\": "examples"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -291,9 +292,9 @@
             "homepage": "https://github.com/findologic/libflexport",
             "support": {
                 "issues": "https://github.com/findologic/libflexport/issues",
-                "source": "https://github.com/findologic/libflexport/tree/v2.9.1"
+                "source": "https://github.com/findologic/libflexport/tree/3.0"
             },
-            "time": "2022-11-09T15:06:44+00:00"
+            "time": "2023-03-30T09:18:59+00:00"
         },
         {
             "name": "findologic/shopware6-common",
@@ -301,10 +302,10 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "abf2df915098ec5f82ed594d5b6a8044f12e4193"
+                "reference": "c5b94e87c8c253a171c45effbaf5af0d5bf835a9"
             },
             "require": {
-                "findologic/libflexport": "^2.9",
+                "findologic/libflexport": "3.0.x-dev",
                 "monolog/monolog": "^3.3.1",
                 "php": "^8.1",
                 "symfony/event-dispatcher": "*",
@@ -353,20 +354,20 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-03-28T14:12:19+00:00"
+            "time": "2023-03-31T13:07:38+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
-            "version": "v1.6.0",
+            "version": "v2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/xml-export.git",
-                "reference": "b0078f4895dbb2953eb4d2d6b17f3d94e17a9c95"
+                "reference": "3774f29c5706994156f72071179887fbe4b48ca3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/xml-export/zipball/b0078f4895dbb2953eb4d2d6b17f3d94e17a9c95",
-                "reference": "b0078f4895dbb2953eb4d2d6b17f3d94e17a9c95",
+                "url": "https://api.github.com/repos/findologic/xml-export/zipball/3774f29c5706994156f72071179887fbe4b48ca3",
+                "reference": "3774f29c5706994156f72071179887fbe4b48ca3",
                 "shasum": ""
             },
             "type": "library",
@@ -388,9 +389,9 @@
             "description": "XML schema for the FINDOLOGIC XML export format.",
             "support": {
                 "issues": "https://github.com/findologic/xml-export/issues",
-                "source": "https://github.com/findologic/xml-export/tree/v1.6.0"
+                "source": "https://github.com/findologic/xml-export/tree/v2.1.1"
             },
-            "time": "2022-04-14T07:44:40+00:00"
+            "time": "2023-03-20T13:45:50+00:00"
         },
         {
             "name": "findologic/xml-response-schema",
@@ -1042,16 +1043,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v6.2.7",
+            "version": "v6.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "404b307de426c1c488e5afad64403e5f145e82a5"
+                "reference": "04046f35fd7d72f9646e721fc2ecb8f9c67d3339"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/404b307de426c1c488e5afad64403e5f145e82a5",
-                "reference": "404b307de426c1c488e5afad64403e5f145e82a5",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/04046f35fd7d72f9646e721fc2ecb8f9c67d3339",
+                "reference": "04046f35fd7d72f9646e721fc2ecb8f9c67d3339",
                 "shasum": ""
             },
             "require": {
@@ -1105,7 +1106,7 @@
             "description": "Provides tools that allow your application components to communicate with each other by dispatching events and listening to them",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/event-dispatcher/tree/v6.2.7"
+                "source": "https://github.com/symfony/event-dispatcher/tree/v6.2.8"
             },
             "funding": [
                 {
@@ -1121,7 +1122,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-14T08:44:56+00:00"
+            "time": "2023-03-20T16:06:02+00:00"
         },
         {
             "name": "symfony/event-dispatcher-contracts",
@@ -1204,16 +1205,16 @@
         },
         {
             "name": "symfony/http-foundation",
-            "version": "v6.2.7",
+            "version": "v6.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-foundation.git",
-                "reference": "5fc3038d4a594223f9ea42e4e985548f3fcc9a3b"
+                "reference": "511a524affeefc191939348823ac75e9921c2112"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/5fc3038d4a594223f9ea42e4e985548f3fcc9a3b",
-                "reference": "5fc3038d4a594223f9ea42e4e985548f3fcc9a3b",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/511a524affeefc191939348823ac75e9921c2112",
+                "reference": "511a524affeefc191939348823ac75e9921c2112",
                 "shasum": ""
             },
             "require": {
@@ -1262,7 +1263,7 @@
             "description": "Defines an object-oriented layer for the HTTP specification",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/http-foundation/tree/v6.2.7"
+                "source": "https://github.com/symfony/http-foundation/tree/v6.2.8"
             },
             "funding": [
                 {
@@ -1278,7 +1279,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-21T10:54:55+00:00"
+            "time": "2023-03-29T21:42:15+00:00"
         },
         {
             "name": "symfony/polyfill-intl-idn",
@@ -1768,25 +1769,25 @@
         },
         {
             "name": "bramus/monolog-colored-line-formatter",
-            "version": "3.0.6",
+            "version": "3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bramus/monolog-colored-line-formatter.git",
-                "reference": "708891d34cb431d9ed56da91a53ecc2d8afdc24e"
+                "reference": "cd1ada798fec11a5862cb67944c651b6a8e04911"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bramus/monolog-colored-line-formatter/zipball/708891d34cb431d9ed56da91a53ecc2d8afdc24e",
-                "reference": "708891d34cb431d9ed56da91a53ecc2d8afdc24e",
+                "url": "https://api.github.com/repos/bramus/monolog-colored-line-formatter/zipball/cd1ada798fec11a5862cb67944c651b6a8e04911",
+                "reference": "cd1ada798fec11a5862cb67944c651b6a8e04911",
                 "shasum": ""
             },
             "require": {
                 "bramus/ansi-php": "^3.0.3",
-                "php": "^7.2|^8.0"
+                "php": "^8.1"
             },
             "require-dev": {
-                "monolog/monolog": "~2.0",
-                "phpunit/phpunit": "~7.0|^9.4"
+                "monolog/monolog": "~3.0",
+                "phpunit/phpunit": "~9.6"
             },
             "type": "library",
             "autoload": {
@@ -1808,9 +1809,15 @@
             "description": "Colored Line Formatter for Monolog",
             "support": {
                 "issues": "https://github.com/bramus/monolog-colored-line-formatter/issues",
-                "source": "https://github.com/bramus/monolog-colored-line-formatter/tree/3.0.6"
+                "source": "https://github.com/bramus/monolog-colored-line-formatter/tree/3.1.0"
             },
-            "time": "2021-12-05T09:10:49+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/bramus",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-03-29T13:28:41+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -1873,6 +1880,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "findologic/libflexport": 20,
         "findologic/shopware6-common": 20
     },
     "prefer-stable": false,

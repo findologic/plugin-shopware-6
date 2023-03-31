@@ -54,7 +54,7 @@
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\SortAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\SummaryAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UrlAdapter" public="true" autowire="true" />
-        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UserGroupsAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\GroupsAdapter" public="true" autowire="true" />
 
     </services>
 </container>
