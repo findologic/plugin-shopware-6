@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "08088d31f306d68a098d80cc9ec94a9f",
+    "content-hash": "67cc50c2a69472b370e10fa5eb4715fd",
     "packages": [
         {
             "name": "composer/semver",
@@ -227,16 +227,16 @@
         },
         {
             "name": "findologic/libflexport",
-            "version": "3.0.x-dev",
+            "version": "v3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/libflexport.git",
-                "reference": "e9fc0782b2becf0c21841112284fd7b30ace931d"
+                "reference": "98eec21c6f34aa5f46b06623d957051b03125bb3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/libflexport/zipball/e9fc0782b2becf0c21841112284fd7b30ace931d",
-                "reference": "e9fc0782b2becf0c21841112284fd7b30ace931d",
+                "url": "https://api.github.com/repos/findologic/libflexport/zipball/98eec21c6f34aa5f46b06623d957051b03125bb3",
+                "reference": "98eec21c6f34aa5f46b06623d957051b03125bb3",
                 "shasum": ""
             },
             "require": {
@@ -292,9 +292,9 @@
             "homepage": "https://github.com/findologic/libflexport",
             "support": {
                 "issues": "https://github.com/findologic/libflexport/issues",
-                "source": "https://github.com/findologic/libflexport/tree/3.0"
+                "source": "https://github.com/findologic/libflexport/tree/v3.0.0"
             },
-            "time": "2023-03-30T09:18:59+00:00"
+            "time": "2023-04-03T11:49:57+00:00"
         },
         {
             "name": "findologic/shopware6-common",
@@ -302,10 +302,10 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "c5b94e87c8c253a171c45effbaf5af0d5bf835a9"
+                "reference": "2fe01e33d469848b192d79a9df32f04aab030a24"
             },
             "require": {
-                "findologic/libflexport": "3.0.x-dev",
+                "findologic/libflexport": "^3.0",
                 "monolog/monolog": "^3.3.1",
                 "php": "^8.1",
                 "symfony/event-dispatcher": "*",
@@ -354,7 +354,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-03-31T13:07:38+00:00"
+            "time": "2023-04-03T12:10:36+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
@@ -1880,7 +1880,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "findologic/libflexport": 20,
         "findologic/shopware6-common": 20
     },
     "prefer-stable": false,
