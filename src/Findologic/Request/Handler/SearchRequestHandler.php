@@ -6,8 +6,8 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -32,7 +32,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $this->sortingHandlerService->handle($searchRequest, $event->getCriteria());
 
         try {
-            /** @var Xml21Response $response */
+            /** @var Json10Response $response */
             $response = $this->doRequest($event);
             $responseParser = ResponseParser::getInstance(
                 $response,

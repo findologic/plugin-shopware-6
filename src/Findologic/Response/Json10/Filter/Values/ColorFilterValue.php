@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values;
+namespace FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values;
 
 class ColorFilterValue extends ColorImageFilterValue
 {

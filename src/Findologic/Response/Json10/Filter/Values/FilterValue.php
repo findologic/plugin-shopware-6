@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values;
+namespace FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values;
 
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\TranslatedName;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\TranslatedName;
 use Shopware\Core\Framework\Struct\Struct;
 
 class FilterValue extends Struct

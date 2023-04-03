@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
@@ -42,12 +42,10 @@ abstract class ResponseParser
         ?ServiceConfigResource $serviceConfigResource = null,
         ?Config $config = null
     ): ResponseParser {
-        switch (true) {
-            case $response instanceof Xml21Response:
-                return new Xml21ResponseParser($response, $serviceConfigResource, $config);
-            default:
-                throw new InvalidArgumentException('Unsupported response format.');
-        }
+        return match (true) {
+            $response instanceof Json10Response => new Json10ResponseParser($response, $serviceConfigResource, $config),
+            default => throw new InvalidArgumentException('Unsupported response format.'),
+        };
     }
 
     abstract public function getProductIds(): array;

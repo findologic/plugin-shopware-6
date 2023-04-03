@@ -10,26 +10,33 @@ class SmartDidYouMean extends Struct
 {
     protected const DID_YOU_MEAN = 'did-you-mean';
     protected const IMPROVED = 'improved';
+    protected const CORRECTED = 'corrected';
 
     private ?string $type;
 
     private ?string $link;
 
+    private string $originalQuery;
+
     private string $alternativeQuery;
 
-    private string $originalQuery;
+    private string $didYouMeanQuery;
+
+    private string $improvedQuery;
 
     public function __construct(
         ?string $originalQuery,
         ?string $alternativeQuery,
         ?string $didYouMeanQuery,
-        ?string $type,
+        ?string $improvedQuery,
         ?string $controllerPath
     ) {
-        $this->type = $didYouMeanQuery !== null ? self::DID_YOU_MEAN : $type;
+        $this->originalQuery = $didYouMeanQuery ?? htmlentities($originalQuery);
         $this->alternativeQuery = htmlentities($alternativeQuery ?? '');
-        $this->originalQuery = $this->type === self::DID_YOU_MEAN ? '' : htmlentities($originalQuery);
+        $this->didYouMeanQuery = $didYouMeanQuery ?? '';
+        $this->improvedQuery = $improvedQuery ?? '';
 
+        $this->type = $this->defineType();
         $this->link = $this->createLink($controllerPath);
     }
 
@@ -60,7 +67,21 @@ class SmartDidYouMean extends Struct
             'link' => $this->link,
             'alternativeQuery' => $this->alternativeQuery,
             'originalQuery' => $this->originalQuery,
+            'improvedQuery' => $this->improvedQuery,
         ];
+    }
+
+    private function defineType(): string
+    {
+        if ($this->didYouMeanQuery) {
+            return self::DID_YOU_MEAN;
+        } elseif ($this->improvedQuery) {
+            return self::IMPROVED;
+        } elseif ($this->alternativeQuery) {
+            return self::CORRECTED;
+        }
+
+        return '';
     }
 
     private function createLink(?string $controllerPath): ?string

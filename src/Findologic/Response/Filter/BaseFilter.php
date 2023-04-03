@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response\Filter;
 
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\FilterValue;
 
 abstract class BaseFilter
 {

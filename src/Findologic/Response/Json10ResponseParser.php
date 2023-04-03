@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
+use FINDOLOGIC\Api\Responses\Json10\Properties\Item;
+use FINDOLOGIC\Api\Responses\Json10\Properties\LandingPage;
+use FINDOLOGIC\Api\Responses\Json10\Properties\Promotion as ApiPromotion;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\LandingPage;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Product;
-use FINDOLOGIC\Api\Responses\Xml21\Properties\Promotion as ApiPromotion;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\VendorImageFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\CategoryFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Filter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\FilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\VendorImageFilter;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use FINDOLOGIC\FinSearch\Struct\LandingPage as LandingPageExtension;
 use FINDOLOGIC\FinSearch\Struct\Pagination;
@@ -29,44 +29,42 @@ use GuzzleHttp\Client;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Symfony\Component\HttpFoundation\Request;
 
-class Xml21ResponseParser extends ResponseParser
+class Json10ResponseParser extends ResponseParser
 {
-    /** @var Xml21Response $response */
+    /** @var Json10Response $response */
     protected Response $response;
 
     public function getProductIds(): array
     {
         return array_map(
-            static function (Product $product) {
+            static function (Item $product) {
                 return $product->getId();
             },
-            $this->response->getProducts()
+            $this->response->getResult()->getItems()
         );
     }
 
     public function getSmartDidYouMeanExtension(Request $request): SmartDidYouMean
     {
-        $query = $this->response->getQuery();
-
-        $originalQuery = $query->getOriginalQuery() ? $query->getOriginalQuery()->getValue() : '';
-        $alternativeQuery = $query->getAlternativeQuery();
-        $didYouMeanQuery = $query->getDidYouMeanQuery();
-        $type = $query->getQueryString()->getType();
+        $originalQuery = $this->response->getRequest()->getQuery() ?? '';
+        $alternativeQuery = $this->response->getResult()->getVariant()->getCorrectedQuery();
+        $didYouMeanQuery = $this->response->getResult()->getVariant()->getDidYouMeanQuery();
+        $improvedQuery = $this->response->getResult()->getVariant()->getImprovedQuery();
 
         return new SmartDidYouMean(
             $originalQuery,
             $alternativeQuery,
             $didYouMeanQuery,
-            $type,
+            $improvedQuery,
             $request->getRequestUri()
         );
     }
 
     public function getLandingPageExtension(): ?LandingPageExtension
     {
-        $landingPage = $this->response->getLandingPage();
+        $landingPage = $this->response->getResult()->getMetadata()->getLandingPage();
         if ($landingPage instanceof LandingPage) {
-            return new LandingPageExtension($landingPage->getLink());
+            return new LandingPageExtension($landingPage->getUrl());
         }
 
         return null;
@@ -74,10 +72,10 @@ class Xml21ResponseParser extends ResponseParser
 
     public function getPromotionExtension(): ?Promotion
     {
-        $promotion = $this->response->getPromotion();
+        $promotion = $this->response->getResult()->getMetadata()->getPromotion();
 
         if ($promotion instanceof ApiPromotion) {
-            return new Promotion($promotion->getImage(), $promotion->getLink());
+            return new Promotion($promotion->getImageUrl(), $promotion->getUrl());
         }
 
         return null;
@@ -85,7 +83,10 @@ class Xml21ResponseParser extends ResponseParser
 
     public function getFiltersExtension(?Client $client = null): FiltersExtension
     {
-        $apiFilters = array_merge($this->response->getMainFilters(), $this->response->getOtherFilters());
+        $apiFilters = array_merge(
+            $this->response->getResult()->getMainFilters() ?? [],
+            $this->response->getResult()->getOtherFilters() ?? []
+        );
 
         $filtersExtension = new FiltersExtension();
         foreach ($apiFilters as $apiFilter) {
@@ -101,12 +102,12 @@ class Xml21ResponseParser extends ResponseParser
 
     public function getPaginationExtension(?int $limit, ?int $offset): Pagination
     {
-        return new Pagination($limit, $offset, $this->response->getResults()->getCount());
+        return new Pagination($limit, $offset, $this->response->getResult()->getMetadata()->getTotalResults());
     }
 
     public function getQueryInfoMessage(ShopwareEvent $event): QueryInfoMessage
     {
-        $queryString = $this->response->getQuery()->getQueryString()->getValue();
+        $queryString = $this->response->getRequest()->getQuery() ?? '';
         $params = $event->getRequest()->query->all();
 
         if ($this->hasAlternativeQuery($queryString)) {
@@ -164,7 +165,10 @@ class Xml21ResponseParser extends ResponseParser
 
     private function buildCategoryQueryInfoMessage(array $params): CategoryInfoMessage
     {
-        $filters = array_merge($this->response->getMainFilters(), $this->response->getOtherFilters());
+        $filters = array_merge(
+            $this->response->getResult()->getMainFilters() ?? [],
+            $this->response->getResult()->getOtherFilters() ?? []
+        );
 
         $categories = explode('_', $params['cat']);
         $category = end($categories);
@@ -188,7 +192,10 @@ class Xml21ResponseParser extends ResponseParser
 
     private function buildVendorQueryInfoMessage(array $params, string $value): VendorInfoMessage
     {
-        $filters = array_merge($this->response->getMainFilters(), $this->response->getOtherFilters());
+        $filters = array_merge(
+            $this->response->getResult()->getMainFilters() ?? [],
+            $this->response->getResult()->getOtherFilters() ?? []
+        );
 
         if (isset($filters['vendor'])) {
             $filterName = $filters['vendor']->getDisplay();
@@ -209,9 +216,10 @@ class Xml21ResponseParser extends ResponseParser
 
     private function hasAlternativeQuery(?string $queryString): bool
     {
-        $queryStringType = $this->response->getQuery()->getQueryString()->getType();
+        $correctedQuery = $this->response->getResult()->getVariant()->getCorrectedQuery();
+        $improvedQuery = $this->response->getResult()->getVariant()->getImprovedQuery();
 
-        return !empty($queryString) && (($queryStringType === 'corrected') || ($queryStringType === 'improved'));
+        return !empty($queryString) && ($correctedQuery || $improvedQuery);
     }
 
     private function hasQuery(?string $queryString): bool

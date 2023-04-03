@@ -14,8 +14,8 @@
 
         {% if filters %}
             {% for filter in filters %}
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\LabelTextFilter") or
-                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\SelectDropdownFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Json10\\Filter\\LabelTextFilter") or
+                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Json10\\Filter\\SelectDropdownFilter") %}
                     {% sw_include '@FinSearch/storefront/component/listing/filter/filter-property-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
@@ -35,7 +35,7 @@
                  #}
                 {% set filterRangeActiveMinLabel = 'detail.priceDataInfoFrom'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
                 {% set filterRangeActiveMaxLabel = 'detail.priceDataInfoUntil'|trans|lower|sw_sanitize ~ ' ' ~ filter.name %}
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RangeSliderFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Json10\\Filter\\RangeSliderFilter") %}
                     {% sw_include '@FinSearch/storefront/component/listing/filter/filter-slider-range.html.twig' with {
                         range: {
                             min: filter.min,
@@ -56,8 +56,8 @@
                     } %}
                 {% endif %}
 
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\ColorPickerFilter") or
-                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\VendorImageFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Json10\\Filter\\ColorPickerFilter") or
+                    filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Json10\\Filter\\VendorImageFilter") %}
                     {% sw_include '@Storefront/storefront/component/listing/filter/filter-property-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
@@ -70,7 +70,7 @@
                     } %}
                 {% endif %}
 
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\CategoryFilter") %}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Json10\\Filter\\CategoryFilter") %}
                     {% sw_include '@FinSearch/storefront/component/listing/filter/filter-category-select.html.twig' with {
                         elements: filter.values,
                         sidebar: sidebar,
@@ -83,8 +83,7 @@
                     } %}
                 {% endif %}
 
-                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Xml21\\Filter\\RatingFilter") %}
-                    {# New rating filter. Shopware >= 6.4 #}
+                {% if filter is instanceof("\\FINDOLOGIC\\FinSearch\\Findologic\\Response\\Json10\\Filter\\RatingFilter") %}
                     {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating-select.html.twig' ignore missing with {
                         elements: filter.values,
                         maxPoints: filter.maxPoints,
@@ -93,18 +92,6 @@
                         hidden: filter.hidden,
                         displayName: filter.name,
                         pluginSelector: 'filter-rating-select',
-                        propertyName: filter.name
-                    } %}
-
-                    {# Old rating filter. Shopware < 6.4 #}
-                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-rating.html.twig' ignore missing with {
-                        elements: filter.values,
-                        maxPoints: filter.maxPoints,
-                        sidebar: sidebar,
-                        name: filter.id,
-                        hidden: filter.hidden,
-                        displayName: filter.name,
-                        pluginSelector: 'filter-rating',
                         propertyName: filter.name
                     } %}
                 {% endif %}

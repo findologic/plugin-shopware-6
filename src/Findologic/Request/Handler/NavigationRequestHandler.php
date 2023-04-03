@@ -8,8 +8,8 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Exceptions\Search\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Parser\NavigationCategoryParser;
@@ -67,7 +67,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         $originalCriteria = clone $event->getCriteria();
 
         try {
-            /** @var Xml21Response $response */
+            /** @var Json10Response $response */
             $response = $this->doRequest($event);
 
             $responseParser = ResponseParser::getInstance(
