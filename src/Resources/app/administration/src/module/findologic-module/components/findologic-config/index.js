@@ -17,17 +17,13 @@ Component.register('findologic-config', {
     ],
 
     props: {
-        actualConfigData: {
-            type: Array,
-            required: true,
-        },
-        allConfigs: {
+        value: {
             type: Object,
             required: true,
         },
         shopkeyErrorState: {
             type: Object,
-            required: true,
+            default: null,
         },
         selectedSalesChannelId: {
             type: String,
@@ -56,6 +52,8 @@ Component.register('findologic-config', {
         },
     },
 
+    emits: ['input'],
+
     data() {
         return {
             isLoading: false,
@@ -64,6 +62,14 @@ Component.register('findologic-config', {
     },
 
     computed: {
+        actualConfigData: {
+            get() {
+                return this.value;
+            },
+            set(config) {
+                this.$emit('input', config);
+            },
+        },
         /**
          * @public
          * @returns {boolean}
@@ -200,16 +206,13 @@ Component.register('findologic-config', {
 
         onCategoryAdd(item) {
             if (this.actualConfigData['FinSearch.config.crossSellingCategories']) {
-                // eslint-disable-next-line vue/no-mutating-props
                 this.actualConfigData['FinSearch.config.crossSellingCategories'].push(item.id);
             } else {
-                // eslint-disable-next-line vue/no-mutating-props
                 this.actualConfigData['FinSearch.config.crossSellingCategories'] = [item.id];
             }
         },
 
         onCategoryRemove(item) {
-            // eslint-disable-next-line vue/no-mutating-props
             this.actualConfigData['FinSearch.config.crossSellingCategories'] =
         this.actualConfigData['FinSearch.config.crossSellingCategories'].filter(categoryId => categoryId !== item.id);
         },
@@ -218,7 +221,6 @@ Component.register('findologic-config', {
             const mainVariantConfig = this.actualConfigData['FinSearch.config.mainVariant'];
 
             if (newConfig !== 'off' && mainVariantConfig === 'cheapest') {
-                // eslint-disable-next-line vue/no-mutating-props
                 this.actualConfigData['FinSearch.config.mainVariant'] = 'default';
             }
         },
