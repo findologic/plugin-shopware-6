@@ -18,7 +18,7 @@ class SmartDidYouMean extends Struct
 
     private string $originalQuery;
 
-    private string $alternativeQuery;
+    private string $correctedQuery;
 
     private string $didYouMeanQuery;
 
@@ -26,13 +26,13 @@ class SmartDidYouMean extends Struct
 
     public function __construct(
         ?string $originalQuery,
-        ?string $alternativeQuery,
+        ?string $correctedQuery,
         ?string $didYouMeanQuery,
         ?string $improvedQuery,
         ?string $controllerPath
     ) {
         $this->originalQuery = $didYouMeanQuery ?? htmlentities($originalQuery);
-        $this->alternativeQuery = htmlentities($alternativeQuery ?? '');
+        $this->correctedQuery = htmlentities($correctedQuery ?? '');
         $this->didYouMeanQuery = $didYouMeanQuery ?? '';
         $this->improvedQuery = $improvedQuery ?? '';
 
@@ -50,9 +50,9 @@ class SmartDidYouMean extends Struct
         return $this->link;
     }
 
-    public function getAlternativeQuery(): string
+    public function getCorrectedQuery(): string
     {
-        return $this->alternativeQuery;
+        return $this->correctedQuery;
     }
 
     public function getOriginalQuery(): string
@@ -65,7 +65,7 @@ class SmartDidYouMean extends Struct
         return [
             'type' => $this->type,
             'link' => $this->link,
-            'alternativeQuery' => $this->alternativeQuery,
+            'correctedQuery' => $this->correctedQuery,
             'originalQuery' => $this->originalQuery,
             'improvedQuery' => $this->improvedQuery,
         ];
@@ -77,7 +77,7 @@ class SmartDidYouMean extends Struct
             return self::DID_YOU_MEAN;
         } elseif ($this->improvedQuery) {
             return self::IMPROVED;
-        } elseif ($this->alternativeQuery) {
+        } elseif ($this->correctedQuery) {
             return self::CORRECTED;
         }
 
@@ -91,13 +91,13 @@ class SmartDidYouMean extends Struct
                 return sprintf(
                     '%s?search=%s&forceOriginalQuery=1',
                     $controllerPath,
-                    $this->alternativeQuery
+                    $this->didYouMeanQuery
                 );
             case self::IMPROVED:
                 return sprintf(
                     '%s?search=%s&forceOriginalQuery=1',
                     $controllerPath,
-                    $this->originalQuery
+                    $this->improvedQuery
                 );
             default:
                 return null;

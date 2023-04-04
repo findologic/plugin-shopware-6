@@ -9,6 +9,7 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
@@ -133,8 +134,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             'search request' => [
                 'endpoint' => 'handleSearchRequest',
                 'expectedProducts' => [
-                    '019111105-37900' => '019111105-37900',
-                    '029214085-37860' => '029214085-37860'
+                    '019111105-37900',
+                    '029214085-37860'
                 ],
                 'isNavigationRequest' => false
             ],
@@ -336,7 +337,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $response = $this->getRawResponse();
         unset($response->promotion);
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
+        $eventMock = $this->setUpSearchRequestMocks(new Json10Response($response));
 
         $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -361,9 +362,9 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     public function testContainsDidYouMeanQuery(): void
     {
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
-        $response = $this->getRawResponse('demoResponseWithDidYouMeanQuery.xml');
+        $response = $this->getRawResponse('demoResponseWithDidYouMeanQuery.json');
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
+        $eventMock = $this->setUpSearchRequestMocks(new Json10Response($response));
 
         $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -393,7 +394,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
         $response = $this->getRawResponse('demoResponseWithCorrectedQuery.xml');
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
+        $eventMock = $this->setUpSearchRequestMocks(new Json10Response($response), null, false);
 
         $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -668,18 +669,16 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         );
     }
 
-    private function getRawResponse(string $file = 'demo.xml'): SimpleXMLElement
+    private function getRawResponse(string $file = 'demo.json'): string
     {
-        return new SimpleXMLElement(
-            file_get_contents(
-                __DIR__ . sprintf('/../../../../../MockData/XMLResponse/%s', $file)
-            )
+        return file_get_contents(
+            __DIR__ . sprintf('/../../../../../MockData/JSONResponse/%s', $file)
         );
     }
 
-    private function getDefaultResponse(): Xml21Response
+    private function getDefaultResponse(): Json10Response
     {
-        return new Xml21Response(file_get_contents(__DIR__ . '/../../../../../MockData/XMLResponse/demo.xml'));
+        return new Json10Response(file_get_contents(__DIR__ . '/../../../../../MockData/JSONResponse/demo.json'));
     }
 
     private function getDefaultRequestMock(): Request
@@ -752,7 +751,7 @@ XML;
      * @return MockObject|ProductSearchCriteriaEvent
      */
     private function setUpSearchRequestMocks(
-        ?Xml21Response $response = null,
+        ?Json10Response $response = null,
         ?Request $request = null,
         bool $withSmartDidYouMean = true,
         Context $context = null

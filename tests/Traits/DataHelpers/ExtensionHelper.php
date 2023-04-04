@@ -12,14 +12,14 @@ trait ExtensionHelper
         ?string $originalQuery = 'ps4',
         ?string $alternativeQuery = 'ps4',
         ?string $didYouMeanQuery = 'ps4',
-        ?string $type = 'did-you-mean',
+        ?string $improvedQuery = 'ps4',
         ?string $controllerPath = ''
     ): SmartDidYouMean {
         return new SmartDidYouMean(
             $originalQuery,
             $alternativeQuery,
             $didYouMeanQuery,
-            $type,
+            $improvedQuery,
             $controllerPath
         );
     }
