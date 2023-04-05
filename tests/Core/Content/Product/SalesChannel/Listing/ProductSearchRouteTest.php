@@ -34,11 +34,9 @@ class ProductSearchRouteTest extends ProductRouteBase
         ProductHelper::createCustomer insteadof SalesChannelFunctionalTestBehaviour;
     }
 
-    /** @var AbstractProductSearchRoute|MockObject */
-    private $original;
+    private AbstractProductSearchRoute|MockObject $original;
 
-    /** @var SalesChannelContext| MockObject */
-    private $salesChannelContext;
+    private SalesChannelContext|MockObject $salesChannelContext;
 
     protected function setUp(): void
     {
@@ -64,7 +62,7 @@ class ProductSearchRouteTest extends ProductRouteBase
         );
     }
 
-    protected function getOriginal()
+    protected function getOriginal(): AbstractProductSearchRoute
     {
         return $this->original;
     }
@@ -187,7 +185,7 @@ class ProductSearchRouteTest extends ProductRouteBase
         $route = $this->getRoute();
         $reflector = new ReflectionObject($route);
         $method = $reflector->getMethod('doSearch');
-        $method->setAccessible(true);
+
         /** @var EntitySearchResult $result */
         $result = $method->invoke($route, $originalCriteria, $this->salesChannelContext, $query);
         /** @var ProductEntity $searchedProduct */

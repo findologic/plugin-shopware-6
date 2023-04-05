@@ -79,41 +79,29 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
 
-    /** @var Connection|MockObject */
-    private $connectionMock;
+    private Connection|MockObject $connectionMock;
 
-    /** @var EntityRepository|MockObject */
-    private $entityRepositoryMock;
+    private EntityRepository|MockObject $entityRepositoryMock;
 
-    /** @var NavigationRequestFactory|MockObject */
-    private $navigationRequestFactoryMock;
+    private NavigationRequestFactory|MockObject $navigationRequestFactoryMock;
 
-    /** @var SearchRequestFactory|MockObject */
-    private $searchRequestFactoryMock;
+    private SearchRequestFactory|MockObject $searchRequestFactoryMock;
 
-    /** @var FindologicConfigService|MockObject */
-    private $findologicConfigServiceMock;
+    private FindologicConfigService|MockObject $findologicConfigServiceMock;
 
-    /** @var SystemConfigService|MockObject */
-    private $systemConfigServiceMock;
+    private SystemConfigService|MockObject $systemConfigServiceMock;
 
-    /** @var ServiceConfigResource|MockObject */
-    private $serviceConfigResourceMock;
+    private ServiceConfigResource|MockObject $serviceConfigResourceMock;
 
-    /** @var Container|MockObject */
-    private $containerMock;
+    private Container|MockObject $containerMock;
 
-    /** @var Config|MockObject */
-    private $configMock;
+    private Config|MockObject $configMock;
 
-    /** @var ApiConfig|MockObject */
-    private $apiConfigMock;
+    private ApiConfig|MockObject $apiConfigMock;
 
-    /** @var ApiClient|MockObject */
-    private $apiClientMock;
+    private ApiClient|MockObject $apiClientMock;
 
-    /** @var EventDispatcherInterface|MockObject */
-    private $eventDispatcherMock;
+    private EventDispatcherInterface|MockObject $eventDispatcherMock;
 
     private SalesChannelContext $salesChannelContext;
 
@@ -703,14 +691,11 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $queryMock->expects($this->any())->method('all')->willReturn([]);
 
         $requestMock->expects($this->any())->method('get')->willReturnCallback(function ($name) {
-            switch ($name) {
-                case 'availableSortings':
-                    return ['score' => ['field' => '_score', 'order' => 'asc']];
-                case 'navigationId':
-                    return null;
-                default:
-                    return 'score';
-            }
+            return match ($name) {
+                'availableSortings' => ['score' => ['field' => '_score', 'order' => 'asc']],
+                'navigationId' => null,
+                default => 'score',
+            };
         });
 
         $requestMock->query = $queryMock;
@@ -748,15 +733,12 @@ XML;
         return $element;
     }
 
-    /**
-     * @return MockObject|ProductSearchCriteriaEvent
-     */
     private function setUpSearchRequestMocks(
         ?Xml21Response $response = null,
         ?Request $request = null,
         bool $withSmartDidYouMean = true,
         Context $context = null
-    ): ProductSearchCriteriaEvent {
+    ): MockObject|ProductSearchCriteriaEvent {
         $this->setUpCategoryRepositoryMock();
 
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
@@ -808,10 +790,7 @@ XML;
         return $eventMock;
     }
 
-    /**
-     * @return EntityRepository|MockObject
-     */
-    private function setUpCategoryRepositoryMock(): EntityRepository
+    private function setUpCategoryRepositoryMock(): EntityRepository|MockObject
     {
         $categoryMock = $this->getMockBuilder(CategoryEntity::class)
             ->disableOriginalConstructor()
@@ -848,13 +827,10 @@ XML;
         return $entityRepoMock;
     }
 
-    /**
-     * @return ProductListingCriteriaEvent|MockObject
-     */
     private function setUpNavigationRequestMocks(
         ?CategoryEntity $category = null,
         ?array $extensionMapOverride = null
-    ): ProductListingCriteriaEvent {
+    ): ProductListingCriteriaEvent|MockObject {
         $headerMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -864,7 +840,6 @@ XML;
         $pageMock->expects($this->any())->method('getHeader')->willReturn($headerMock);
         $reflection = new ReflectionClass($pageMock);
         $reflectionProperty = $reflection->getProperty('header');
-        $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($pageMock, $headerMock);
 
         $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();
@@ -973,7 +948,7 @@ XML;
             'queries' => [],
             'groupFields' => [],
             'offset' => null,
-            'limit' => null,
+            'limit' => $expectedLimit,
             'totalCountMode' => 0,
             'associations' => [],
             'ids' => [
@@ -991,7 +966,6 @@ XML;
             $expectedAssign['fields'] = [];
         }
         $expectedAssign['title'] = null;
-        $expectedAssign['limit'] = $expectedLimit;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $invokeCountAssign = $isNavigationRequest ? $this->never() : $this->once();

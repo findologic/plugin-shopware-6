@@ -34,16 +34,13 @@ class FindologicSearchServiceTest extends TestCase
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
 
-    /** @var ApiClient|MockObject */
-    private $apiClientMock;
+    private ApiClient|MockObject $apiClientMock;
 
     private ApiConfig $apiConfig;
 
-    /** @var PluginConfig|MockObject */
-    private $pluginConfigMock;
+    private PluginConfig|MockObject $pluginConfigMock;
 
-    /** @var ServiceConfigResource|MockObject */
-    private $serviceConfigResourceMock;
+    private ServiceConfigResource|MockObject $serviceConfigResourceMock;
 
     protected function setUp(): void
     {

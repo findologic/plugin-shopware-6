@@ -47,8 +47,7 @@ class DynamicProductGroupServiceTest extends TestCase
 
     protected string $cacheKey;
 
-    /** @var CacheItemPoolInterface|MockObject */
-    private $cache;
+    private CacheItemPoolInterface|MockObject $cache;
 
     private int $start;
 
@@ -122,13 +121,9 @@ class DynamicProductGroupServiceTest extends TestCase
 
     public function testCategoriesAreCached(): void
     {
-        $productStreams = [];
         $context = $this->salesChannelContext->getContext();
         [$categoryOne, $categoryTwo] = $this->getProductStreamCategories($context);
         $unknownStreamId = Uuid::randomHex();
-
-        $productStreams[$categoryOne->productStreamId] = [$categoryOne];
-        $productStreams[$categoryTwo->productStreamId] = [$categoryTwo];
 
         /** @var CacheItemInterface|MockObject $cacheItemMock */
         $cacheItemMock = $this->getMockBuilder(CacheItemInterface::class)->disableOriginalConstructor()->getMock();
@@ -275,15 +270,11 @@ class DynamicProductGroupServiceTest extends TestCase
 
     private function getCacheKeyByType(string $type, ?string $value = null): string
     {
-        switch ($type) {
-            case 'streamId':
-                return sprintf('fl_product_groups_%s_%s', $this->validShopkey, $value);
-            case 'total':
-                return sprintf('fl_product_groups_%s_total', $this->validShopkey);
-            case 'warmup':
-                return sprintf('fl_product_groups_%s_dynamic_product_warmup', $this->validShopkey);
-            default:
-                throw new CacheException('Unknown cache type requested');
-        }
+        return match ($type) {
+            'streamId' => sprintf('fl_product_groups_%s_%s', $this->validShopkey, $value),
+            'total' => sprintf('fl_product_groups_%s_total', $this->validShopkey),
+            'warmup' => sprintf('fl_product_groups_%s_dynamic_product_warmup', $this->validShopkey),
+            default => throw new CacheException('Unknown cache type requested'),
+        };
     }
 }

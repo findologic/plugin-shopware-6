@@ -17,8 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ProductListingRouteTest extends ProductRouteBase
 {
-    /** @var AbstractProductListingRoute|MockObject */
-    private $original;
+    private AbstractProductListingRoute|MockObject $original;
 
     protected function setUp(): void
     {
@@ -45,7 +44,7 @@ class ProductListingRouteTest extends ProductRouteBase
         );
     }
 
-    protected function getOriginal()
+    protected function getOriginal(): AbstractProductListingRoute
     {
         return $this->original;
     }
