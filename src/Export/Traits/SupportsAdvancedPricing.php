@@ -20,7 +20,7 @@ trait SupportsAdvancedPricing
 
     protected readonly SalesChannelRepository $salesChannelProductRepository;
 
-    protected readonly PluginConfig $pluginConfig;
+    protected PluginConfig $pluginConfig;
 
     protected readonly string $shopwareVersion;
 
