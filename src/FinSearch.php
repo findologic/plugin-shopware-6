@@ -18,13 +18,8 @@ use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
 
-use function current;
-use function end;
-use function explode;
 use function file_get_contents;
-use function is_numeric;
 use function json_decode;
-use function ltrim;
 use function method_exists;
 
 class FinSearch extends Plugin
@@ -141,6 +136,6 @@ $loader = require_once __DIR__ . '/../vendor/autoload.php';
 // This is required, because FINDOLOGIC-API requires a later version of Guzzle than Shopware 6.
 if ($loader instanceof ClassLoader) {
     $loader->unregister();
-    $loader->register(false);
+    $loader->register();
 }
 // phpcs:enable

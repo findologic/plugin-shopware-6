@@ -59,21 +59,18 @@ class SmartDidYouMean extends Struct
 
     private function createLink(?string $controllerPath): ?string
     {
-        switch ($this->type) {
-            case self::DID_YOU_MEAN:
-                return sprintf(
-                    '%s?search=%s&forceOriginalQuery=1',
-                    $controllerPath,
-                    $this->alternativeQuery
-                );
-            case self::IMPROVED:
-                return sprintf(
-                    '%s?search=%s&forceOriginalQuery=1',
-                    $controllerPath,
-                    $this->originalQuery
-                );
-            default:
-                return null;
-        }
+        return match ($this->type) {
+            self::DID_YOU_MEAN => sprintf(
+                '%s?search=%s&forceOriginalQuery=1',
+                $controllerPath,
+                $this->alternativeQuery
+            ),
+            self::IMPROVED => sprintf(
+                '%s?search=%s&forceOriginalQuery=1',
+                $controllerPath,
+                $this->originalQuery
+            ),
+            default => null,
+        };
     }
 }

@@ -278,7 +278,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->{$endpoint}($eventMock);
     }
 
-    public static function promotionRequestProvider()
+    public static function promotionRequestProvider(): array
     {
         return [
             'Search response has promotion' => ['search' => true, 'endpoint' => 'handleSearchRequest'],
@@ -364,7 +364,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ['findologicService'],
             [
                 'flSmartDidYouMean',
-                $this->getDefaultSmartDidYouMeanExtension('ps4', null, 'ps4')
+                $this->getDefaultSmartDidYouMeanExtension('ps4', null)
             ]
         );
         $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
@@ -436,7 +436,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->handleSearchRequest($eventMock);
     }
 
-    public static function queryInfoMessageProvider()
+    public static function queryInfoMessageProvider(): array
     {
         return [
             'Submitting an empty search' => [
@@ -593,22 +593,15 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->getMock();
 
         $this->containerMock->expects($this->any())->method('get')->willReturnCallback(function ($name) {
-            switch ($name) {
-                case 'event_dispatcher':
-                    return $this->eventDispatcherMock;
-                case 'category.repository':
-                    return $this->getContainer()->get('category.repository');
-                case ServiceConfigResource::class:
-                    return $this->serviceConfigResourceMock;
-                case SearchRequestFactory::class:
-                    return $this->searchRequestFactoryMock;
-                case NavigationRequestFactory::class:
-                    return $this->navigationRequestFactoryMock;
-                case 'translator':
-                    return $this->getContainer()->get('translator');
-                default:
-                    return null;
-            }
+            return match ($name) {
+                'event_dispatcher' => $this->eventDispatcherMock,
+                'category.repository' => $this->getContainer()->get('category.repository'),
+                ServiceConfigResource::class => $this->serviceConfigResourceMock,
+                SearchRequestFactory::class => $this->searchRequestFactoryMock,
+                NavigationRequestFactory::class => $this->navigationRequestFactoryMock,
+                'translator' => $this->getContainer()->get('translator'),
+                default => null,
+            };
         });
     }
 
@@ -618,18 +611,16 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     private function getProductListingFeaturesSubscriber(
         array $overrides = [],
         FindologicSearchService $findologicSearchService = null
-    ) {
-        if (isset($overrides[ShopwareProductListingFeaturesSubscriber::class])) {
-            $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class];
-        } else {
-            $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
+    ): ProductListingFeaturesSubscriber
+    {
+        $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class]
+            ?? new ShopwareProductListingFeaturesSubscriber(
                 $this->connectionMock,
                 $this->entityRepositoryMock,
                 $this->entityRepositoryMock,
                 $this->systemConfigServiceMock,
                 $this->eventDispatcherMock
             );
-        }
 
         $sortingService = new SortingService(
             $this->getContainer()->get('translator'),
@@ -703,34 +694,6 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $requestMock->headers = new ParameterBag();
 
         return $requestMock;
-    }
-
-    private function buildSmartDidYouMeanQueryElement(
-        ?string $didYouMeanQuery = null,
-        ?string $improvedQuery = null,
-        ?string $correctedQuery = null
-    ): SimpleXMLElement {
-        $rawXML = <<<XML
-<query>
-    <limit first="0" count="24" />
-    <queryString>ps3</queryString>
-</query>
-XML;
-        $element = new SimpleXMLElement($rawXML);
-
-        if ($didYouMeanQuery) {
-            $element->addChild('didYouMeanQuery', $didYouMeanQuery);
-        }
-        if ($improvedQuery) {
-            $element->queryString->addAttribute('type', 'improved');
-            $element->addChild('originalQuery', $improvedQuery);
-        }
-        if ($correctedQuery) {
-            $element->queryString->addAttribute('type', 'corrected');
-            $element->addChild('originalQuery', $correctedQuery);
-        }
-
-        return $element;
     }
 
     private function setUpSearchRequestMocks(

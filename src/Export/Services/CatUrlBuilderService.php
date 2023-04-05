@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Export\Services;
 use FINDOLOGIC\FinSearch\Export\Search\CategorySearcher;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Services\AbstractCatUrlBuilderService;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Vin\ShopwareSdk\Data\Entity\Category\CategoryEntity;
 
@@ -31,7 +32,7 @@ class CatUrlBuilderService extends AbstractCatUrlBuilderService
                 $this->router->generate(
                     'frontend.navigation.page',
                     ['navigationId' => $category->id],
-                    RouterInterface::ABSOLUTE_PATH
+                    UrlGeneratorInterface::ABSOLUTE_PATH
                 ),
                 '/'
             )

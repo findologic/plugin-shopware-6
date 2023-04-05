@@ -35,10 +35,7 @@ class FindologicConfigService
     ) {
     }
 
-    /**
-     * @return array|bool|float|int|string|null
-     */
-    public function get(string $key, string $salesChannelId, string $languageId)
+    public function get(string $key, string $salesChannelId, string $languageId): mixed
     {
         $config = $this->load($salesChannelId, $languageId);
         $parts = explode('.', $key);
@@ -117,10 +114,7 @@ class FindologicConfigService
         return $this->buildConfig($collection);
     }
 
-    /**
-     * @param array|bool|float|int|string|null $value
-     */
-    public function set(string $key, $value, string $salesChannelId, string $languageId): void
+    public function set(string $key, mixed $value, string $salesChannelId, string $languageId): void
     {
         $this->configs = [];
         $key = trim($key);
@@ -274,7 +268,7 @@ class FindologicConfigService
         if (empty($keys)) {
             $configValues[$key] = $value;
         } else {
-            if (!\array_key_exists($key, $configValues)) {
+            if (!array_key_exists($key, $configValues)) {
                 $configValues[$key] = [];
             }
 

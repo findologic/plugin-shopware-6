@@ -280,13 +280,10 @@ abstract class ProductRouteBase extends TestCase
         string $categoryId = '69',
         ?Criteria $criteria = null
     ): StoreApiResponse {
-        switch (true) {
-            case $productRoute instanceof AbstractProductListingRoute:
-                return $productRoute->load($categoryId, $request, $salesChannelContext, $criteria);
-            case $productRoute instanceof AbstractProductSearchRoute:
-                return $productRoute->load($request, $salesChannelContext, $criteria);
-            default:
-                throw new InvalidArgumentException('Unknown productRoute of class %s', get_class($productRoute));
-        }
+        return match (true) {
+            $productRoute instanceof AbstractProductListingRoute => $productRoute->load($categoryId, $request, $salesChannelContext, $criteria),
+            $productRoute instanceof AbstractProductSearchRoute => $productRoute->load($request, $salesChannelContext, $criteria),
+            default => throw new InvalidArgumentException('Unknown productRoute of class %s', get_class($productRoute)),
+        };
     }
 }

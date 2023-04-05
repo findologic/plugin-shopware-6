@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Traits;
 
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use FINDOLOGIC\Shopware6Common\Export\Enums\AdvancedPricing;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;

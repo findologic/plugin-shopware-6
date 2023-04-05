@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Constants;
-use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -427,7 +426,6 @@ trait ProductHelper
                     'defaultPaymentMethod' => [
                         'name' => 'Invoice',
                         'description' => 'Default payment method',
-                        'handlerIdentifier' => SyncTestPaymentHandler::class,
                     ],
                     'groupId' => $customerGroup,
                     'email' => $email,

@@ -44,7 +44,7 @@ class SystemAware extends Struct
     private function isNewSearchWidgetSupported(): bool
     {
         try {
-            $this->router->generate('widgets.search.pagelet.v2', []);
+            $this->router->generate('widgets.search.pagelet.v2');
         } catch (RouteNotFoundException $e) {
             return false;
         }
@@ -55,7 +55,7 @@ class SystemAware extends Struct
     private function isDynamicFilterDisablingSupported(): bool
     {
         try {
-            $this->router->generate('widgets.search.filter', []);
+            $this->router->generate('widgets.search.filter');
         } catch (RouteNotFoundException $e) {
             return false;
         }

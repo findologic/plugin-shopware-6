@@ -326,7 +326,7 @@ class Xml21ResponseParserTest extends TestCase
         $this->assertEquals($expectedFilters, $filters);
     }
 
-    public static function smartSuggestBlocksProvider()
+    public static function smartSuggestBlocksProvider(): array
     {
         return [
             'No smart suggest blocks are sent and category filter is not in response' => [

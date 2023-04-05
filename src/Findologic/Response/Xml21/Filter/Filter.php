@@ -17,11 +17,11 @@ use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\RangeSliderFilter as ApiRan
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\SelectDropdownFilter as ApiSelectDropdownFilter;
 use FINDOLOGIC\Api\Responses\Xml21\Properties\Filter\VendorImageFilter as ApiVendorImageFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\FilterValueImageHandler;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
+use InvalidArgumentException;
 
 abstract class Filter extends BaseFilter
 {
@@ -55,7 +55,7 @@ abstract class Filter extends BaseFilter
             case $filter instanceof ApiCategoryFilter:
                 return static::handleCategoryFilter($filter);
             default:
-                throw new \InvalidArgumentException('The submitted filter is unknown.');
+                throw new InvalidArgumentException('The submitted filter is unknown.');
         }
     }
 

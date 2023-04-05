@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use Shopware\Core\Checkout\Customer\Rule\CustomerGroupRule;
 use Shopware\Core\Defaults;
+use Shopware\Core\Framework\Rule\Rule;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupCollection;
 use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupEntity;
@@ -26,7 +27,7 @@ trait AdvancedPriceHelper
                         'type' => (new CustomerGroupRule())->getName(),
                         'value' => [
                             'customerGroupIds' => [$group['groupId']],
-                            'operator' => CustomerGroupRule::OPERATOR_EQ,
+                            'operator' => Rule::OPERATOR_EQ,
                         ],
                     ],
                 ]];

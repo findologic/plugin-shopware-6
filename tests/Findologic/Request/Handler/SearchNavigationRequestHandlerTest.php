@@ -27,6 +27,7 @@ use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -123,7 +124,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
         // Create a product, which will create some categories, which are assigned to it.
         $this->createTestProduct();
         $oneSubCategoryFilter = new Criteria();
-        $oneSubCategoryFilter->addFilter(new NotFilter(NotFilter::CONNECTION_OR, [
+        $oneSubCategoryFilter->addFilter(new NotFilter(MultiFilter::CONNECTION_OR, [
             new EqualsFilter('parentId', null),
         ]))->setLimit(1);
 

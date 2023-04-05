@@ -100,7 +100,7 @@ class FindologicConfigController extends AbstractController
 
                 if (isset($config['FinSearch.config.shopkey']) && $config['FinSearch.config.shopkey']) {
                     $shopkey = $config['FinSearch.config.shopkey'];
-                    if (!in_array($shopkey, $allShopkeys, false)) {
+                    if (!in_array($shopkey, $allShopkeys)) {
                         $allShopkeys[] = $shopkey;
                     } else {
                         throw new ShopkeyAlreadyExistsException();

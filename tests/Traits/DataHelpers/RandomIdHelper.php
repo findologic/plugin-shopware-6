@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 trait RandomIdHelper
 {

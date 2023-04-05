@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
-use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
 use FINDOLOGIC\Shopware6Common\Export\Constants;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
@@ -99,7 +98,7 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
 
         $this->criteria->addFilter(
             new NotFilter(
-                NotFilter::CONNECTION_AND,
+                MultiFilter::CONNECTION_AND,
                 [
                     new EqualsFilter('product.isCloseout', true),
                     new EqualsFilter('product.available', false),
@@ -127,7 +126,7 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
         $this->criteria->addGroupField(new FieldGrouping('displayGroup'));
         $this->criteria->addFilter(
             new NotFilter(
-                NotFilter::CONNECTION_AND,
+                MultiFilter::CONNECTION_AND,
                 [new EqualsFilter('displayGroup', null)]
             )
         );
@@ -193,7 +192,7 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
 
         if ($categoryIds) {
             $categoryCriteria->addFilter(
-                new NotFilter(NotFilter::CONNECTION_AND, [
+                new NotFilter(MultiFilter::CONNECTION_AND, [
                     new EqualsAnyFilter('id', $categoryIds)
                 ])
             );
@@ -201,7 +200,7 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
 
         if ($propertyIds) {
             $propertiesCriteria->addFilter(
-                new NotFilter(NotFilter::CONNECTION_AND, [
+                new NotFilter(MultiFilter::CONNECTION_AND, [
                     new EqualsAnyFilter('id', $propertyIds)
                 ])
             );
@@ -321,7 +320,7 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
         );
 
         $this->criteria->addFilter(
-            new NotFilter(NotFilter::CONNECTION_AND, [new EqualsFilter('id', $productId)])
+            new NotFilter(MultiFilter::CONNECTION_AND, [new EqualsFilter('id', $productId)])
         );
     }
 

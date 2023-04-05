@@ -106,7 +106,6 @@ class ProductListingRouteTest extends ProductRouteBase
         $request = Request::create('http://your-shop.de/some-category');
         $request->setSession($this->getSessionMock());
 
-        $expectedFilter = new EqualsFilter('product.categoriesRo.id', $categoryId);
         $criteria = new Criteria();
 
         $this->setCategoryMock($categoryId);
@@ -170,7 +169,6 @@ class ProductListingRouteTest extends ProductRouteBase
 
         $reflector = new ReflectionObject($productRoute);
         $method = $reflector->getMethod('doSearch');
-        $method->setAccessible(true);
         $method->invoke($productRoute, $criteria, $this->getMockedSalesChannelContext(true, '1'));
 
         $this->assertNull($criteria->getOffset());
