@@ -611,8 +611,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     private function getProductListingFeaturesSubscriber(
         array $overrides = [],
         FindologicSearchService $findologicSearchService = null
-    ): ProductListingFeaturesSubscriber
-    {
+    ): ProductListingFeaturesSubscriber {
         $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class]
             ?? new ShopwareProductListingFeaturesSubscriber(
                 $this->connectionMock,
