@@ -10,20 +10,11 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class CustomerGroupContextProvider
 {
-    protected AdvancedPriceRulesProvider $advancedPriceRulesProvider;
-
-    protected SalesChannelService $salesChannelService;
-
-    protected CustomerSearcher $customerSearcher;
-
     public function __construct(
-        AdvancedPriceRulesProvider $advancedPriceRulesProvider,
-        SalesChannelService $salesChannelService,
-        CustomerSearcher $customerSearcher
+        protected readonly AdvancedPriceRulesProvider $advancedPriceRulesProvider,
+        protected readonly SalesChannelService $salesChannelService,
+        protected readonly CustomerSearcher $customerSearcher
     ) {
-        $this->advancedPriceRulesProvider = $advancedPriceRulesProvider;
-        $this->salesChannelService = $salesChannelService;
-        $this->customerSearcher = $customerSearcher;
     }
 
     public function getSalesChannelForUserGroup(

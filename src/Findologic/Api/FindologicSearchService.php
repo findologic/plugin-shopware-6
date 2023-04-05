@@ -31,52 +31,19 @@ class FindologicSearchService
 {
     private const FILTER_REQUEST_LIMIT = 0;
 
-    private ApiClient $apiClient;
-
-    private ApiConfig $apiConfig;
-
-    private PluginConfig $pluginConfig;
-
-    private SortingService $sortingService;
-
-    private PaginationService $paginationService;
-
-    private SortingHandlerService $sortingHandlerService;
-
-    private ServiceConfigResource $serviceConfigResource;
-
-    private SearchRequestFactory $searchRequestFactory;
-
-    private NavigationRequestFactory $navigationRequestFactory;
-
-    private SystemAware $systemAware;
-
-    private EntityRepository $categoryRepository;
-
     public function __construct(
-        ApiClient $apiClient,
-        ApiConfig $apiConfig,
-        PluginConfig $pluginConfig,
-        SortingService $sortingService,
-        PaginationService $paginationService,
-        SortingHandlerService $sortingHandlerService,
-        ServiceConfigResource $serviceConfigResource,
-        SearchRequestFactory $searchRequestFactory,
-        NavigationRequestFactory $navigationRequestFactory,
-        SystemAware $systemAware,
-        EntityRepository $categoryRepository
+        private readonly ApiClient $apiClient,
+        private readonly ApiConfig $apiConfig,
+        private readonly PluginConfig $pluginConfig,
+        private readonly SortingService $sortingService,
+        private readonly PaginationService $paginationService,
+        private readonly SortingHandlerService $sortingHandlerService,
+        private readonly ServiceConfigResource $serviceConfigResource,
+        private readonly SearchRequestFactory $searchRequestFactory,
+        private readonly NavigationRequestFactory $navigationRequestFactory,
+        private readonly SystemAware $systemAware,
+        private readonly EntityRepository $categoryRepository
     ) {
-        $this->apiClient = $apiClient;
-        $this->apiConfig = $apiConfig;
-        $this->pluginConfig = $pluginConfig;
-        $this->sortingService = $sortingService;
-        $this->paginationService = $paginationService;
-        $this->sortingHandlerService = $sortingHandlerService;
-        $this->serviceConfigResource = $serviceConfigResource;
-        $this->searchRequestFactory = $searchRequestFactory;
-        $this->navigationRequestFactory = $navigationRequestFactory;
-        $this->systemAware = $systemAware;
-        $this->categoryRepository = $categoryRepository;
     }
 
     public function doSearch(ProductSearchCriteriaEvent $event, ?int $limitOverride = null): void
@@ -174,13 +141,13 @@ class FindologicSearchService
     protected function buildNavigationRequestHandler(): NavigationRequestHandler
     {
         return new NavigationRequestHandler(
+            $this->categoryRepository,
             $this->serviceConfigResource,
             $this->navigationRequestFactory,
             $this->pluginConfig,
             $this->apiConfig,
             $this->apiClient,
             $this->sortingHandlerService,
-            $this->categoryRepository
         );
     }
 

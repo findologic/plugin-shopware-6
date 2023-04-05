@@ -9,11 +9,9 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class AdvancedPriceRulesProvider
 {
-    protected CartRuleLoader $cartRuleLoader;
-
-    public function __construct(CartRuleLoader $cartRuleLoader)
-    {
-        $this->cartRuleLoader = $cartRuleLoader;
+    public function __construct(
+        protected readonly CartRuleLoader $cartRuleLoader
+    ) {
     }
 
     public function getMatchingRulesIds(SalesChannelContext $salesChannelContext): array

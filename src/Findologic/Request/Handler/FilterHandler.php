@@ -29,11 +29,11 @@ class FilterHandler
 
     /**
      * Sets all requested filters to the FINDOLOGIC API request.
-     *
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
      */
-    public function handleFilters(ShopwareEvent $event, SearchNavigationRequest $searchNavigationRequest): void
-    {
+    public function handleFilters(
+        ShopwareEvent|ProductListingCriteriaEvent $event,
+        SearchNavigationRequest $searchNavigationRequest
+    ): void {
         $request = $event->getRequest();
         $selectedFilters = $request->query->all();
         $availableFilterNames = $this->fetchAvailableFilterNames($event);

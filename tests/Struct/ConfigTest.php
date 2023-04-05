@@ -103,7 +103,7 @@ class ConfigTest extends TestCase
             $this->assertSame($data['crossSellingCategories'], $config->getCrossSellingCategories());
             $this->assertSame($data['searchResultContainer'], $config->getSearchResultContainer());
             $this->assertSame($data['navigationResultContainer'], $config->getNavigationResultContainer());
-            $this->assertSame($data['integrationType'], $config->getIntegrationType());
+            $this->assertSame($data['integrationType'], $config->getIntegrationType()?->value);
             $this->assertSame($data['filterPosition'], $config->getFilterPosition());
         }
         $this->assertTrue($config->isInitialized());

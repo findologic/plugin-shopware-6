@@ -197,12 +197,11 @@ class DynamicProductGroupServiceTest extends TestCase
     {
         return new DynamicProductGroupService(
             $this->getContainer()->get('product.repository'),
-            $this->categorySearcher,
-            $this->getContainer()->get(ProductStreamBuilder::class),
             $this->salesChannelContext,
             $this->exportConfig,
             $this->cache,
-            $this->exportContext
+            $this->exportContext,
+            $this->categorySearcher,
         );
     }
 

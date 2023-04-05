@@ -17,14 +17,10 @@ use function in_array;
 
 class FindologicConfigController extends AbstractController
 {
-    private FindologicConfigService $findologicConfigService;
-
-    private Connection $connection;
-
-    public function __construct(FindologicConfigService $findologicConfigService, Connection $connection)
-    {
-        $this->findologicConfigService = $findologicConfigService;
-        $this->connection = $connection;
+    public function __construct(
+        private readonly FindologicConfigService $findologicConfigService,
+        private readonly Connection $connection
+    ) {
     }
 
     /**

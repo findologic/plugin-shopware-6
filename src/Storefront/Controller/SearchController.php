@@ -27,33 +27,21 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SearchController extends StorefrontController
 {
-    private ShopwareSearchController $decorated;
-
     private SearchPageLoader $searchPageLoader;
-
-    private FilterHandler $filterHandler;
-
-    private FindologicSearchService $findologicSearchService;
-
-    private ServiceConfigResource $serviceConfigResource;
 
     private Config $config;
 
     public function __construct(
-        ShopwareSearchController $decorated,
+        private readonly ShopwareSearchController $decorated,
+        private readonly FilterHandler $filterHandler,
+        private readonly FindologicSearchService $findologicSearchService,
+        private readonly ServiceConfigResource $serviceConfigResource,
         ?SearchPageLoader $searchPageLoader,
-        FilterHandler $filterHandler,
         ContainerInterface $container,
-        FindologicSearchService $findologicSearchService,
-        ServiceConfigResource $serviceConfigResource,
         FindologicConfigService $findologicConfigService
     ) {
         $this->container = $container;
-        $this->decorated = $decorated;
         $this->searchPageLoader = $this->buildSearchPageLoader($searchPageLoader);
-        $this->filterHandler = $filterHandler;
-        $this->findologicSearchService = $findologicSearchService;
-        $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 

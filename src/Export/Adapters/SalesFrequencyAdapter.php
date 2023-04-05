@@ -17,16 +17,10 @@ use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity;
 
 class SalesFrequencyAdapter extends AbstractSalesFrequencyAdapter
 {
-    protected EntityRepository $orderLineItemRepository;
-
-    protected SalesChannelContext $salesChannelContext;
-
     public function __construct(
-        EntityRepository $orderLineItemRepository,
-        SalesChannelContext $salesChannelContext
+        protected readonly EntityRepository $orderLineItemRepository,
+        protected readonly SalesChannelContext $salesChannelContext,
     ) {
-        $this->orderLineItemRepository = $orderLineItemRepository;
-        $this->salesChannelContext = $salesChannelContext;
     }
 
     protected function buildCriteria(ProductEntity $product): Criteria

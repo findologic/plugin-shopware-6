@@ -15,14 +15,11 @@ class HeaderHandler extends AbstractHeaderHandler
 {
     private Context $context;
 
-    private EntityRepository $repository;
-
     public function __construct(
-        EntityRepository $pluginRepository,
+        private readonly EntityRepository $pluginRepository,
         string $shopwareVersion
     ) {
         $this->context = Context::createDefaultContext();
-        $this->repository = $pluginRepository;
 
         parent::__construct($shopwareVersion);
     }
@@ -33,7 +30,7 @@ class HeaderHandler extends AbstractHeaderHandler
         $criteria->addFilter(new EqualsFilter('name', 'FinSearch'));
 
         /** @var PluginEntity $plugin */
-        $plugin = $this->repository->search($criteria, $this->context)->getEntities()->first();
+        $plugin = $this->pluginRepository->search($criteria, $this->context)->getEntities()->first();
         if ($plugin !== null && $plugin->getActive()) {
             return sprintf(self::PLUGIN_VERSION, $plugin->getVersion());
         }
@@ -47,7 +44,7 @@ class HeaderHandler extends AbstractHeaderHandler
         $criteria->addFilter(new EqualsFilter('name', 'ExtendFinSearch'));
 
         /** @var PluginEntity $plugin */
-        $plugin = $this->repository->search($criteria, $this->context)->getEntities()->first();
+        $plugin = $this->pluginRepository->search($criteria, $this->context)->getEntities()->first();
         if ($plugin !== null && $plugin->getActive()) {
             return sprintf(self::EXTENSION_PLUGIN_VERSION, $plugin->getVersion());
         }

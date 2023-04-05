@@ -17,7 +17,7 @@ class CatUrlBuilderService extends AbstractCatUrlBuilderService
         CategorySearcher $categorySearcher,
         RouterInterface $router
     ) {
-        parent::__construct($exportContext, $categorySearcher, $router);
+        parent::__construct($categorySearcher, $exportContext, $router);
     }
 
     /** @inheritDoc */

@@ -27,16 +27,12 @@ use function is_array;
 
 class FindologicConfigService
 {
-    protected Connection $connection;
-
-    private EntityRepository $finSearchConfigRepository;
-
     private array $configs = [];
 
-    public function __construct(EntityRepository $finSearchConfigRepository, Connection $connection)
-    {
-        $this->finSearchConfigRepository = $finSearchConfigRepository;
-        $this->connection = $connection;
+    public function __construct(
+        private readonly EntityRepository $finSearchConfigRepository,
+        protected readonly Connection $connection
+    ) {
     }
 
     /**

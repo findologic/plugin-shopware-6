@@ -18,8 +18,8 @@ trait ExtensionHelper
         return new SmartDidYouMean(
             $originalQuery,
             $alternativeQuery,
-            $didYouMeanQuery,
             $type,
+            $didYouMeanQuery,
             $controllerPath
         );
     }

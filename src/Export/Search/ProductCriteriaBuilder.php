@@ -25,14 +25,10 @@ class ProductCriteriaBuilder extends AbstractProductCriteriaBuilder
 {
     protected Criteria $criteria;
 
-    protected PluginConfig $config;
-
     public function __construct(
+        protected readonly PluginConfig $config,
         ExportContext $exportContext,
-        PluginConfig $config
     ) {
-        $this->config = $config;
-
         parent::__construct($exportContext);
     }
 

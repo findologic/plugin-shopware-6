@@ -192,11 +192,11 @@ class SearchControllerTest extends TestCase
 
         $searchController = new SearchController(
             $shopwareSearchControllerMock,
-            $searchPageLoaderMock,
             $filterHandlerMock,
-            $this->getContainer(),
             $findologicSearchServiceMock,
             $serviceConfigResource,
+            $searchPageLoaderMock,
+            $this->getContainer(),
             $findologicConfigServiceMock
         );
 

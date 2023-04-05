@@ -19,18 +19,11 @@ use Vin\ShopwareSdk\Data\Entity\Category\CategoryEntity;
 
 class CategorySearcher extends AbstractCategorySearcher
 {
-    protected SalesChannelContext $salesChannelContext;
-
-    protected EntityRepository $categoryRepository;
-
     public function __construct(
-        SalesChannelContext $salesChannelContext,
-        EntityRepository $categoryRepository,
+        protected readonly SalesChannelContext $salesChannelContext,
+        protected readonly EntityRepository $categoryRepository,
         ExportContext $exportContext
     ) {
-        $this->salesChannelContext = $salesChannelContext;
-        $this->categoryRepository = $categoryRepository;
-
         parent::__construct($exportContext);
     }
 

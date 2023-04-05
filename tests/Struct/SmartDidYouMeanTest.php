@@ -61,8 +61,8 @@ class SmartDidYouMeanTest extends TestCase
         $smartDidYouMean = new SmartDidYouMean(
             $originalQuery,
             $alternativeQuery,
-            $didYouMeanQuery,
             $type,
+            $didYouMeanQuery,
             $controllerPath
         );
         $parameters = $smartDidYouMean->getVars();

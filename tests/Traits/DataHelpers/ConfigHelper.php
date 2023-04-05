@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
-use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
-use FINDOLOGIC\FinSearch\Struct\Config;
+use FINDOLOGIC\Shopware6Common\Export\Enums\AdvancedPricing;
+use FINDOLOGIC\Shopware6Common\Export\Enums\MainVariant;
 use PHPUnit\Framework\MockObject\MockObject;
 use Shopware\Core\Defaults;
 
@@ -58,8 +58,8 @@ trait ConfigHelper
             'searchResultContainer' => '.fl-result',
             'navigationResultContainer' => '.fl-navigation-result',
             'integrationType' => 'Direct Integration',
-            'mainVariant' => 'default',
-            'advancedPricing' => 'OFF',
+            'mainVariant' => MainVariant::SHOPWARE_DEFAULT->value,
+            'advancedPricing' => AdvancedPricing::OFF->value,
             'exportZeroPricedProducts' => false
         ];
 

@@ -17,11 +17,9 @@ use Shopware\Core\Framework\Event\ShopwareEvent;
 class SearchRequestHandler extends SearchNavigationRequestHandler
 {
     /**
-     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
-     *
      * @throws InconsistentCriteriaIdsException
      */
-    public function handleRequest(ShopwareEvent $event): void
+    public function handleRequest(ShopwareEvent|ProductSearchCriteriaEvent $event): void
     {
         $request = $event->getRequest();
 
@@ -75,11 +73,9 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
     }
 
     /**
-     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
-     *
      * @throws ServiceNotAliveException
      */
-    public function doRequest(ShopwareEvent $event, ?int $limit = null): Response
+    public function doRequest(ShopwareEvent|ProductSearchCriteriaEvent $event, ?int $limit = null): Response
     {
         $request = $event->getRequest();
 

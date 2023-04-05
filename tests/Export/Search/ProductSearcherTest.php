@@ -13,7 +13,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ServicesHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use FINDOLOGIC\Shopware6Common\Export\Config\MainVariant;
+use FINDOLOGIC\Shopware6Common\Export\Enums\MainVariant;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use PHPUnit\Framework\AssertionFailedError;
 use Shopware\Core\Defaults;
@@ -49,7 +49,7 @@ class ProductSearcherTest extends TestCase
             $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId())
         );
 
-        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext, $this->getPluginConfig());
+        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->getPluginConfig(), $this->exportContext);
         $this->defaultProductSearcher = $this->getProductSearcher(
             $this->salesChannelContext,
             $this->getContainer(),
@@ -94,16 +94,16 @@ class ProductSearcherTest extends TestCase
     public static function mainVariantDefaultConfigProvider(): array
     {
         return [
-            'export shopware default' => ['config' => 'default'],
-            'export main parent' => ['config' => 'parent'],
-            'export cheapest variant' => ['config' => 'cheapest']
+            'export shopware default' => ['config' => MainVariant::SHOPWARE_DEFAULT],
+            'export main parent' => ['config' => MainVariant::MAIN_PARENT],
+            'export cheapest variant' => ['config' => MainVariant::CHEAPEST]
         ];
     }
 
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
-    public function testExportsAvailableVariantForProductsWithPriceZero(string $config): void
+    public function testExportsAvailableVariantForProductsWithPriceZero(MainVariant $config): void
     {
         $variantInfo = array_merge(
             $this->getBasicVariantData([
@@ -135,7 +135,7 @@ class ProductSearcherTest extends TestCase
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
-    public function testFindsVariantForInactiveProduct(string $config): void
+    public function testFindsVariantForInactiveProduct(MainVariant $config): void
     {
         $variantInfo = array_merge(
             $this->getBasicVariantData([
@@ -699,7 +699,7 @@ class ProductSearcherTest extends TestCase
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
-    public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
+    public function testProductWithoutVariantsBasedOnExportConfig(MainVariant $config): void
     {
         $parentId = Uuid::randomHex();
         $this->createVisibleTestProduct(['id' => $parentId]);
@@ -811,7 +811,7 @@ class ProductSearcherTest extends TestCase
     public function testZeroPriceProductIsFoundIfConfigSet(): void
     {
         $config = $this->getPluginConfig(['exportZeroPricedProducts' => true]);
-        $productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext, $config);
+        $productCriteriaBuilder = new ProductCriteriaBuilder($config, $this->exportContext);
         $defaultProductSearcher = $this->getProductSearcher(
             $this->salesChannelContext,
             $this->getContainer(),

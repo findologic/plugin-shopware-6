@@ -8,16 +8,10 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class PageInformation extends Struct
 {
-    /** @var bool */
-    private $isSearchPage;
-
-    /** @var bool */
-    private $isNavigationPage;
-
-    public function __construct(bool $isSearchPage, bool $isNavigationPage)
-    {
-        $this->isSearchPage = $isSearchPage;
-        $this->isNavigationPage = $isNavigationPage;
+    public function __construct(
+        private readonly bool $isSearchPage,
+        private readonly bool $isNavigationPage
+    ) {
     }
 
     public function getIsSearchPage(): bool

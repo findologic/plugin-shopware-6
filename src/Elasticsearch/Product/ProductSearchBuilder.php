@@ -16,20 +16,11 @@ use function is_array;
 
 class ProductSearchBuilder implements ProductSearchBuilderInterface
 {
-    private ProductSearchBuilderInterface $decorated;
-
-    private ElasticsearchHelper $helper;
-
-    private ProductDefinition $productDefinition;
-
     public function __construct(
-        ProductSearchBuilderInterface $decorated,
-        ElasticsearchHelper $helper,
-        ProductDefinition $productDefinition
+        private readonly ProductSearchBuilderInterface $decorated,
+        private readonly ElasticsearchHelper $helper,
+        private readonly ProductDefinition $productDefinition
     ) {
-        $this->decorated = $decorated;
-        $this->helper = $helper;
-        $this->productDefinition = $productDefinition;
     }
 
     public function build(Request $request, Criteria $criteria, SalesChannelContext $context): void

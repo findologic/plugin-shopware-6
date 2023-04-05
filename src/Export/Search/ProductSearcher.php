@@ -18,24 +18,14 @@ use Vin\ShopwareSdk\Data\Entity\Product\ProductEntity;
 
 class ProductSearcher extends AbstractProductSearcher
 {
-    protected SalesChannelContext $salesChannelContext;
-
-    protected EntityRepository $productRepository;
-
-    protected ExportContext $exportContext;
-
     public function __construct(
-        SalesChannelContext $salesChannelContext,
-        EntityRepository $productRepository,
-        ProductCriteriaBuilder $productCriteriaBuilder,
+        protected readonly SalesChannelContext $salesChannelContext,
+        protected readonly EntityRepository $productRepository,
+        PluginConfig $pluginConfig,
         ExportContext $exportContext,
-        PluginConfig $pluginConfig
+        ProductCriteriaBuilder $productCriteriaBuilder,
     ) {
-        $this->salesChannelContext = $salesChannelContext;
-        $this->productRepository = $productRepository;
-        $this->exportContext = $exportContext;
-
-        parent::__construct($pluginConfig, $productCriteriaBuilder);
+        parent::__construct($pluginConfig, $exportContext, $productCriteriaBuilder);
     }
 
     protected function fetchProducts(

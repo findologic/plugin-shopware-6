@@ -9,12 +9,12 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class FiltersExtension extends Struct
 {
-    /** @var BaseFilter[] */
-    private array $filters;
-
-    public function __construct(array $filters = [])
-    {
-        $this->filters = $filters;
+    /**
+     * @param BaseFilter[] $filters
+     */
+    public function __construct(
+        private array $filters = []
+    ) {
     }
 
     public function addFilter(BaseFilter $filter): self

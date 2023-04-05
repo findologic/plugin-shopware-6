@@ -12,15 +12,13 @@ class SystemAware extends Struct
 {
     public const IDENTIFIER = 'flSystemAware';
 
-    private RouterInterface $router;
-
     private bool $supportsNewSearchWidget;
 
     private bool $supportsFilterDisabling;
 
-    public function __construct(RouterInterface $router)
-    {
-        $this->router = $router;
+    public function __construct(
+        private readonly RouterInterface $router
+    ) {
         $this->supportsNewSearchWidget = $this->isNewSearchWidgetSupported();
         $this->supportsFilterDisabling = $this->isDynamicFilterDisablingSupported();
     }

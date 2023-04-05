@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Export\Traits;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use FINDOLOGIC\Shopware6Common\Export\Config\AdvancedPricing;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
+use FINDOLOGIC\Shopware6Common\Export\Enums\AdvancedPricing;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\PriceCollection;
 use Shopware\Core\Content\Product\ProductEntity;
@@ -17,13 +17,13 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 trait SupportsAdvancedPricing
 {
-    protected SalesChannelContext $salesChannelContext;
+    protected readonly SalesChannelContext $salesChannelContext;
 
-    protected SalesChannelRepository $salesChannelProductRepository;
+    protected readonly SalesChannelRepository $salesChannelProductRepository;
 
-    protected PluginConfig $pluginConfig;
+    protected readonly PluginConfig $pluginConfig;
 
-    protected string $shopwareVersion;
+    protected readonly string $shopwareVersion;
 
     protected function calculateAdvancedPrice(ProductEntity $product, ?string $customerGroupId): ?CalculatedPrice
     {
@@ -84,8 +84,7 @@ trait SupportsAdvancedPricing
 
     protected function useAdvancedPricing(): bool
     {
-        return Utils::versionGreaterOrEqual('6.4.9.0', $this->shopwareVersion)
-            && $this->pluginConfig->getAdvancedPricing() !== AdvancedPricing::OFF;
+        return $this->pluginConfig->getAdvancedPricing() !== AdvancedPricing::OFF;
     }
 
     protected function getShopwareProduct(string $productId): ProductEntity

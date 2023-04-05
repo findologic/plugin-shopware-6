@@ -12,8 +12,9 @@ use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
-use FINDOLOGIC\Shopware6Common\Export\Config\ImplementationType;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
+use FINDOLOGIC\Shopware6Common\Export\Enums\ExportType;
+use FINDOLOGIC\Shopware6Common\Export\Enums\ImplementationType;
 use FINDOLOGIC\Shopware6Common\Export\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\Shopware6Common\Export\Responses\PreconditionFailedResponse;
 use FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport;
@@ -44,24 +45,6 @@ use Vin\ShopwareSdk\Data\Entity\SalesChannel\SalesChannelEntity;
 
 class ExportController extends AbstractController
 {
-    protected LoggerInterface $logger;
-
-    protected EventDispatcherInterface $eventDispatcher;
-
-    protected CacheItemPoolInterface $cache;
-
-    protected HeaderHandler $headerHandler;
-
-    protected ProductStreamBuilder $productStreamBuilder;
-
-    protected SystemConfigService $systemConfigService;
-
-    protected EntityRepository $customerGroupRepository;
-
-    protected EntityRepository $categoryRepository;
-
-    protected EntityRepository $productRepository;
-
     protected OffsetExportConfiguration $exportConfig;
 
     protected ?SalesChannelService $salesChannelService;
@@ -80,29 +63,19 @@ class ExportController extends AbstractController
 
     protected ExportItemAdapter $exportItemAdapter;
 
-    /** @var XmlExport|ProductIdExport */
-    protected AbstractExport $export;
+    protected XmlExport|ProductIdExport $export;
 
     public function __construct(
-        LoggerInterface $logger,
-        EventDispatcherInterface $eventDispatcher,
-        CacheItemPoolInterface $cache,
-        HeaderHandler $headerHandler,
-        ProductStreamBuilder $productStreamBuilder,
-        SystemConfigService $systemConfigService,
-        EntityRepository $customerGroupRepository,
-        EntityRepository $categoryRepository,
-        EntityRepository $productRepository
+        protected readonly LoggerInterface $logger,
+        protected readonly EventDispatcherInterface $eventDispatcher,
+        protected readonly CacheItemPoolInterface $cache,
+        protected readonly HeaderHandler $headerHandler,
+        protected readonly ProductStreamBuilder $productStreamBuilder,
+        protected readonly SystemConfigService $systemConfigService,
+        protected readonly EntityRepository $customerGroupRepository,
+        protected readonly EntityRepository $categoryRepository,
+        protected readonly EntityRepository $productRepository
     ) {
-        $this->logger = $logger;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->cache = $cache;
-        $this->headerHandler = $headerHandler;
-        $this->productStreamBuilder = $productStreamBuilder;
-        $this->systemConfigService = $systemConfigService;
-        $this->customerGroupRepository = $customerGroupRepository;
-        $this->categoryRepository = $categoryRepository;
-        $this->productRepository = $productRepository;
     }
 
     /**
@@ -239,12 +212,11 @@ class ExportController extends AbstractController
     {
         $this->dynamicProductGroupService = new DynamicProductGroupService(
             $this->productRepository,
-            $this->categorySearcher,
-            $this->productStreamBuilder,
             $this->salesChannelContext,
             $this->exportConfig,
             $this->cache,
             $this->exportContext,
+            $this->categorySearcher,
         );
         $this->container->set(DynamicProductGroupService::class, $this->dynamicProductGroupService);
     }
@@ -252,7 +224,7 @@ class ExportController extends AbstractController
     protected function buildExport(): void
     {
         $this->export = AbstractExport::getInstance(
-            $this->exportConfig->getProductId() ? AbstractExport::TYPE_PRODUCT_ID : AbstractExport::TYPE_XML,
+            $this->exportConfig->getProductId() ? ExportType::DEBUG : ExportType::XML,
             $this->dynamicProductGroupService,
             $this->productSearcher,
             $this->pluginConfig,
