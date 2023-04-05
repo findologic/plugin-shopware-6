@@ -26,8 +26,8 @@ class OverriddenPriceAdapter extends CommonOverriddenPriceAdapter
     public function __construct(
         protected readonly ProductPriceCalculator $calculator,
         protected readonly CustomerGroupContextProvider $customerGroupContextProvider,
-        ExportContext $exportContext,
-        PluginConfig $pluginConfig,
+        protected readonly ExportContext $exportContext,
+        protected readonly PluginConfig $pluginConfig,
         SalesChannelContext $salesChannelContext,
         SalesChannelRepository $salesChannelProductRepository,
         string $shopwareVersion,
