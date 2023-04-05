@@ -94,6 +94,9 @@
                 "exportZeroPricedProducts": {
                     "label": "Produkte ohne Preis exportieren",
                     "tooltipText": "Wenn deaktiviert, werden alle Produkte/Varianten mit einem Preis von 0 ausgeschlossen. Wenn das Hauptprodukt einen Preis von 0 hat, werden Varianten mit Preis trotzdem noch berücksichtigt."
+                },
+                "useXmlVariants": {
+                    "label": "XML Varianten verwenden"
                 }
             },
             "titleSuccess": "Erfolgreich",

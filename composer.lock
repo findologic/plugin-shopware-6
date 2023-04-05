@@ -302,7 +302,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "2fe01e33d469848b192d79a9df32f04aab030a24"
+                "reference": "51bd19ed2026c9456d0ed81822dc3a105c278809"
             },
             "require": {
                 "findologic/libflexport": "^3.0",
@@ -354,7 +354,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-04-03T12:10:36+00:00"
+            "time": "2023-04-04T09:00:39+00:00"
         },
         {
             "name": "findologic/xml-export-schema",

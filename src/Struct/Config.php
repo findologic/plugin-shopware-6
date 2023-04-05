@@ -32,7 +32,8 @@ class Config extends Struct
         'filterPosition',
         'mainVariant',
         'advancedPricing',
-        'exportZeroPricedProducts'
+        'exportZeroPricedProducts',
+        'useXmlVariants',
     ];
 
     private FindologicConfigService $systemConfigService;
@@ -64,6 +65,8 @@ class Config extends Struct
     protected string $advancedPricing = AdvancedPricing::OFF;
 
     protected bool $exportZeroPricedProducts = false;
+
+    protected bool $useXmlVariants = false;
 
     public function __construct(
         FindologicConfigService $systemConfigService,
@@ -145,6 +148,11 @@ class Config extends Struct
         return $this->exportZeroPricedProducts;
     }
 
+    public function useXmlVariants(): bool
+    {
+        return $this->useXmlVariants;
+    }
+
     /**
      * @throws InvalidArgumentException
      */
@@ -202,6 +210,12 @@ class Config extends Struct
             $salesChannelId,
             $languageId,
             'FinSearch.config.exportZeroPricedProducts',
+            false
+        );
+        $this->useXmlVariants = $this->getConfig(
+            $salesChannelId,
+            $languageId,
+            'FinSearch.config.useXmlVariants',
             false
         );
 

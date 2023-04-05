@@ -44,7 +44,10 @@
                     <sw-card-view>
                         {% block findologic_content_card_channel_config %}
                             {% block findologic_content_card_channel_config_sales_channel_card %}
-                                <sw-card :title="$tc('findologic.settingForm.salesChannelTitle')">
+                                <sw-card
+                                    :title="$tc('findologic.settingForm.salesChannelTitle')"
+                                    positionIdentifier="findologic_settings"
+                                >
                                     {% block findologic_content_card_channel_config_sales_channel_card_title %}
                                         <sw-entity-single-select
                                                 id="salesChannelSelect"
@@ -77,12 +80,11 @@
                                 {% block findologic_content_card_channel_config_credentials_card %}
                                     <findologic-config
                                             v-if="actualConfigData"
+                                            v-model="actualConfigData"
                                             :isActive="isActive"
                                             :shopkeyAvailable="shopkeyAvailable"
                                             :isValidShopkey="isValidShopkey"
                                             :isStagingShop="isStagingShop"
-                                            :allConfigs="allConfigs"
-                                            :actualConfigData="actualConfigData"
                                             :shopkeyErrorState="shopkeyErrorState"
                                             :selectedSalesChannelId="selectedSalesChannelId">
                                     </findologic-config>

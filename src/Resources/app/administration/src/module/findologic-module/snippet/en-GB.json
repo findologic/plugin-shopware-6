@@ -94,6 +94,9 @@
                 "exportZeroPricedProducts": {
                     "label": "Export products without price",
                     "tooltipText": "If deactivated, products and variants with a price of 0 are excluded from the export. When parent products have a price of 0, variants with a price are still considered."
+                },
+                "useXmlVariants": {
+                    "label": "Use XML variants logic"
                 }
             },
             "titleSuccess": "Success",
