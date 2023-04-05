@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "67cc50c2a69472b370e10fa5eb4715fd",
+    "content-hash": "110172c85903df9679a4fa86b5729266",
     "packages": [
         {
             "name": "composer/semver",
@@ -298,11 +298,11 @@
         },
         {
             "name": "findologic/shopware6-common",
-            "version": "dev-SW-790_support_for_SW_6.5",
+            "version": "dev-SW-793_upgrade_code_level_to_8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "51bd19ed2026c9456d0ed81822dc3a105c278809"
+                "reference": "1e013092179888489239b707e5fd30ec22fbd126"
             },
             "require": {
                 "findologic/libflexport": "^3.0",
@@ -354,7 +354,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-04-04T09:00:39+00:00"
+            "time": "2023-04-04T15:13:11+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
@@ -829,25 +829,25 @@
         },
         {
             "name": "psr/http-message",
-            "version": "1.0.1",
+            "version": "1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/http-message.git",
-                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363"
+                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
-                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
+                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.0"
+                "php": "^7.2 || ^8.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0.x-dev"
+                    "dev-master": "1.1.x-dev"
                 }
             },
             "autoload": {
@@ -876,9 +876,9 @@
                 "response"
             ],
             "support": {
-                "source": "https://github.com/php-fig/http-message/tree/master"
+                "source": "https://github.com/php-fig/http-message/tree/1.1"
             },
-            "time": "2016-08-06T14:39:51+00:00"
+            "time": "2023-04-04T09:50:52+00:00"
         },
         {
             "name": "psr/log",
