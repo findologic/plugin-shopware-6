@@ -9,7 +9,7 @@ class CategoryFilterValue extends FilterValue
     private bool $selected = false;
 
     /** @var CategoryFilterValue[] */
-    private array $values;
+    private array $values = [];
 
     private int $frequency = 0;
 
@@ -42,6 +42,17 @@ class CategoryFilterValue extends FilterValue
         $this->values[] = $filter;
 
         return $this;
+    }
+
+    public function searchValue(string $needle): ?CategoryFilterValue
+    {
+        foreach ($this->values as $value) {
+            if ($value->getName() === $needle) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     public function setFrequency(?int $frequency): CategoryFilterValue

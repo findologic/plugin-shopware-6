@@ -70,6 +70,17 @@ abstract class Filter extends BaseFilter
         return $this;
     }
 
+    public function searchValue(string $needle): ?FilterValue
+    {
+        foreach ($this->values as $value) {
+            if ($value->getName() === $needle) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
     private static function handleLabelTextFilter(ApiLabelFilter $filter): LabelTextFilter
     {
         $customFilter = new LabelTextFilter($filter->getName(), $filter->getDisplayName());
@@ -186,36 +197,27 @@ abstract class Filter extends BaseFilter
 
     private static function handleCategoryFilter(ApiLabelFilter|ApiSelectFilter $filter): CategoryFilter
     {
-        $customFilter = new CategoryFilter($filter->getName(), $filter->getDisplayName());
+        $categoryFilter = new CategoryFilter($filter->getName(), $filter->getDisplayName());
 
-        /** @var ApiDefaultFilterValue $item */
         foreach ($filter->getValues() as $item) {
-            $filterValue = new CategoryFilterValue($item->getName(), $item->getName());
-            $filterValue->setSelected($item->isSelected());
-            $filterValue->setFrequency($item->getFrequency());
+            $levels = explode('_', $item->getName());
+            $currentValue = $categoryFilter;
 
-//            self::parseSubFilters($filterValue, $item->getItems());
+            foreach ($levels as $level) {
+                if (!$foundValue = $currentValue->searchValue($level)) {
+                    $foundValue = new CategoryFilterValue($level, $level);
+                    $foundValue->setSelected($item->isSelected());
+                    $foundValue->setFrequency($item->getFrequency());
 
-            $customFilter->addValue($filterValue);
+                    $currentValue->addValue($foundValue);
+                }
+
+                $currentValue = $foundValue;
+            }
         }
 
-        return $customFilter;
+        return $categoryFilter;
     }
-
-//    /**
-//     * @param CategoryItem[] $items
-//     */
-//    private static function parseSubFilters(CategoryFilterValue $filterValue, array $items): void
-//    {
-//        foreach ($items as $item) {
-//            $filter = new CategoryFilterValue($item->getName(), $item->getName());
-//            $filter->setSelected($item->isSelected());
-//            $filter->setFrequency($item->getFrequency());
-//            self::parseSubFilters($filter, $item->getItems());
-//
-//            $filterValue->addValue($filter);
-//        }
-//    }
 
     private static function handleRatingFilter(ApiRangeSliderFilter $filter): ?RatingFilter
     {
