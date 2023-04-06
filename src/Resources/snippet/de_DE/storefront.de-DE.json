@@ -3,7 +3,7 @@
     "smartDidYouMean": {
       "didYouMeanQuery": "Meinten Sie <a href='%link%'>%didYouMeanQuery%</a>?",
       "improvedQuery": "Ergebnisse für <strong>%improvedQuery%</strong> werden angezeigt. Alternativ nach <a href='%link%'>%originalQuery%</a> suchen",
-      "correctedQuery": "Keine Ergebnisse für <strong>%originalQuery%</strong>. Zeige stattdessen <strong>%correctedQuery%</strong>",
+      "correctedQuery": "Keine Ergebnisse für <strong>%originalQuery%</strong>. Zeige stattdessen <strong>%correctedQuery%</strong>"
     },
     "queryInfoMessage": {
       "filter": "Suchergebnisse für %filterName% <strong>%filterValue%</strong> (<strong>%hits%</strong> Treffer)",
