@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "110172c85903df9679a4fa86b5729266",
+    "content-hash": "67cc50c2a69472b370e10fa5eb4715fd",
     "packages": [
         {
             "name": "composer/semver",
@@ -89,16 +89,16 @@
         },
         {
             "name": "findologic/findologic-api",
-            "version": "v1.6.1",
+            "version": "v1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "3c3a36134654bdd6610ec43948280a2dc41285a2"
+                "reference": "828265a1fb1bc08bb9bf3453302d51bf844acc00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/3c3a36134654bdd6610ec43948280a2dc41285a2",
-                "reference": "3c3a36134654bdd6610ec43948280a2dc41285a2",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/828265a1fb1bc08bb9bf3453302d51bf844acc00",
+                "reference": "828265a1fb1bc08bb9bf3453302d51bf844acc00",
                 "shasum": ""
             },
             "require": {
@@ -127,13 +127,18 @@
             ],
             "authors": [
                 {
-                    "name": "Dominik Brader",
-                    "email": "dominik@brader.co.at",
+                    "name": "Georg M. Sorst",
+                    "email": "g.sorst@findologic.com",
                     "role": "Maintainer"
                 },
                 {
                     "name": "Chris Ortner",
                     "email": "chris@codexfons.com",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Dominik Brader",
+                    "email": "dominik@brader.co.at",
                     "role": "Developer"
                 },
                 {
@@ -150,9 +155,9 @@
             "description": "Library for FINDOLOGIC API requests",
             "support": {
                 "issues": "https://github.com/findologic/findologic-api/issues",
-                "source": "https://github.com/findologic/findologic-api/tree/v1.6.1"
+                "source": "https://github.com/findologic/findologic-api/tree/v1.7.0"
             },
-            "time": "2021-10-20T10:12:38+00:00"
+            "time": "2023-04-06T10:43:35+00:00"
         },
         {
             "name": "findologic/guzzle",
@@ -298,11 +303,11 @@
         },
         {
             "name": "findologic/shopware6-common",
-            "version": "dev-SW-793_upgrade_code_level_to_8.1",
+            "version": "dev-SW-790_support_for_SW_6.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "780279515cf2406d16f500fe47525542032dd859"
+                "reference": "10b907eb46fb3c47443156706d4c006a5f6c984f"
             },
             "require": {
                 "findologic/libflexport": "^3.0",
@@ -354,7 +359,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-04-05T13:36:47+00:00"
+            "time": "2023-04-06T15:49:20+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
