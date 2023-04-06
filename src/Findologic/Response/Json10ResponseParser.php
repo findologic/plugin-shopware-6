@@ -47,12 +47,14 @@ class Json10ResponseParser extends ResponseParser
     public function getSmartDidYouMeanExtension(Request $request): SmartDidYouMean
     {
         $originalQuery = $this->response->getRequest()->getQuery() ?? '';
+        $effectiveQuery = $this->response->getResult()->getMetadata()->getEffectiveQuery();
         $correctedQuery = $this->response->getResult()->getVariant()->getCorrectedQuery();
         $didYouMeanQuery = $this->response->getResult()->getVariant()->getDidYouMeanQuery();
         $improvedQuery = $this->response->getResult()->getVariant()->getImprovedQuery();
 
         return new SmartDidYouMean(
             $originalQuery,
+            $effectiveQuery,
             $correctedQuery,
             $didYouMeanQuery,
             $improvedQuery,
@@ -114,7 +116,7 @@ class Json10ResponseParser extends ResponseParser
             /** @var SmartDidYouMean $smartDidYouMean */
             $smartDidYouMean = $event->getContext()->getExtension('flSmartDidYouMean');
 
-            return $this->buildSearchTermQueryInfoMessage($smartDidYouMean->getCorrectedQuery());
+            return $this->buildSearchTermQueryInfoMessage($smartDidYouMean->getEffectiveQuery());
         }
 
         // Check for shopping guide parameter first, otherwise it will always be overridden with search or vendor query
@@ -218,8 +220,9 @@ class Json10ResponseParser extends ResponseParser
     {
         $correctedQuery = $this->response->getResult()->getVariant()->getCorrectedQuery();
         $improvedQuery = $this->response->getResult()->getVariant()->getImprovedQuery();
+        $didYouMeanQuery = $this->response->getResult()->getVariant()->getDidYouMeanQuery();
 
-        return !empty($queryString) && ($correctedQuery || $improvedQuery);
+        return !empty($queryString) && ($correctedQuery || $improvedQuery || $didYouMeanQuery);
     }
 
     private function hasQuery(?string $queryString): bool

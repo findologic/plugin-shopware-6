@@ -18,6 +18,8 @@ class SmartDidYouMean extends Struct
 
     private string $originalQuery;
 
+    private string $effectiveQuery;
+
     private string $correctedQuery;
 
     private string $didYouMeanQuery;
@@ -26,12 +28,14 @@ class SmartDidYouMean extends Struct
 
     public function __construct(
         ?string $originalQuery,
+        ?string $effectiveQuery,
         ?string $correctedQuery,
         ?string $didYouMeanQuery,
         ?string $improvedQuery,
         ?string $controllerPath
     ) {
-        $this->originalQuery = $didYouMeanQuery ?? htmlentities($originalQuery);
+        $this->originalQuery = htmlentities($originalQuery ?? '');
+        $this->effectiveQuery = $effectiveQuery ?? '';
         $this->correctedQuery = htmlentities($correctedQuery ?? '');
         $this->didYouMeanQuery = $didYouMeanQuery ?? '';
         $this->improvedQuery = $improvedQuery ?? '';
@@ -50,14 +54,29 @@ class SmartDidYouMean extends Struct
         return $this->link;
     }
 
+    public function getOriginalQuery(): string
+    {
+        return $this->originalQuery;
+    }
+
+    public function getEffectiveQuery(): string
+    {
+        return $this->effectiveQuery;
+    }
+
     public function getCorrectedQuery(): string
     {
         return $this->correctedQuery;
     }
 
-    public function getOriginalQuery(): string
+    public function getDidYouMeanQuery(): string
     {
-        return $this->originalQuery;
+        return $this->didYouMeanQuery;
+    }
+
+    public function getImprovedQuery(): string
+    {
+        return $this->improvedQuery;
     }
 
     public function getVars(): array
@@ -65,9 +84,11 @@ class SmartDidYouMean extends Struct
         return [
             'type' => $this->type,
             'link' => $this->link,
-            'correctedQuery' => $this->correctedQuery,
             'originalQuery' => $this->originalQuery,
+            'effectiveQuery' => $this->effectiveQuery,
+            'correctedQuery' => $this->correctedQuery,
             'improvedQuery' => $this->improvedQuery,
+            'didYouMeanQuery' => $this->didYouMeanQuery,
         ];
     }
 
