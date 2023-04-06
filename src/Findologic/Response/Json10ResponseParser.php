@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Findologic\Response;
 
 use FINDOLOGIC\Api\Responses\Json10\Json10Response;
+use FINDOLOGIC\Api\Responses\Json10\Properties\Filter\Filter as ApiFilter;
 use FINDOLOGIC\Api\Responses\Json10\Properties\Item;
 use FINDOLOGIC\Api\Responses\Json10\Properties\LandingPage;
 use FINDOLOGIC\Api\Responses\Json10\Properties\Promotion as ApiPromotion;
@@ -132,7 +133,7 @@ class Json10ResponseParser extends ResponseParser
             return $this->buildCategoryQueryInfoMessage($params);
         }
 
-        $vendorFilterValues = $this->getFilterValues($params, 'vendor');
+        $vendorFilterValues = $this->getFilterValues($params, BaseFilter::VENDOR_FILTER_NAME);
         if (
             $vendorFilterValues &&
             count($vendorFilterValues) === 1
@@ -167,6 +168,7 @@ class Json10ResponseParser extends ResponseParser
 
     private function buildCategoryQueryInfoMessage(array $params): CategoryInfoMessage
     {
+        /** @var ApiFilter[] $filters */
         $filters = array_merge(
             $this->response->getResult()->getMainFilters() ?? [],
             $this->response->getResult()->getOtherFilters() ?? []
@@ -175,8 +177,13 @@ class Json10ResponseParser extends ResponseParser
         $categories = explode('_', $params['cat']);
         $category = end($categories);
 
-        if (isset($filters['cat'])) {
-            $filterName = $filters['cat']->getDisplay();
+        $catFilter = array_filter(
+            $filters,
+            static fn (ApiFilter $filter) => $filter->getName() === Filter::CAT_FILTER_NAME
+        );
+
+        if ($catFilter && count($catFilter) === 1) {
+            $filterName = array_values($catFilter)[0]->getDisplayName();
         } else {
             $filterName = $this->serviceConfigResource->getSmartSuggestBlocks($this->config->getShopkey())['cat'];
         }
@@ -194,13 +201,19 @@ class Json10ResponseParser extends ResponseParser
 
     private function buildVendorQueryInfoMessage(array $params, string $value): VendorInfoMessage
     {
+        /** @var ApiFilter[] $filters */
         $filters = array_merge(
             $this->response->getResult()->getMainFilters() ?? [],
             $this->response->getResult()->getOtherFilters() ?? []
         );
 
-        if (isset($filters['vendor'])) {
-            $filterName = $filters['vendor']->getDisplay();
+        $vendorFilter = array_filter(
+            $filters,
+            static fn (ApiFilter $filter) => $filter->getName() === BaseFilter::VENDOR_FILTER_NAME
+        );
+
+        if ($vendorFilter && count($vendorFilter) === 1) {
+            $filterName = array_values($vendorFilter)[0]->getDisplayName();
         } else {
             $filterName = $this->serviceConfigResource->getSmartSuggestBlocks($this->config->getShopkey())['vendor'];
         }
@@ -284,7 +297,7 @@ class Json10ResponseParser extends ResponseParser
             }
         }
 
-        if ($allowVendorHiddenFilter && $this->isFilterSet($params, 'vendor')) {
+        if ($allowVendorHiddenFilter && $this->isFilterSet($params, BaseFilter::VENDOR_FILTER_NAME)) {
             $customFilter = $this->buildHiddenFilter($smartSuggestBlocks, $params, 'vendor');
             if ($customFilter) {
                 $flFilters->addFilter($customFilter);

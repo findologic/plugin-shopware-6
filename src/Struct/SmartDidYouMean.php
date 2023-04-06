@@ -35,10 +35,10 @@ class SmartDidYouMean extends Struct
         ?string $controllerPath
     ) {
         $this->originalQuery = htmlentities($originalQuery ?? '');
-        $this->effectiveQuery = $effectiveQuery ?? '';
+        $this->effectiveQuery = htmlentities($effectiveQuery ?? '');
         $this->correctedQuery = htmlentities($correctedQuery ?? '');
-        $this->didYouMeanQuery = $didYouMeanQuery ?? '';
-        $this->improvedQuery = $improvedQuery ?? '';
+        $this->didYouMeanQuery = htmlentities($didYouMeanQuery ?? '');
+        $this->improvedQuery = htmlentities($improvedQuery ?? '');
 
         $this->type = $this->defineType();
         $this->link = $this->createLink($controllerPath);

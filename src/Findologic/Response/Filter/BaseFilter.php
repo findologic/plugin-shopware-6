@@ -10,6 +10,7 @@ abstract class BaseFilter
 {
     public const RATING_FILTER_NAME = 'rating';
     public const CAT_FILTER_NAME = 'cat';
+    public const VENDOR_FILTER_NAME = 'vendor';
 
     protected ?string $displayType;
 
