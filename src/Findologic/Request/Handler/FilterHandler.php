@@ -255,8 +255,7 @@ class FilterHandler
             $values = $filter->getValues();
 
             if ($filter instanceof RatingFilter) {
-                $max = end($values);
-                $result[RatingFilter::RATING_FILTER_NAME]['max'] = $max->getId();
+                $result[RatingFilter::RATING_FILTER_NAME]['max'] = $filter->getMaxPoints();
             } else {
                 $filterValues = [];
 
