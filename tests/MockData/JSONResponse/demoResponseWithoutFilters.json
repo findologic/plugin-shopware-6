@@ -1,6 +1,6 @@
 {
   "request": {
-    "query": "query",
+    "query": "ps4",
     "first": 0,
     "count": 24,
     "serviceId": "4B6A0A6F1217DBF125A45FCDEED6F8F3",
@@ -14,13 +14,35 @@
   "result": {
     "metadata": {
       "landingpage": null,
-      "promotion": null,
+      "promotion": {
+        "name": "Promotion",
+        "url": "https://promotion.com/",
+        "imageUrl": "https://promotion.com/promotion.png"
+      },
       "searchConcept": null,
-      "effectiveQuery": "query",
+      "effectiveQuery": "ps4",
       "totalResults": 1808,
       "currencySymbol": "€"
     },
     "items": [
+      {
+        "id": "019111105-37900",
+        "score": 1.3862943649292,
+        "url": "http:\/\/example.com\/product",
+        "name": "Product",
+        "ordernumbers": [
+          "019111105-37900"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/product.png",
+        "highlightedName": "Product"
+      },
       {
         "id": "029214085-37860",
         "score": 1.3862943649292,
@@ -41,8 +63,7 @@
       }
     ],
     "variant": {
-      "name": "sdym",
-      "didYouMeanQuery": "didYouMean"
+      "name": "sdym"
     },
     "filters": {
       "main": [],

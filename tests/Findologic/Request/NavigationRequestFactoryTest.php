@@ -30,7 +30,7 @@ class NavigationRequestFactoryTest extends TestCase
         $expectedReferer = 'http://localhost.shopware';
         $expectedIpAddress = '192.168.0.1';
         $expectedHost = 'findologic.de';
-        $expectedAdapter = 'XML_2.1';
+        $expectedAdapter = 'JSON_1.0';
         $expectedVersion = '0.1.0';
         $expectedCategoryPath = 'Kids & Music_Computers & Shoes';
         $expectedShopType = 'Shopware6';

@@ -1,0 +1,55 @@
+{
+  "request": {
+    "query": "ps4",
+    "first": 0,
+    "count": 24,
+    "serviceId": "4B6A0A6F1217DBF125A45FCDEED6F8F3",
+    "usergroup": null,
+    "order": {
+      "field": "salesfrequency",
+      "relevanceBased": true,
+      "direction": "DESC"
+    }
+  },
+  "result": {
+    "metadata": {
+      "landingpage": null,
+      "promotion": null,
+      "searchConcept": null,
+      "effectiveQuery": "ps4",
+      "totalResults": 1808,
+      "currencySymbol": "€"
+    },
+    "items": [],
+    "variant": {
+      "name": "sdym"
+    },
+    "filters": {
+      "main": [
+        {
+          "name": "cat",
+          "displayName": "Kategorie",
+          "selectMode": "single",
+          "values": [
+            {
+              "value": "Buch",
+              "weight": 0.25156819820404,
+              "frequency": 5,
+              "selected": false,
+              "displayName": "Buch"
+            },
+            {
+              "value": "Buch_Beste Bücher",
+              "weight": 0.33799207210541,
+              "frequency": 0,
+              "selected": false,
+              "displayName": "Beste Bücher"
+            }
+          ],
+          "type": "select"
+        }
+      ],
+      "other": []
+    }
+  }
+}

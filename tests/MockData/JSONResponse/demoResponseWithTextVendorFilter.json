@@ -1,0 +1,65 @@
+{
+  "request": {
+    "query": "ps4",
+    "first": 0,
+    "count": 24,
+    "serviceId": "4B6A0A6F1217DBF125A45FCDEED6F8F3",
+    "usergroup": null,
+    "order": {
+      "field": "salesfrequency",
+      "relevanceBased": true,
+      "direction": "DESC"
+    }
+  },
+  "result": {
+    "metadata": {
+      "landingpage": null,
+      "promotion": {
+        "name": "Promotion",
+        "url": "https://promotion.com/",
+        "imageUrl": "https://promotion.com/promotion.png"
+      },
+      "searchConcept": null,
+      "effectiveQuery": "ps4",
+      "totalResults": 1808,
+      "currencySymbol": "€"
+    },
+    "items": [],
+    "variant": {
+      "name": "sdym"
+    },
+    "filters": {
+      "main": [
+        {
+          "name": "vendor",
+          "displayName": "Hersteller",
+          "selectMode": "multiselect",
+          "noAvailableFiltersText": "Keine Hersteller",
+          "combinationOperation": "or",
+          "values": [
+            {
+              "value": "Bodenschatz",
+              "weight": 0.0022123893722892,
+              "frequency": 2,
+              "selected": false
+            },
+            {
+              "value": "Braun Büffel",
+              "weight": 0.08517698943615,
+              "frequency": 77,
+              "selected": false
+            },
+            {
+              "value": "Camel Active",
+              "weight": 0.13495574891567,
+              "frequency": 122,
+              "selected": false
+            }
+          ],
+          "type": "label"
+        }
+      ],
+      "other": []
+    }
+  }
+}

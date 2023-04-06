@@ -6,11 +6,11 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Response;
 
 use FINDOLOGIC\Api\Responses\Autocomplete\SuggestResponse;
 use FINDOLOGIC\Api\Responses\Html\GenericHtmlResponse;
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
-use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10ResponseParser;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21ResponseParser;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
 use InvalidArgumentException;
@@ -48,8 +48,8 @@ class ResponseParserTest extends TestCase
     {
         return [
             'XML 2.1 response' => [
-                'response' => new Xml21Response($this->getMockResponse()),
-                'expectedParser' => Xml21ResponseParser::class
+                'response' => new Json10Response($this->getMockResponse()),
+                'expectedParser' => Json10ResponseParser::class
             ],
         ];
     }

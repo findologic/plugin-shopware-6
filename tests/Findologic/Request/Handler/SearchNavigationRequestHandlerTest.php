@@ -8,6 +8,7 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
@@ -99,7 +100,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
         $this->apiClientMock->expects($this->once())
             ->method('send')
-            ->willReturn(new Xml21Response($this->getMockResponse()));
+            ->willReturn(new Json10Response($this->getMockResponse()));
 
         $requestHandler = $this->buildSearchRequestHandler();
         $requestHandler->handleRequest($event);
@@ -148,7 +149,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
         $this->apiClientMock->expects($this->once())
             ->method('send')
-            ->willReturn(new Xml21Response($this->getMockResponse()));
+            ->willReturn(new Json10Response($this->getMockResponse()));
 
         $requestHandler = $this->buildNavigationRequestHandler();
         $requestHandler->handleRequest($event);

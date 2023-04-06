@@ -199,28 +199,6 @@
             }
           ],
           "type": "select"
-        },
-        {
-          "name": "cat",
-          "displayName": "Kategorie",
-          "selectMode": "single",
-          "values": [
-            {
-              "value": "Buch",
-              "weight": 0.25156819820404,
-              "frequency": 5,
-              "selected": false,
-              "displayName": "Buch"
-            },
-            {
-              "value": "Buch_Beste Bücher",
-              "weight": 0.33799207210541,
-              "frequency": 0,
-              "selected": false,
-              "displayName": "Beste Bücher"
-            }
-          ],
-          "type": "select"
         }
       ]
     }

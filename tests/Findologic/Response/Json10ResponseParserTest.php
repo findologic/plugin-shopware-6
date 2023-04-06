@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Findologic\Response;
 
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\LabelTextFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Media;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\SelectDropdownFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ImageFilterValue;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\VendorImageFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21ResponseParser;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\CategoryFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\ColorPickerFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\LabelTextFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Media;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\RangeSliderFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\RatingFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\SelectDropdownFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\CategoryFilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\ColorFilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\FilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\ImageFilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\VendorImageFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\DefaultInfoMessage;
@@ -38,7 +39,7 @@ use Shopware\Core\Framework\Test\TestCaseBase\KernelTestBehaviour;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
-class Xml21ResponseParserTest extends TestCase
+class Json10ResponseParserTest extends TestCase
 {
     use KernelTestBehaviour;
     use MockResponseHelper;
@@ -60,65 +61,65 @@ class Xml21ResponseParserTest extends TestCase
     {
         return [
             'default mock ids' => [
-                'response' => new Xml21Response($this->getMockResponse()),
+                'response' => new Json10Response($this->getMockResponse()),
                 'expectedIds' => [
-                    '019111105-37900' => '019111105-37900',
-                    '029214085-37860' => '029214085-37860'
+                    '019111105-37900',
+                    '029214085-37860'
                 ]
             ],
             'response without products' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithNoResults.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithNoResults.json')
                 ),
                 'expectedIds' => []
             ],
             'response with one product' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithOneProduct.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithOneProduct.json')
                 ),
                 'expectedIds' => [
-                    '029214085-37860' => '029214085-37860'
+                    '029214085-37860'
                 ]
             ],
             'response with many products' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithManyProducts.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithManyProducts.json')
                 ),
                 'expectedIds' => [
-                    '102' => '102',
-                    '103' => '103',
-                    '104' => '104',
-                    '105' => '105',
-                    '106' => '106',
-                    '107' => '107',
-                    '108' => '108',
-                    '109' => '109',
-                    '110' => '110',
-                    '111' => '111',
-                    '112' => '112',
-                    '113' => '113',
-                    '114' => '114',
-                    '115' => '115',
-                    '116' => '116',
-                    '117' => '117',
-                    '118' => '118',
-                    '119' => '119',
-                    '120' => '120',
-                    '121' => '121',
-                    '122' => '122',
-                    '123' => '123',
-                    '124' => '124',
-                    '125' => '125',
-                    '126' => '126',
-                    '127' => '127',
-                    '128' => '128',
-                    '129' => '129',
-                    '130' => '130',
-                    '131' => '131',
-                    '132' => '132',
-                    '133' => '133',
-                    '134' => '134',
-                    '135' => '135',
+                    '102',
+                    '103',
+                    '104',
+                    '105',
+                    '106',
+                    '107',
+                    '108',
+                    '109',
+                    '110',
+                    '111',
+                    '112',
+                    '113',
+                    '114',
+                    '115',
+                    '116',
+                    '117',
+                    '118',
+                    '119',
+                    '120',
+                    '121',
+                    '122',
+                    '123',
+                    '124',
+                    '125',
+                    '126',
+                    '127',
+                    '128',
+                    '129',
+                    '130',
+                    '131',
+                    '132',
+                    '133',
+                    '134',
+                    '135',
                 ]
             ]
         ];
@@ -129,45 +130,45 @@ class Xml21ResponseParserTest extends TestCase
      */
     public function testProductIdsAreParsedAsExpected(Response $response, array $expectedIds): void
     {
-        $responseParser = new Xml21ResponseParser($response);
+        $responseParser = new Json10ResponseParser($response);
 
         $this->assertEquals($expectedIds, $responseParser->getProductIds());
     }
 
     public function testSmartDidYouMeanExtensionIsReturned(): void
     {
-        $response = new Xml21Response($this->getMockResponse());
-        $responseParser = new Xml21ResponseParser($response);
+        $response = new Json10Response($this->getMockResponse('JSONResponse/demoResponseWithDidYouMeanQuery.json'));
+        $responseParser = new Json10ResponseParser($response);
 
         $request = new Request();
         $extension = $responseParser->getSmartDidYouMeanExtension($request);
 
         $this->assertEquals('did-you-mean', $extension->getType());
-        $this->assertEquals('?search=ps4&forceOriginalQuery=1', $extension->getLink());
-        $this->assertEquals('ps4', $extension->getAlternativeQuery());
-        $this->assertEquals('', $extension->getOriginalQuery());
+        $this->assertEquals('?search=didYouMean&forceOriginalQuery=1', $extension->getLink());
+        $this->assertEquals('didYouMean', $extension->getDidYouMeanQuery());
+        $this->assertEquals('query', $extension->getOriginalQuery());
     }
 
     public function testLandingPageUriIsReturned(): void
     {
-        $response = new Xml21Response($this->getMockResponse('XMLResponse/demoResponseWithLandingPage.xml'));
-        $responseParser = new Xml21ResponseParser($response);
+        $response = new Json10Response($this->getMockResponse('JSONResponse/demoResponseWithLandingPage.json'));
+        $responseParser = new Json10ResponseParser($response);
 
         $this->assertEquals('https://blubbergurken.io', $responseParser->getLandingPageExtension()->getLink());
     }
 
     public function testNoLandingPageIsReturnedIfResponseDoesNotHaveALandingPage(): void
     {
-        $response = new Xml21Response($this->getMockResponse());
-        $responseParser = new Xml21ResponseParser($response);
+        $response = new Json10Response($this->getMockResponse());
+        $responseParser = new Json10ResponseParser($response);
 
         $this->assertNull($responseParser->getLandingPageExtension());
     }
 
     public function testPromotionExtensionIsReturned(): void
     {
-        $response = new Xml21Response($this->getMockResponse());
-        $responseParser = new Xml21ResponseParser($response);
+        $response = new Json10Response($this->getMockResponse());
+        $responseParser = new Json10ResponseParser($response);
         $promotion = $responseParser->getPromotionExtension();
 
         $this->assertInstanceOf(Promotion::class, $promotion);
@@ -211,9 +212,9 @@ class Xml21ResponseParserTest extends TestCase
 
         $price = 'price';
         $expectedPriceFilter = new RangeSliderFilter($price, 'Preis');
-        $expectedPriceFilter->addValue(new FilterValue('0.39 - 13.4', '0.39 - 13.4', $price));
+        $expectedPriceFilter->addValue(new FilterValue('0.39 - 13.40', '0.39 - 13.40', $price));
         $expectedPriceFilter->addValue(new FilterValue('13.45 - 25.99', '13.45 - 25.99', $price));
-        $expectedPriceFilter->addValue(new FilterValue('26 - 40.3', '26 - 40.3', $price));
+        $expectedPriceFilter->addValue(new FilterValue('26.00 - 40.30', '26.00 - 40.30', $price));
         $expectedPriceFilter->setMin(0.355);
         $expectedPriceFilter->setMax(3239.1455);
         $expectedPriceFilter->setStep(0.1);
@@ -229,8 +230,8 @@ class Xml21ResponseParserTest extends TestCase
 
         $expectedRatingFilter = new RatingFilter('rating', 'Rating');
         $expectedRatingFilter->setMaxPoints(5.0);
-        $expectedRatingFilter->addValue(new FilterValue('0.0', '0.0'));
-        $expectedRatingFilter->addValue(new FilterValue('5.0', '5.0'));
+        $expectedRatingFilter->addValue(new FilterValue('0.00 - 0.00', '0.00 - 0.00'));
+        $expectedRatingFilter->addValue(new FilterValue('0.00 - 0.00', '0.00 - 0.00'));
 
         $color = 'Farbe';
         $expectedColorFilter = new ColorPickerFilter($color, 'Farbe');
@@ -261,8 +262,8 @@ class Xml21ResponseParserTest extends TestCase
 
         return [
             'response including all filter types' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithAllFilterTypes.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithAllFilterTypes.json')
                 ),
                 'expectedFilters' => [
                     'cat' => $expectedCategoryFilter,
@@ -274,20 +275,20 @@ class Xml21ResponseParserTest extends TestCase
                 ]
             ],
             'response without results' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithNoResults.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithNoResults.json')
                 ),
                 'expectedFilters' => []
             ],
             'response without results but with filters with no-filters-available-text' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithNoResultsButWithFilters.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithNoResultsButWithFilters.json')
                 ),
                 'expectedFilters' => []
             ],
             'response with colors without image URLs' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithColorFiltersWithoutUrl.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithColorFiltersWithoutUrl.json')
                 ),
                 'expectedFilters' => [
                     'Farbe' => (new ColorPickerFilter('Farbe', 'Farbe'))
@@ -317,9 +318,9 @@ class Xml21ResponseParserTest extends TestCase
     /**
      * @dataProvider filterResponseProvider
      */
-    public function testFiltersAreReturnedAsExpected(Xml21Response $response, array $expectedFilters): void
+    public function testFiltersAreReturnedAsExpected(Json10Response $response, array $expectedFilters): void
     {
-        $responseParser = new Xml21ResponseParser($response);
+        $responseParser = new Json10ResponseParser($response);
 
         $filtersExtension = $responseParser->getFiltersExtension();
         $filters = $filtersExtension->getFilters();
@@ -332,7 +333,7 @@ class Xml21ResponseParserTest extends TestCase
         return [
             'No smart suggest blocks are sent and category filter is not in response' => [
                 'type' => 'cat',
-                'demoResponse' => 'demoResponseWithoutCategoryFilter.xml',
+                'demoResponse' => 'demoResponseWithoutFilters.json',
                 'flBlocks' => [],
                 'expectedFilterName' => null,
                 'expectedInstanceOf' => CategoryFilter::class,
@@ -340,7 +341,7 @@ class Xml21ResponseParserTest extends TestCase
             ],
             'Smart suggest blocks are sent and category filter is not in response' => [
                 'type' => 'cat',
-                'demoResponse' => 'demoResponseWithoutCategoryFilter.xml',
+                'demoResponse' => 'demoResponseWithoutFilters.json',
                 'flBlocks' => ['cat' => 'Category'],
                 'expectedFilterName' => 'Category',
                 'expectedInstanceOf' => CategoryFilter::class,
@@ -348,7 +349,7 @@ class Xml21ResponseParserTest extends TestCase
             ],
             'No smart suggest blocks are sent and category filter is available in response' => [
                 'type' => 'cat',
-                'demoResponse' => 'demoResponseWithCategoryFilter.xml',
+                'demoResponse' => 'demoResponseWithCategoryFilter.json',
                 'flBlocks' => [],
                 'expectedFilterName' => 'Kategorie',
                 'expectedInstanceOf' => CategoryFilter::class,
@@ -356,7 +357,7 @@ class Xml21ResponseParserTest extends TestCase
             ],
             'No smart suggest blocks are sent and vendor filter is not in response' => [
                 'type' => 'vendor',
-                'demoResponse' => 'demoResponseWithoutVendorFilter.xml',
+                'demoResponse' => 'demoResponseWithoutFilters.json',
                 'flBlocks' => [],
                 'expectedFilterName' => null,
                 'expectedInstanceOf' => VendorImageFilter::class,
@@ -364,7 +365,7 @@ class Xml21ResponseParserTest extends TestCase
             ],
             'Smart suggest blocks are sent and vendor filter is not in response' => [
                 'type' => 'vendor',
-                'demoResponse' => 'demoResponseWithoutVendorFilter.xml',
+                'demoResponse' => 'demoResponseWithoutFilters.json',
                 'flBlocks' => ['vendor' => 'Manufacturer'],
                 'expectedFilterName' => 'Manufacturer',
                 'expectedInstanceOf' => VendorImageFilter::class,
@@ -372,7 +373,7 @@ class Xml21ResponseParserTest extends TestCase
             ],
             'No smart suggest blocks are sent and vendor filter is available in response' => [
                 'type' => 'vendor',
-                'demoResponse' => 'demoResponseWithVendorFilter.xml',
+                'demoResponse' => 'demoResponseWithVendorFilter.json',
                 'flBlocks' => [],
                 'expectedFilterName' => 'Hersteller',
                 'expectedInstanceOf' => VendorImageFilter::class,
@@ -380,7 +381,7 @@ class Xml21ResponseParserTest extends TestCase
             ],
             'No smart suggest blocks are sent and text vendor filter is available in response' => [
                 'type' => 'vendor',
-                'demoResponse' => 'demoResponseWithTextVendorFilter.xml',
+                'demoResponse' => 'demoResponseWithTextVendorFilter.json',
                 'flBlocks' => [],
                 'expectedFilterName' => 'Hersteller',
                 'expectedInstanceOf' => LabelTextFilter::class,
@@ -400,11 +401,11 @@ class Xml21ResponseParserTest extends TestCase
         ?string $expectedInstanceOf,
         ?bool $isHidden
     ): void {
-        $response = new Xml21Response(
-            $this->getMockResponse(sprintf('XMLResponse/%s', $demoResponse))
+        $response = new Json10Response(
+            $this->getMockResponse(sprintf('JSONResponse/%s', $demoResponse))
         );
 
-        $responseParser = new Xml21ResponseParser($response);
+        $responseParser = new Json10ResponseParser($response);
 
         $filtersExtension = $responseParser->getFiltersExtension();
         $filtersExtension = $responseParser->getFiltersWithSmartSuggestBlocks(
@@ -428,7 +429,7 @@ class Xml21ResponseParserTest extends TestCase
     {
         return [
             'first page pagination with default values' => [
-                'response' => new Xml21Response($this->getMockResponse()),
+                'response' => new Json10Response($this->getMockResponse()),
                 'limit' => null,
                 'offset' => null,
                 'expectedTotal' => 1808,
@@ -436,7 +437,7 @@ class Xml21ResponseParserTest extends TestCase
                 'expectedLimit' => 24
             ],
             'second page with override of user' => [
-                'response' => new Xml21Response($this->getMockResponse()),
+                'response' => new Json10Response($this->getMockResponse()),
                 'limit' => 24,
                 'offset' => 24,
                 'expectedTotal' => 1808,
@@ -444,7 +445,7 @@ class Xml21ResponseParserTest extends TestCase
                 'expectedLimit' => 24
             ],
             'third page with different limit' => [
-                'response' => new Xml21Response($this->getMockResponse()),
+                'response' => new Json10Response($this->getMockResponse()),
                 'limit' => 100,
                 'offset' => 200,
                 'expectedTotal' => 1808,
@@ -458,14 +459,14 @@ class Xml21ResponseParserTest extends TestCase
      * @dataProvider paginationResponseProvider
      */
     public function testPaginationExtensionIsReturnedAsExpected(
-        Xml21Response $response,
+        Json10Response $response,
         ?int $limit,
         ?int $offset,
         int $expectedTotal,
         int $expectedOffset,
         int $expectedLimit
     ): void {
-        $responseParser = new Xml21ResponseParser($response);
+        $responseParser = new Json10ResponseParser($response);
 
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
 
@@ -478,7 +479,7 @@ class Xml21ResponseParserTest extends TestCase
     {
         return [
             'alternative query is used' => [
-                'response' => new Xml21Response($this->getMockResponse()),
+                'response' => new Json10Response($this->getMockResponse()),
                 'request' => new Request(),
                 'expectedInstance' => SearchTermQueryInfoMessage::class,
                 'expectedVars' => [
@@ -486,20 +487,9 @@ class Xml21ResponseParserTest extends TestCase
                     'extensions' => []
                 ]
             ],
-            'no alternative query - search query is used' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithoutAlternativeQuery.xml')
-                ),
-                'request' => new Request(),
-                'expectedInstance' => SearchTermQueryInfoMessage::class,
-                'expectedVars' => [
-                    'query' => 'ps3',
-                    'extensions' => []
-                ]
-            ],
             'no search query but selected category' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
                 ),
                 'request' => new Request(['cat' => 'Shoes & More']),
                 'expectedInstance' => CategoryInfoMessage::class,
@@ -510,8 +500,8 @@ class Xml21ResponseParserTest extends TestCase
                 ]
             ],
             'no search query but selected vendor' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
                 ),
                 'request' => new Request(['vendor' => 'vendor>Blubbergurken inc.']),
                 'expectedInstance' => VendorInfoMessage::class,
@@ -522,8 +512,8 @@ class Xml21ResponseParserTest extends TestCase
                 ]
             ],
             'no search query but 2 selected vendors' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
                 ),
                 'request' => new Request(['vendor' => 'vendor>Blubbergurken inc.|vendor>Blubbergurken Limited']),
                 'expectedInstance' => DefaultInfoMessage::class,
@@ -532,8 +522,8 @@ class Xml21ResponseParserTest extends TestCase
                 ]
             ],
             'no query and no selected filters' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
                 ),
                 'request' => new Request(),
                 'expectedInstance' => DefaultInfoMessage::class,
@@ -542,8 +532,8 @@ class Xml21ResponseParserTest extends TestCase
                 ]
             ],
             'shopping guide query is used' => [
-                'response' => new Xml21Response(
-                    $this->getMockResponse('XMLResponse/demoResponseWithoutQuery.xml')
+                'response' => new Json10Response(
+                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
                 ),
                 'request' => new Request(['wizard' => 'FindologicGuide']),
                 'expectedInstance' => ShoppingGuideInfoMessage::class,
@@ -559,12 +549,12 @@ class Xml21ResponseParserTest extends TestCase
      * @dataProvider queryInfoMessageResponseProvider
      */
     public function testQueryInfoMessageExtensionIsReturnedAsExpected(
-        Xml21Response $response,
+        Json10Response $response,
         Request $request,
         string $expectedInstance,
         array $expectedVars
     ): void {
-        $responseParser = new Xml21ResponseParser($response);
+        $responseParser = new Json10ResponseParser($response);
 
         $contextMock = $this->getMockBuilder(Context::class)
             ->onlyMethods(['getExtension'])
@@ -591,10 +581,10 @@ class Xml21ResponseParserTest extends TestCase
 
     public function testRatingFilterIsNotShownIfMinAndMaxAreTheSame(): void
     {
-        $response = new Xml21Response(
-            $this->getMockResponse('XMLResponse/demoResponseWithRatingFilterMinMaxAreSame.xml')
+        $response = new Json10Response(
+            $this->getMockResponse('JSONResponse/demoResponseWithRatingFilterMinMaxAreSame.json')
         );
-        $responseParser = new Xml21ResponseParser($response);
+        $responseParser = new Json10ResponseParser($response);
         $filtersExtension = $responseParser->getFiltersExtension();
 
         $this->assertEmpty($filtersExtension->getFilters());

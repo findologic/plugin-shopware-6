@@ -42,7 +42,7 @@
     ],
     "variant": {
       "name": "sdym",
-      "didYouMeanQuery": "didYouMean"
+      "improvedQuery": "improved"
     },
     "filters": {
       "main": [],

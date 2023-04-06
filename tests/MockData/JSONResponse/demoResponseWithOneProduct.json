@@ -13,7 +13,10 @@
   },
   "result": {
     "metadata": {
-      "landingpage": null,
+      "landingpage": {
+        "name": "Landingpage",
+        "url": "https://www.landingpage.io/agb/"
+      },
       "promotion": {
         "name": "Promotion",
         "url": "https://promotion.com/",
@@ -25,24 +28,6 @@
       "currencySymbol": "€"
     },
     "items": [
-      {
-        "id": "019111105-37900",
-        "score": 1.3862943649292,
-        "url": "http:\/\/example.com\/product",
-        "name": "Product",
-        "ordernumbers": [
-          "019111105-37900"
-        ],
-        "summary": "",
-        "price": 950,
-        "attributes": {},
-        "matchingOrdernumber": "",
-        "properties": {},
-        "productPlacement": null,
-        "pushRules": [],
-        "imageUrl": "http://example.com/media/product.png",
-        "highlightedName": "Product"
-      },
       {
         "id": "029214085-37860",
         "score": 1.3862943649292,
@@ -118,20 +103,20 @@
           "combinationOperation": "or",
           "values": [
             {
-              "value": "beige",
-              "weight": 0.10730088502169,
-              "image": "https://blubbergurken.io/farbfilter/beige.gif",
-              "frequency": null,
-              "selected": false,
-              "color": "#F5F5DC"
-            },
-            {
               "value": "blau",
               "weight": 0.3296460211277,
               "image": "https://blubbergurken.io/farbfilter/blau.gif",
               "frequency": null,
               "selected": true,
               "color": "#3c6380"
+            },
+            {
+              "value": "beige",
+              "weight": 0.10730088502169,
+              "image": "https://blubbergurken.io/farbfilter/beige.gif",
+              "frequency": null,
+              "selected": false,
+              "color": "#F5F5DC"
             },
             {
               "value": "braun",
@@ -211,13 +196,6 @@
               "frequency": 5,
               "selected": false,
               "displayName": "Buch"
-            },
-            {
-              "value": "Buch_Beste Bücher",
-              "weight": 0.33799207210541,
-              "frequency": 0,
-              "selected": false,
-              "displayName": "Beste Bücher"
             }
           ],
           "type": "select"
