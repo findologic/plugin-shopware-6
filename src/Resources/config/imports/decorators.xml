@@ -22,15 +22,15 @@
             public="true"
         >
             <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController.inner" />
-            <argument
-                type="service"
-                id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader"
-                on-invalid="null"
-            />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler" />
-            <argument type="service" id="service_container" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
+            <argument
+                    type="service"
+                    id="FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader"
+                    on-invalid="null"
+            />
+            <argument type="service" id="service_container" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
             <call method="setTwig">
                 <argument type="service" id="twig"/>
@@ -44,9 +44,9 @@
         >
             <argument type="service" id="FINDOLOGIC\FinSearch\Storefront\Controller\CmsController.inner" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler" />
-            <argument type="service" id="service_container" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
+            <argument type="service" id="service_container" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
         </service>
 

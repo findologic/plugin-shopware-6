@@ -23,8 +23,7 @@ class NavigationCategoryParserTest extends TestCase
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
 
-    /** @var GenericPageLoader|MockObject */
-    private $genericPageLoader;
+    private GenericPageLoader|MockObject $genericPageLoader;
 
     protected function setUp(): void
     {

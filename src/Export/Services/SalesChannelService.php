@@ -19,20 +19,11 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SalesChannelService
 {
-    private EntityRepository $findologicConfigRepository;
-
-    private AbstractSalesChannelContextFactory $salesChannelContextFactory;
-
-    private RequestTransformerInterface $requestTransformer;
-
     public function __construct(
-        EntityRepository $findologicConfigRepository,
-        AbstractSalesChannelContextFactory $salesChannelContextFactory,
-        RequestTransformerInterface $requestTransformer
+        private readonly EntityRepository $findologicConfigRepository,
+        private readonly AbstractSalesChannelContextFactory $salesChannelContextFactory,
+        private readonly RequestTransformerInterface $requestTransformer
     ) {
-        $this->findologicConfigRepository = $findologicConfigRepository;
-        $this->salesChannelContextFactory = $salesChannelContextFactory;
-        $this->requestTransformer = $requestTransformer;
     }
 
     /**

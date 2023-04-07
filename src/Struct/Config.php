@@ -7,9 +7,9 @@ namespace FINDOLOGIC\FinSearch\Struct;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\FilterPosition;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
-use FINDOLOGIC\Shopware6Common\Export\Config\AdvancedPricing;
-use FINDOLOGIC\Shopware6Common\Export\Config\IntegrationType;
-use FINDOLOGIC\Shopware6Common\Export\Config\MainVariant;
+use FINDOLOGIC\Shopware6Common\Export\Enums\AdvancedPricing;
+use FINDOLOGIC\Shopware6Common\Export\Enums\IntegrationType;
+use FINDOLOGIC\Shopware6Common\Export\Enums\MainVariant;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Struct\Struct;
@@ -36,10 +36,6 @@ class Config extends Struct
         'useXmlVariants',
     ];
 
-    private FindologicConfigService $systemConfigService;
-
-    private ServiceConfigResource $serviceConfigResource;
-
     protected ?string $shopkey;
 
     protected bool $active;
@@ -50,7 +46,7 @@ class Config extends Struct
 
     protected string $navigationResultContainer;
 
-    protected ?string $integrationType = null;
+    protected ?IntegrationType $integrationType = null;
 
     protected ?bool $staging = null;
 
@@ -58,22 +54,20 @@ class Config extends Struct
 
     protected string $filterPosition;
 
-    protected string $mainVariant = MainVariant::SHOPWARE_DEFAULT;
+    protected MainVariant $mainVariant = MainVariant::SHOPWARE_DEFAULT;
 
     protected array $crossSellingCategories = [];
 
-    protected string $advancedPricing = AdvancedPricing::OFF;
+    protected AdvancedPricing $advancedPricing = AdvancedPricing::OFF;
 
     protected bool $exportZeroPricedProducts = false;
 
     protected bool $useXmlVariants = false;
 
     public function __construct(
-        FindologicConfigService $systemConfigService,
-        ServiceConfigResource $serviceConfigResource
+        private readonly FindologicConfigService $systemConfigService,
+        private readonly ServiceConfigResource $serviceConfigResource
     ) {
-        $this->systemConfigService = $systemConfigService;
-        $this->serviceConfigResource = $serviceConfigResource;
     }
 
     public function __sleep(): array
@@ -113,7 +107,7 @@ class Config extends Struct
         return $this->navigationResultContainer;
     }
 
-    public function getIntegrationType(): ?string
+    public function getIntegrationType(): ?IntegrationType
     {
         return $this->integrationType;
     }
@@ -128,7 +122,7 @@ class Config extends Struct
         return $this->crossSellingCategories;
     }
 
-    public function getMainVariant(): string
+    public function getMainVariant(): MainVariant
     {
         return $this->mainVariant;
     }
@@ -138,7 +132,7 @@ class Config extends Struct
         return $this->filterPosition;
     }
 
-    public function getAdvancedPricing(): string
+    public function getAdvancedPricing(): AdvancedPricing
     {
         return $this->advancedPricing;
     }
@@ -194,17 +188,21 @@ class Config extends Struct
             'FinSearch.config.filterPosition',
             FilterPosition::TOP
         );
-        $this->mainVariant = $this->getConfig(
-            $salesChannelId,
-            $languageId,
-            'FinSearch.config.mainVariant',
-            MainVariant::SHOPWARE_DEFAULT
+        $this->mainVariant = MainVariant::from(
+            $this->getConfig(
+                $salesChannelId,
+                $languageId,
+                'FinSearch.config.mainVariant',
+                MainVariant::SHOPWARE_DEFAULT->value
+            )
         );
-        $this->advancedPricing = $this->getConfig(
-            $salesChannelId,
-            $languageId,
-            'FinSearch.config.advancedPricing',
-            AdvancedPricing::OFF
+        $this->advancedPricing = AdvancedPricing::from(
+            $this->getConfig(
+                $salesChannelId,
+                $languageId,
+                'FinSearch.config.advancedPricing',
+                AdvancedPricing::OFF->value
+            )
         );
         $this->exportZeroPricedProducts = $this->getConfig(
             $salesChannelId,
@@ -236,10 +234,10 @@ class Config extends Struct
                 $this->integrationType = $isDirectIntegration ? IntegrationType::DI : IntegrationType::API;
                 $integrationType = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.integrationType');
 
-                if ($this->integrationType !== $integrationType) {
+                if ($this->integrationType->value !== $integrationType) {
                     $this->systemConfigService->set(
                         'FinSearch.config.integrationType',
-                        $this->integrationType,
+                        $this->integrationType->value,
                         $salesChannelId,
                         $languageId
                     );
@@ -264,11 +262,12 @@ class Config extends Struct
         }
     }
 
-    /**
-     * @return string|bool|array|null
-     */
-    private function getConfig(?string $salesChannelId, ?string $languageId, string $configKey, $default = null)
-    {
+    private function getConfig(
+        ?string $salesChannelId,
+        ?string $languageId,
+        string $configKey,
+        mixed $default = null
+    ): mixed {
         $configValue = $this->systemConfigService->get($configKey, $salesChannelId, $languageId);
         if ($configValue === null || (is_string($configValue) && trim($configValue) === '')) {
             return $default;

@@ -46,54 +46,27 @@ abstract class ProductRouteBase extends TestCase
     use CategoryHelper;
     use IntegrationTestBehaviour;
 
-    /**
-     * @var EventDispatcherInterface|MockObject
-     */
-    protected $eventDispatcherMock;
+    protected EventDispatcherInterface|MockObject $eventDispatcherMock;
 
     protected ProductDefinition $productDefinition;
 
     protected RequestCriteriaBuilder $criteriaBuilder;
 
-    /**
-     * @var SalesChannelRepository|MockObject
-     */
-    protected $productRepositoryMock;
+    protected SalesChannelRepository|MockObject $productRepositoryMock;
 
-    /**
-     * @var EntityRepository|MockObject
-     */
-    protected $categoryRepositoryMock;
+    protected EntityRepository|MockObject $categoryRepositoryMock;
 
-    /**
-     * @var ProductStreamBuilderInterface|MockObject
-     */
-    protected $productStreamBuilderMock;
+    protected ProductStreamBuilderInterface|MockObject $productStreamBuilderMock;
 
-    /**
-     * @var ProductSearchBuilderInterface|MockObject
-     */
-    protected $productSearchBuilderMock;
+    protected ProductSearchBuilderInterface|MockObject $productSearchBuilderMock;
 
-    /**
-     * @var ServiceConfigResource|MockObject
-     */
-    protected $serviceConfigResourceMock;
+    protected ServiceConfigResource|MockObject $serviceConfigResourceMock;
 
-    /**
-     * @var SystemConfigService|MockObject
-     */
-    protected $systemConfigServiceMock;
+    protected SystemConfigService|MockObject $systemConfigServiceMock;
 
-    /**
-     * @var Config|MockObject
-     */
-    protected $configMock;
+    protected Config|MockObject $configMock;
 
-    /**
-     * @var FindologicConfigService|MockObject
-     */
-    protected $findologicConfigServiceMock;
+    protected FindologicConfigService|MockObject $findologicConfigServiceMock;
 
     protected function setUp(): void
     {
@@ -139,23 +112,14 @@ abstract class ProductRouteBase extends TestCase
         $this->configMock->expects($this->any())->method('isInitialized')->willReturn(true);
     }
 
-    /**
-     * @return AbstractProductListingRoute|AbstractProductSearchRoute
-     */
-    abstract protected function getRoute();
+    abstract protected function getRoute(): AbstractProductListingRoute|AbstractProductSearchRoute;
 
-    /**
-     * @return AbstractProductListingRoute|AbstractProductSearchRoute|MockObject
-     */
-    abstract protected function getOriginal();
+    abstract protected function getOriginal(): AbstractProductListingRoute|AbstractProductSearchRoute|MockObject;
 
-    /**
-     * @return SalesChannelContext|MockObject
-     */
     protected function getMockedSalesChannelContext(
         bool $findologicActive,
         string $categoryId = ''
-    ): SalesChannelContext {
+    ): SalesChannelContext|MockObject {
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
             ->disableOriginalConstructor()
@@ -197,10 +161,7 @@ abstract class ProductRouteBase extends TestCase
         return $salesChannelContextMock;
     }
 
-    /**
-     * @return Session|MockObject
-     */
-    protected function getSessionMock(): Session
+    protected function getSessionMock(): Session|MockObject
     {
         return $this->getMockBuilder(Session::class)
             ->disableOriginalConstructor()
@@ -319,13 +280,21 @@ abstract class ProductRouteBase extends TestCase
         string $categoryId = '69',
         ?Criteria $criteria = null
     ): StoreApiResponse {
-        switch (true) {
-            case $productRoute instanceof AbstractProductListingRoute:
-                return $productRoute->load($categoryId, $request, $salesChannelContext, $criteria);
-            case $productRoute instanceof AbstractProductSearchRoute:
-                return $productRoute->load($request, $salesChannelContext, $criteria);
-            default:
-                throw new InvalidArgumentException('Unknown productRoute of class %s', get_class($productRoute));
-        }
+        return match (true) {
+            $productRoute instanceof AbstractProductListingRoute => $productRoute->load(
+                $categoryId,
+                $request,
+                $salesChannelContext,
+                $criteria
+            ),
+            $productRoute instanceof AbstractProductSearchRoute => $productRoute->load(
+                $request,
+                $salesChannelContext,
+                $criteria
+            ),
+            default => throw new InvalidArgumentException(
+                sprintf('Unknown productRoute of class %s', get_class($productRoute))
+            ),
+        };
     }
 }

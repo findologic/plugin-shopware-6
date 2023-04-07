@@ -116,7 +116,6 @@ class ServiceConfigResourceTest extends TestCase
         array $smartSuggestBlocks
     ): void {
         $cacheKey = 'finsearch_serviceconfig_74B87337454200D4D33F80C4663DC5E5';
-        $directIntegrationConfig = $directIntegration ? 'Direct Integration' : 'API';
         $serviceConfig = new ServiceConfig();
         $serviceConfig->assign($this->getConfig());
 
@@ -186,7 +185,6 @@ class ServiceConfigResourceTest extends TestCase
     {
         $expiredDateTime = new DateTime();
         $expiredDateTime = $expiredDateTime->modify($expiredTime);
-        $directIntegrationConfig = $directIntegration ? 'Direct Integration' : 'API';
         $shopkey = $this->getShopkey();
         $cacheKey = 'finsearch_serviceconfig_74B87337454200D4D33F80C4663DC5E5';
 

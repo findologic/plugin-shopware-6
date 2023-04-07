@@ -18,16 +18,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ProductSearchBuilder implements ProductSearchBuilderInterface
 {
-    private ProductSearchTermInterpreterInterface $interpreter;
-
-    private ProductSearchBuilderInterface $decorated;
-
     public function __construct(
-        ProductSearchTermInterpreterInterface $interpreter,
-        ProductSearchBuilderInterface $decorated
+        private readonly ProductSearchTermInterpreterInterface $interpreter,
+        private readonly ProductSearchBuilderInterface $decorated
     ) {
-        $this->interpreter = $interpreter;
-        $this->decorated = $decorated;
     }
 
     public function build(Request $request, Criteria $criteria, SalesChannelContext $context): void

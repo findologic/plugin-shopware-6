@@ -23,22 +23,16 @@ class OverriddenPriceAdapter extends CommonOverriddenPriceAdapter
 {
     use SupportsAdvancedPricing;
 
-    protected ProductPriceCalculator $calculator;
-
-    protected CustomerGroupContextProvider $customerGroupContextProvider;
-
     public function __construct(
+        protected readonly ProductPriceCalculator $calculator,
+        protected readonly CustomerGroupContextProvider $customerGroupContextProvider,
         ExportContext $exportContext,
-        SalesChannelContext $salesChannelContext,
-        ProductPriceCalculator $productPriceCalculator,
-        CustomerGroupContextProvider $customerGroupContextProvider,
-        SalesChannelRepository $salesChannelProductRepository,
         PluginConfig $pluginConfig,
-        string $shopwareVersion
+        SalesChannelContext $salesChannelContext,
+        SalesChannelRepository $salesChannelProductRepository,
+        string $shopwareVersion,
     ) {
         $this->salesChannelContext = $salesChannelContext;
-        $this->calculator = $productPriceCalculator;
-        $this->customerGroupContextProvider = $customerGroupContextProvider;
         $this->salesChannelProductRepository = $salesChannelProductRepository;
         $this->shopwareVersion = $shopwareVersion;
 

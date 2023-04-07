@@ -17,20 +17,11 @@ class ServiceConfigResource
 {
     private const CACHE_KEY = 'finsearch_serviceconfig';
 
-    private CacheItemPoolInterface $cache;
-
-    private ServiceConfigClientFactory $serviceConfigClientFactory;
-
-    private ?Client $client;
-
     public function __construct(
-        CacheItemPoolInterface $cache,
-        ServiceConfigClientFactory $serviceConfigClientFactory,
-        ?Client $client = null
+        private readonly CacheItemPoolInterface $cache,
+        private readonly ServiceConfigClientFactory $serviceConfigClientFactory,
+        private readonly ?Client $client = null
     ) {
-        $this->cache = $cache;
-        $this->serviceConfigClientFactory = $serviceConfigClientFactory;
-        $this->client = $client;
     }
 
     /**

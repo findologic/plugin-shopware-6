@@ -11,12 +11,9 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class CustomerSearcher
 {
-    protected EntityRepository $customerRepository;
-
     public function __construct(
-        EntityRepository $customerRepository
+        protected readonly EntityRepository $customerRepository
     ) {
-        $this->customerRepository = $customerRepository;
     }
 
     public function getSingleCustomerIdByGroup(

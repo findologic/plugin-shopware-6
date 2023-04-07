@@ -8,24 +8,12 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class Snippet extends Struct
 {
-    private string $searchResultContainer;
-
-    private string $navigationResultContainer;
-
-    private string $userGroupHash;
-
-    private string $shopkey;
-
     public function __construct(
-        string $shopkey,
-        string $searchResultContainer,
-        string $navigationResultContainer,
-        string $userGroupHash
+        private readonly string $shopkey,
+        private readonly string $searchResultContainer,
+        private readonly string $navigationResultContainer,
+        private readonly string $userGroupHash
     ) {
-        $this->shopkey = $shopkey;
-        $this->searchResultContainer = $searchResultContainer;
-        $this->navigationResultContainer = $navigationResultContainer;
-        $this->userGroupHash = $userGroupHash;
     }
 
     public function getSearchResultContainer(): string

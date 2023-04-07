@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 trait PluginConfigHelper
 {
-    protected static $PLUGIN_CONFIG_PREFIX = 'FinSearch.config.';
+    protected static string $PLUGIN_CONFIG_PREFIX = 'FinSearch.config.';
 
     public function enableFindologicPlugin(
         ContainerInterface $container,

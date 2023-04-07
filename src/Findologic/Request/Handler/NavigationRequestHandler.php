@@ -32,16 +32,14 @@ use Symfony\Component\HttpFoundation\Request;
 
 class NavigationRequestHandler extends SearchNavigationRequestHandler
 {
-    private EntityRepository $categoryRepository;
-
     public function __construct(
+        private readonly EntityRepository $categoryRepository,
         ServiceConfigResource $serviceConfigResource,
         FindologicRequestFactory $findologicRequestFactory,
         Config $config,
         ApiConfig $apiConfig,
         ApiClient $apiClient,
         SortingHandlerService $sortingHandlerService,
-        EntityRepository $categoryRepository
     ) {
         parent::__construct(
             $serviceConfigResource,
@@ -51,18 +49,14 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             $apiClient,
             $sortingHandlerService
         );
-
-        $this->categoryRepository = $categoryRepository;
     }
 
     /**
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     *
      * @throws MissingRequestParameterException
      * @throws InconsistentCriteriaIdsException
      * @throws CategoryNotFoundException
      */
-    public function handleRequest(ShopwareEvent $event): void
+    public function handleRequest(ShopwareEvent|ProductListingCriteriaEvent $event): void
     {
         $originalCriteria = clone $event->getCriteria();
 
@@ -100,15 +94,13 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
     }
 
     /**
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     *
      * @throws CategoryNotFoundException
      * @throws InconsistentCriteriaIdsException
      * @throws MissingRequestParameterException
      * @throws ServiceNotAliveException
      * @throws UnknownCategoryException
      */
-    public function doRequest(ShopwareEvent $event, ?int $limit = null): Response
+    public function doRequest(ShopwareEvent|ProductListingCriteriaEvent $event, ?int $limit = null): Response
     {
         // Prevent exception if someone really tried to order by score on a category page.
         if ($event->getRequest()->query->get('sort') === 'score') {

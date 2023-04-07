@@ -79,41 +79,29 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
 
-    /** @var Connection|MockObject */
-    private $connectionMock;
+    private Connection|MockObject $connectionMock;
 
-    /** @var EntityRepository|MockObject */
-    private $entityRepositoryMock;
+    private EntityRepository|MockObject $entityRepositoryMock;
 
-    /** @var NavigationRequestFactory|MockObject */
-    private $navigationRequestFactoryMock;
+    private NavigationRequestFactory|MockObject $navigationRequestFactoryMock;
 
-    /** @var SearchRequestFactory|MockObject */
-    private $searchRequestFactoryMock;
+    private SearchRequestFactory|MockObject $searchRequestFactoryMock;
 
-    /** @var FindologicConfigService|MockObject */
-    private $findologicConfigServiceMock;
+    private FindologicConfigService|MockObject $findologicConfigServiceMock;
 
-    /** @var SystemConfigService|MockObject */
-    private $systemConfigServiceMock;
+    private SystemConfigService|MockObject $systemConfigServiceMock;
 
-    /** @var ServiceConfigResource|MockObject */
-    private $serviceConfigResourceMock;
+    private ServiceConfigResource|MockObject $serviceConfigResourceMock;
 
-    /** @var Container|MockObject */
-    private $containerMock;
+    private Container|MockObject $containerMock;
 
-    /** @var Config|MockObject */
-    private $configMock;
+    private Config|MockObject $configMock;
 
-    /** @var ApiConfig|MockObject */
-    private $apiConfigMock;
+    private ApiConfig|MockObject $apiConfigMock;
 
-    /** @var ApiClient|MockObject */
-    private $apiClientMock;
+    private ApiClient|MockObject $apiClientMock;
 
-    /** @var EventDispatcherInterface|MockObject */
-    private $eventDispatcherMock;
+    private EventDispatcherInterface|MockObject $eventDispatcherMock;
 
     private SalesChannelContext $salesChannelContext;
 
@@ -290,7 +278,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->{$endpoint}($eventMock);
     }
 
-    public static function promotionRequestProvider()
+    public static function promotionRequestProvider(): array
     {
         return [
             'Search response has promotion' => ['search' => true, 'endpoint' => 'handleSearchRequest'],
@@ -468,7 +456,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $subscriber->handleSearchRequest($eventMock);
     }
 
-    public static function queryInfoMessageProvider()
+    public static function queryInfoMessageProvider(): array
     {
         return [
             'Submitting an empty search' => [
@@ -611,22 +599,15 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->getMock();
 
         $this->containerMock->expects($this->any())->method('get')->willReturnCallback(function ($name) {
-            switch ($name) {
-                case 'event_dispatcher':
-                    return $this->eventDispatcherMock;
-                case 'category.repository':
-                    return $this->getContainer()->get('category.repository');
-                case ServiceConfigResource::class:
-                    return $this->serviceConfigResourceMock;
-                case SearchRequestFactory::class:
-                    return $this->searchRequestFactoryMock;
-                case NavigationRequestFactory::class:
-                    return $this->navigationRequestFactoryMock;
-                case 'translator':
-                    return $this->getContainer()->get('translator');
-                default:
-                    return null;
-            }
+            return match ($name) {
+                'event_dispatcher' => $this->eventDispatcherMock,
+                'category.repository' => $this->getContainer()->get('category.repository'),
+                ServiceConfigResource::class => $this->serviceConfigResourceMock,
+                SearchRequestFactory::class => $this->searchRequestFactoryMock,
+                NavigationRequestFactory::class => $this->navigationRequestFactoryMock,
+                'translator' => $this->getContainer()->get('translator'),
+                default => null,
+            };
         });
     }
 
@@ -636,18 +617,15 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     private function getProductListingFeaturesSubscriber(
         array $overrides = [],
         FindologicSearchService $findologicSearchService = null
-    ) {
-        if (isset($overrides[ShopwareProductListingFeaturesSubscriber::class])) {
-            $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class];
-        } else {
-            $shopwareProductListingFeaturesSubscriber = new ShopwareProductListingFeaturesSubscriber(
+    ): ProductListingFeaturesSubscriber {
+        $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class]
+            ?? new ShopwareProductListingFeaturesSubscriber(
                 $this->connectionMock,
                 $this->entityRepositoryMock,
                 $this->entityRepositoryMock,
                 $this->systemConfigServiceMock,
                 $this->eventDispatcherMock
             );
-        }
 
         $sortingService = new SortingService(
             $this->getContainer()->get('translator'),
@@ -707,14 +685,11 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $queryMock->expects($this->any())->method('all')->willReturn([]);
 
         $requestMock->expects($this->any())->method('get')->willReturnCallback(function ($name) {
-            switch ($name) {
-                case 'availableSortings':
-                    return ['score' => ['field' => '_score', 'order' => 'asc']];
-                case 'navigationId':
-                    return null;
-                default:
-                    return 'score';
-            }
+            return match ($name) {
+                'availableSortings' => ['score' => ['field' => '_score', 'order' => 'asc']],
+                'navigationId' => null,
+                default => 'score',
+            };
         });
 
         $requestMock->query = $queryMock;
@@ -724,43 +699,12 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         return $requestMock;
     }
 
-    private function buildSmartDidYouMeanQueryElement(
-        ?string $didYouMeanQuery = null,
-        ?string $improvedQuery = null,
-        ?string $correctedQuery = null
-    ): SimpleXMLElement {
-        $rawXML = <<<XML
-<query>
-    <limit first="0" count="24" />
-    <queryString>ps3</queryString>
-</query>
-XML;
-        $element = new SimpleXMLElement($rawXML);
-
-        if ($didYouMeanQuery) {
-            $element->addChild('didYouMeanQuery', $didYouMeanQuery);
-        }
-        if ($improvedQuery) {
-            $element->queryString->addAttribute('type', 'improved');
-            $element->addChild('originalQuery', $improvedQuery);
-        }
-        if ($correctedQuery) {
-            $element->queryString->addAttribute('type', 'corrected');
-            $element->addChild('originalQuery', $correctedQuery);
-        }
-
-        return $element;
-    }
-
-    /**
-     * @return MockObject|ProductSearchCriteriaEvent
-     */
     private function setUpSearchRequestMocks(
         ?Json10Response $response = null,
         ?Request $request = null,
         bool $withSmartDidYouMean = true,
         Context $context = null
-    ): ProductSearchCriteriaEvent {
+    ): MockObject|ProductSearchCriteriaEvent {
         $this->setUpCategoryRepositoryMock();
 
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
@@ -812,10 +756,7 @@ XML;
         return $eventMock;
     }
 
-    /**
-     * @return EntityRepository|MockObject
-     */
-    private function setUpCategoryRepositoryMock(): EntityRepository
+    private function setUpCategoryRepositoryMock(): EntityRepository|MockObject
     {
         $categoryMock = $this->getMockBuilder(CategoryEntity::class)
             ->disableOriginalConstructor()
@@ -852,13 +793,10 @@ XML;
         return $entityRepoMock;
     }
 
-    /**
-     * @return ProductListingCriteriaEvent|MockObject
-     */
     private function setUpNavigationRequestMocks(
         ?CategoryEntity $category = null,
         ?array $extensionMapOverride = null
-    ): ProductListingCriteriaEvent {
+    ): ProductListingCriteriaEvent|MockObject {
         $headerMock = $this->getMockBuilder(HeaderPagelet::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -868,7 +806,6 @@ XML;
         $pageMock->expects($this->any())->method('getHeader')->willReturn($headerMock);
         $reflection = new ReflectionClass($pageMock);
         $reflectionProperty = $reflection->getProperty('header');
-        $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($pageMock, $headerMock);
 
         $categoryTreeMock = $this->getMockBuilder(Tree::class)->disableOriginalConstructor()->getMock();

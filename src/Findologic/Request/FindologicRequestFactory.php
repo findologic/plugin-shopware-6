@@ -25,20 +25,11 @@ abstract class FindologicRequestFactory
     private const CACHE_VERSION_LIFETIME = 60 * 60 * 24;
     private const CACHE_VERSION_KEY = 'finsearch_version';
 
-    private CacheItemPoolInterface $cache;
-
-    private EntityRepository $pluginRepository;
-
-    private string $shopwareVersion;
-
     public function __construct(
-        CacheItemPoolInterface $cache,
-        EntityRepository $pluginRepository,
-        string $shopwareVersion
+        private readonly CacheItemPoolInterface $cache,
+        private readonly EntityRepository $pluginRepository,
+        private readonly string $shopwareVersion
     ) {
-        $this->cache = $cache;
-        $this->pluginRepository = $pluginRepository;
-        $this->shopwareVersion = $shopwareVersion;
     }
 
     abstract public function getInstance(Request $request);
@@ -134,9 +125,7 @@ abstract class FindologicRequestFactory
             $ipAddress = 'UNKNOWN';
         }
 
-        $ipAddress = implode(',', array_unique(array_map('trim', explode(',', $ipAddress))));
-
-        return $ipAddress;
+        return implode(',', array_unique(array_map('trim', explode(',', $ipAddress))));
     }
 
     /**

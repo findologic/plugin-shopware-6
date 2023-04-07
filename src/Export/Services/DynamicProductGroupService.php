@@ -9,8 +9,6 @@ use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Services\AbstractDynamicProductGroupService;
 use FINDOLOGIC\Shopware6Common\Export\Validation\OffsetExportConfiguration;
 use Psr\Cache\CacheItemPoolInterface;
-use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
-use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -18,32 +16,17 @@ use Vin\ShopwareSdk\Data\Entity\Category\CategoryCollection;
 
 class DynamicProductGroupService extends AbstractDynamicProductGroupService
 {
-    protected EntityRepository $productRepository;
-
-    protected ProductStreamBuilderInterface $productStreamBuilder;
-
     protected Context $context;
 
-    protected SalesChannelContext $salesChannelContext;
-
-    protected OffsetExportConfiguration $exportConfig;
-
-    protected ExportContext $exportContext;
-
     public function __construct(
-        EntityRepository $productRepository,
-        CategorySearcher $categorySearcher,
-        ProductStreamBuilder $productStreamBuilder,
-        SalesChannelContext $salesChannelContext,
-        OffsetExportConfiguration $exportConfig,
+        protected readonly EntityRepository $productRepository,
+        protected readonly SalesChannelContext $salesChannelContext,
+        protected readonly OffsetExportConfiguration $exportConfig,
         CacheItemPoolInterface $cache,
-        ExportContext $exportContext
+        ExportContext $exportContext,
+        CategorySearcher $categorySearcher,
     ) {
-        $this->productRepository = $productRepository;
-        $this->productStreamBuilder = $productStreamBuilder;
         $this->context = $salesChannelContext->getContext();
-        $this->salesChannelContext = $salesChannelContext;
-        $this->exportConfig = $exportConfig;
 
         parent::__construct($cache, $exportContext, $categorySearcher);
     }

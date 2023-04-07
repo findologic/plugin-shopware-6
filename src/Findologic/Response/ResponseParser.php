@@ -21,20 +21,11 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class ResponseParser
 {
-    protected Response $response;
-
-    protected ?ServiceConfigResource $serviceConfigResource;
-
-    protected ?Config $config;
-
     public function __construct(
-        Response $response,
-        ?ServiceConfigResource $serviceConfigResource = null,
-        ?Config $config = null
+        protected readonly Response $response,
+        protected readonly ?ServiceConfigResource $serviceConfigResource = null,
+        protected readonly ?Config $config = null
     ) {
-        $this->response = $response;
-        $this->serviceConfigResource = $serviceConfigResource;
-        $this->config = $config;
     }
 
     public static function getInstance(

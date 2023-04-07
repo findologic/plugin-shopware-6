@@ -12,26 +12,14 @@ class SmartDidYouMean extends Struct
     protected const IMPROVED = 'improved';
     protected const CORRECTED = 'corrected';
 
-    private ?string $type;
-
     private ?string $link;
 
-    private string $originalQuery;
-
-    private string $effectiveQuery;
-
-    private string $correctedQuery;
-
-    private string $didYouMeanQuery;
-
-    private string $improvedQuery;
-
     public function __construct(
-        ?string $originalQuery,
-        ?string $effectiveQuery,
-        ?string $correctedQuery,
-        ?string $didYouMeanQuery,
-        ?string $improvedQuery,
+        private ?string $originalQuery,
+        private ?string $effectiveQuery,
+        private ?string $correctedQuery,
+        private ?string $didYouMeanQuery,
+        private ?string $improvedQuery,
         ?string $controllerPath
     ) {
         $this->originalQuery = htmlentities($originalQuery ?? '');
@@ -107,21 +95,18 @@ class SmartDidYouMean extends Struct
 
     private function createLink(?string $controllerPath): ?string
     {
-        switch ($this->type) {
-            case self::DID_YOU_MEAN:
-                return sprintf(
-                    '%s?search=%s&forceOriginalQuery=1',
-                    $controllerPath,
-                    $this->didYouMeanQuery
-                );
-            case self::IMPROVED:
-                return sprintf(
-                    '%s?search=%s&forceOriginalQuery=1',
-                    $controllerPath,
-                    $this->improvedQuery
-                );
-            default:
-                return null;
-        }
+        return match ($this->type) {
+            self::DID_YOU_MEAN => sprintf(
+                '%s?search=%s&forceOriginalQuery=1',
+                $controllerPath,
+                $this->didYouMeanQuery
+            ),
+            self::IMPROVED => sprintf(
+                '%s?search=%s&forceOriginalQuery=1',
+                $controllerPath,
+                $this->improvedQuery
+            ),
+            default => null,
+        };
     }
 }

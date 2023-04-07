@@ -33,7 +33,7 @@ use Symfony\Component\HttpFoundation\Request;
 class Json10ResponseParser extends ResponseParser
 {
     /** @var Json10Response $response */
-    protected Response $response;
+    protected readonly Response $response;
 
     public function getProductIds(): array
     {
@@ -47,18 +47,12 @@ class Json10ResponseParser extends ResponseParser
 
     public function getSmartDidYouMeanExtension(Request $request): SmartDidYouMean
     {
-        $originalQuery = $this->response->getRequest()->getQuery() ?? '';
-        $effectiveQuery = $this->response->getResult()->getMetadata()->getEffectiveQuery();
-        $correctedQuery = $this->response->getResult()->getVariant()->getCorrectedQuery();
-        $didYouMeanQuery = $this->response->getResult()->getVariant()->getDidYouMeanQuery();
-        $improvedQuery = $this->response->getResult()->getVariant()->getImprovedQuery();
-
         return new SmartDidYouMean(
-            $originalQuery,
-            $effectiveQuery,
-            $correctedQuery,
-            $didYouMeanQuery,
-            $improvedQuery,
+            $this->response->getRequest()->getQuery(),
+            $this->response->getResult()->getMetadata()->getEffectiveQuery(),
+            $this->response->getResult()->getVariant()->getCorrectedQuery(),
+            $this->response->getResult()->getVariant()->getDidYouMeanQuery(),
+            $this->response->getResult()->getVariant()->getImprovedQuery(),
             $request->getRequestUri()
         );
     }

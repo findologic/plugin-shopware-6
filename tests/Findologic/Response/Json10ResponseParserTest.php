@@ -46,8 +46,7 @@ class Json10ResponseParserTest extends TestCase
     use ExtensionHelper;
     use ConfigHelper;
 
-    /** @var ServiceConfigResource|MockObject */
-    private $serviceConfigResource;
+    private ServiceConfigResource|MockObject $serviceConfigResource;
 
     protected function setUp(): void
     {
@@ -328,7 +327,7 @@ class Json10ResponseParserTest extends TestCase
         $this->assertEquals($expectedFilters, $filters);
     }
 
-    public static function smartSuggestBlocksProvider()
+    public static function smartSuggestBlocksProvider(): array
     {
         return [
             'No smart suggest blocks are sent and category filter is not in response' => [

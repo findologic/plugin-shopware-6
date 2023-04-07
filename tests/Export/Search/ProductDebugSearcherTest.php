@@ -42,13 +42,13 @@ class ProductDebugSearcherTest extends TestCase
             $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId())
         );
 
-        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext, $this->getPluginConfig());
+        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->getPluginConfig(), $this->exportContext);
         $this->defaultProductDebugSearcher = new ProductDebugSearcher(
             $this->salesChannelContext,
             $this->getContainer()->get('product.repository'),
-            $this->productCriteriaBuilder,
+            $this->getPluginConfig(),
             $this->exportContext,
-            $this->getPluginConfig()
+            $this->productCriteriaBuilder,
         );
     }
 

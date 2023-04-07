@@ -34,16 +34,13 @@ class FindologicSearchServiceTest extends TestCase
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
 
-    /** @var ApiClient|MockObject */
-    private $apiClientMock;
+    private ApiClient|MockObject $apiClientMock;
 
     private ApiConfig $apiConfig;
 
-    /** @var PluginConfig|MockObject */
-    private $pluginConfigMock;
+    private PluginConfig|MockObject $pluginConfigMock;
 
-    /** @var ServiceConfigResource|MockObject */
-    private $serviceConfigResourceMock;
+    private ServiceConfigResource|MockObject $serviceConfigResourceMock;
 
     protected function setUp(): void
     {
@@ -59,7 +56,7 @@ class FindologicSearchServiceTest extends TestCase
             ->getMock();
     }
 
-    public static function stagingQueryParameterProvider()
+    public static function stagingQueryParameterProvider(): array
     {
         return [
             'Shop is not staging and no query parameter was submitted' => [
@@ -174,7 +171,6 @@ class FindologicSearchServiceTest extends TestCase
 
         $reflector = new ReflectionObject($findologicSearchService);
         $method = $reflector->getMethod('allowRequest');
-        $method->setAccessible(true);
         $isEnabled = $method->invoke($findologicSearchService, $event);
         $this->assertSame($isFindologicEnabled, $isEnabled);
     }

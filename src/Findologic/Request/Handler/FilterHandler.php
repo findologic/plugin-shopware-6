@@ -29,11 +29,11 @@ class FilterHandler
 
     /**
      * Sets all requested filters to the FINDOLOGIC API request.
-     *
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
      */
-    public function handleFilters(ShopwareEvent $event, SearchNavigationRequest $searchNavigationRequest): void
-    {
+    public function handleFilters(
+        ShopwareEvent|ProductListingCriteriaEvent $event,
+        SearchNavigationRequest $searchNavigationRequest
+    ): void {
         $request = $event->getRequest();
         $selectedFilters = $request->query->all();
         $availableFilterNames = $this->fetchAvailableFilterNames($event);
@@ -41,7 +41,7 @@ class FilterHandler
         if ($selectedFilters) {
             foreach ($selectedFilters as $filterName => $filterValues) {
                 if (
-                    in_array($filterName, self::IGNORE_LIST, false) ||
+                    in_array($filterName, self::IGNORE_LIST) ||
                     !is_string($filterValues)
                 ) {
                     continue;
@@ -141,12 +141,9 @@ class FilterHandler
         }
     }
 
-    /**
-     * @param string|int|float $filterValue
-     */
     protected function handleRangeSliderFilter(
         string $filterName,
-        $filterValue,
+        mixed $filterValue,
         SearchNavigationRequest $searchNavigationRequest
     ): void {
         if (mb_strpos($filterName, self::MIN_PREFIX) === 0) {
@@ -166,12 +163,10 @@ class FilterHandler
     /**
      * Fetches all available filter names. This is needed to distinguish between standard Shopware query parameters
      * like "q", "sort", etc. and real filters.
-     *
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     *
+
      * @return string[]
      */
-    protected function fetchAvailableFilterNames(ShopwareEvent $event): array
+    protected function fetchAvailableFilterNames(ShopwareEvent|ProductListingCriteriaEvent $event): array
     {
         $availableFilters = [];
         /** @var FiltersExtension $filtersExtension */
@@ -242,7 +237,7 @@ class FilterHandler
         FiltersExtension $allFilters
     ): array {
         $result = [];
-        $result[RatingFilter::RATING_FILTER_NAME]['max'] = 0;
+        $result[BaseFilter::RATING_FILTER_NAME]['max'] = 0;
 
         foreach ($allFilters->getFilters() as $filterWithAllValues) {
             $filterName = $filterWithAllValues->getId();
@@ -251,7 +246,6 @@ class FilterHandler
                 continue;
             }
 
-            /** @var FilterValue[] $values */
             $values = $filter->getValues();
 
             if ($filter instanceof RatingFilter) {
