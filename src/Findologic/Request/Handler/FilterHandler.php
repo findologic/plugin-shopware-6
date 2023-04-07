@@ -23,6 +23,7 @@ use function in_array;
 class FilterHandler
 {
     public const FILTER_DELIMITER = '|';
+    public const FILTER_DELIMITER_ENCODED = '%7C';
     protected const MIN_PREFIX = 'min-';
     protected const MAX_PREFIX = 'max-';
     protected const IGNORE_LIST = ['pushAttrib'];
@@ -188,7 +189,12 @@ class FilterHandler
      */
     protected function getFilterValues(string $filterValues): array
     {
-        return explode(self::FILTER_DELIMITER, $filterValues);
+        $filterValues = explode(self::FILTER_DELIMITER, $filterValues);
+
+        return array_map(
+            static fn (string $value) => str_replace(self::FILTER_DELIMITER_ENCODED, self::FILTER_DELIMITER, $value),
+            $filterValues
+        );
     }
 
     private function isMinRangeSlider(string $name): bool
