@@ -17,14 +17,10 @@ use function in_array;
 
 class FindologicConfigController extends AbstractController
 {
-    private FindologicConfigService $findologicConfigService;
-
-    private Connection $connection;
-
-    public function __construct(FindologicConfigService $findologicConfigService, Connection $connection)
-    {
-        $this->findologicConfigService = $findologicConfigService;
-        $this->connection = $connection;
+    public function __construct(
+        private readonly FindologicConfigService $findologicConfigService,
+        private readonly Connection $connection
+    ) {
     }
 
     /**
@@ -104,7 +100,7 @@ class FindologicConfigController extends AbstractController
 
                 if (isset($config['FinSearch.config.shopkey']) && $config['FinSearch.config.shopkey']) {
                     $shopkey = $config['FinSearch.config.shopkey'];
-                    if (!in_array($shopkey, $allShopkeys, false)) {
+                    if (!in_array($shopkey, $allShopkeys)) {
                         $allShopkeys[] = $shopkey;
                     } else {
                         throw new ShopkeyAlreadyExistsException();

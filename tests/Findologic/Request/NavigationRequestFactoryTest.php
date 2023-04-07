@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Request;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;

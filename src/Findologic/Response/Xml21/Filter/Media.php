@@ -8,11 +8,9 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class Media extends Struct
 {
-    private ?string $url;
-
-    public function __construct(?string $url)
-    {
-        $this->url = $url;
+    public function __construct(
+        private readonly ?string $url
+    ) {
     }
 
     public function getUrl(): ?string

@@ -8,14 +8,10 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class Promotion extends Struct
 {
-    private string $image;
-
-    private string $link;
-
-    public function __construct(string $image, string $link)
-    {
-        $this->image = $image;
-        $this->link = $link;
+    public function __construct(
+        private readonly string $image,
+        private readonly string $link
+    ) {
     }
 
     public function getImage(): string

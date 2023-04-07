@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Resources\snippet\de_DE;
 
-use Shopware\Core\System\Snippet\Files\SnippetFileInterface;
-
 class SnippetFile_de_DE implements SnippetFileInterface
 {
     public function getName(): string

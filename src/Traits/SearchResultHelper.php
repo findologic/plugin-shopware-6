@@ -45,7 +45,7 @@ trait SearchResultHelper
         }
     }
 
-    protected function addOptionsGroupAssociation(Criteria $criteria)
+    protected function addOptionsGroupAssociation(Criteria $criteria): void
     {
         $criteria->addAssociation('options.group');
     }
@@ -113,7 +113,7 @@ trait SearchResultHelper
         return $page <= 0 ? 1 : $page;
     }
 
-    public function getOffset(Request $request, ?int $limit = null)
+    public function getOffset(Request $request, ?int $limit = null): float|int
     {
         if (!$limit) {
             $limit = Pagination::DEFAULT_LIMIT;

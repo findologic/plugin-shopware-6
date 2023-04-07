@@ -187,7 +187,7 @@ trait SalesChannelHelper
         /** @var LanguageEntity $language */
         $language = $repository->search($criteria, Context::createDefaultContext())->get($languageId);
 
-        return $language->getTranslationCode() ? $language->getTranslationCode()->getCode() : null;
+        return $language->getTranslationCode()?->getCode();
     }
 
     public function createLanguage(string $id, ?string $parentId = Defaults::LANGUAGE_SYSTEM): void

@@ -12,15 +12,13 @@ class SystemAware extends Struct
 {
     public const IDENTIFIER = 'flSystemAware';
 
-    private RouterInterface $router;
-
     private bool $supportsNewSearchWidget;
 
     private bool $supportsFilterDisabling;
 
-    public function __construct(RouterInterface $router)
-    {
-        $this->router = $router;
+    public function __construct(
+        private readonly RouterInterface $router
+    ) {
         $this->supportsNewSearchWidget = $this->isNewSearchWidgetSupported();
         $this->supportsFilterDisabling = $this->isDynamicFilterDisablingSupported();
     }
@@ -46,7 +44,7 @@ class SystemAware extends Struct
     private function isNewSearchWidgetSupported(): bool
     {
         try {
-            $this->router->generate('widgets.search.pagelet.v2', []);
+            $this->router->generate('widgets.search.pagelet.v2');
         } catch (RouteNotFoundException $e) {
             return false;
         }
@@ -57,7 +55,7 @@ class SystemAware extends Struct
     private function isDynamicFilterDisablingSupported(): bool
     {
         try {
-            $this->router->generate('widgets.search.filter', []);
+            $this->router->generate('widgets.search.filter');
         } catch (RouteNotFoundException $e) {
             return false;
         }

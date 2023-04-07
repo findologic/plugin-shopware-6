@@ -18,8 +18,6 @@ use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
-use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
@@ -32,40 +30,17 @@ class ProductSearchRoute extends AbstractProductSearchRoute
 {
     use SearchResultHelper;
 
-    private ProductSearchBuilderInterface $searchBuilder;
-
-    private EventDispatcherInterface $eventDispatcher;
-
-    private ProductDefinition $definition;
-
-    private RequestCriteriaBuilder $criteriaBuilder;
-
-    private AbstractProductSearchRoute $decorated;
-
-    private SalesChannelRepository $salesChannelProductRepository;
-
-    private ServiceConfigResource $serviceConfigResource;
-
-    private Config $config;
-
     public function __construct(
-        AbstractProductSearchRoute $decorated,
-        ProductSearchBuilderInterface $searchBuilder,
-        EventDispatcherInterface $eventDispatcher,
-        SalesChannelRepository $salesChannelProductRepository,
-        ProductDefinition $definition,
-        RequestCriteriaBuilder $criteriaBuilder,
-        ServiceConfigResource $serviceConfigResource,
-        FindologicConfigService $findologicConfigService,
-        ?Config $config = null
+        private readonly AbstractProductSearchRoute $decorated,
+        private readonly ProductSearchBuilderInterface $searchBuilder,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SalesChannelRepository $salesChannelProductRepository,
+        private readonly ProductDefinition $definition,
+        private readonly RequestCriteriaBuilder $criteriaBuilder,
+        private readonly ServiceConfigResource $serviceConfigResource,
+        private readonly FindologicConfigService $findologicConfigService,
+        private ?Config $config = null
     ) {
-        $this->decorated = $decorated;
-        $this->searchBuilder = $searchBuilder;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->salesChannelProductRepository = $salesChannelProductRepository;
-        $this->definition = $definition;
-        $this->criteriaBuilder = $criteriaBuilder;
-        $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 

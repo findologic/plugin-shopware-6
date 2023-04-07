@@ -16,9 +16,7 @@ use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\InvalidArgumentException;
-use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigTest extends TestCase
 {
@@ -103,7 +101,7 @@ class ConfigTest extends TestCase
             $this->assertSame($data['crossSellingCategories'], $config->getCrossSellingCategories());
             $this->assertSame($data['searchResultContainer'], $config->getSearchResultContainer());
             $this->assertSame($data['navigationResultContainer'], $config->getNavigationResultContainer());
-            $this->assertSame($data['integrationType'], $config->getIntegrationType());
+            $this->assertSame($data['integrationType'], $config->getIntegrationType()?->value);
             $this->assertSame($data['filterPosition'], $config->getFilterPosition());
         }
         $this->assertTrue($config->isInitialized());

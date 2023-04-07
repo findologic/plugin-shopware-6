@@ -11,13 +11,10 @@ use GuzzleHttp\Exception\ClientException;
 
 class ServiceConfigClient
 {
-    private string $shopkey;
-
-    private Client $client;
-
-    public function __construct(string $shopkey, ?Client $client = null)
-    {
-        $this->shopkey = $shopkey;
+    public function __construct(
+        private readonly string $shopkey,
+        private ?Client $client = null
+    ) {
         $this->client = $client ?? new Client(['base_uri' => BaseUrl::CDN]);
     }
 

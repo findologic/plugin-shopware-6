@@ -44,7 +44,7 @@ class SearchControllerTest extends TestCase
         $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
     }
 
-    public static function availableFilterProvider()
+    public static function availableFilterProvider(): array
     {
         return [
             'Available filters are returned in response' => [
@@ -192,11 +192,11 @@ class SearchControllerTest extends TestCase
 
         $searchController = new SearchController(
             $shopwareSearchControllerMock,
-            $searchPageLoaderMock,
             $filterHandlerMock,
-            $this->getContainer(),
             $findologicSearchServiceMock,
             $serviceConfigResource,
+            $searchPageLoaderMock,
+            $this->getContainer(),
             $findologicConfigServiceMock
         );
 

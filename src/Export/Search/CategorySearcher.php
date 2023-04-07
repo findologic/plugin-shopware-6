@@ -12,6 +12,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Vin\ShopwareSdk\Data\Entity\Category\CategoryCollection as SdkCategoryCollection;
@@ -19,18 +20,11 @@ use Vin\ShopwareSdk\Data\Entity\Category\CategoryEntity;
 
 class CategorySearcher extends AbstractCategorySearcher
 {
-    protected SalesChannelContext $salesChannelContext;
-
-    protected EntityRepository $categoryRepository;
-
     public function __construct(
-        SalesChannelContext $salesChannelContext,
-        EntityRepository $categoryRepository,
+        protected readonly SalesChannelContext $salesChannelContext,
+        protected readonly EntityRepository $categoryRepository,
         ExportContext $exportContext
     ) {
-        $this->salesChannelContext = $salesChannelContext;
-        $this->categoryRepository = $categoryRepository;
-
         parent::__construct($exportContext);
     }
 
@@ -79,7 +73,7 @@ class CategorySearcher extends AbstractCategorySearcher
         $criteria->addAssociation('productStream');
         $criteria->addFilter(
             new NotFilter(
-                NotFilter::CONNECTION_AND,
+                MultiFilter::CONNECTION_AND,
                 [new EqualsFilter('productStreamId', null)]
             )
         );

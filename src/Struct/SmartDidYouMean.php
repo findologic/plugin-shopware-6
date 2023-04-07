@@ -11,19 +11,13 @@ class SmartDidYouMean extends Struct
     protected const DID_YOU_MEAN = 'did-you-mean';
     protected const IMPROVED = 'improved';
 
-    private ?string $type;
-
     private ?string $link;
 
-    private string $alternativeQuery;
-
-    private string $originalQuery;
-
     public function __construct(
-        ?string $originalQuery,
-        ?string $alternativeQuery,
+        private ?string $originalQuery,
+        private ?string $alternativeQuery,
+        private ?string $type,
         ?string $didYouMeanQuery,
-        ?string $type,
         ?string $controllerPath
     ) {
         $this->type = $didYouMeanQuery !== null ? self::DID_YOU_MEAN : $type;
@@ -65,21 +59,18 @@ class SmartDidYouMean extends Struct
 
     private function createLink(?string $controllerPath): ?string
     {
-        switch ($this->type) {
-            case self::DID_YOU_MEAN:
-                return sprintf(
-                    '%s?search=%s&forceOriginalQuery=1',
-                    $controllerPath,
-                    $this->alternativeQuery
-                );
-            case self::IMPROVED:
-                return sprintf(
-                    '%s?search=%s&forceOriginalQuery=1',
-                    $controllerPath,
-                    $this->originalQuery
-                );
-            default:
-                return null;
-        }
+        return match ($this->type) {
+            self::DID_YOU_MEAN => sprintf(
+                '%s?search=%s&forceOriginalQuery=1',
+                $controllerPath,
+                $this->alternativeQuery
+            ),
+            self::IMPROVED => sprintf(
+                '%s?search=%s&forceOriginalQuery=1',
+                $controllerPath,
+                $this->originalQuery
+            ),
+            default => null,
+        };
     }
 }

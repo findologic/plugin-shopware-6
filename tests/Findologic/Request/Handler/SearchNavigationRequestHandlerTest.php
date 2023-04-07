@@ -18,7 +18,6 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
@@ -28,6 +27,7 @@ use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -43,16 +43,13 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
     private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
-    /** @var Config|MockObject */
-    private $configMock;
+    private Config|MockObject $configMock;
 
     private ApiConfig $apiConfig;
 
-    /** @var ApiClient|MockObject */
-    private $apiClientMock;
+    private ApiClient|MockObject $apiClientMock;
 
-    /** @var FindologicRequestFactory|MockObject */
-    private $findologicRequestFactoryMock;
+    private FindologicRequestFactory|MockObject $findologicRequestFactoryMock;
 
     protected SalesChannelContext $salesChannelContext;
 
@@ -127,7 +124,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
         // Create a product, which will create some categories, which are assigned to it.
         $this->createTestProduct();
         $oneSubCategoryFilter = new Criteria();
-        $oneSubCategoryFilter->addFilter(new NotFilter(NotFilter::CONNECTION_OR, [
+        $oneSubCategoryFilter->addFilter(new NotFilter(MultiFilter::CONNECTION_OR, [
             new EqualsFilter('parentId', null),
         ]))->setLimit(1);
 
@@ -171,13 +168,13 @@ class SearchNavigationRequestHandlerTest extends TestCase
     private function buildNavigationRequestHandler(): NavigationRequestHandler
     {
         return new NavigationRequestHandler(
+            $this->getContainer()->get('category.repository'),
             $this->getContainer()->get(ServiceConfigResource::class),
             $this->findologicRequestFactoryMock,
             $this->configMock,
             $this->apiConfig,
             $this->apiClientMock,
             $this->getContainer()->get(SortingHandlerService::class),
-            $this->getContainer()->get('category.repository')
         );
     }
 

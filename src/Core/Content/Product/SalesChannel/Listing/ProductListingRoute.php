@@ -20,7 +20,6 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
@@ -35,44 +34,18 @@ class ProductListingRoute extends AbstractProductListingRoute
 {
     use SearchResultHelper;
 
-    private EventDispatcherInterface $eventDispatcher;
-
-    private ProductDefinition $definition;
-
-    private RequestCriteriaBuilder $criteriaBuilder;
-
-    private AbstractProductListingRoute $decorated;
-
-    private SalesChannelRepository $salesChannelProductRepository;
-
-    private EntityRepository $categoryRepository;
-
-    private ProductStreamBuilderInterface $productStreamBuilder;
-
-    private ServiceConfigResource $serviceConfigResource;
-
-    private Config $config;
-
     public function __construct(
-        AbstractProductListingRoute $decorated,
-        SalesChannelRepository $salesChannelProductRepository,
-        EntityRepository $categoryRepository,
-        ProductStreamBuilderInterface $productStreamBuilder,
-        EventDispatcherInterface $eventDispatcher,
-        ProductDefinition $definition,
-        RequestCriteriaBuilder $criteriaBuilder,
-        ServiceConfigResource $serviceConfigResource,
-        FindologicConfigService $findologicConfigService,
-        ?Config $config = null
+        private readonly AbstractProductListingRoute $decorated,
+        private readonly SalesChannelRepository $salesChannelProductRepository,
+        private readonly EntityRepository $categoryRepository,
+        private readonly ProductStreamBuilderInterface $productStreamBuilder,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly ProductDefinition $definition,
+        private readonly RequestCriteriaBuilder $criteriaBuilder,
+        private readonly ServiceConfigResource $serviceConfigResource,
+        private readonly FindologicConfigService $findologicConfigService,
+        private ?Config $config = null
     ) {
-        $this->decorated = $decorated;
-        $this->salesChannelProductRepository = $salesChannelProductRepository;
-        $this->categoryRepository = $categoryRepository;
-        $this->productStreamBuilder = $productStreamBuilder;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->definition = $definition;
-        $this->criteriaBuilder = $criteriaBuilder;
-        $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 
@@ -130,7 +103,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         );
 
         $result = $this->doSearch($criteria, $context);
-        /** @var ProductListingResult $productListing */
+
         $productListing = ProductListingResult::createFrom($result);
         $productListing->addCurrentFilter('navigationId', $categoryId);
 

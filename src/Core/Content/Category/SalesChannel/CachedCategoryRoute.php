@@ -15,20 +15,12 @@ use Symfony\Component\HttpFoundation\Request;
 
 class CachedCategoryRoute extends AbstractCategoryRoute
 {
-    protected AbstractCategoryRoute $decorated;
-
-    protected ServiceConfigResource $serviceConfigResource;
-
-    protected Config $config;
-
     public function __construct(
-        AbstractCategoryRoute $decorated,
-        ServiceConfigResource $serviceConfigResource,
-        FindologicConfigService $findologicConfigService,
-        ?Config $config = null
+        protected readonly AbstractCategoryRoute $decorated,
+        protected readonly ServiceConfigResource $serviceConfigResource,
+        protected readonly FindologicConfigService $findologicConfigService,
+        protected ?Config $config = null
     ) {
-        $this->decorated = $decorated;
-        $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 

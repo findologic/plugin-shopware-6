@@ -32,7 +32,7 @@ use Symfony\Component\HttpFoundation\Request;
 class Xml21ResponseParser extends ResponseParser
 {
     /** @var Xml21Response $response */
-    protected Response $response;
+    protected readonly Response $response;
 
     public function getProductIds(): array
     {
@@ -56,8 +56,8 @@ class Xml21ResponseParser extends ResponseParser
         return new SmartDidYouMean(
             $originalQuery,
             $alternativeQuery,
-            $didYouMeanQuery,
             $type,
+            $didYouMeanQuery,
             $request->getRequestUri()
         );
     }

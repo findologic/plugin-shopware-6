@@ -89,16 +89,16 @@
         },
         {
             "name": "findologic/findologic-api",
-            "version": "v1.6.1",
+            "version": "v1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "3c3a36134654bdd6610ec43948280a2dc41285a2"
+                "reference": "828265a1fb1bc08bb9bf3453302d51bf844acc00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/3c3a36134654bdd6610ec43948280a2dc41285a2",
-                "reference": "3c3a36134654bdd6610ec43948280a2dc41285a2",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/828265a1fb1bc08bb9bf3453302d51bf844acc00",
+                "reference": "828265a1fb1bc08bb9bf3453302d51bf844acc00",
                 "shasum": ""
             },
             "require": {
@@ -127,13 +127,18 @@
             ],
             "authors": [
                 {
-                    "name": "Dominik Brader",
-                    "email": "dominik@brader.co.at",
+                    "name": "Georg M. Sorst",
+                    "email": "g.sorst@findologic.com",
                     "role": "Maintainer"
                 },
                 {
                     "name": "Chris Ortner",
                     "email": "chris@codexfons.com",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Dominik Brader",
+                    "email": "dominik@brader.co.at",
                     "role": "Developer"
                 },
                 {
@@ -150,9 +155,9 @@
             "description": "Library for FINDOLOGIC API requests",
             "support": {
                 "issues": "https://github.com/findologic/findologic-api/issues",
-                "source": "https://github.com/findologic/findologic-api/tree/v1.6.1"
+                "source": "https://github.com/findologic/findologic-api/tree/v1.7.0"
             },
-            "time": "2021-10-20T10:12:38+00:00"
+            "time": "2023-04-06T10:43:35+00:00"
         },
         {
             "name": "findologic/guzzle",
@@ -302,7 +307,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "51bd19ed2026c9456d0ed81822dc3a105c278809"
+                "reference": "10b907eb46fb3c47443156706d4c006a5f6c984f"
             },
             "require": {
                 "findologic/libflexport": "^3.0",
@@ -354,7 +359,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-04-04T09:00:39+00:00"
+            "time": "2023-04-06T15:49:20+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
@@ -829,25 +834,25 @@
         },
         {
             "name": "psr/http-message",
-            "version": "1.0.1",
+            "version": "1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/http-message.git",
-                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363"
+                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
-                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
+                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.0"
+                "php": "^7.2 || ^8.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0.x-dev"
+                    "dev-master": "1.1.x-dev"
                 }
             },
             "autoload": {
@@ -876,9 +881,9 @@
                 "response"
             ],
             "support": {
-                "source": "https://github.com/php-fig/http-message/tree/master"
+                "source": "https://github.com/php-fig/http-message/tree/1.1"
             },
-            "time": "2016-08-06T14:39:51+00:00"
+            "time": "2023-04-04T09:50:52+00:00"
         },
         {
             "name": "psr/log",

@@ -28,29 +28,17 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CmsController extends StorefrontController
 {
-    private ShopwareCmsController $decorated;
-
-    private FilterHandler $filterHandler;
-
-    private FindologicSearchService $findologicSearchService;
-
-    private ServiceConfigResource $serviceConfigResource;
-
     private Config $config;
 
     public function __construct(
-        ShopwareCmsController $decorated,
-        FilterHandler $filterHandler,
+        private readonly ShopwareCmsController $decorated,
+        private readonly FilterHandler $filterHandler,
+        private readonly FindologicSearchService $findologicSearchService,
+        private readonly ServiceConfigResource $serviceConfigResource,
         ContainerInterface $container,
-        FindologicSearchService $findologicSearchService,
-        ServiceConfigResource $serviceConfigResource,
         FindologicConfigService $findologicConfigService
     ) {
         $this->container = $container;
-        $this->decorated = $decorated;
-        $this->filterHandler = $filterHandler;
-        $this->findologicSearchService = $findologicSearchService;
-        $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 

@@ -6,14 +6,10 @@ namespace FINDOLOGIC\FinSearch\Struct\QueryInfoMessage;
 
 class VendorInfoMessage extends QueryInfoMessage
 {
-    protected string $filterName;
-
-    protected string $filterValue;
-
-    public function __construct(string $filterName, string $filterValue)
-    {
-        $this->filterName = $filterName;
-        $this->filterValue = $filterValue;
+    public function __construct(
+        protected readonly string $filterName,
+        protected readonly string $filterValue
+    ) {
     }
 
     public function getFilterName(): string

@@ -23,8 +23,7 @@ class ProductSearchBuilderTest extends TestCase
 
     private SalesChannelContext $salesChannelContext;
 
-    /** @var ProductSearchBuilderInterface|MockObject */
-    private $productSearchBuilderMock;
+    private ProductSearchBuilderInterface|MockObject $productSearchBuilderMock;
 
     public function setUp(): void
     {
