@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values;
 
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
+use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Filter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\TranslatedName;
 use Shopware\Core\Framework\Struct\Struct;
 
@@ -22,13 +24,16 @@ class FilterValue extends Struct
      * The uuid is generated only for the values in which we need a unique ID for selection in storefront
      */
     public function __construct(
-        private readonly string $id,
-        private readonly string $name,
+        private string $id,
+        private string $name,
         ?string $filterName = null
     ) {
+        $this->id = str_replace(FilterHandler::FILTER_DELIMITER, FilterHandler::FILTER_DELIMITER_ENCODED, $id);
+        $this->name = str_replace(FilterHandler::FILTER_DELIMITER, FilterHandler::FILTER_DELIMITER_ENCODED, $name);
+
         $this->translated = new TranslatedName($name);
         if ($filterName !== null) {
-            $this->uuid = sprintf('%s%s%s', $filterName, self::DELIMITER, $id);
+            $this->uuid = sprintf('%s%s%s', $filterName, self::DELIMITER, $this->id);
         }
     }
 
