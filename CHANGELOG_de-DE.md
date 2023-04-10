@@ -1,3 +1,8 @@
+# 4.0.3
+
+* [SW-788] Ein Problem wurde behoben, wodurch nicht verfügbare Filterwerte auf Kategorieseiten nicht deaktiviert wurden
+* [SW-789] Ein Problem wurde behoben, wodurch bei Produkten mit SEO URLs ohne "/" die generische URL exportiert wurde
+
 # 4.0.2
 
 * [SW-777] Ein Problem wurde behoben, wodurch es bei Bereichsslidern mit mehr als 2 Kommastellen zu Fehlern kam.

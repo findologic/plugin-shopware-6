@@ -1,7 +1,7 @@
 {
   "name": "findologic/plugin-shopware-6",
   "description": "Findologic plugin for Shopware 6",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "license": "GPL-3.0-or-later",
   "type": "shopware-platform-plugin",
   "authors": [
@@ -18,7 +18,7 @@
   "require": {
     "findologic/libflexport": "^2.8",
     "findologic/findologic-api": "^1.6",
-    "findologic/shopware6-common": "^0.5.3",
+    "findologic/shopware6-common": "^0.5.4",
     "vin-sw/shopware-sdk": "^1.7.3",
     "composer/semver": "^3.3"
   },
