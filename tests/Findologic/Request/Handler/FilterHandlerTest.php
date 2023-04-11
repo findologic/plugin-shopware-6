@@ -6,10 +6,10 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\ColorPickerFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\LabelTextFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\ColorFilterValue;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\ColorPickerFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\LabelTextFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\ColorFilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;

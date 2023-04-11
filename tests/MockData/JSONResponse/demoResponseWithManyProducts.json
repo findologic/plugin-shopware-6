@@ -1,0 +1,800 @@
+{
+  "request": {
+    "query": "ps4",
+    "first": 0,
+    "count": 24,
+    "serviceId": "4B6A0A6F1217DBF125A45FCDEED6F8F3",
+    "usergroup": null,
+    "order": {
+      "field": "salesfrequency",
+      "relevanceBased": true,
+      "direction": "DESC"
+    }
+  },
+  "result": {
+    "metadata": {
+      "landingpage": {
+        "name": "Landingpage",
+        "url": "https://www.landingpage.io/agb/"
+      },
+      "promotion": {
+        "name": "Promotion",
+        "url": "https://promotion.com/",
+        "imageUrl": "https://promotion.com/promotion.png"
+      },
+      "searchConcept": null,
+      "effectiveQuery": "ps4",
+      "totalResults": 1808,
+      "currencySymbol": "€"
+    },
+    "items": [
+      {
+        "id": "102",
+        "score": 1.3862943649292,
+        "url": "http://example.com/102",
+        "name": "102",
+        "ordernumbers": [
+          "102"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/102.png",
+        "highlightedName": "102"
+      },
+      {
+        "id": "103",
+        "score": 1.3862943649292,
+        "url": "http://example.com/103",
+        "name": "103",
+        "ordernumbers": [
+          "103"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/103.png",
+        "highlightedName": "103"
+      },
+      {
+        "id": "104",
+        "score": 1.3862943649292,
+        "url": "http://example.com/104",
+        "name": "104",
+        "ordernumbers": [
+          "104"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/104.png",
+        "highlightedName": "104"
+      },
+      {
+        "id": "105",
+        "score": 1.3862943649292,
+        "url": "http://example.com/105",
+        "name": "105",
+        "ordernumbers": [
+          "105"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/105.png",
+        "highlightedName": "105"
+      },
+      {
+        "id": "106",
+        "score": 1.3862943649292,
+        "url": "http://example.com/106",
+        "name": "106",
+        "ordernumbers": [
+          "106"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/106.png",
+        "highlightedName": "106"
+      },
+      {
+        "id": "107",
+        "score": 1.3862943649292,
+        "url": "http://example.com/107",
+        "name": "107",
+        "ordernumbers": [
+          "107"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/107.png",
+        "highlightedName": "107"
+      },
+      {
+        "id": "108",
+        "score": 1.3862943649292,
+        "url": "http://example.com/108",
+        "name": "108",
+        "ordernumbers": [
+          "108"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/108.png",
+        "highlightedName": "108"
+      },
+      {
+        "id": "109",
+        "score": 1.3862943649292,
+        "url": "http://example.com/109",
+        "name": "109",
+        "ordernumbers": [
+          "109"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/109.png",
+        "highlightedName": "109"
+      },
+      {
+        "id": "110",
+        "score": 1.3862943649292,
+        "url": "http://example.com/110",
+        "name": "110",
+        "ordernumbers": [
+          "110"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/110.png",
+        "highlightedName": "110"
+      },
+      {
+        "id": "111",
+        "score": 1.3862943649292,
+        "url": "http://example.com/111",
+        "name": "111",
+        "ordernumbers": [
+          "111"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/111.png",
+        "highlightedName": "111"
+      },
+      {
+        "id": "112",
+        "score": 1.3862943649292,
+        "url": "http://example.com/112",
+        "name": "112",
+        "ordernumbers": [
+          "112"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/112.png",
+        "highlightedName": "112"
+      },
+      {
+        "id": "113",
+        "score": 1.3862943649292,
+        "url": "http://example.com/113",
+        "name": "113",
+        "ordernumbers": [
+          "113"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/113.png",
+        "highlightedName": "113"
+      },
+      {
+        "id": "114",
+        "score": 1.3862943649292,
+        "url": "http://example.com/114",
+        "name": "114",
+        "ordernumbers": [
+          "114"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/114.png",
+        "highlightedName": "114"
+      },
+      {
+        "id": "115",
+        "score": 1.3862943649292,
+        "url": "http://example.com/115",
+        "name": "115",
+        "ordernumbers": [
+          "115"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/115.png",
+        "highlightedName": "115"
+      },
+      {
+        "id": "116",
+        "score": 1.3862943649292,
+        "url": "http://example.com/116",
+        "name": "116",
+        "ordernumbers": [
+          "116"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/116.png",
+        "highlightedName": "116"
+      },
+      {
+        "id": "117",
+        "score": 1.3862943649292,
+        "url": "http://example.com/117",
+        "name": "117",
+        "ordernumbers": [
+          "117"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/117.png",
+        "highlightedName": "117"
+      },
+      {
+        "id": "118",
+        "score": 1.3862943649292,
+        "url": "http://example.com/118",
+        "name": "118",
+        "ordernumbers": [
+          "118"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/118.png",
+        "highlightedName": "118"
+      },
+      {
+        "id": "119",
+        "score": 1.3862943649292,
+        "url": "http://example.com/119",
+        "name": "119",
+        "ordernumbers": [
+          "119"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/119.png",
+        "highlightedName": "119"
+      },
+      {
+        "id": "120",
+        "score": 1.3862943649292,
+        "url": "http://example.com/120",
+        "name": "120",
+        "ordernumbers": [
+          "120"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/120.png",
+        "highlightedName": "120"
+      },
+      {
+        "id": "121",
+        "score": 1.3862943649292,
+        "url": "http://example.com/121",
+        "name": "121",
+        "ordernumbers": [
+          "121"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/121.png",
+        "highlightedName": "121"
+      },
+      {
+        "id": "122",
+        "score": 1.3862943649292,
+        "url": "http://example.com/122",
+        "name": "122",
+        "ordernumbers": [
+          "122"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/122.png",
+        "highlightedName": "122"
+      },
+      {
+        "id": "123",
+        "score": 1.3862943649292,
+        "url": "http://example.com/123",
+        "name": "123",
+        "ordernumbers": [
+          "123"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/123.png",
+        "highlightedName": "123"
+      },
+      {
+        "id": "124",
+        "score": 1.3862943649292,
+        "url": "http://example.com/124",
+        "name": "124",
+        "ordernumbers": [
+          "124"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/124.png",
+        "highlightedName": "124"
+      },
+      {
+        "id": "125",
+        "score": 1.3862943649292,
+        "url": "http://example.com/125",
+        "name": "125",
+        "ordernumbers": [
+          "125"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/125.png",
+        "highlightedName": "125"
+      },
+      {
+        "id": "126",
+        "score": 1.3862943649292,
+        "url": "http://example.com/126",
+        "name": "126",
+        "ordernumbers": [
+          "126"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/126.png",
+        "highlightedName": "126"
+      },
+      {
+        "id": "127",
+        "score": 1.3862943649292,
+        "url": "http://example.com/127",
+        "name": "127",
+        "ordernumbers": [
+          "127"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/127.png",
+        "highlightedName": "127"
+      },
+      {
+        "id": "128",
+        "score": 1.3862943649292,
+        "url": "http://example.com/128",
+        "name": "128",
+        "ordernumbers": [
+          "128"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/128.png",
+        "highlightedName": "128"
+      },
+      {
+        "id": "129",
+        "score": 1.3862943649292,
+        "url": "http://example.com/129",
+        "name": "129",
+        "ordernumbers": [
+          "129"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/129.png",
+        "highlightedName": "129"
+      },
+      {
+        "id": "130",
+        "score": 1.3862943649292,
+        "url": "http://example.com/130",
+        "name": "130",
+        "ordernumbers": [
+          "130"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/130.png",
+        "highlightedName": "130"
+      },
+      {
+        "id": "131",
+        "score": 1.3862943649292,
+        "url": "http://example.com/131",
+        "name": "131",
+        "ordernumbers": [
+          "131"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/131.png",
+        "highlightedName": "131"
+      },
+      {
+        "id": "132",
+        "score": 1.3862943649292,
+        "url": "http://example.com/132",
+        "name": "132",
+        "ordernumbers": [
+          "132"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/132.png",
+        "highlightedName": "132"
+      },
+      {
+        "id": "133",
+        "score": 1.3862943649292,
+        "url": "http://example.com/133",
+        "name": "133",
+        "ordernumbers": [
+          "133"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/133.png",
+        "highlightedName": "133"
+      },
+      {
+        "id": "134",
+        "score": 1.3862943649292,
+        "url": "http://example.com/134",
+        "name": "134",
+        "ordernumbers": [
+          "134"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/134.png",
+        "highlightedName": "134"
+      },
+      {
+        "id": "135",
+        "score": 1.3862943649292,
+        "url": "http://example.com/135",
+        "name": "135",
+        "ordernumbers": [
+          "135"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/135.png",
+        "highlightedName": "135"
+      }
+    ],
+    "variant": {
+      "name": "sdym"
+    },
+    "filters": {
+      "main": [
+        {
+          "name": "price",
+          "displayName": "Price",
+          "selectMode": "single",
+          "values": [
+            {
+              "value": {
+                "min": 0.39,
+                "max": 13.4
+              },
+              "weight": 0.51743012666702,
+              "frequency": null
+            },
+            {
+              "value": {
+                "min": 13.45,
+                "max": 25.99
+              },
+              "weight": 0.50098878145218,
+              "frequency": null
+            },
+            {
+              "value": {
+                "min": 26,
+                "max": 40.3
+              },
+              "weight": 0.3976277410984,
+              "frequency": null
+            }
+          ],
+          "type": "range-slider",
+          "totalRange": {
+            "min": 0.39,
+            "max": 2239.1
+          },
+          "selectedRange": {
+            "min": 0.39,
+            "max": 2239.1
+          },
+          "stepSize": 0.1,
+          "unit": "€"
+        }
+      ],
+      "other": [
+        {
+          "name": "Farbe",
+          "displayName": "Farbe",
+          "selectMode": "multiple",
+          "combinationOperation": "or",
+          "values": [
+            {
+              "value": "blau",
+              "weight": 0.3296460211277,
+              "image": "https://blubbergurken.io/farbfilter/blau.gif",
+              "frequency": null,
+              "selected": true,
+              "color": "#3c6380"
+            },
+            {
+              "value": "beige",
+              "weight": 0.10730088502169,
+              "image": "https://blubbergurken.io/farbfilter/beige.gif",
+              "frequency": null,
+              "selected": false,
+              "color": "#F5F5DC"
+            },
+            {
+              "value": "braun",
+              "weight": 0.90265488624573,
+              "image": "https://blubbergurken.io/farbfilter/braun.gif",
+              "frequency": null,
+              "selected": false,
+              "color": "#94651e"
+            }
+          ],
+          "type": "color"
+        },
+        {
+          "name": "Material",
+          "displayName": "Material",
+          "selectMode": "multiple",
+          "cssClass": "fl-material",
+          "combinationOperation": "and",
+          "values": [
+            {
+              "value": "Hartgepäck",
+              "weight": 0.038716815412045,
+              "frequency": 35,
+              "selected": false
+            },
+            {
+              "value": "Leder",
+              "weight": 0.63053095340729,
+              "frequency": 1238,
+              "selected": false
+            },
+            {
+              "value": "Nylon",
+              "weight": 0.12168141454458,
+              "frequency": 110,
+              "selected": false
+            }
+          ],
+          "type": "select"
+        },
+        {
+          "name": "vendor",
+          "displayName": "Hersteller",
+          "selectMode": "multiple",
+          "noAvailableFiltersText": "Keine Hersteller",
+          "combinationOperation": "and",
+          "values": [
+            {
+              "value": "Bodenschatz",
+              "weight": 0.0022123893722892,
+              "frequency": 2,
+              "selected": false
+            },
+            {
+              "value": "Braun Büffel",
+              "weight": 0.08517698943615,
+              "frequency": 77,
+              "selected": false
+            },
+            {
+              "value": "Camel Active",
+              "weight": 0.13495574891567,
+              "frequency": 122,
+              "selected": false
+            }
+          ],
+          "type": "select"
+        },
+        {
+          "name": "cat",
+          "displayName": "Kategorie",
+          "selectMode": "single",
+          "values": [
+            {
+              "value": "Buch",
+              "weight": 0.25156819820404,
+              "frequency": 5,
+              "selected": false,
+              "displayName": "Buch"
+            }
+          ],
+          "type": "select"
+        }
+      ]
+    }
+  }
+}

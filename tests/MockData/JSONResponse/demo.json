@@ -1,0 +1,228 @@
+{
+  "request": {
+    "query": "ps4",
+    "first": 0,
+    "count": 24,
+    "serviceId": "4B6A0A6F1217DBF125A45FCDEED6F8F3",
+    "usergroup": null,
+    "order": {
+      "field": "salesfrequency",
+      "relevanceBased": true,
+      "direction": "DESC"
+    }
+  },
+  "result": {
+    "metadata": {
+      "landingpage": null,
+      "promotion": {
+        "name": "Promotion",
+        "url": "https://promotion.com/",
+        "imageUrl": "https://promotion.com/promotion.png"
+      },
+      "searchConcept": null,
+      "effectiveQuery": "ps4",
+      "totalResults": 1808,
+      "currencySymbol": "€"
+    },
+    "items": [
+      {
+        "id": "019111105-37900",
+        "score": 1.3862943649292,
+        "url": "http:\/\/example.com\/product",
+        "name": "Product",
+        "ordernumbers": [
+          "019111105-37900"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/product.png",
+        "highlightedName": "Product"
+      },
+      {
+        "id": "029214085-37860",
+        "score": 1.3862943649292,
+        "url": "http:\/\/example.com\/product2",
+        "name": "Product 2",
+        "ordernumbers": [
+          "019111105-37900"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/product-2.png",
+        "highlightedName": "Product 2"
+      }
+    ],
+    "variant": {
+      "name": "sdym"
+    },
+    "filters": {
+      "main": [
+        {
+          "name": "price",
+          "displayName": "Price",
+          "selectMode": "single",
+          "values": [
+            {
+              "value": {
+                "min": 0.39,
+                "max": 13.4
+              },
+              "weight": 0.51743012666702,
+              "frequency": null
+            },
+            {
+              "value": {
+                "min": 13.45,
+                "max": 25.99
+              },
+              "weight": 0.50098878145218,
+              "frequency": null
+            },
+            {
+              "value": {
+                "min": 26,
+                "max": 40.3
+              },
+              "weight": 0.3976277410984,
+              "frequency": null
+            }
+          ],
+          "type": "range-slider",
+          "totalRange": {
+            "min": 0.39,
+            "max": 2239.1
+          },
+          "selectedRange": {
+            "min": 0.39,
+            "max": 2239.1
+          },
+          "stepSize": 0.1,
+          "unit": "€"
+        }
+      ],
+      "other": [
+        {
+          "name": "Farbe",
+          "displayName": "Farbe",
+          "selectMode": "multiple",
+          "combinationOperation": "or",
+          "values": [
+            {
+              "value": "beige",
+              "weight": 0.10730088502169,
+              "image": "https://blubbergurken.io/farbfilter/beige.gif",
+              "frequency": null,
+              "selected": false,
+              "color": "#F5F5DC"
+            },
+            {
+              "value": "blau",
+              "weight": 0.3296460211277,
+              "image": "https://blubbergurken.io/farbfilter/blau.gif",
+              "frequency": null,
+              "selected": true,
+              "color": "#3c6380"
+            },
+            {
+              "value": "braun",
+              "weight": 0.90265488624573,
+              "image": "https://blubbergurken.io/farbfilter/braun.gif",
+              "frequency": null,
+              "selected": false,
+              "color": "#94651e"
+            }
+          ],
+          "type": "color"
+        },
+        {
+          "name": "Material",
+          "displayName": "Material",
+          "selectMode": "multiple",
+          "cssClass": "fl-material",
+          "combinationOperation": "and",
+          "values": [
+            {
+              "value": "Hartgepäck",
+              "weight": 0.038716815412045,
+              "frequency": 35,
+              "selected": false
+            },
+            {
+              "value": "Leder",
+              "weight": 0.63053095340729,
+              "frequency": 1238,
+              "selected": false
+            },
+            {
+              "value": "Nylon",
+              "weight": 0.12168141454458,
+              "frequency": 110,
+              "selected": false
+            }
+          ],
+          "type": "select"
+        },
+        {
+          "name": "vendor",
+          "displayName": "Hersteller",
+          "selectMode": "multiple",
+          "noAvailableFiltersText": "Keine Hersteller",
+          "combinationOperation": "and",
+          "values": [
+            {
+              "value": "Bodenschatz",
+              "weight": 0.0022123893722892,
+              "frequency": 2,
+              "selected": false
+            },
+            {
+              "value": "Braun Büffel",
+              "weight": 0.08517698943615,
+              "frequency": 77,
+              "selected": false
+            },
+            {
+              "value": "Camel Active",
+              "weight": 0.13495574891567,
+              "frequency": 122,
+              "selected": false
+            }
+          ],
+          "type": "select"
+        },
+        {
+          "name": "cat",
+          "displayName": "Kategorie",
+          "selectMode": "single",
+          "values": [
+            {
+              "value": "Buch",
+              "weight": 0.25156819820404,
+              "frequency": 5,
+              "selected": false,
+              "displayName": "Buch"
+            },
+            {
+              "value": "Buch_Beste Bücher",
+              "weight": 0.33799207210541,
+              "frequency": 0,
+              "selected": false,
+              "displayName": "Beste Bücher"
+            }
+          ],
+          "type": "select"
+        }
+      ]
+    }
+  }
+}

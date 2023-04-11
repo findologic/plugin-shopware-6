@@ -9,7 +9,7 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Api\PaginationService;
@@ -121,8 +121,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             'search request' => [
                 'endpoint' => 'handleSearchRequest',
                 'expectedProducts' => [
-                    '019111105-37900' => '019111105-37900',
-                    '029214085-37860' => '029214085-37860'
+                    '019111105-37900',
+                    '029214085-37860'
                 ],
                 'isNavigationRequest' => false
             ],
@@ -324,7 +324,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $response = $this->getRawResponse();
         unset($response->promotion);
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
+        $eventMock = $this->setUpSearchRequestMocks(new Json10Response($response));
 
         $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -349,24 +349,32 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     public function testContainsDidYouMeanQuery(): void
     {
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
-        $response = $this->getRawResponse('demoResponseWithDidYouMeanQuery.xml');
+        $response = $this->getRawResponse('demoResponseWithDidYouMeanQuery.json');
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()));
+        $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension(
+            'query',
+            'query',
+            null,
+            'didYouMean'
+        );
 
         $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $findologicServiceMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
-        $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicServiceMock);
+        $contextMock = $this->getMockBuilder(Context::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $contextMock->expects($this->any())->method('getExtension')->willReturnMap([
+            ['findologicService', $findologicServiceMock],
+            ['flSmartDidYouMean', $smartDidYouMean],
+        ]);
         $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-            ['findologicService'],
-            [
-                'flSmartDidYouMean',
-                $this->getDefaultSmartDidYouMeanExtension('ps4', null)
-            ]
+            ['flSmartDidYouMean', $smartDidYouMean]
         );
+
+        $eventMock = $this->setUpSearchRequestMocks(new Json10Response($response), null, false, $contextMock);
         $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
@@ -379,9 +387,13 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     public function testContainsCorrectedQuery(): void
     {
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
-        $response = $this->getRawResponse('demoResponseWithCorrectedQuery.xml');
+        $response = $this->getRawResponse('demoResponseWithCorrectedQuery.json');
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
+        $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension(
+            'query',
+            'query',
+            'corrected',
+        );
 
         $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -389,17 +401,18 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $findologicServiceMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicServiceMock);
+        $contextMock->expects($this->any())->method('getExtension')->willReturnMap([
+            ['findologicService', $findologicServiceMock],
+            ['flSmartDidYouMean', $smartDidYouMean],
+        ]);
         $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-            ['findologicService'],
-            [
-                'flSmartDidYouMean',
-                $this->getDefaultSmartDidYouMeanExtension('', 'ps4', null, 'corrected')
-            ]
+            ['flSmartDidYouMean', $smartDidYouMean]
         );
-        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
+
+        $eventMock = $this->setUpSearchRequestMocks(new Json10Response($response), null, false, $contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $subscriber = $this->getProductListingFeaturesSubscriber();
@@ -409,9 +422,15 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     public function testContainsImprovedQuery(): void
     {
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
-        $response = $this->getRawResponse('demoResponseWithImprovedQuery.xml');
+        $response = $this->getRawResponse('demoResponseWithImprovedQuery.json');
 
-        $eventMock = $this->setUpSearchRequestMocks(new Xml21Response($response->asXML()), null, false);
+        $smartDidYouMean = $this->getDefaultSmartDidYouMeanExtension(
+            'query',
+            'query',
+            '',
+            '',
+            'improved',
+        );
 
         $findologicServiceMock = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -419,17 +438,18 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $findologicServiceMock->expects($this->any())->method('getEnabled')->willReturn(true);
 
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
-        $contextMock->expects($this->any())->method('getExtension')->willReturn($findologicServiceMock);
+        $contextMock->expects($this->any())->method('getExtension')->willReturnMap([
+            ['findologicService', $findologicServiceMock],
+            ['flSmartDidYouMean', $smartDidYouMean],
+        ]);
         $contextMock->expects($this->any())->method('addExtension')->withConsecutive(
-            ['findologicService'],
-            [
-                'flSmartDidYouMean',
-                $this->getDefaultSmartDidYouMeanExtension('', 'ps4', null, 'improved')
-            ]
+            ['flSmartDidYouMean', $smartDidYouMean]
         );
-        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
+
+        $eventMock = $this->setUpSearchRequestMocks(new Json10Response($response), null, false, $contextMock);
+        $eventMock->expects($this->any())->method('getContext')->willReturn($contextMock);
         $eventMock->expects($this->any())->method('getCriteria')->willReturn($criteriaMock);
 
         $subscriber = $this->getProductListingFeaturesSubscriber();
@@ -441,49 +461,41 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         return [
             'Submitting an empty search' => [
                 'queryString' => '',
-                'queryStringType' => null,
                 'params' => ['cat' => '', 'vendor' => ''],
                 'expectedInstance' => DefaultInfoMessage::class
             ],
             'Submitting an empty search with a selected category' => [
                 'queryString' => '',
-                'queryStringType' => null,
                 'params' => ['cat' => 'Genusswelten', 'vendor' => ''],
                 'expectedInstance' => CategoryInfoMessage::class
             ],
             'Submitting an empty search with a selected sub-category' => [
                 'queryString' => '',
-                'queryStringType' => null,
                 'params' => ['cat' => 'Genusswelten_Tees', 'vendor' => ''],
                 'expectedInstance' => CategoryInfoMessage::class
             ],
             'Submitting an empty search with a selected vendor' => [
                 'queryString' => '',
-                'queryStringType' => null,
                 'params' => ['cat' => '', 'vendor' => 'Shopware Food'],
                 'expectedInstance' => VendorInfoMessage::class
             ],
             'Submitting a search with some query' => [
                 'queryString' => 'some query',
-                'queryStringType' => null,
                 'params' => ['cat' => '', 'vendor' => ''],
                 'expectedInstance' => SearchTermQueryInfoMessage::class
             ],
             'Submitting a search with some query and a selected category and vendor filter' => [
                 'queryString' => 'some query',
-                'queryStringType' => null,
                 'params' => ['cat' => 'Genusswelten', 'vendor' => 'Shopware Food'],
                 'expectedInstance' => SearchTermQueryInfoMessage::class
             ],
             'Submitting a search where the response will have an improved query' => [
                 'queryString' => 'special',
-                'queryStringType' => 'improved',
                 'params' => ['cat' => '', 'vendor' => ''],
                 'expectedInstance' => SearchTermQueryInfoMessage::class
             ],
             'Submitting a search where the response will have a corrected query' => [
                 'queryString' => 'standord',
-                'queryStringType' => 'improved',
                 'params' => ['cat' => '', 'vendor' => ''],
                 'expectedInstance' => SearchTermQueryInfoMessage::class
             ],
@@ -497,22 +509,16 @@ class ProductListingFeaturesSubscriberTest extends TestCase
      */
     public function testQueryInfoMessage(
         string $queryString,
-        ?string $queryStringType,
         array $params,
         string $expectedInstance
     ): void {
         $this->configMock->expects($this->any())->method('isActive')->willReturn(true);
-        $xmlResponse = clone $this->getRawResponse();
-        unset($xmlResponse->query);
+        $rawResponse = $this->getRawResponse();
 
-        $query = $xmlResponse->addChild('query');
-        $limit = $query->addChild('limit');
-        $limit->addAttribute('first', '0');
-        $limit->addAttribute('count', '24');
-        $queryStringXml = $query->addChild('queryString', $queryString);
-        if ($queryStringType !== null) {
-            $queryStringXml->addAttribute('type', $queryStringType);
-        }
+        $responseArray = json_decode($rawResponse, true);
+
+        $responseArray['request']['query'] = $queryString;
+        $responseArray['result']['metadata']['effectiveQuery'] = $queryString;
 
         $request = new Request();
         foreach ($params as $key => $param) {
@@ -522,7 +528,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         $request->setSession($this->getDefaultSessionMock());
         $eventMock = $this->setUpSearchRequestMocks(
-            new Xml21Response($xmlResponse->asXML()),
+            new Json10Response(json_encode($responseArray)),
             $request,
             false,
             $context
@@ -646,18 +652,16 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         );
     }
 
-    private function getRawResponse(string $file = 'demo.xml'): SimpleXMLElement
+    private function getRawResponse(string $file = 'demo.json'): string
     {
-        return new SimpleXMLElement(
-            file_get_contents(
-                __DIR__ . sprintf('/../../../../../MockData/XMLResponse/%s', $file)
-            )
+        return file_get_contents(
+            __DIR__ . sprintf('/../../../../../MockData/JSONResponse/%s', $file)
         );
     }
 
-    private function getDefaultResponse(): Xml21Response
+    private function getDefaultResponse(): Json10Response
     {
-        return new Xml21Response(file_get_contents(__DIR__ . '/../../../../../MockData/XMLResponse/demo.xml'));
+        return new Json10Response(file_get_contents(__DIR__ . '/../../../../../MockData/JSONResponse/demo.json'));
     }
 
     private function getDefaultRequestMock(): Request
@@ -696,7 +700,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     }
 
     private function setUpSearchRequestMocks(
-        ?Xml21Response $response = null,
+        ?Json10Response $response = null,
         ?Request $request = null,
         bool $withSmartDidYouMean = true,
         Context $context = null
@@ -914,20 +918,18 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             'totalCountMode' => 0,
             'associations' => [],
             'ids' => [
-                '019111105-37900' => '019111105-37900',
-                '029214085-37860' => '029214085-37860'
+                '019111105-37900',
+                '029214085-37860'
             ],
             'inherited' => false,
             'term' => null,
             'extensions' => [
                 'flPagination' => new Pagination($expectedLimit, 0, 1808)
             ],
-            'includes' => null
+            'includes' => null,
+            'fields' => [],
+            'title' => null,
         ];
-        if (Utils::versionGreaterOrEqual('6.4.9.0')) {
-            $expectedAssign['fields'] = [];
-        }
-        $expectedAssign['title'] = null;
 
         $criteriaMock = $this->getMockBuilder(Criteria::class)->disableOriginalConstructor()->getMock();
         $invokeCountAssign = $isNavigationRequest ? $this->never() : $this->once();

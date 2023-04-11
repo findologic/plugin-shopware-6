@@ -10,16 +10,18 @@ trait ExtensionHelper
 {
     public function getDefaultSmartDidYouMeanExtension(
         ?string $originalQuery = 'ps4',
-        ?string $alternativeQuery = 'ps4',
-        ?string $didYouMeanQuery = 'ps4',
-        ?string $type = 'did-you-mean',
+        ?string $effectiveQuery = 'ps4',
+        ?string $correctedQuery = '',
+        ?string $didYouMeanQuery = '',
+        ?string $improvedQuery = '',
         ?string $controllerPath = ''
     ): SmartDidYouMean {
         return new SmartDidYouMean(
             $originalQuery,
-            $alternativeQuery,
-            $type,
+            $effectiveQuery,
+            $correctedQuery,
             $didYouMeanQuery,
+            $improvedQuery,
             $controllerPath
         );
     }

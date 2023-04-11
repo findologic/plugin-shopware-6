@@ -1,0 +1,75 @@
+{
+  "request": {
+    "query": "ps4",
+    "first": 0,
+    "count": 24,
+    "serviceId": "4B6A0A6F1217DBF125A45FCDEED6F8F3",
+    "usergroup": null,
+    "order": {
+      "field": "salesfrequency",
+      "relevanceBased": true,
+      "direction": "DESC"
+    }
+  },
+  "result": {
+    "metadata": {
+      "landingpage": null,
+      "promotion": {
+        "name": "Promotion",
+        "url": "https://promotion.com/",
+        "imageUrl": "https://promotion.com/promotion.png"
+      },
+      "searchConcept": null,
+      "effectiveQuery": "ps4",
+      "totalResults": 1808,
+      "currencySymbol": "€"
+    },
+    "items": [],
+    "variant": {
+      "name": "sdym"
+    },
+    "filters": {
+      "main": [
+        {
+          "name": "vendor",
+          "displayName": "Hersteller",
+          "selectMode": "multiple",
+          "noAvailableFiltersText": "Keine Hersteller",
+          "combinationOperation": "and",
+          "values": [
+            {
+              "value": "Anderson, Gusikowski and Barton",
+              "weight": 0.0333,
+              "frequency": 2,
+              "image": "https://demo.findologic.com/vendor/anderson_gusikowski_and_barton.png",
+              "selected": false
+            },
+            {
+              "value": "Bednar Ltd",
+              "weight": 0.0667,
+              "frequency": 77,
+              "image": "https://demo.findologic.com/vendor/bednar_ltd.png",
+              "selected": false
+            },
+            {
+              "value": "Buckridge-Fisher",
+              "weight": 0.0333,
+              "frequency": 122,
+              "image": "https://demo.findologic.com/vendor/buckridge_fisher.png",
+              "selected": false
+            },
+            {
+              "value": "Connelly, Eichmann and Weissnat",
+              "weight": 0.1,
+              "frequency": 122,
+              "image": "https://demo.findologic.com/vendor/connelly_eichmann_and_weissnat.png",
+              "selected": false
+            }
+          ],
+          "type": "image"
+        }
+      ],
+      "other": []
+    }
+  }
+}

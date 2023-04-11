@@ -8,7 +8,7 @@
         "entities": [
           {
             "translated": {
-              "name": "Preis"
+              "name": "Price"
             },
             "options": [
               {
@@ -198,7 +198,7 @@
     "entities": [
       {
         "translated": {
-          "name": "Preis"
+          "name": "Price"
         },
         "options": [
           {

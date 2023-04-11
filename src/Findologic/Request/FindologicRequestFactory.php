@@ -44,7 +44,7 @@ abstract class FindologicRequestFactory
     ): SearchNavigationRequest {
         $searchNavigationRequest->setUserIp($this->fetchClientIp());
         $searchNavigationRequest->setRevision($this->getPluginVersion());
-        $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
+        $searchNavigationRequest->setOutputAdapter(OutputAdapter::JSON_10);
         $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindologicApiRequest::SET_VALUE);
         $searchNavigationRequest->addIndividualParam(
             'shopVersion',

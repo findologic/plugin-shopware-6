@@ -6,11 +6,11 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchNavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Response\Filter\BaseFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\CategoryFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RangeSliderFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\RatingFilter;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\CategoryFilterValue;
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\CategoryFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\RangeSliderFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\RatingFilter;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\CategoryFilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Struct\FiltersExtension;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\Event\ShopwareEvent;
@@ -249,8 +249,7 @@ class FilterHandler
             $values = $filter->getValues();
 
             if ($filter instanceof RatingFilter) {
-                $max = end($values);
-                $result[BaseFilter::RATING_FILTER_NAME]['max'] = $max->getId();
+                $result[RatingFilter::RATING_FILTER_NAME]['max'] = $filter->getMaxPoints();
             } else {
                 $filterValues = [];
 

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Storefront\Controller;
 
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10ResponseParser;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21ResponseParser;
 use FINDOLOGIC\FinSearch\Storefront\Controller\SearchController;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
@@ -48,11 +50,11 @@ class SearchControllerTest extends TestCase
     {
         return [
             'Available filters are returned in response' => [
-                'demoResponse' => 'XMLResponse/demoResponseWithAvailableFilters.xml',
+                'demoResponse' => 'JSONResponse/demo.json',
                 'expectedResponse' => 'JSONResponse/availableFilterResponse.json'
             ],
             'Empty category values are not returned in response' => [
-                'demoResponse' => 'XMLResponse/demoResponseWithAvailableFiltersWithoutCategory.xml',
+                'demoResponse' => 'JSONResponse/demoResponseWithoutCategoryFilter.json',
                 'expectedResponse' => 'JSONResponse/availableFilterResponseWithoutCategory.json'
             ]
         ];
@@ -63,8 +65,8 @@ class SearchControllerTest extends TestCase
      */
     public function testAvailableFilterReturnsCorrectResponse(string $demoResponse, string $expectedResponse): void
     {
-        $response = new Xml21Response($this->getMockResponse($demoResponse));
-        $parser = new Xml21ResponseParser($response);
+        $response = new Json10Response($this->getMockResponse($demoResponse));
+        $parser = new Json10ResponseParser($response);
         $filterExtension = $parser->getFiltersExtension();
 
         $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
@@ -86,16 +88,16 @@ class SearchControllerTest extends TestCase
 
     public function testFiltersWhichAreNotInTheAvailableFilterResponseAreStillReturned(): void
     {
-        $availableFiltersResponse = new Xml21Response(
-            $this->getMockResponse('XMLResponse/demoResponseWithNoResults.xml')
+        $availableFiltersResponse = new Json10Response(
+            $this->getMockResponse('JSONResponse/demoResponseWithNoResults.json')
         );
-        $responseParser = new Xml21ResponseParser($availableFiltersResponse);
+        $responseParser = new Json10ResponseParser($availableFiltersResponse);
         $availableFilters = $responseParser->getFiltersExtension();
 
-        $allFiltersResponse = new Xml21Response(
-            $this->getMockResponse('XMLResponse/demoResponseWithAllFilterTypes.xml')
+        $allFiltersResponse = new Json10Response(
+            $this->getMockResponse('JSONResponse/demoResponseWithAllFilterTypes.json')
         );
-        $parser = new Xml21ResponseParser($allFiltersResponse);
+        $parser = new Json10ResponseParser($allFiltersResponse);
         $allFilters = $parser->getFiltersExtension();
 
         $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
