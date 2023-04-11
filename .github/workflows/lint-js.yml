@@ -24,7 +24,7 @@ jobs:
           path: plugin-shopware-6
 
       - name: Server Setup
-        uses: ./.github/workflows/_server-setup.yml
+        uses: ./.github/workflows/setup.yml
         with:
           php-version: ${{ matrix.php-versions }}
 
