@@ -15,7 +15,7 @@ jobs:
       matrix:
         php-versions: [ '8.1', '8.2' ]
         shopware-versions: [
-            '6.5.0.0-rc3',
+            '6.5.0.0-rc4',
         ]
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }} + JS)
@@ -71,8 +71,6 @@ jobs:
       - name: Install test dependencies for SW
         run: |
           cd shopware
-          composer config repositories.repo-name vcs https://github.com/jmatthiesen81/shopware65-tests.git
-          composer require --dev jmatthiesen/shopware65-tests:5.0.0-rc3
           composer require --dev symfony/test-pack
 
       - name: Install dependencies
