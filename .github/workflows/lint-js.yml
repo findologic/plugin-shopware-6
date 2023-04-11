@@ -20,11 +20,9 @@ jobs:
     name: ESLint - ${{ matrix.shopware-versions }}
     steps:
       - uses: actions/checkout@v2
-        with:
-          path: plugin-shopware-6
 
       - name: Server Setup
-        uses: ./plugin-shopware-6/.github/workflows/setup.yml
+        uses: ./.github/workflows/setup.yml
         with:
           php-version: ${{ matrix.php-versions }}
 
