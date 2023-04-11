@@ -20,7 +20,7 @@ jobs:
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }} + JS)
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Server Setup
         uses: ./.github/workflows/setup.yml
