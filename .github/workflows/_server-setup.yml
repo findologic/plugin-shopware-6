@@ -1,5 +1,9 @@
 on:
   workflow_call:
+    inputs:
+      php-version:
+        required: true
+        type: string
 
 jobs:
   setup:
@@ -15,7 +19,7 @@ jobs:
       - name: Setup PHP with Composer 2
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ inputs.php-version }}
           extensions: dom, gd, mbstring, pdo_mysql, zip
           coverage: xdebug
           tools: composer:2.1.5
