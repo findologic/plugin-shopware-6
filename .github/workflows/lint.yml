@@ -19,11 +19,6 @@ jobs:
 
       - uses: actions/checkout@v2
 
-      - name: Setup Node 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
       - name: Setup PHP with Composer 2
         uses: shivammathur/setup-php@v2
         with:
@@ -69,6 +64,11 @@ jobs:
           coverage: xdebug
           tools: composer:2.1.5
 
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
       - name: Validate dependencies
         run: |
           cd plugin-shopware-6
@@ -87,24 +87,6 @@ jobs:
           cd development
           ./psh.phar init
           ./psh.phar administration:init --APP_ENV="dev"
-
-      - name: Install administration dependencies
-        run: |
-          cd shopware/vendor/shopware/administration/Resources/app/administration
-          npm i
-
-      - name: Install storefront dependencies
-        run: |
-          cd shopware/vendor/shopware/storefront/Resources/app/storefront
-          npm i
-
-      - name: Install dependencies
-        run: |
-          cd plugin-shopware-6
-          composer install --no-interaction
-          npm i
-          cd src/Resources/app/storefront
-          npm ci
 
       - name: Install Plugin dependencies
         run: |
