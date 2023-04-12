@@ -49,9 +49,6 @@ jobs:
           actions/setup-node@v3
         with:
           node-version: '16'
-        run: |
-          npm ci
-          npm test
 
       - name: Setup PHP with Composer 2
         uses: shivammathur/setup-php@v2
