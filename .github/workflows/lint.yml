@@ -17,12 +17,12 @@ jobs:
     name: Code linting (PHP ${{ matrix.php-versions }})
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: '16'
 
       - name: Setup PHP with Composer 2
         uses: shivammathur/setup-php@v2
@@ -57,7 +57,7 @@ jobs:
           mysql database: shopware
           mysql root password: shopware
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           path: plugin-shopware-6
 
@@ -75,7 +75,7 @@ jobs:
           composer validate
 
       - name: Clone Shopware repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           repository: shopware/development
           ref: ${{ matrix.shopware-versions }}
