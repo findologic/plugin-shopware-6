@@ -88,6 +88,22 @@ jobs:
           ./psh.phar init
           ./psh.phar administration:init --APP_ENV="dev"
 
+      - name: Install administration dependencies
+        run: |
+          cd shopware/vendor/shopware/administration/Resources/app/administration
+          npm i
+      - name: Install storefront dependencies
+        run: |
+          cd shopware/vendor/shopware/storefront/Resources/app/storefront
+          npm i
+      - name: Install dependencies
+        run: |
+          cd plugin-shopware-6
+          composer install --no-interaction
+          npm i
+          cd src/Resources/app/storefront
+          npm ci
+
       - name: Install Plugin dependencies
         run: |
           cd plugin-shopware-6
