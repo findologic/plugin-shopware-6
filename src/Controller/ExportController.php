@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\FinSearch\Export\Handlers\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\Search\CategorySearcher;
+use FINDOLOGIC\FinSearch\Export\Search\ProductStreamSearcher;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Services\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
@@ -26,6 +27,7 @@ use FINDOLOGIC\Shopware6Common\Export\Validation\OffsetExportConfiguration;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -74,7 +76,8 @@ class ExportController extends AbstractController
         protected readonly SystemConfigService $systemConfigService,
         protected readonly EntityRepository $customerGroupRepository,
         protected readonly EntityRepository $categoryRepository,
-        protected readonly EntityRepository $productRepository
+        protected readonly EntityRepository $productRepository,
+        protected readonly SalesChannelRepository $salesChannelProductRepository,
     ) {
     }
 
@@ -155,6 +158,7 @@ class ExportController extends AbstractController
 
         $this->buildDynamicProductGroupService();
 
+        $this->buildProductSteamSearcher();
         $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
         $this->productSearcher = $this->container->get(ProductSearcher::class);
 
@@ -219,6 +223,16 @@ class ExportController extends AbstractController
             $this->categorySearcher,
         );
         $this->container->set(DynamicProductGroupService::class, $this->dynamicProductGroupService);
+    }
+
+    protected function buildProductSteamSearcher(): void
+    {
+        $productStreamSearcher = new ProductStreamSearcher(
+            $this->productStreamBuilder,
+            $this->salesChannelContext,
+            $this->salesChannelProductRepository,
+        );
+        $this->container->set(ProductStreamSearcher::class, $productStreamSearcher);
     }
 
     protected function buildExport(): void
