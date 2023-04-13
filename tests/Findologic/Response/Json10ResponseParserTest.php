@@ -21,6 +21,7 @@ use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\FilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\ImageFilterValue;
 use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\VendorImageFilter;
 use FINDOLOGIC\FinSearch\Findologic\Response\Json10ResponseParser;
+use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\Promotion;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\CategoryInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\DefaultInfoMessage;
@@ -132,6 +133,24 @@ class Json10ResponseParserTest extends TestCase
         $responseParser = new Json10ResponseParser($response);
 
         $this->assertEquals($expectedIds, $responseParser->getProductIds());
+    }
+
+    public function testProductIdsIncludeVariantIdsIfConfigured(): void
+    {
+        $expectedIds = ['variant-1_1', 'main-2'];
+
+        $configMock = $this->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock->expects($this->any())
+            ->method('useXmlVariants')
+            ->willReturn(true);
+
+        $response = new Json10Response($this->getMockResponse('JSONResponse/demoResponseWithVariants.json'));
+        $responseParser = new Json10ResponseParser($response, null, $configMock);
+
+        $ids = $responseParser->getProductIds();
+        $this->assertEquals($expectedIds, $ids);
     }
 
     public function testSmartDidYouMeanExtensionIsReturned(): void

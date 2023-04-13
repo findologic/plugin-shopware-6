@@ -1,0 +1,86 @@
+{
+  "request": {
+    "query": "ps4",
+    "first": 0,
+    "count": 24,
+    "serviceId": "4B6A0A6F1217DBF125A45FCDEED6F8F3",
+    "usergroup": null,
+    "order": {
+      "field": "salesfrequency",
+      "relevanceBased": true,
+      "direction": "DESC"
+    }
+  },
+  "result": {
+    "metadata": {
+      "landingpage": null,
+      "promotion": null,
+      "searchConcept": null,
+      "effectiveQuery": "ps4",
+      "totalResults": 1808,
+      "currencySymbol": "€"
+    },
+    "items": [
+      {
+        "id": "main-1",
+        "score": 1.3862943649292,
+        "url": "http:\/\/example.com\/product",
+        "name": "Product",
+        "ordernumbers": [
+          "019111105-37900"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/product.png",
+        "highlightedName": "Product",
+        "variants": [
+          {
+            "id": "variant-1_1",
+            "score": 1.3862943649292,
+            "url": null,
+            "name": null,
+            "ordernumbers": [
+              "019111105-37900"
+            ],
+            "summary": null,
+            "price": 950,
+            "attributes": {},
+            "matchingOrdernumber": "",
+            "properties": {},
+            "imageUrl": null
+          }
+        ]
+      },
+      {
+        "id": "main-2",
+        "score": 1.3862943649292,
+        "url": "http:\/\/example.com\/product2",
+        "name": "Product 2",
+        "ordernumbers": [
+          "019111105-37900"
+        ],
+        "summary": "",
+        "price": 950,
+        "attributes": {},
+        "matchingOrdernumber": "",
+        "properties": {},
+        "productPlacement": null,
+        "pushRules": [],
+        "imageUrl": "http://example.com/media/product-2.png",
+        "highlightedName": "Product 2"
+      }
+    ],
+    "variant": {
+      "name": "sdym"
+    },
+    "filters": {
+      "main": [],
+      "other": []
+    }
+  }
+}
