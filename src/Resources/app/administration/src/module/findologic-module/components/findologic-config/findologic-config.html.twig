@@ -62,8 +62,9 @@
 
                         <div style="display: flex; justify-content: space-between">
                             <sw-switch-field
-                                    v-model="actualConfigData['FinSearch.config.useXmlVariants']"
-                                    :label="$tc('findologic.settingForm.config.useXmlVariants.label')"
+                                v-model="actualConfigData['FinSearch.config.useXmlVariants']"
+                                :label="$tc('findologic.settingForm.config.useXmlVariants.label')"
+                                :helpText="$tc('findologic.settingForm.config.useXmlVariants.tooltip')"
                             >
                             </sw-switch-field>
                             <a
