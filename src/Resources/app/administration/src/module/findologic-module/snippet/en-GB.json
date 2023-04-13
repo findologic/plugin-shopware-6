@@ -96,7 +96,8 @@
                     "tooltipText": "If deactivated, products and variants with a price of 0 are excluded from the export. When parent products have a price of 0, variants with a price are still considered."
                 },
                 "useXmlVariants": {
-                    "label": "Use XML variants logic"
+                    "label": "Use XML variants logic",
+                    "tooltip": "Using the XML variants logic has a big impact on the export performance for products with a lot of variants."
                 }
             },
             "titleSuccess": "Success",
