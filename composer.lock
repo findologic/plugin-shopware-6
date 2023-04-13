@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec90f397cd85db3eb3cd6d2c1997c4e7",
+    "content-hash": "5f1013c0547452e54f89717d59e83f73",
     "packages": [
         {
             "name": "composer/semver",
@@ -303,11 +303,11 @@
         },
         {
             "name": "findologic/shopware6-common",
-            "version": "dev-SW-795_fix_sales_channel_specific_product_groups",
+            "version": "dev-SW-790_support_for_SW_6.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "a842d8c70e5389bac1bdae79385af9c555304810"
+                "reference": "b27ea3a22a037a551887facdd19217fb49827739"
             },
             "require": {
                 "findologic/libflexport": "^3.0",
@@ -359,7 +359,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-04-13T09:53:29+00:00"
+            "time": "2023-04-13T12:07:36+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
