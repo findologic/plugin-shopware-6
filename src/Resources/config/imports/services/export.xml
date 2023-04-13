@@ -16,6 +16,7 @@
             <argument key="$customerGroupRepository" type="service" id="customer_group.repository" />
             <argument key="$categoryRepository" type="service" id="category.repository" />
             <argument key="$productRepository" type="service" id="product.repository" />
+            <argument key="$salesChannelProductRepository" type="service" id="sales_channel.product.repository" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Controller\ProductDebugController" public="true" autowire="true">
@@ -28,12 +29,14 @@
             <argument key="$customerGroupRepository" type="service" id="customer_group.repository" />
             <argument key="$categoryRepository" type="service" id="category.repository" />
             <argument key="$productRepository" type="service" id="product.repository" />
+            <argument key="$salesChannelProductRepository" type="service" id="sales_channel.product.repository" />
         </service>
 
         <!-- Services -->
 
         <service id="fin_search.sales_channel_context" synthetic="true" public="true" />
         <service id="FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService" synthetic="true" public="true" />
+        <service id="FINDOLOGIC\FinSearch\Export\Search\ProductStreamSearcher" synthetic="true" public="true" />
 
         <service id="FINDOLOGIC\FinSearch\Logger\PluginLogger" class="Monolog\Logger">
             <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating" />

@@ -21,6 +21,11 @@
             alias="FINDOLOGIC\FinSearch\Export\Search\ProductDebugSearcher"
         />
 
+        <service
+            id="FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductStreamSearcher"
+            alias="FINDOLOGIC\FinSearch\Export\Search\ProductStreamSearcher"
+        />
+
         <!-- Adapters -->
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter" public="true" autowire="true">
