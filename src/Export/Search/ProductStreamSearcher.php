@@ -49,8 +49,7 @@ class ProductStreamSearcher extends AbstractProductStreamSearcher
 
     protected function saveToCache(array $filters, string $streamId): void
     {
-        $cacheItem = $this->cache->getItem(self::CACHE_KEY . '_' . $streamId)
-            ->set(serialize($filters));
+        $cacheItem = $this->cache->getItem(self::CACHE_KEY . '_' . $streamId)->set(serialize($filters));
         $this->cache->save($cacheItem);
     }
 }
