@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f1013c0547452e54f89717d59e83f73",
+    "content-hash": "ec90f397cd85db3eb3cd6d2c1997c4e7",
     "packages": [
         {
             "name": "composer/semver",
@@ -303,11 +303,11 @@
         },
         {
             "name": "findologic/shopware6-common",
-            "version": "dev-SW-790_support_for_SW_6.5",
+            "version": "dev-SW-795_fix_sales_channel_specific_product_groups",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "10b907eb46fb3c47443156706d4c006a5f6c984f"
+                "reference": "ecf1abda1612eba9ec26e1ef3de29ce0d22fa1c3"
             },
             "require": {
                 "findologic/libflexport": "^3.0",
@@ -359,7 +359,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-04-06T15:49:20+00:00"
+            "time": "2023-04-12T15:24:26+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
@@ -1774,24 +1774,24 @@
         },
         {
             "name": "bramus/monolog-colored-line-formatter",
-            "version": "3.1.0",
+            "version": "3.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bramus/monolog-colored-line-formatter.git",
-                "reference": "cd1ada798fec11a5862cb67944c651b6a8e04911"
+                "reference": "bbbffb43b0cbfff5cb6bb8e2c1dd15c99de8bd32"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bramus/monolog-colored-line-formatter/zipball/cd1ada798fec11a5862cb67944c651b6a8e04911",
-                "reference": "cd1ada798fec11a5862cb67944c651b6a8e04911",
+                "url": "https://api.github.com/repos/bramus/monolog-colored-line-formatter/zipball/bbbffb43b0cbfff5cb6bb8e2c1dd15c99de8bd32",
+                "reference": "bbbffb43b0cbfff5cb6bb8e2c1dd15c99de8bd32",
                 "shasum": ""
             },
             "require": {
                 "bramus/ansi-php": "^3.0.3",
+                "monolog/monolog": "~3.0",
                 "php": "^8.1"
             },
             "require-dev": {
-                "monolog/monolog": "~3.0",
                 "phpunit/phpunit": "~9.6"
             },
             "type": "library",
@@ -1814,7 +1814,7 @@
             "description": "Colored Line Formatter for Monolog",
             "support": {
                 "issues": "https://github.com/bramus/monolog-colored-line-formatter/issues",
-                "source": "https://github.com/bramus/monolog-colored-line-formatter/tree/3.1.0"
+                "source": "https://github.com/bramus/monolog-colored-line-formatter/tree/3.1.1"
             },
             "funding": [
                 {
@@ -1822,7 +1822,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-03-29T13:28:41+00:00"
+            "time": "2023-04-11T12:52:29+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
