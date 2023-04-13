@@ -38,8 +38,12 @@ class Json10ResponseParser extends ResponseParser
     public function getProductIds(): array
     {
         return array_map(
-            static function (Item $product) {
-                return $product->getId();
+            function (Item $product) {
+                if ($this->config->useXmlVariants()) {
+                    return count($product->getVariants()) ? $product->getVariants()[0]->getId() : $product->getId();
+                } else {
+                    return $product->getId();
+                }
             },
             $this->response->getResult()->getItems()
         );
