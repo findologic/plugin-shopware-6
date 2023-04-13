@@ -231,6 +231,7 @@ class ExportController extends AbstractController
             $this->productStreamBuilder,
             $this->salesChannelContext,
             $this->salesChannelProductRepository,
+            $this->cache,
         );
         $this->container->set(ProductStreamSearcher::class, $productStreamSearcher);
     }
