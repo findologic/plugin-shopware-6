@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FINDOLOGIC\FinSearch\Export\Search;
 
 use FINDOLOGIC\Shopware6Common\Export\Search\AbstractProductStreamSearcher;
@@ -23,7 +25,7 @@ class ProductStreamSearcher extends AbstractProductStreamSearcher
 
     public function isProductInDynamicProductGroup(string $productId, string $streamId): bool
     {
-        if(!$filters = $this->getFromCache($streamId)) {
+        if (!$filters = $this->getFromCache($streamId)) {
             $filters = $this->productStreamBuilder->buildFilters($streamId, $this->salesChannelContext->getContext());
 
             $this->saveToCache($filters, $streamId);
