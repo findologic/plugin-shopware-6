@@ -130,7 +130,14 @@ class Json10ResponseParserTest extends TestCase
      */
     public function testProductIdsAreParsedAsExpected(Response $response, array $expectedIds): void
     {
-        $responseParser = new Json10ResponseParser($response);
+        $configMock = $this->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $configMock->expects($this->any())
+            ->method('useXmlVariants')
+            ->willReturn(false);
+
+        $responseParser = new Json10ResponseParser($response, null, $configMock);
 
         $this->assertEquals($expectedIds, $responseParser->getProductIds());
     }
