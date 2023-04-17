@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f1013c0547452e54f89717d59e83f73",
+    "content-hash": "61364913306274b5385d1789ecb9d221",
     "packages": [
         {
             "name": "composer/semver",
@@ -89,16 +89,16 @@
         },
         {
             "name": "findologic/findologic-api",
-            "version": "v1.7.0",
+            "version": "v1.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "828265a1fb1bc08bb9bf3453302d51bf844acc00"
+                "reference": "b250e0888937db5bccb2e13599e84e667bb26542"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/828265a1fb1bc08bb9bf3453302d51bf844acc00",
-                "reference": "828265a1fb1bc08bb9bf3453302d51bf844acc00",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/b250e0888937db5bccb2e13599e84e667bb26542",
+                "reference": "b250e0888937db5bccb2e13599e84e667bb26542",
                 "shasum": ""
             },
             "require": {
@@ -155,9 +155,9 @@
             "description": "Library for FINDOLOGIC API requests",
             "support": {
                 "issues": "https://github.com/findologic/findologic-api/issues",
-                "source": "https://github.com/findologic/findologic-api/tree/v1.7.0"
+                "source": "https://github.com/findologic/findologic-api/tree/v1.8.0"
             },
-            "time": "2023-04-06T10:43:35+00:00"
+            "time": "2023-04-17T07:51:00+00:00"
         },
         {
             "name": "findologic/guzzle",
@@ -307,7 +307,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "b27ea3a22a037a551887facdd19217fb49827739"
+                "reference": "1372f4b42898a2fb9638c0d129f1a607d6af6d2b"
             },
             "require": {
                 "findologic/libflexport": "^3.0",
@@ -359,7 +359,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2023-04-13T12:07:36+00:00"
+            "time": "2023-04-13T13:23:08+00:00"
         },
         {
             "name": "findologic/xml-export-schema",
