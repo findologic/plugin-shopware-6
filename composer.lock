@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ee8eda59cfe830d347fc25dc2c4ddbc7",
+    "content-hash": "61364913306274b5385d1789ecb9d221",
     "packages": [
         {
             "name": "composer/semver",
@@ -89,16 +89,16 @@
         },
         {
             "name": "findologic/findologic-api",
-            "version": "dev-SW-797_add_variants_logic",
+            "version": "v1.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "470f9bdb4352788979acba5c2d037a706499314e"
+                "reference": "b250e0888937db5bccb2e13599e84e667bb26542"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/470f9bdb4352788979acba5c2d037a706499314e",
-                "reference": "470f9bdb4352788979acba5c2d037a706499314e",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/b250e0888937db5bccb2e13599e84e667bb26542",
+                "reference": "b250e0888937db5bccb2e13599e84e667bb26542",
                 "shasum": ""
             },
             "require": {
@@ -155,9 +155,9 @@
             "description": "Library for FINDOLOGIC API requests",
             "support": {
                 "issues": "https://github.com/findologic/findologic-api/issues",
-                "source": "https://github.com/findologic/findologic-api/tree/SW-797_add_variants_logic"
+                "source": "https://github.com/findologic/findologic-api/tree/v1.8.0"
             },
-            "time": "2023-04-13T13:41:45+00:00"
+            "time": "2023-04-17T07:51:00+00:00"
         },
         {
             "name": "findologic/guzzle",
@@ -1885,7 +1885,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "findologic/findologic-api": 20,
         "findologic/shopware6-common": 20
     },
     "prefer-stable": false,
