@@ -4,10 +4,16 @@ build:
             excludes:
                 paths:
                     - .gitignore
+                    - bin
                     - docs
                     - release
                     - phpcs.xml
                     - phpunit.xml.dist
                     - vendor/findologic/shopware6-common/.git
+                    - .eslintignore
+                    - .eslintrc.js
+                    - .eslintrc-administration.js
+                    - .eslintrc-storefront.js
+                    - Makefile
                     - "*.zip"
                     - "*.phar"
