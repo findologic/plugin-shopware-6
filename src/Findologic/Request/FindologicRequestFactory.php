@@ -45,12 +45,8 @@ abstract class FindologicRequestFactory
         $searchNavigationRequest->setUserIp($this->fetchClientIp());
         $searchNavigationRequest->setRevision($this->getPluginVersion());
         $searchNavigationRequest->setOutputAdapter(OutputAdapter::JSON_10);
-        $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindologicApiRequest::SET_VALUE);
-        $searchNavigationRequest->addIndividualParam(
-            'shopVersion',
-            $this->shopwareVersion,
-            FindologicApiRequest::SET_VALUE
-        );
+        $searchNavigationRequest->setShopType('Shopware6');
+        $searchNavigationRequest->setShopVersion($this->shopwareVersion);
 
         // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
         //  Shopware themselves have it hardcoded at 24.
