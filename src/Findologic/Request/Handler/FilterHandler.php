@@ -192,7 +192,7 @@ class FilterHandler
      * imploded via a special character (|). The query parameter looks like ?size=20|21.
      * This method simply explodes the given string into filter values.
      */
-    protected function getFilterValues(string $filterValues): array
+    public function getFilterValues(string $filterValues): array
     {
         $filterValues = explode(self::FILTER_DELIMITER, $filterValues);
 

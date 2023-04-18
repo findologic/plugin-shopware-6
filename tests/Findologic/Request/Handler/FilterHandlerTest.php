@@ -160,4 +160,15 @@ class FilterHandlerTest extends TestCase
             ]
         ], $result['attrib']);
     }
+
+    public function testGetFilterValues(): void
+    {
+        $filterHandler = new FilterHandler();
+        $filterValues = "pipe>1%7C3|pipe>2%7C3|pipe>3%7C3";
+
+        $actualFilters = $filterHandler->getFilterValues($filterValues);
+        $expectedFilters = ["pipe>1|3", "pipe>2|3", "pipe>3|3"];
+
+        $this->assertEquals($expectedFilters, $actualFilters);
+    }
 }
