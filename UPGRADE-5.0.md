@@ -32,6 +32,15 @@ No depracations were removed within this version.
 
 ### Export
 
+- `FINDOLOGIC\Shopware6Common\Export\Adapters\AttributeAdapter`
+  - Added member variable `$productStreamSearcher`
+- `FINDOLOGIC\Shopware6Common\Export\Adapters\UsergroupsAdapter`
+  - Renamed to `GroupsAdapter`
+- `FINDOLOGIC\Shopware6Common\Export\Config`
+  - Removed type classes and replaced them with Enums at `FINDOLOGIC\Shopware6Common\Export\Enums`
+- `FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport`
+  - Replaced constants `TYPE_XML` and `TYPE_PRODUCT_ID` with Enum
+
 - `FINDOLOGIC\FinSearch\Export\Adapters\PriceAdapter`
   - Changed constructor signature
 - `FINDOLOGIC\FinSearch\Export\Search\ProductSearcher`
