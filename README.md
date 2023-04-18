@@ -17,9 +17,7 @@ Please see [our Shopware 6 documentation](https://docs.findologic.com/doku.php?i
    - https://sw-cli.fos.gg/commands/project/
    - `shopware-cli project create [folder] [version]`
 3. Install dependencies for tests
-   1. `composer config repositories.repo-name vcs https://github.com/jmatthiesen81/shopware65-tests.git`
-   2. `composer require --dev jmatthiesen/shopware65-tests:<newestVersion>`
-   3. `composer require --dev symfony/test-pack`
+   1. `composer require --dev symfony/test-pack`
 4. Configure test database within the .env.test file (Create file if not present)
    - If you want to use a docker database, run `docker-compose up -d`
 5. Navigate to the plugins folder
