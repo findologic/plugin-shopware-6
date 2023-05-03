@@ -1,3 +1,17 @@
+# 5.0.0
+
+- Diese Version ist ein Major Release und enthält damit brechende Änderungen, wenn ein Erweiterungsplugin installiert ist.
+- Bevor ein Upgrade durchgeführt wird, beachte den Upgrade-Guide.
+- Achtung, diese Version unterstützt nur noch Shop Versionen ab v6.5.0!
+- [SW-745] Für die internen API Requests wird nun das JSON Format statt XML verwendet.
+- [SW-791] Die Änderungen von SW 6.5 wurden in den überschriebenen Templates übernommen.
+- [SW-793] PHP Code Level wurde auf 8.1 erhöht.
+- [SW-631] Varianten und UVP werden nun als separate XML Tags exportiert.
+- [SW-797] Support für Varianten im Suchergebnis wurde hinzugefügt.
+- [SW-784] Der interne Test build verwendet nun das Shopware Flex Setup.
+- [SW-721] Codestruktur für interne Parameter wurde verbessert.
+- [SW-795] Ein Problem wurde behoben, wodurch Produkte in Dynamic Product Groups eines anderen Channels angezeigt wurde.
+
 # 4.0.3
 
 * [SW-788] Ein Problem wurde behoben, wodurch nicht verfügbare Filterwerte auf Kategorieseiten nicht deaktiviert wurden
