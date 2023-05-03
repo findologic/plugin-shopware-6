@@ -15,8 +15,7 @@ class FinSearchConfigEntity extends Entity
 
     protected string $configurationKey;
 
-    /** @var mixed */
-    protected $configurationValue;
+    protected mixed $configurationValue;
 
     protected ?string $salesChannelId;
 
@@ -36,12 +35,12 @@ class FinSearchConfigEntity extends Entity
         $this->configurationKey = $configurationKey;
     }
 
-    public function getConfigurationValue()
+    public function getConfigurationValue(): mixed
     {
         return $this->configurationValue;
     }
 
-    public function setConfigurationValue($configurationValue): void
+    public function setConfigurationValue(mixed $configurationValue): void
     {
         $this->configurationValue = $configurationValue;
     }

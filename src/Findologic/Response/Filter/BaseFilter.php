@@ -4,29 +4,26 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response\Filter;
 
-use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values\FilterValue;
+use FINDOLOGIC\FinSearch\Findologic\Response\Json10\Filter\Values\FilterValue;
 
 abstract class BaseFilter
 {
     public const RATING_FILTER_NAME = 'rating';
     public const CAT_FILTER_NAME = 'cat';
+    public const VENDOR_FILTER_NAME = 'vendor';
 
     protected ?string $displayType;
 
-    protected string $id;
-
-    protected string $name;
-
-    /** @var FilterValue[] */
-    protected array $values;
-
     protected bool $hidden = false;
 
-    public function __construct(string $id, string $name, array $values = [])
-    {
-        $this->id = $id;
-        $this->name = $name;
-        $this->values = $values;
+    /**
+     * @param FilterValue[] $values
+     */
+    public function __construct(
+        protected readonly string $id,
+        protected readonly string $name,
+        protected array $values = [],
+    ) {
     }
 
     public function getDisplayType(): ?string
@@ -44,6 +41,9 @@ abstract class BaseFilter
         return $this->name;
     }
 
+    /**
+     * @return FilterValue[]
+     */
     public function getValues(): array
     {
         return $this->values;

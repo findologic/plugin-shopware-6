@@ -6,8 +6,8 @@ namespace FINDOLOGIC\FinSearch\Findologic\Request\Handler;
 
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -17,11 +17,9 @@ use Shopware\Core\Framework\Event\ShopwareEvent;
 class SearchRequestHandler extends SearchNavigationRequestHandler
 {
     /**
-     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
-     *
      * @throws InconsistentCriteriaIdsException
      */
-    public function handleRequest(ShopwareEvent $event): void
+    public function handleRequest(ShopwareEvent|ProductSearchCriteriaEvent $event): void
     {
         $request = $event->getRequest();
 
@@ -32,7 +30,7 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
         $this->sortingHandlerService->handle($searchRequest, $event->getCriteria());
 
         try {
-            /** @var Xml21Response $response */
+            /** @var Json10Response $response */
             $response = $this->doRequest($event);
             $responseParser = ResponseParser::getInstance(
                 $response,
@@ -56,7 +54,9 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
             $responseParser->getSmartDidYouMeanExtension($event->getRequest())
         );
 
-        $criteria = new Criteria($responseParser->getProductIds());
+        $criteria = new Criteria(
+            $responseParser->getProductIds() === [] ? null : $responseParser->getProductIds()
+        );
         $criteria->addExtensions($event->getCriteria()->getExtensions());
 
         $this->setPromotionExtension($event, $responseParser);
@@ -73,11 +73,9 @@ class SearchRequestHandler extends SearchNavigationRequestHandler
     }
 
     /**
-     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
-     *
      * @throws ServiceNotAliveException
      */
-    public function doRequest(ShopwareEvent $event, ?int $limit = null): Response
+    public function doRequest(ShopwareEvent|ProductSearchCriteriaEvent $event, ?int $limit = null): Response
     {
         $request = $event->getRequest();
 

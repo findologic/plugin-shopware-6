@@ -13,6 +13,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ServicesHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
+use FINDOLOGIC\Shopware6Common\Export\Enums\AdvancedPricing;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -36,7 +37,7 @@ class PriceAdapterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
@@ -69,7 +70,7 @@ class PriceAdapterTest extends TestCase
         return [
             'Test cheapest advanced price configuration' => [
                 'groupsData' => $groupsData,
-                'advancedPricingConfig' => 'cheapest',
+                'advancedPricingConfig' => AdvancedPricing::CHEAPEST,
                 'expectedPrices' => [
                     $netCustomerGroupId => 1,
                     $grossCustomerGroupId => 4
@@ -77,7 +78,7 @@ class PriceAdapterTest extends TestCase
             ],
             'Test unit advanced price configuration' => [
                 'groupsData' => $groupsData,
-                'advancedPricingConfig' => 'unit',
+                'advancedPricingConfig' => AdvancedPricing::UNIT,
                 'expectedPrices' => [
                     $netCustomerGroupId => 5,
                     $grossCustomerGroupId => 4
@@ -85,7 +86,7 @@ class PriceAdapterTest extends TestCase
             ],
             'Test off advanced price configuration' => [
                 'groupsData' => $groupsData,
-                'advancedPricingConfig' => 'off',
+                'advancedPricingConfig' => AdvancedPricing::OFF,
                 'expectedPrices' => [
                     $netCustomerGroupId => 10,
                     $grossCustomerGroupId => 15
@@ -109,7 +110,7 @@ class PriceAdapterTest extends TestCase
                         ]
                     ]
                 ),
-                'advancedPricingConfig' => 'unit',
+                'advancedPricingConfig' => AdvancedPricing::UNIT,
                 'expectedPrices' => [
                     $netCustomerGroupId => 5,
                     $grossCustomerGroupId => 15
@@ -133,7 +134,7 @@ class PriceAdapterTest extends TestCase
                         ]
                     ]
                 ),
-                'advancedPricingConfig' => 'unit',
+                'advancedPricingConfig' => AdvancedPricing::UNIT,
                 'expectedPrices' => [
                     $netCustomerGroupId => 10,
                     $grossCustomerGroupId => 4
@@ -157,7 +158,7 @@ class PriceAdapterTest extends TestCase
                         ]
                     ]
                 ),
-                'advancedPricingConfig' => 'unit',
+                'advancedPricingConfig' => AdvancedPricing::UNIT,
                 'expectedPrices' => [
                     $netCustomerGroupId => 3,
                     $grossCustomerGroupId => 15
@@ -170,7 +171,7 @@ class PriceAdapterTest extends TestCase
                         ['groupId' => $grossCustomerGroupId, 'displayGross' => true, 'prices' => []]
                     ]
                 ),
-                'advancedPricingConfig' => 'unit',
+                'advancedPricingConfig' => AdvancedPricing::UNIT,
                 'expectedPrices' => [
                     $netCustomerGroupId => 10,
                     $grossCustomerGroupId => 15
@@ -184,7 +185,7 @@ class PriceAdapterTest extends TestCase
      */
     public function testIsCorrectAdvancedPriceIsExported(
         array $groupsData,
-        string $advancedPricingConfig,
+        AdvancedPricing $advancedPricingConfig,
         array $expectedPrices
     ): void {
         if (Utils::versionLowerThan('6.4.9.0')) {
@@ -202,12 +203,12 @@ class PriceAdapterTest extends TestCase
         $this->enableFindologicPlugin($this->getContainer(), self::VALID_SHOPKEY, $this->salesChannelContext);
 
         $adapter = new PriceAdapter(
-            $exportContext,
-            $this->salesChannelContext,
             $this->getContainer()->get(ProductPriceCalculator::class),
             $this->getContainer()->get(CustomerGroupContextProvider::class),
-            $this->getContainer()->get('product.repository'),
+            $exportContext,
             $config,
+            $this->salesChannelContext,
+            $this->getContainer()->get('sales_channel.product.repository'),
             '6.4.9.0'
         );
 

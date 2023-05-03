@@ -7,7 +7,7 @@ namespace FINDOLOGIC\FinSearch\Findologic\Config;
 use Doctrine\DBAL\Connection;
 use FINDOLOGIC\Shopware6Common\Export\Utils\Utils;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -27,22 +27,15 @@ use function is_array;
 
 class FindologicConfigService
 {
-    protected Connection $connection;
-
-    private EntityRepositoryInterface $finSearchConfigRepository;
-
     private array $configs = [];
 
-    public function __construct(EntityRepositoryInterface $finSearchConfigRepository, Connection $connection)
-    {
-        $this->finSearchConfigRepository = $finSearchConfigRepository;
-        $this->connection = $connection;
+    public function __construct(
+        private readonly EntityRepository $finSearchConfigRepository,
+        protected readonly Connection $connection
+    ) {
     }
 
-    /**
-     * @return array|bool|float|int|string|null
-     */
-    public function get(string $key, string $salesChannelId, string $languageId)
+    public function get(string $key, string $salesChannelId, string $languageId): mixed
     {
         $config = $this->load($salesChannelId, $languageId);
         $parts = explode('.', $key);
@@ -121,10 +114,7 @@ class FindologicConfigService
         return $this->buildConfig($collection);
     }
 
-    /**
-     * @param array|bool|float|int|string|null $value
-     */
-    public function set(string $key, $value, string $salesChannelId, string $languageId): void
+    public function set(string $key, mixed $value, string $salesChannelId, string $languageId): void
     {
         $this->configs = [];
         $key = trim($key);
@@ -278,7 +268,7 @@ class FindologicConfigService
         if (empty($keys)) {
             $configValues[$key] = $value;
         } else {
-            if (!\array_key_exists($key, $configValues)) {
+            if (!array_key_exists($key, $configValues)) {
                 $configValues[$key] = [];
             }
 

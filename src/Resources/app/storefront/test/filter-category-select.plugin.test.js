@@ -4,7 +4,7 @@
 
 import FilterCategorySelectPlugin from '../src/js/filter-category-select.plugin';
 import ListingPlugin
-    from '../../../../../../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront/src/plugin/listing/listing.plugin';
+    from '../../../../../../../../vendor/shopware/storefront/Resources/app/storefront/src/plugin/listing/listing.plugin';
 
 describe('filter-category-select.plugin.js', () => {
     let filterCategorySelectPlugin;

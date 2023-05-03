@@ -1,8 +1,11 @@
 {% block findologic_credentials %}
     <sw-container slot="grid" rows="auto auto">
         <sw-card-section>
-            <sw-card class="sw-card--grid"
-                     :title="$tc('findologic.settingForm.config.title')">
+            <sw-card
+                class="sw-card--grid"
+                :title="$tc('findologic.settingForm.config.title')"
+                positionIdentifier="findologic_settings_config"
+            >
                 <sw-container>
                     {% block findologic_credentials_card_container %}
                         {% block findologic_credentials_settings %}
@@ -43,8 +46,11 @@
             </sw-card>
 
 
-            <sw-card class="sw-card--grid"
-                     :title="$tc('findologic.settingForm.config.export.title')">
+            <sw-card
+                class="sw-card--grid"
+                :title="$tc('findologic.settingForm.config.export.title')"
+                positionIdentifier="findologic_settings_export"
+            >
                 <sw-container>
                     <div class="findologic-settings-credentials-fields">
                         <sw-switch-field
@@ -53,6 +59,22 @@
                             :helpText="$tc('findologic.settingForm.config.exportZeroPricedProducts.tooltipText')"
                         >
                         </sw-switch-field>
+
+                        <div style="display: flex; justify-content: space-between">
+                            <sw-switch-field
+                                v-model="actualConfigData['FinSearch.config.useXmlVariants']"
+                                :label="$tc('findologic.settingForm.config.useXmlVariants.label')"
+                                :helpText="$tc('findologic.settingForm.config.useXmlVariants.tooltip')"
+                            >
+                            </sw-switch-field>
+                            <a
+                                class="sw-external-link"
+                                target="_blank"
+                                href="https://docs.findologic.com/doku.php?id=xml_export_documentation:XML_2_format#using_variants_in_search_results"
+                            >
+                                <sw-icon name="regular-external-link-s" size="16px"></sw-icon>
+                            </a>
+                        </div>
 
                         <sw-single-select
                             v-model="actualConfigData['FinSearch.config.advancedPricing']"
@@ -86,10 +108,12 @@
                 </sw-container>
             </sw-card>
 
-            <sw-card class="sw-card--grid"
-                     :title="$tc('findologic.settingForm.directIntegration.title')">
+            <sw-card
+                class="sw-card--grid"
+                :title="$tc('findologic.settingForm.directIntegration.title')"
+                positionIdentifier="findologic_settings_directIntegration"
+            >
                 <sw-container>
-
                     <div class="findologic-settings-credentials-fields">
                         <sw-text-field
                                 v-model="actualConfigData['FinSearch.config.searchResultContainer']"
@@ -109,9 +133,13 @@
                 </sw-container>
             </sw-card>
 
-            <sw-card class="sw-card--grid" v-if="showAPIConfig" :title="$tc('findologic.settingForm.api.title')">
+            <sw-card
+                v-if="showAPIConfig"
+                class="sw-card--grid"
+                :title="$tc('findologic.settingForm.api.title')"
+                positionIdentifier="findologic_settings_api"
+            >
                 <sw-container>
-
                     <div class="findologic-settings-credentials-fields">
 
                         {% block findologic_credentials_settings_search_filter_position_container %}

@@ -8,8 +8,8 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Exceptions\ServiceNotAliveException;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Response;
-use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Exceptions\Search\UnknownCategoryException;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Parser\NavigationCategoryParser;
@@ -32,16 +32,14 @@ use Symfony\Component\HttpFoundation\Request;
 
 class NavigationRequestHandler extends SearchNavigationRequestHandler
 {
-    private EntityRepository $categoryRepository;
-
     public function __construct(
+        private readonly EntityRepository $categoryRepository,
         ServiceConfigResource $serviceConfigResource,
         FindologicRequestFactory $findologicRequestFactory,
         Config $config,
         ApiConfig $apiConfig,
         ApiClient $apiClient,
         SortingHandlerService $sortingHandlerService,
-        EntityRepository $categoryRepository
     ) {
         parent::__construct(
             $serviceConfigResource,
@@ -51,23 +49,19 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             $apiClient,
             $sortingHandlerService
         );
-
-        $this->categoryRepository = $categoryRepository;
     }
 
     /**
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     *
      * @throws MissingRequestParameterException
      * @throws InconsistentCriteriaIdsException
      * @throws CategoryNotFoundException
      */
-    public function handleRequest(ShopwareEvent $event): void
+    public function handleRequest(ShopwareEvent|ProductListingCriteriaEvent $event): void
     {
         $originalCriteria = clone $event->getCriteria();
 
         try {
-            /** @var Xml21Response $response */
+            /** @var Json10Response $response */
             $response = $this->doRequest($event);
 
             $responseParser = ResponseParser::getInstance(
@@ -84,7 +78,9 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             return;
         }
 
-        $criteria = new Criteria($responseParser->getProductIds());
+        $criteria = new Criteria(
+            $responseParser->getProductIds() === [] ? null : $responseParser->getProductIds()
+        );
         $criteria->addExtensions($event->getCriteria()->getExtensions());
 
         $this->setPromotionExtension($event, $responseParser);
@@ -100,15 +96,13 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
     }
 
     /**
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     *
      * @throws CategoryNotFoundException
      * @throws InconsistentCriteriaIdsException
      * @throws MissingRequestParameterException
      * @throws ServiceNotAliveException
      * @throws UnknownCategoryException
      */
-    public function doRequest(ShopwareEvent $event, ?int $limit = null): Response
+    public function doRequest(ShopwareEvent|ProductListingCriteriaEvent $event, ?int $limit = null): Response
     {
         // Prevent exception if someone really tried to order by score on a category page.
         if ($event->getRequest()->query->get('sort') === 'score') {

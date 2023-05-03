@@ -1,0 +1,99 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '8.1', '8.2' ]
+        shopware-versions: [
+            '6.5.0.0-rc4',
+        ]
+
+    name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }} + JS)
+    steps:
+      - uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql version: '8.0'
+          mysql database: shopware_test
+          mysql root password: root
+
+      - uses: actions/checkout@v2
+        with:
+          path: plugin-shopware-6
+
+      - name: Setup PHP with Composer 2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: dom, gd, mbstring, pdo_mysql, zip
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Validate dependencies
+        run: |
+          cd plugin-shopware-6
+          composer validate
+
+      - name: Install Shopware-CLI
+        run: |
+          curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
+          sudo apt install shopware-cli
+
+      - name: Create shop
+        run: shopware-cli project create shopware ${{ matrix.shopware-versions }}
+
+      - name: Install Shopware
+        run: |
+          cp plugin-shopware-6/.github/.env.local shopware
+          cp plugin-shopware-6/.github/.env.test shopware
+          cd shopware
+          ./bin/console system:install --basic-setup
+
+      - name: Install administration dependencies
+        run: |
+          cd shopware/vendor/shopware/administration/Resources/app/administration
+          npm i
+
+      - name: Install storefront dependencies
+        run: |
+          cd shopware/vendor/shopware/storefront/Resources/app/storefront
+          npm i
+
+      - name: Install test dependencies for SW
+        run: |
+          cd shopware
+          composer require --dev symfony/test-pack
+
+      - name: Install dependencies
+        run: |
+          cd plugin-shopware-6
+          composer install --no-interaction
+          cd src/Resources/app/storefront
+          npm ci
+
+      - name: Install plugin
+        run: |
+          mv plugin-shopware-6 shopware/custom/plugins
+          cd shopware
+          php bin/console plugin:refresh
+          php bin/console plugin:install --activate --clearCache FinSearch
+
+      - name: Run PHPUnit test suite
+        if: ${{ matrix.php-versions == '8.1' }} # Skip newer PHP versions once we can fix tests getting stuck
+        run: |
+          cd shopware/custom/plugins/plugin-shopware-6
+          SYMFONY_DEPRECATIONS_HELPER=disabled composer test
+
+      - name: Run storefront Jest test suite
+        run: |
+          cd shopware/custom/plugins/plugin-shopware-6/src/Resources/app/storefront
+          npm run test

@@ -6,14 +6,16 @@ namespace FINDOLOGIC\FinSearch\Controller;
 
 use FINDOLOGIC\FinSearch\Export\Handlers\HeaderHandler;
 use FINDOLOGIC\FinSearch\Export\Search\CategorySearcher;
+use FINDOLOGIC\FinSearch\Export\Search\ProductStreamSearcher;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Export\Services\SalesChannelService;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter;
-use FINDOLOGIC\Shopware6Common\Export\Config\ImplementationType;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
+use FINDOLOGIC\Shopware6Common\Export\Enums\ExportType;
+use FINDOLOGIC\Shopware6Common\Export\Enums\ImplementationType;
 use FINDOLOGIC\Shopware6Common\Export\Logger\Handler\ProductErrorHandler;
 use FINDOLOGIC\Shopware6Common\Export\Responses\PreconditionFailedResponse;
 use FINDOLOGIC\Shopware6Common\Export\Types\AbstractExport;
@@ -25,7 +27,7 @@ use FINDOLOGIC\Shopware6Common\Export\Validation\OffsetExportConfiguration;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilder;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -43,29 +45,8 @@ use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupCollection;
 use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupEntity;
 use Vin\ShopwareSdk\Data\Entity\SalesChannel\SalesChannelEntity;
 
-/**
- * @RouteScope(scopes={"storefront"})
- */
 class ExportController extends AbstractController
 {
-    protected LoggerInterface $logger;
-
-    protected EventDispatcherInterface $eventDispatcher;
-
-    protected CacheItemPoolInterface $cache;
-
-    protected HeaderHandler $headerHandler;
-
-    protected ProductStreamBuilder $productStreamBuilder;
-
-    protected SystemConfigService $systemConfigService;
-
-    protected EntityRepository $customerGroupRepository;
-
-    protected EntityRepository $categoryRepository;
-
-    protected EntityRepository $productRepository;
-
     protected OffsetExportConfiguration $exportConfig;
 
     protected ?SalesChannelService $salesChannelService;
@@ -84,33 +65,30 @@ class ExportController extends AbstractController
 
     protected ExportItemAdapter $exportItemAdapter;
 
-    /** @var XmlExport|ProductIdExport */
-    protected AbstractExport $export;
+    protected XmlExport|ProductIdExport $export;
 
     public function __construct(
-        LoggerInterface $logger,
-        EventDispatcherInterface $eventDispatcher,
-        CacheItemPoolInterface $cache,
-        HeaderHandler $headerHandler,
-        ProductStreamBuilder $productStreamBuilder,
-        SystemConfigService $systemConfigService,
-        EntityRepository $customerGroupRepository,
-        EntityRepository $categoryRepository,
-        EntityRepository $productRepository
+        protected readonly LoggerInterface $logger,
+        protected readonly EventDispatcherInterface $eventDispatcher,
+        protected readonly CacheItemPoolInterface $cache,
+        protected readonly HeaderHandler $headerHandler,
+        protected readonly ProductStreamBuilder $productStreamBuilder,
+        protected readonly SystemConfigService $systemConfigService,
+        protected readonly EntityRepository $customerGroupRepository,
+        protected readonly EntityRepository $categoryRepository,
+        protected readonly EntityRepository $productRepository,
+        protected readonly SalesChannelRepository $salesChannelProductRepository,
     ) {
-        $this->logger = $logger;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->cache = $cache;
-        $this->headerHandler = $headerHandler;
-        $this->productStreamBuilder = $productStreamBuilder;
-        $this->systemConfigService = $systemConfigService;
-        $this->customerGroupRepository = $customerGroupRepository;
-        $this->categoryRepository = $categoryRepository;
-        $this->productRepository = $productRepository;
     }
 
     /**
-     * @Route("/findologic", name="frontend.findologic.export", options={"seo"="false"}, methods={"GET"})
+     * @Route(
+     *     "/findologic",
+     *     name="frontend.findologic.export",
+     *     options={"seo"="false"},
+     *     methods={"GET"},
+     *     defaults={"_routeScope"={"storefront"}}
+     * )
      */
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
@@ -123,8 +101,13 @@ class ExportController extends AbstractController
     }
 
     /**
-     * @Route("/findologic/dynamic-product-groups", name="frontend.findologic.export.dynamic_product_groups",
-     *     options={"seo"="false"}, methods={"GET"})
+     * @Route(
+     *     "/findologic/dynamic-product-groups",
+     *     name="frontend.findologic.export.dynamic_product_groups",
+     *     options={"seo"="false"},
+     *     methods={"GET"},
+     *     defaults={"_routeScope"={"storefront"}}
+     * )
      */
     public function exportProductGroup(Request $request, ?SalesChannelContext $context): Response
     {
@@ -175,6 +158,7 @@ class ExportController extends AbstractController
 
         $this->buildDynamicProductGroupService();
 
+        $this->buildProductSteamSearcher();
         $this->exportItemAdapter = $this->container->get(ExportItemAdapter::class);
         $this->productSearcher = $this->container->get(ProductSearcher::class);
 
@@ -232,20 +216,30 @@ class ExportController extends AbstractController
     {
         $this->dynamicProductGroupService = new DynamicProductGroupService(
             $this->productRepository,
-            $this->categorySearcher,
-            $this->productStreamBuilder,
             $this->salesChannelContext,
             $this->exportConfig,
             $this->cache,
             $this->exportContext,
+            $this->categorySearcher,
         );
         $this->container->set(DynamicProductGroupService::class, $this->dynamicProductGroupService);
+    }
+
+    protected function buildProductSteamSearcher(): void
+    {
+        $productStreamSearcher = new ProductStreamSearcher(
+            $this->productStreamBuilder,
+            $this->salesChannelContext,
+            $this->salesChannelProductRepository,
+            $this->cache,
+        );
+        $this->container->set(ProductStreamSearcher::class, $productStreamSearcher);
     }
 
     protected function buildExport(): void
     {
         $this->export = AbstractExport::getInstance(
-            $this->exportConfig->getProductId() ? AbstractExport::TYPE_PRODUCT_ID : AbstractExport::TYPE_XML,
+            $this->exportConfig->getProductId() ? ExportType::DEBUG : ExportType::XML,
             $this->dynamicProductGroupService,
             $this->productSearcher,
             $this->pluginConfig,

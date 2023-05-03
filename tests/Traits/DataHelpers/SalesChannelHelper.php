@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use Doctrine\DBAL\Connection;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -21,22 +20,88 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 trait SalesChannelHelper
 {
     public function buildSalesChannelContext(
-        string $salesChannelId = Defaults::SALES_CHANNEL,
+        string $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
+        ?CustomerEntity $customerEntity = null,
+        string $languageId = Defaults::LANGUAGE_SYSTEM,
+    ): SalesChannelContext {
+        /** @var SalesChannelContextFactory $salesChannelContextFactory */
+        $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
+
+        return $salesChannelContextFactory->create(
+            Uuid::randomHex(),
+            $salesChannelId,
+            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId)
+        );
+    }
+
+    public function buildAndCreateSalesChannelContext(
+        string $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
         string $url = 'http://test.uk',
         ?CustomerEntity $customerEntity = null,
         string $languageId = Defaults::LANGUAGE_SYSTEM,
         array $overrides = [],
         string $currencyId = Defaults::CURRENCY
     ): SalesChannelContext {
+        $this->upsertSalesChannel($salesChannelId, $url, $customerEntity, $languageId, $overrides, $currencyId);
+
+        return $this->buildSalesChannelContext($salesChannelId, $customerEntity, $languageId);
+    }
+
+    public function upsertSalesChannel(
+        string $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
+        string $url = 'http://test.uk',
+        ?CustomerEntity $customerEntity = null,
+        string $languageId = Defaults::LANGUAGE_SYSTEM,
+        array $overrides = [],
+        string $currencyId = Defaults::CURRENCY
+    ): void {
         $locale = $this->getLocaleOfLanguage($languageId);
+
         if ($locale) {
             $snippetSet = $this->getSnippetSetIdForLocale($locale);
         } else {
             $snippetSet = $this->fetchIdFromDatabase('snippet_set');
         }
+
+        $countryId = $this->getContainer()->get('country.repository')->searchIds(
+            new Criteria(),
+            Context::createDefaultContext()
+        )->firstId();
+
+        $paymentMethodId = $this->getContainer()->get('payment_method.repository')->searchIds(
+            new Criteria(),
+            Context::createDefaultContext()
+        )->firstId();
+
+        $shippingMethodId = $this->getContainer()->get('shipping_method.repository')->searchIds(
+            new Criteria(),
+            Context::createDefaultContext()
+        )->firstId();
+
+        $customerGroupId = $this->getContainer()->get('customer_group.repository')->searchIds(
+            new Criteria(),
+            Context::createDefaultContext()
+        )->firstId();
+
+        $catCriteria = new Criteria();
+        $catCriteria->addFilter(
+            new EqualsFilter('parentId', null)
+        );
+        $navigationCategoryId = $this->getContainer()->get('category.repository')->searchIds(
+            $catCriteria,
+            Context::createDefaultContext()
+        )->firstId();
+
         $salesChannel = array_merge([
             'id' => $salesChannelId,
             'languageId' => $languageId,
+            'customerGroupId' => $customerEntity?->getGroupId() ?? $customerGroupId,
+            'currencyId' => $currencyId,
+            'paymentMethodId' => $paymentMethodId,
+            'shippingMethodId' => $shippingMethodId,
+            'countryId' => $countryId,
+            'navigationCategoryId' => $navigationCategoryId,
+            'accessKey' => 'KEY',
             'domains' => [
                 [
                     'url' => $url,
@@ -45,21 +110,34 @@ trait SalesChannelHelper
                     'snippetSetId' => $snippetSet
                 ]
             ],
-            'typeId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT
+            'typeId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
+            'translations' => [
+                $languageId => [
+                    'name' => 'Storefront'
+                ]
+            ],
+            'languages' => [
+                ['id' => $languageId]
+            ]
         ], $overrides);
 
-        $this->getContainer()->get('sales_channel.repository')->upsert(
+        /** @var EntityRepository $salesChannelRepository */
+        $salesChannelRepository = $this->getContainer()->get('sales_channel.repository');
+        $salesChannelExists = $salesChannelRepository
+            ->searchIds(new Criteria([$salesChannelId]), Context::createDefaultContext())
+            ->firstId();
+
+        if ($languageId !== Defaults::LANGUAGE_SYSTEM) {
+            $salesChannel['translations'][Defaults::LANGUAGE_SYSTEM] = ['name' => 'Storefront Default'];
+        }
+
+        if ($salesChannelExists && $languageId === Defaults::LANGUAGE_SYSTEM) {
+            unset($salesChannel['languages']);
+        }
+
+        $salesChannelRepository->upsert(
             [$salesChannel],
             Context::createDefaultContext()
-        );
-
-        /** @var SalesChannelContextFactory $salesChannelContextFactory */
-        $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
-
-        return $salesChannelContextFactory->create(
-            Uuid::randomHex(),
-            $salesChannelId,
-            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId)
         );
     }
 
@@ -84,12 +162,12 @@ trait SalesChannelHelper
      */
     public function fetchIdFromDatabase(string $table): string
     {
-        return $this->getContainer()->get(Connection::class)->fetchColumn('SELECT LOWER(HEX(id)) FROM ' . $table);
+        return $this->getContainer()->get(Connection::class)->fetchOne('SELECT LOWER(HEX(id)) FROM ' . $table);
     }
 
     protected function getLocaleIdOfLanguage(string $languageId = Defaults::LANGUAGE_SYSTEM): string
     {
-        /** @var EntityRepositoryInterface $repository */
+        /** @var EntityRepository $repository */
         $repository = $this->getContainer()->get('language.repository');
 
         /** @var LanguageEntity $language */
@@ -100,7 +178,7 @@ trait SalesChannelHelper
 
     public function getLocaleOfLanguage(string $languageId = Defaults::LANGUAGE_SYSTEM): ?string
     {
-        /** @var EntityRepositoryInterface $repository */
+        /** @var EntityRepository $repository */
         $repository = $this->getContainer()->get('language.repository');
 
         $criteria = new Criteria([$languageId]);
@@ -109,12 +187,12 @@ trait SalesChannelHelper
         /** @var LanguageEntity $language */
         $language = $repository->search($criteria, Context::createDefaultContext())->get($languageId);
 
-        return $language->getTranslationCode() ? $language->getTranslationCode()->getCode() : null;
+        return $language->getTranslationCode()?->getCode();
     }
 
     public function createLanguage(string $id, ?string $parentId = Defaults::LANGUAGE_SYSTEM): void
     {
-        /* @var EntityRepositoryInterface $languageRepository */
+        /* @var EntityRepository $languageRepository */
         $languageRepository = $this->getContainer()->get('language.repository');
 
         $languageRepository->create(
@@ -124,9 +202,6 @@ trait SalesChannelHelper
                     'name' => sprintf('name-%s', $id),
                     'localeId' => $this->getLocaleIdOfLanguage(),
                     'parentId' => $parentId,
-                    'salesChannels' => [
-                        ['id' => Defaults::SALES_CHANNEL],
-                    ]
                 ],
             ],
             Context::createDefaultContext()
@@ -135,7 +210,7 @@ trait SalesChannelHelper
 
     public function getEnGbLanguageId(): string
     {
-        /** @var EntityRepositoryInterface $repository */
+        /** @var EntityRepository $repository */
         $repository = $this->getContainer()->get('language.repository');
 
         $criteria = new Criteria();
@@ -157,7 +232,7 @@ trait SalesChannelHelper
             'roundForNet' => false
         ];
 
-        /** @var EntityRepositoryInterface $currencyRepo */
+        /** @var EntityRepository $currencyRepo */
         $currencyRepo = $this->getContainer()->get('currency.repository');
         $currencyRepo->upsert(
             [

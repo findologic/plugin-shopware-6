@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
+use DateTimeImmutable;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceDefinition;
@@ -19,7 +20,7 @@ trait OrderHelper
     {
         $data = [
             'id' => $this->ids->create('test-order'),
-            'orderDateTime' => (new \DateTimeImmutable())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
+            'orderDateTime' => (new DateTimeImmutable())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
             'price' => new CartPrice(
                 10,
                 10,
@@ -45,7 +46,7 @@ trait OrderHelper
             'paymentMethodId' => $this->fetchFirstIdFromTable('payment_method'),
             'currencyId' => Defaults::CURRENCY,
             'currencyFactor' => 1.0,
-            'salesChannelId' => Defaults::SALES_CHANNEL,
+            'salesChannelId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'billingAddressId' => Uuid::randomHex(),
             'addresses' => [
                 [
@@ -80,6 +81,16 @@ trait OrderHelper
             'deliveries' => [],
             'context' => '{}',
             'payload' => '{}',
+            'itemRounding' => [
+                'decimals' => 2,
+                'interval' => 0.01,
+                'roundForNet' => true
+            ],
+            'totalRounding' => [
+                'decimals' => 2,
+                'interval' => 0.01,
+                'roundForNet' => true
+            ],
         ];
 
         $data = array_merge($data, $overrideData);

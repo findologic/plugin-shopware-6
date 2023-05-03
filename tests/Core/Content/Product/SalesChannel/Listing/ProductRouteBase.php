@@ -26,13 +26,13 @@ use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SalesChannel\StoreApiResponse;
@@ -46,54 +46,27 @@ abstract class ProductRouteBase extends TestCase
     use CategoryHelper;
     use IntegrationTestBehaviour;
 
-    /**
-     * @var EventDispatcherInterface|MockObject
-     */
-    protected $eventDispatcherMock;
+    protected EventDispatcherInterface|MockObject $eventDispatcherMock;
 
     protected ProductDefinition $productDefinition;
 
     protected RequestCriteriaBuilder $criteriaBuilder;
 
-    /**
-     * @var SalesChannelRepositoryInterface|MockObject
-     */
-    protected $productRepositoryMock;
+    protected SalesChannelRepository|MockObject $productRepositoryMock;
 
-    /**
-     * @var EntityRepositoryInterface|MockObject
-     */
-    protected $categoryRepositoryMock;
+    protected EntityRepository|MockObject $categoryRepositoryMock;
 
-    /**
-     * @var ProductStreamBuilderInterface|MockObject
-     */
-    protected $productStreamBuilderMock;
+    protected ProductStreamBuilderInterface|MockObject $productStreamBuilderMock;
 
-    /**
-     * @var ProductSearchBuilderInterface|MockObject
-     */
-    protected $productSearchBuilderMock;
+    protected ProductSearchBuilderInterface|MockObject $productSearchBuilderMock;
 
-    /**
-     * @var ServiceConfigResource|MockObject
-     */
-    protected $serviceConfigResourceMock;
+    protected ServiceConfigResource|MockObject $serviceConfigResourceMock;
 
-    /**
-     * @var SystemConfigService|MockObject
-     */
-    protected $systemConfigServiceMock;
+    protected SystemConfigService|MockObject $systemConfigServiceMock;
 
-    /**
-     * @var Config|MockObject
-     */
-    protected $configMock;
+    protected Config|MockObject $configMock;
 
-    /**
-     * @var FindologicConfigService|MockObject
-     */
-    protected $findologicConfigServiceMock;
+    protected FindologicConfigService|MockObject $findologicConfigServiceMock;
 
     protected function setUp(): void
     {
@@ -105,11 +78,11 @@ abstract class ProductRouteBase extends TestCase
 
         $this->criteriaBuilder = $this->getContainer()->get(RequestCriteriaBuilder::class);
 
-        $this->productRepositoryMock = $this->getMockBuilder(SalesChannelRepositoryInterface::class)
+        $this->productRepositoryMock = $this->getMockBuilder(SalesChannelRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->categoryRepositoryMock = $this->getMockBuilder(EntityRepositoryInterface::class)
+        $this->categoryRepositoryMock = $this->getMockBuilder(EntityRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -139,23 +112,14 @@ abstract class ProductRouteBase extends TestCase
         $this->configMock->expects($this->any())->method('isInitialized')->willReturn(true);
     }
 
-    /**
-     * @return AbstractProductListingRoute|AbstractProductSearchRoute
-     */
-    abstract protected function getRoute();
+    abstract protected function getRoute(): AbstractProductListingRoute|AbstractProductSearchRoute;
 
-    /**
-     * @return AbstractProductListingRoute|AbstractProductSearchRoute|MockObject
-     */
-    abstract protected function getOriginal();
+    abstract protected function getOriginal(): AbstractProductListingRoute|AbstractProductSearchRoute|MockObject;
 
-    /**
-     * @return SalesChannelContext|MockObject
-     */
     protected function getMockedSalesChannelContext(
         bool $findologicActive,
         string $categoryId = ''
-    ): SalesChannelContext {
+    ): SalesChannelContext|MockObject {
         /** @var SalesChannelContext|MockObject $salesChannelContextMock */
         $salesChannelContextMock = $this->getMockBuilder(SalesChannelContext::class)
             ->disableOriginalConstructor()
@@ -166,9 +130,14 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $salesChannelMock->expects($this->any())->method('getNavigationCategoryId')->willReturn($categoryId);
-        $salesChannelMock->expects($this->any())->method('getId')->willReturn(Defaults::SALES_CHANNEL);
+        $salesChannelMock->expects($this->any())->method('getId')->willReturn(Defaults::SALES_CHANNEL_TYPE_STOREFRONT);
 
-        $salesChannelContextMock->expects($this->any())->method('getSalesChannel')->willReturn($salesChannelMock);
+        $salesChannelContextMock->expects($this->any())
+            ->method('getSalesChannel')
+            ->willReturn($salesChannelMock);
+        $salesChannelContextMock->expects($this->any())
+            ->method('getSalesChannelId')
+            ->willReturn(Defaults::SALES_CHANNEL_TYPE_STOREFRONT);
 
         /** @var Context|MockObject $context */
         $context = $this->getMockBuilder(Context::class)
@@ -177,7 +146,7 @@ abstract class ProductRouteBase extends TestCase
         $context->method('getVersionId')->willReturn(Defaults::LIVE_VERSION);
         $context->expects($this->any())
             ->method('addState')
-            ->with(Context::STATE_ELASTICSEARCH_AWARE);
+            ->with(Criteria::STATE_ELASTICSEARCH_AWARE);
 
         $findologicService = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()
@@ -192,10 +161,7 @@ abstract class ProductRouteBase extends TestCase
         return $salesChannelContextMock;
     }
 
-    /**
-     * @return Session|MockObject
-     */
-    protected function getSessionMock(): Session
+    protected function getSessionMock(): Session|MockObject
     {
         return $this->getMockBuilder(Session::class)
             ->disableOriginalConstructor()
@@ -314,13 +280,21 @@ abstract class ProductRouteBase extends TestCase
         string $categoryId = '69',
         ?Criteria $criteria = null
     ): StoreApiResponse {
-        switch (true) {
-            case $productRoute instanceof AbstractProductListingRoute:
-                return $productRoute->load($categoryId, $request, $salesChannelContext, $criteria);
-            case $productRoute instanceof AbstractProductSearchRoute:
-                return $productRoute->load($request, $salesChannelContext, $criteria);
-            default:
-                throw new InvalidArgumentException('Unknown productRoute of class %s', get_class($productRoute));
-        }
+        return match (true) {
+            $productRoute instanceof AbstractProductListingRoute => $productRoute->load(
+                $categoryId,
+                $request,
+                $salesChannelContext,
+                $criteria
+            ),
+            $productRoute instanceof AbstractProductSearchRoute => $productRoute->load(
+                $request,
+                $salesChannelContext,
+                $criteria
+            ),
+            default => throw new InvalidArgumentException(
+                sprintf('Unknown productRoute of class %s', get_class($productRoute))
+            ),
+        };
     }
 }

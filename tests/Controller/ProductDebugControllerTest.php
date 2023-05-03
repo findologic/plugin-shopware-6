@@ -31,10 +31,10 @@ class ProductDebugControllerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
     }
 
-    public function wrongArgumentsProvider(): array
+    public static function wrongArgumentsProvider(): array
     {
         $productId = Uuid::randomHex();
 

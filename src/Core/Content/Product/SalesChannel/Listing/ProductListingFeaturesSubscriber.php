@@ -13,18 +13,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ProductListingFeaturesSubscriber implements EventSubscriberInterface
 {
-    protected ShopwareProductListingFeaturesSubscriber $decorated;
-
-    protected FindologicSearchService $findologicSearchService;
-
     protected bool $isListingRequestHandled = false;
 
     public function __construct(
-        ShopwareProductListingFeaturesSubscriber $decorated,
-        FindologicSearchService $findologicSearchService
+        protected readonly ShopwareProductListingFeaturesSubscriber $decorated,
+        protected readonly FindologicSearchService $findologicSearchService
     ) {
-        $this->decorated = $decorated;
-        $this->findologicSearchService = $findologicSearchService;
     }
 
     public static function getSubscribedEvents(): array

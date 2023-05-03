@@ -50,7 +50,9 @@ class ProductDebugSearcher extends ProductSearcher implements ProductDebugSearch
      */
     public function searchProduct($criteria): ?ProductEntity
     {
-        return $this->searchProducts($criteria)->first();
+        /** @var ?ProductEntity $product */
+        $product = $this->searchProducts($criteria)->first();
+        return $product;
     }
 
     /**

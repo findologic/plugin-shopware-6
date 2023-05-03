@@ -19,7 +19,7 @@ class SearchRequestFactoryTest extends TestCase
 {
     use IntegrationTestBehaviour;
 
-    public function pluginVersionProvider(): array
+    public static function pluginVersionProvider(): array
     {
         return [
             'Plugin version is cached' => [
@@ -50,7 +50,7 @@ class SearchRequestFactoryTest extends TestCase
         $expectedReferer = 'http://localhost.shopware';
         $expectedIpAddress = '192.168.0.1';
         $expectedHost = 'findologic.de';
-        $expectedAdapter = 'XML_2.1';
+        $expectedAdapter = 'JSON_1.0';
 
         /** @var CacheItemPoolInterface|MockObject $cachePoolMock */
         $cachePoolMock = $this->getMockBuilder(CacheItemPoolInterface::class)

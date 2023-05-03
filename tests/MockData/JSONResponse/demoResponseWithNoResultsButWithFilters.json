@@ -1,0 +1,91 @@
+{
+  "request": {
+    "query": "ps4",
+    "first": 0,
+    "count": 24,
+    "serviceId": "4B6A0A6F1217DBF125A45FCDEED6F8F3",
+    "usergroup": null,
+    "order": {
+      "field": "salesfrequency",
+      "relevanceBased": true,
+      "direction": "DESC"
+    }
+  },
+  "result": {
+    "metadata": {
+      "landingpage": null,
+      "promotion": {
+        "name": "Promotion",
+        "url": "https://promotion.com/",
+        "imageUrl": "https://promotion.com/promotion.png"
+      },
+      "searchConcept": null,
+      "effectiveQuery": "ps4",
+      "totalResults": 1808,
+      "currencySymbol": "€"
+    },
+    "items": [],
+    "variant": {
+      "name": "sdym"
+    },
+    "filters": {
+      "main": [
+        {
+          "name": "vendor",
+          "displayName": "Hersteller",
+          "selectMode": "multiple",
+          "noAvailableFiltersText": "No Manufacturer Available",
+          "combinationOperation": "and",
+          "values": [],
+          "type": "select"
+        },
+        {
+          "name": "cat",
+          "displayName": "Catego",
+          "selectMode": "single",
+          "noAvailableFiltersText": "No category available",
+          "values": [],
+          "type": "select"
+        }
+      ],
+      "other": [
+        {
+          "name": "Color",
+          "displayName": "Color",
+          "selectMode": "multiple",
+          "noAvailableFiltersText": "No Color Available",
+          "combinationOperation": "or",
+          "values": [],
+          "type": "select"
+        },
+        {
+          "name": "Test",
+          "displayName": "Test",
+          "selectMode": "multiple",
+          "noAvailableFiltersText": "No Test Available",
+          "combinationOperation": "and",
+          "values": [],
+          "type": "select"
+        },
+        {
+          "name": "Test Group",
+          "displayName": "Test Group",
+          "selectMode": "multiple",
+          "noAvailableFiltersText": "No Test Group Available",
+          "combinationOperation": "and",
+          "values": [],
+          "type": "select"
+        },
+        {
+          "name": "Description",
+          "displayName": "Description",
+          "selectMode": "multiple",
+          "noAvailableFiltersText": "No Description Available",
+          "combinationOperation": "and",
+          "values": [],
+          "type": "select"
+        }
+      ]
+    }
+  }
+}

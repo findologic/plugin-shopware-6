@@ -15,12 +15,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 class NavigationCategoryParser
 {
-    private EntityRepository $categoryRepository;
-
     public function __construct(
-        EntityRepository $categoryRepository
+        private readonly EntityRepository $categoryRepository
     ) {
-        $this->categoryRepository = $categoryRepository;
     }
 
     /**

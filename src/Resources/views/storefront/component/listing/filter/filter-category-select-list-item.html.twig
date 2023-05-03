@@ -1,21 +1,22 @@
 {% block component_filter_category_select_list_options %}
 
     {% block component_filter_multi_select_list_item %}
-        <div class="custom-control custom-checkbox category-filter-container">
+        <div class="form-check category-filter-container">
             {% set id = element.id %}
             {% set filterValue = element.id %}
             {% set name = element.translated.name %}
             {% block component_filter_multi_select_list_item_checkbox_input %}
                 <input type="checkbox"
-                       class="custom-control-input filter-category-select-checkbox"
+                       class="form-check-input filter-category-select-checkbox"
                        data-label="{{ name }}"
                        value="{{ filterValue }}"
                        id="{{ id }}">
             {% endblock %}
 
             {% block component_filter_multi_select_list_item_label_element %}
-                <label class="filter-multi-select-item-label filter-category-select-item-label custom-control-label" for="{{ id }}">
-                    {% block component_multi_select_list_item_label %}<span>{{ name }}</span>
+                <label class="filter-multi-select-item-label filter-category-select-item-label form-check-label" for="{{ id }}">
+                    {% block component_multi_select_list_item_label %}
+                        {{ name }}
                     {% endblock %}
                 </label>
                 {% block arrow_icon %}
@@ -27,10 +28,12 @@
                 {% endblock %}
             {% endblock %}
             {% if element.values %}
-                {% sw_include '@FinSearch/storefront/component/listing/filter/filter-category-select-list-item-value.html.twig' with {
-                    values: element.values,
-                    filterValue: filterValue
-                } %}
+                <div class="sub-items hide-category-list-item">
+                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-category-select-list-item-value.html.twig' with {
+                        values: element.values,
+                        filterValue: filterValue
+                    } %}
+                </div>
             {% endif %}
         </div>
     {% endblock %}

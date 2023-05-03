@@ -16,11 +16,9 @@ class SortingService
 {
     protected const TOPSELLER_SORT_FIELD = 'product.sales';
 
-    private TranslatorInterface $translator;
-
-    public function __construct(TranslatorInterface $translator)
-    {
-        $this->translator = $translator;
+    public function __construct(
+        private readonly TranslatorInterface $translator
+    ) {
     }
 
     public function handleRequest(

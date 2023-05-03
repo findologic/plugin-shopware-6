@@ -10,12 +10,14 @@ export default class FilterSliderRange extends FilterBasePlugin {
         inputTimeout: 500,
         minKey: 'min-price',
         maxKey: 'max-price',
+        lowerBound: 0,
         mainFilterButtonSelector: '.filter-panel-item-toggle',
-        price: {
+        range: {
             min: 0,
             max: 1,
             step: 0.1,
         },
+        unit: '',
         errorContainerClass: 'filter-range-error',
         containerSelector: '.filter-range-container',
         sliderContainer: '.fl--range-slider',
@@ -40,9 +42,9 @@ export default class FilterSliderRange extends FilterBasePlugin {
         this._sliderContainer = DomAccess.querySelector(this.el, this.options.sliderContainer);
         this._sliderContainer.prepend(this.slider);
 
-        const start = this._inputMin.value.length ? this._inputMin.value : this.options.price.min;
-        const end = this._inputMax.value.length ? this._inputMax.value : this.options.price.max;
-        const min = this.options.price.min;
+        const start = this._inputMin.value.length ? this._inputMin.value : this.options.range.min;
+        const end = this._inputMax.value.length ? this._inputMax.value : this.options.range.max;
+        const min = this.options.range.min;
         const max = this.getMax();
 
         const startPrecision = this.getPrecision(min);
@@ -51,7 +53,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
         noUiSlider.create(this.slider, {
             start: [start, end],
             connect: true,
-            step: this.options.price.step,
+            step: this.options.range.step,
             range: { min, max },
             format: {
                 to: (v) => parseFloat(v).toFixed(startPrecision),
@@ -102,7 +104,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
      * @returns {number}
      */
     getMax() {
-        return this.options.price.max === this.options.price.min ? this.options.price.min + 1 : this.options.price.max;
+        return this.options.range.max === this.options.range.min ? this.options.range.min + 1 : this.options.range.max;
     }
 
     /**
@@ -208,14 +210,14 @@ export default class FilterSliderRange extends FilterBasePlugin {
         if (this._inputMin.value.length || this._inputMax.value.length) {
             if (this.hasMinValueSet()) {
                 labels.push({
-                    label: `${this.options.snippets.filterRangeActiveMinLabel} ${this._inputMin.value} ${this.options.currencySymbol}`,
+                    label: `${this.options.snippets.filterRangeActiveMinLabel} ${this._inputMin.value} ${this.options.unit}`,
                     id: this.options.minKey,
                 });
             }
 
             if (this.hasMaxValueSet()) {
                 labels.push({
-                    label: `${this.options.snippets.filterRangeActiveMaxLabel} ${this._inputMax.value} ${this.options.currencySymbol}`,
+                    label: `${this.options.snippets.filterRangeActiveMaxLabel} ${this._inputMax.value} ${this.options.unit}`,
                     id: this.options.maxKey,
                 });
             }
@@ -253,11 +255,11 @@ export default class FilterSliderRange extends FilterBasePlugin {
      * @param {Array} values
      */
     onUpdateValues(values) {
-        if (values[0] < this.options.price.min) {
-            values[0] = this.options.price.min;
+        if (values[0] < this.options.range.min) {
+            values[0] = this.options.range.min;
         }
-        if (values[1] > this.options.price.max) {
-            values[1] = this.options.price.max;
+        if (values[1] > this.options.range.max) {
+            values[1] = this.options.range.max;
         }
 
         this._inputMin.value = values[0];
@@ -290,7 +292,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
     }
 
     validateMinInput() {
-        if (!this._inputMin.value || this._inputMin.value < this.options.price.min || this._inputMin.value > this.options.price.max) {
+        if (!this._inputMin.value || this._inputMin.value < this.options.range.min || this._inputMin.value > this.options.range.max) {
             this.resetMin();
         } else {
             this.setMinKnobValue();
@@ -298,7 +300,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
     }
 
     validateMaxInput() {
-        if (!this._inputMax.value || this._inputMax.value > this.options.price.max || this._inputMax.value < this.options.price.min) {
+        if (!this._inputMax.value || this._inputMax.value > this.options.range.max || this._inputMax.value < this.options.range.min) {
             this.resetMax();
         } else {
             this.setMaxKnobValue();
@@ -306,12 +308,12 @@ export default class FilterSliderRange extends FilterBasePlugin {
     }
 
     resetMin() {
-        this._inputMin.value = this.options.price.min;
+        this._inputMin.value = this.options.range.min;
         this.setMinKnobValue();
     }
 
     resetMax() {
-        this._inputMax.value = this.options.price.max;
+        this._inputMax.value = this.options.range.max;
         this.setMaxKnobValue();
     }
 
@@ -333,12 +335,12 @@ export default class FilterSliderRange extends FilterBasePlugin {
 
     hasMinValueSet() {
         this.validateMinInput();
-        return this._inputMin.value.length && parseFloat(this._inputMin.value) > this.options.price.min;
+        return this._inputMin.value.length && parseFloat(this._inputMin.value) > this.options.range.min;
     }
 
     hasMaxValueSet() {
         this.validateMaxInput();
-        return this._inputMax.value.length && parseFloat(this._inputMax.value) < this.options.price.max;
+        return this._inputMax.value.length && parseFloat(this._inputMax.value) < this.options.range.max;
     }
 
     setMinKnobValue() {
@@ -382,7 +384,7 @@ export default class FilterSliderRange extends FilterBasePlugin {
             return;
         }
 
-        if (this.options.price.min !== totalRangePrices.min || this.options.price.max !== totalRangePrices.max) {
+        if (this.options.range.min !== totalRangePrices.min || this.options.range.max !== totalRangePrices.max) {
             this.updateMinAndMaxValues(totalRangePrices.min, totalRangePrices.max);
         } else {
             this.enableFilter();
@@ -395,8 +397,8 @@ export default class FilterSliderRange extends FilterBasePlugin {
     }
 
     updateMinAndMaxValues(minPrice, maxPrice) {
-        this.options.price.min = minPrice;
-        this.options.price.max = maxPrice;
+        this.options.range.min = minPrice;
+        this.options.range.max = maxPrice;
 
         this.slider.noUiSlider.updateOptions({
             range: {

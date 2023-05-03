@@ -17,17 +17,13 @@ Component.register('findologic-config', {
     ],
 
     props: {
-        actualConfigData: {
-            type: Array,
-            required: true,
-        },
-        allConfigs: {
+        value: {
             type: Object,
             required: true,
         },
         shopkeyErrorState: {
             type: Object,
-            required: true,
+            default: null,
         },
         selectedSalesChannelId: {
             type: String,
@@ -56,6 +52,8 @@ Component.register('findologic-config', {
         },
     },
 
+    emits: ['input'],
+
     data() {
         return {
             isLoading: false,
@@ -64,6 +62,14 @@ Component.register('findologic-config', {
     },
 
     computed: {
+        actualConfigData: {
+            get() {
+                return this.value;
+            },
+            set(config) {
+                this.$emit('input', config);
+            },
+        },
         /**
          * @public
          * @returns {boolean}

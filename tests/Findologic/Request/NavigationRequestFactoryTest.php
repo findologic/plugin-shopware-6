@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Request;
 
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\FinSearch\Findologic\Request\NavigationRequestFactory;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -30,7 +29,7 @@ class NavigationRequestFactoryTest extends TestCase
         $expectedReferer = 'http://localhost.shopware';
         $expectedIpAddress = '192.168.0.1';
         $expectedHost = 'findologic.de';
-        $expectedAdapter = 'XML_2.1';
+        $expectedAdapter = 'JSON_1.0';
         $expectedVersion = '0.1.0';
         $expectedCategoryPath = 'Kids & Music_Computers & Shoes';
         $expectedShopType = 'Shopware6';

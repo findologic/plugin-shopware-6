@@ -20,12 +20,12 @@ use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Content\ProductStream\Service\ProductStreamBuilderInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepositoryInterface;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -34,44 +34,18 @@ class ProductListingRoute extends AbstractProductListingRoute
 {
     use SearchResultHelper;
 
-    private EventDispatcherInterface $eventDispatcher;
-
-    private ProductDefinition $definition;
-
-    private RequestCriteriaBuilder $criteriaBuilder;
-
-    private AbstractProductListingRoute $decorated;
-
-    private SalesChannelRepositoryInterface $productRepository;
-
-    private EntityRepositoryInterface $categoryRepository;
-
-    private ProductStreamBuilderInterface $productStreamBuilder;
-
-    private ServiceConfigResource $serviceConfigResource;
-
-    private Config $config;
-
     public function __construct(
-        AbstractProductListingRoute $decorated,
-        SalesChannelRepositoryInterface $productRepository,
-        EntityRepositoryInterface $categoryRepository,
-        ProductStreamBuilderInterface $productStreamBuilder,
-        EventDispatcherInterface $eventDispatcher,
-        ProductDefinition $definition,
-        RequestCriteriaBuilder $criteriaBuilder,
-        ServiceConfigResource $serviceConfigResource,
-        FindologicConfigService $findologicConfigService,
-        ?Config $config = null
+        private readonly AbstractProductListingRoute $decorated,
+        private readonly SalesChannelRepository $salesChannelProductRepository,
+        private readonly EntityRepository $categoryRepository,
+        private readonly ProductStreamBuilderInterface $productStreamBuilder,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly ProductDefinition $definition,
+        private readonly RequestCriteriaBuilder $criteriaBuilder,
+        private readonly ServiceConfigResource $serviceConfigResource,
+        private readonly FindologicConfigService $findologicConfigService,
+        private ?Config $config = null
     ) {
-        $this->decorated = $decorated;
-        $this->productRepository = $productRepository;
-        $this->categoryRepository = $categoryRepository;
-        $this->productStreamBuilder = $productStreamBuilder;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->definition = $definition;
-        $this->criteriaBuilder = $criteriaBuilder;
-        $this->serviceConfigResource = $serviceConfigResource;
         $this->config = $config ?? new Config($findologicConfigService, $serviceConfigResource);
     }
 
@@ -83,35 +57,35 @@ class ProductListingRoute extends AbstractProductListingRoute
     public function load(
         string $categoryId,
         Request $request,
-        SalesChannelContext $salesChannelContext,
+        SalesChannelContext $context,
         ?Criteria $criteria = null
     ): ProductListingRouteResponse {
         $criteria ??= $this->criteriaBuilder->handleRequest(
             $request,
             new Criteria(),
             $this->definition,
-            $salesChannelContext->getContext()
+            $context->getContext()
         );
 
-        $this->config->initializeBySalesChannel($salesChannelContext);
+        $this->config->initializeBySalesChannel($context);
         $shouldHandleRequest = Utils::shouldHandleRequest(
             $request,
-            $salesChannelContext->getContext(),
+            $context->getContext(),
             $this->serviceConfigResource,
             $this->config,
             true
         );
 
-        $isDefaultCategory = $categoryId === $salesChannelContext->getSalesChannel()->getNavigationCategoryId();
+        $isDefaultCategory = $categoryId === $context->getSalesChannel()->getNavigationCategoryId();
         if (!$shouldHandleRequest || $isDefaultCategory || !$this->isRouteSupported($request)) {
-            Utils::disableFindologicWhenEnabled($salesChannelContext);
+            Utils::disableFindologicWhenEnabled($context);
 
-            return $this->decorated->load($categoryId, $request, $salesChannelContext, $criteria);
+            return $this->decorated->load($categoryId, $request, $context, $criteria);
         }
 
         $criteria->addFilter(
             new ProductAvailableFilter(
-                $salesChannelContext->getSalesChannel()->getId(),
+                $context->getSalesChannel()->getId(),
                 ProductVisibilityDefinition::VISIBILITY_ALL
             )
         );
@@ -119,17 +93,17 @@ class ProductListingRoute extends AbstractProductListingRoute
         /** @var CategoryEntity $category */
         $category = $this->categoryRepository->search(
             new Criteria([$categoryId]),
-            $salesChannelContext->getContext()
+            $context->getContext()
         )->first();
 
-        $streamId = $this->extendCriteria($salesChannelContext, $criteria, $category);
+        $streamId = $this->extendCriteria($context, $criteria, $category);
 
         $this->eventDispatcher->dispatch(
-            new ProductListingCriteriaEvent($request, $criteria, $salesChannelContext)
+            new ProductListingCriteriaEvent($request, $criteria, $context)
         );
 
-        $result = $this->doSearch($criteria, $salesChannelContext);
-        /** @var ProductListingResult $productListing */
+        $result = $this->doSearch($criteria, $context);
+
         $productListing = ProductListingResult::createFrom($result);
         $productListing->addCurrentFilter('navigationId', $categoryId);
 
@@ -140,19 +114,19 @@ class ProductListingRoute extends AbstractProductListingRoute
         }
 
         $this->eventDispatcher->dispatch(
-            new ProductListingResultEvent($request, $productListing, $salesChannelContext)
+            new ProductListingResultEvent($request, $productListing, $context)
         );
 
         return new ProductListingRouteResponse($productListing);
     }
 
-    protected function doSearch(Criteria $criteria, SalesChannelContext $context): EntitySearchResult
+    protected function doSearch(Criteria $criteria, SalesChannelContext $salesChannelContext): EntitySearchResult
     {
         $this->assignPaginationToCriteria($criteria);
         $this->addOptionsGroupAssociation($criteria);
 
         if (empty($criteria->getIds())) {
-            return $this->createEmptySearchResult($criteria, $context);
+            return $this->createEmptySearchResult($criteria, $salesChannelContext->getContext());
         }
 
         // Shopware can not handle _score sort for listing pages, but since our Findologic navigation always shows
@@ -164,7 +138,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         // Offset should not be set, when searching for explicit IDs
         $criteria->setOffset(null);
 
-        $result = $this->fetchProducts($criteria, $context);
+        $result = $this->fetchProducts($criteria, $salesChannelContext);
         foreach ($preservedSortings as $sorting) {
             $criteria->addSorting($sorting);
         }

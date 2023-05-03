@@ -25,20 +25,11 @@ abstract class FindologicRequestFactory
     private const CACHE_VERSION_LIFETIME = 60 * 60 * 24;
     private const CACHE_VERSION_KEY = 'finsearch_version';
 
-    private CacheItemPoolInterface $cache;
-
-    private EntityRepository $pluginRepository;
-
-    private string $shopwareVersion;
-
     public function __construct(
-        CacheItemPoolInterface $cache,
-        EntityRepository $pluginRepository,
-        string $shopwareVersion
+        private readonly CacheItemPoolInterface $cache,
+        private readonly EntityRepository $pluginRepository,
+        private readonly string $shopwareVersion
     ) {
-        $this->cache = $cache;
-        $this->pluginRepository = $pluginRepository;
-        $this->shopwareVersion = $shopwareVersion;
     }
 
     abstract public function getInstance(Request $request);
@@ -53,13 +44,9 @@ abstract class FindologicRequestFactory
     ): SearchNavigationRequest {
         $searchNavigationRequest->setUserIp($this->fetchClientIp());
         $searchNavigationRequest->setRevision($this->getPluginVersion());
-        $searchNavigationRequest->setOutputAdapter(OutputAdapter::XML_21);
-        $searchNavigationRequest->addIndividualParam('shopType', 'Shopware6', FindologicApiRequest::SET_VALUE);
-        $searchNavigationRequest->addIndividualParam(
-            'shopVersion',
-            $this->shopwareVersion,
-            FindologicApiRequest::SET_VALUE
-        );
+        $searchNavigationRequest->setOutputAdapter(OutputAdapter::JSON_10);
+        $searchNavigationRequest->setShopType('Shopware6');
+        $searchNavigationRequest->setShopVersion($this->shopwareVersion);
 
         // TODO: Get the count from the shopware config. At the point of writing this, this config does not exist yet.
         //  Shopware themselves have it hardcoded at 24.
@@ -134,9 +121,7 @@ abstract class FindologicRequestFactory
             $ipAddress = 'UNKNOWN';
         }
 
-        $ipAddress = implode(',', array_unique(array_map('trim', explode(',', $ipAddress))));
-
-        return $ipAddress;
+        return implode(',', array_unique(array_map('trim', explode(',', $ipAddress))));
     }
 
     /**

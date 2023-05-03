@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 trait RandomIdHelper
 {
@@ -14,6 +13,6 @@ trait RandomIdHelper
     {
         $connection = $this->getContainer()->get(Connection::class);
 
-        return Uuid::fromBytesToHex((string)$connection->fetchColumn("SELECT id FROM {$table} LIMIT 1"));
+        return Uuid::fromBytesToHex((string)$connection->fetchOne("SELECT id FROM {$table} LIMIT 1"));
     }
 }

@@ -7,6 +7,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
+use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Traits\SearchResultHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -27,16 +28,15 @@ use Symfony\Component\HttpFoundation\Request;
 class ProductSearchRouteTest extends ProductRouteBase
 {
     use SalesChannelFunctionalTestBehaviour;
+    use SalesChannelHelper;
     use SearchResultHelper;
     use ProductHelper {
         ProductHelper::createCustomer insteadof SalesChannelFunctionalTestBehaviour;
     }
 
-    /** @var AbstractProductSearchRoute|MockObject */
-    private $original;
+    private AbstractProductSearchRoute|MockObject $original;
 
-    /** @var SalesChannelContext| MockObject */
-    private $salesChannelContext;
+    private SalesChannelContext|MockObject $salesChannelContext;
 
     protected function setUp(): void
     {
@@ -62,12 +62,12 @@ class ProductSearchRouteTest extends ProductRouteBase
         );
     }
 
-    protected function getOriginal()
+    protected function getOriginal(): AbstractProductSearchRoute
     {
         return $this->original;
     }
 
-    public function queryProvider(): array
+    public static function queryProvider(): array
     {
         return [
             'Searching for first variant number' => [
@@ -116,6 +116,7 @@ class ProductSearchRouteTest extends ProductRouteBase
         string $variantId,
         string $expectedProductNumber
     ): void {
+        $this->upsertSalesChannel();
         $this->salesChannelContext = $this->getMockedSalesChannelContext(true);
 
         $sdkProduct = $this->createTestProduct([], true);
@@ -184,7 +185,7 @@ class ProductSearchRouteTest extends ProductRouteBase
         $route = $this->getRoute();
         $reflector = new ReflectionObject($route);
         $method = $reflector->getMethod('doSearch');
-        $method->setAccessible(true);
+
         /** @var EntitySearchResult $result */
         $result = $method->invoke($route, $originalCriteria, $this->salesChannelContext, $query);
         /** @var ProductEntity $searchedProduct */

@@ -8,8 +8,8 @@ use FINDOLOGIC\FinSearch\Export\Search\CategorySearcher;
 use FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder;
 use FINDOLOGIC\FinSearch\Export\Search\ProductSearcher;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use FINDOLOGIC\Shopware6Common\Export\Config\ImplementationType;
 use FINDOLOGIC\Shopware6Common\Export\Config\PluginConfig;
+use FINDOLOGIC\Shopware6Common\Export\Enums\ImplementationType;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use Psr\Container\ContainerInterface;
 use Shopware\Core\Content\Category\CategoryEntity;
@@ -66,9 +66,9 @@ trait ServicesHelper
         return new ProductSearcher(
             $salesChannelContext,
             $container->get('product.repository'),
-            $productCriteriaBuilder,
+            $this->getPluginConfig($configOverrides),
             $exportContext,
-            $this->getPluginConfig($configOverrides)
+            $productCriteriaBuilder,
         );
     }
 

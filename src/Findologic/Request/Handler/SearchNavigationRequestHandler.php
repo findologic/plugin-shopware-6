@@ -14,7 +14,6 @@ use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Findologic\Response\ResponseParser;
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\QueryInfoMessage;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -32,35 +31,15 @@ abstract class SearchNavigationRequestHandler
         'title',
     ];
 
-    protected ServiceConfigResource $serviceConfigResource;
-
-    protected Config $config;
-
-    protected ApiConfig $apiConfig;
-
-    protected ApiClient $apiClient;
-
-    protected FindologicRequestFactory $findologicRequestFactory;
-
-    protected SortingHandlerService $sortingHandlerService;
-
-    protected FilterHandler $filterHandler;
-
     public function __construct(
-        ServiceConfigResource $serviceConfigResource,
-        FindologicRequestFactory $findologicRequestFactory,
-        Config $config,
-        ApiConfig $apiConfig,
-        ApiClient $apiClient,
-        SortingHandlerService $sortingHandlerService,
-        ?FilterHandler $filterHandler = null
+        protected readonly ServiceConfigResource $serviceConfigResource,
+        protected readonly FindologicRequestFactory $findologicRequestFactory,
+        protected readonly Config $config,
+        protected readonly ApiConfig $apiConfig,
+        protected readonly ApiClient $apiClient,
+        protected readonly SortingHandlerService $sortingHandlerService,
+        protected ?FilterHandler $filterHandler = null
     ) {
-        $this->serviceConfigResource = $serviceConfigResource;
-        $this->findologicRequestFactory = $findologicRequestFactory;
-        $this->config = $config;
-        $this->apiConfig = $apiConfig;
-        $this->apiClient = $apiClient;
-        $this->sortingHandlerService = $sortingHandlerService;
         $this->filterHandler = $filterHandler ?? new FilterHandler();
     }
 
@@ -81,19 +60,16 @@ abstract class SearchNavigationRequestHandler
         return $this->apiClient->send($searchNavigationRequest);
     }
 
-    /**
-     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
-     */
-    protected function setPaginationParams(ShopwareEvent $event, SearchNavigationRequest $request, ?int $limit): void
-    {
+    protected function setPaginationParams(
+        ShopwareEvent|ProductSearchCriteriaEvent $event,
+        SearchNavigationRequest $request,
+        ?int $limit,
+    ): void {
         $request->setFirst($event->getCriteria()->getOffset());
         $request->setCount($limit ?? $event->getCriteria()->getLimit());
     }
 
-    /**
-     * @param ShopwareEvent|ProductListingCriteriaEvent $event
-     */
-    protected function assignCriteriaToEvent(ShopwareEvent $event, Criteria $criteria): void
+    protected function assignCriteriaToEvent(ShopwareEvent|ProductListingCriteriaEvent $event, Criteria $criteria): void
     {
         $vars = $criteria->getVars();
 
@@ -126,11 +102,10 @@ abstract class SearchNavigationRequestHandler
         $event->getContext()->addExtension('flQueryInfoMessage', $queryInfoMessage);
     }
 
-    /**
-     * @param ShopwareEvent|ProductSearchCriteriaEvent $event
-     */
-    protected function setPromotionExtension(ShopwareEvent $event, ResponseParser $responseParser): void
-    {
+    protected function setPromotionExtension(
+        ShopwareEvent|ProductSearchCriteriaEvent $event,
+        ResponseParser $responseParser
+    ): void {
         if ($promotion = $responseParser->getPromotionExtension()) {
             $event->getContext()->addExtension('flPromotion', $promotion);
         }
@@ -141,7 +116,7 @@ abstract class SearchNavigationRequestHandler
         SearchNavigationRequest $request
     ): void {
         $group = $salesChannelContext->getCurrentCustomerGroup() ?? $salesChannelContext->getFallbackCustomerGroup();
-        if (!$group || !$group->getId()) {
+        if (!$group?->getId()) {
             return;
         }
 

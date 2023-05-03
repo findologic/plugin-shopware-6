@@ -4,7 +4,7 @@ const config = {
     verbose: true,
     modulePaths: [
         'src',
-        '../../../../../../../vendor/shopware/platform/src/Storefront/Resources/app/storefront',
+        '../../../../../../../vendor/shopware/storefront/Resources/app/storefront',
     ],
 };
 

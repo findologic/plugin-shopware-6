@@ -13,7 +13,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ServicesHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use FINDOLOGIC\Shopware6Common\Export\Config\MainVariant;
+use FINDOLOGIC\Shopware6Common\Export\Enums\MainVariant;
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use PHPUnit\Framework\AssertionFailedError;
 use Shopware\Core\Defaults;
@@ -43,13 +43,13 @@ class ProductSearcherTest extends TestCase
     {
         parent::setUp();
 
-        $this->salesChannelContext = $this->buildSalesChannelContext();
+        $this->salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $this->exportContext = $this->getExportContext(
             $this->salesChannelContext,
             $this->getCategory($this->salesChannelContext->getSalesChannel()->getNavigationCategoryId())
         );
 
-        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext, $this->getPluginConfig());
+        $this->productCriteriaBuilder = new ProductCriteriaBuilder($this->getPluginConfig(), $this->exportContext);
         $this->defaultProductSearcher = $this->getProductSearcher(
             $this->salesChannelContext,
             $this->getContainer(),
@@ -91,19 +91,19 @@ class ProductSearcherTest extends TestCase
         $this->assertCount(0, $products);
     }
 
-    public function mainVariantDefaultConfigProvider(): array
+    public static function mainVariantDefaultConfigProvider(): array
     {
         return [
-            'export shopware default' => ['config' => 'default'],
-            'export main parent' => ['config' => 'parent'],
-            'export cheapest variant' => ['config' => 'cheapest']
+            'export shopware default' => ['config' => MainVariant::SHOPWARE_DEFAULT],
+            'export main parent' => ['config' => MainVariant::MAIN_PARENT],
+            'export cheapest variant' => ['config' => MainVariant::CHEAPEST]
         ];
     }
 
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
-    public function testExportsAvailableVariantForProductsWithPriceZero(string $config): void
+    public function testExportsAvailableVariantForProductsWithPriceZero(MainVariant $config): void
     {
         $variantInfo = array_merge(
             $this->getBasicVariantData([
@@ -135,7 +135,7 @@ class ProductSearcherTest extends TestCase
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
-    public function testFindsVariantForInactiveProduct(string $config): void
+    public function testFindsVariantForInactiveProduct(MainVariant $config): void
     {
         $variantInfo = array_merge(
             $this->getBasicVariantData([
@@ -171,7 +171,7 @@ class ProductSearcherTest extends TestCase
         }
     }
 
-    public function variantProvider(): array
+    public static function variantProvider(): array
     {
         $expectedParentId = Uuid::randomHex();
 
@@ -345,11 +345,13 @@ class ProductSearcherTest extends TestCase
                     ],
                 ],
             ],
-            'configuratorGroupConfig' => [
-                [
-                    'id' => $optionGroupId,
-                    'expressionForListings' => true,
-                    'representation' => 'box'
+            'variantListingConfig' => [
+                'configuratorGroupConfig' => [
+                    [
+                        'id' => $optionGroupId,
+                        'expressionForListings' => true,
+                        'representation' => 'box'
+                    ]
                 ]
             ]
         ], $variants);
@@ -419,26 +421,18 @@ class ProductSearcherTest extends TestCase
                     ],
                 ],
             ],
-            'configuratorGroupConfig' => [
-                [
-                    'id' => $optionGroupId,
-                    // Explicitly set this to false. This tells Shopware to consider the mainVariationId (if set).
-                    'expressionForListings' => false,
-                    'representation' => 'box'
-                ]
-            ],
-        ], $variants);
-
-        $this->getContainer()->get('product.repository')->update([
-            [
-                'id' => $expectedFirstVariantId,
-                'mainVariantId' => $expectedMainVariantId
-            ],
-            [
-                'id' => $expectedSecondVariantId,
-                'mainVariantId' => $expectedMainVariantId
+            'variantListingConfig' => [
+                'mainVariantId' => $expectedMainVariantId,
+                'configuratorGroupConfig' => [
+                    [
+                        'id' => $optionGroupId,
+                        // Explicitly set this to false. This tells Shopware to consider the mainVariationId (if set).
+                        'expressionForListings' => false,
+                        'representation' => 'box'
+                    ]
+                ],
             ]
-        ], Context::createDefaultContext());
+        ], $variants);
 
         $result = $this->defaultProductSearcher->findVisibleProducts(20, 0);
         $this->assertCount(1, $result->getElements());
@@ -494,7 +488,7 @@ class ProductSearcherTest extends TestCase
             'visibilities' => [
                 [
                     'id' => Uuid::randomHex(),
-                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'salesChannelId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
                     'visibility' => 0
                 ]
             ]
@@ -610,7 +604,7 @@ class ProductSearcherTest extends TestCase
         ]);
     }
 
-    public function mainVariantCheapestProvider(): array
+    public static function mainVariantCheapestProvider(): array
     {
         return [
             'export cheapest real price with one having 0' => [
@@ -705,7 +699,7 @@ class ProductSearcherTest extends TestCase
     /**
      * @dataProvider mainVariantDefaultConfigProvider
      */
-    public function testProductWithoutVariantsBasedOnExportConfig(string $config): void
+    public function testProductWithoutVariantsBasedOnExportConfig(MainVariant $config): void
     {
         $parentId = Uuid::randomHex();
         $this->createVisibleTestProduct(['id' => $parentId]);
@@ -817,7 +811,7 @@ class ProductSearcherTest extends TestCase
     public function testZeroPriceProductIsFoundIfConfigSet(): void
     {
         $config = $this->getPluginConfig(['exportZeroPricedProducts' => true]);
-        $productCriteriaBuilder = new ProductCriteriaBuilder($this->exportContext, $config);
+        $productCriteriaBuilder = new ProductCriteriaBuilder($config, $this->exportContext);
         $defaultProductSearcher = $this->getProductSearcher(
             $this->salesChannelContext,
             $this->getContainer(),

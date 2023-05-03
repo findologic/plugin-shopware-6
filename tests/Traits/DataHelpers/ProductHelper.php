@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers;
 
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Constants;
-use Shopware\Core\Checkout\Test\Payment\Handler\SyncTestPaymentHandler;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
@@ -323,7 +322,11 @@ trait ProductHelper
             ],
             'cover' => $this->getDefaultCoverData(),
             'price' => [['currencyId' => Defaults::CURRENCY, 'gross' => 15, 'net' => 10, 'linked' => false]],
-            'tax' => ['id' => Uuid::randomHex(),  'name' => '9%', 'taxRate' => 9],
+            'tax' => [
+                'id' => $this->salesChannelContext->getTaxRules()->first()?->getId() ?? Uuid::randomHex(),
+                'name' => '9%',
+                'taxRate' => 9
+            ],
             'categories' => $this->getDefaultCategories(),
             'seoUrls' => $productSeoUrls,
             'properties' => [
@@ -351,6 +354,13 @@ trait ProductHelper
                     ],
                 ]
             ],
+            'visibilities' => [
+                [
+                    'productId' => $id,
+                    'salesChannelId' => $this->salesChannelContext->getSalesChannelId(),
+                    'visibility' => 30
+                ]
+            ]
         ]);
 
         if ($withManufacturer) {
@@ -389,19 +399,19 @@ trait ProductHelper
 
     public function createCustomer(string $customerId, $customerGroup = null): void
     {
-        $password = 'foo';
+        $password = 'foofoofoo';
         $email = 'foo@bar.de';
         $addressId = Uuid::randomHex();
 
         if ($customerGroup === null) {
-            $customerGroup = Defaults::FALLBACK_CUSTOMER_GROUP;
+            $customerGroup = 'cfbd5018d38d41d8adca10d94fc8bdd6';
         }
 
         $this->getContainer()->get('customer.repository')->upsert(
             [
                 [
                     'id' => $customerId,
-                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'salesChannelId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
                     'defaultShippingAddress' => [
                         'id' => $addressId,
                         'firstName' => 'Max',
@@ -416,7 +426,6 @@ trait ProductHelper
                     'defaultPaymentMethod' => [
                         'name' => 'Invoice',
                         'description' => 'Default payment method',
-                        'handlerIdentifier' => SyncTestPaymentHandler::class,
                     ],
                     'groupId' => $customerGroup,
                     'email' => $email,
@@ -462,7 +471,7 @@ trait ProductHelper
             'visibilities' => [
                 [
                     'id' => Uuid::randomHex(),
-                    'salesChannelId' => Defaults::SALES_CHANNEL,
+                    'salesChannelId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
                     'visibility' => 20
                 ]
             ]

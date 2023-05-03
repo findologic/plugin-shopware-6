@@ -1,23 +1,23 @@
 {% block component_filter_multi_select_list_item %}
     {% for element in values %}
         {% block component_filter_multi_select_list_item_value %}
-            <div class="custom-control custom-checkbox sub-item hide-category-list-item">
+            <div class="form-check sub-item">
                 {% set id = element.id %}
                 {% set filterValue = filterValue ~ '_' ~ element.id %}
                 {% set name = element.translated.name %}
                 {% block component_filter_multi_select_list_item_value_checkbox_input %}
                     <input type="checkbox"
-                           class="custom-control-input filter-multi-select-checkbox filter-category-select-checkbox"
+                           class="form-check-input filter-multi-select-checkbox filter-category-select-checkbox"
                            data-label="{{ name }}"
                            value="{{ filterValue }}"
                            id="{{ filterValue }}">
                 {% endblock %}
 
                 {% block component_filter_multi_select_list_item_value_label_element %}
-                    <label class="filter-multi-select-item-label filter-category-select-item-label custom-control-label"
+                    <label class="filter-multi-select-item-label filter-category-select-item-label form-check-label"
                            for="{{ filterValue }}">
                         {% block component_multi_select_list_item_value_label %}
-                            <span>{{ name }}</span>
+                            {{ name }}
                         {% endblock %}
                     </label>
 
@@ -30,10 +30,12 @@
                     {% endblock %}
                 {% endblock %}
                 {% if element.values %}
-                    {% sw_include '@FinSearch/storefront/component/listing/filter/filter-category-select-list-item-value.html.twig' with {
-                        values: element.values,
-                        filterValue: filterValue
-                    } %}
+                    <div class="sub-items hide-category-list-item">
+                        {% sw_include '@FinSearch/storefront/component/listing/filter/filter-category-select-list-item-value.html.twig' with {
+                            values: element.values,
+                            filterValue: filterValue
+                        } %}
+                    </div>
                 {% endif %}
             </div>
         {% endblock %}

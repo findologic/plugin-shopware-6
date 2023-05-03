@@ -8,6 +8,7 @@ use FINDOLOGIC\Api\Client as ApiClient;
 use FINDOLOGIC\Api\Config as ApiConfig;
 use FINDOLOGIC\Api\Requests\SearchNavigation\NavigationRequest;
 use FINDOLOGIC\Api\Requests\SearchNavigation\SearchRequest;
+use FINDOLOGIC\Api\Responses\Json10\Json10Response;
 use FINDOLOGIC\Api\Responses\Xml21\Xml21Response;
 use FINDOLOGIC\FinSearch\Findologic\Request\FindologicRequestFactory;
 use FINDOLOGIC\FinSearch\Findologic\Request\Handler\NavigationRequestHandler;
@@ -18,7 +19,6 @@ use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\MockResponseHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
-use FINDOLOGIC\FinSearch\Utils\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
@@ -28,6 +28,7 @@ use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -43,16 +44,13 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
     private const VALID_SHOPKEY = 'ABCDABCDABCDABCDABCDABCDABCDABCD';
 
-    /** @var Config|MockObject */
-    private $configMock;
+    private Config|MockObject $configMock;
 
     private ApiConfig $apiConfig;
 
-    /** @var ApiClient|MockObject */
-    private $apiClientMock;
+    private ApiClient|MockObject $apiClientMock;
 
-    /** @var FindologicRequestFactory|MockObject */
-    private $findologicRequestFactoryMock;
+    private FindologicRequestFactory|MockObject $findologicRequestFactoryMock;
 
     protected SalesChannelContext $salesChannelContext;
 
@@ -74,10 +72,18 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
     public function testAddsUserGroupHashForSearch(): void
     {
+        $this->upsertSalesChannel();
+
         $customer = $this->createAndGetCustomer();
-        $this->salesChannelContext = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+
+        $this->upsertSalesChannel(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.at',
+            $customer
+        );
+
+        $this->salesChannelContext = $this->buildSalesChannelContext(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             $customer
         );
         $event = $this->buildSearchEvent($this->salesChannelContext);
@@ -91,7 +97,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
         $this->apiClientMock->expects($this->once())
             ->method('send')
-            ->willReturn(new Xml21Response($this->getMockResponse()));
+            ->willReturn(new Json10Response($this->getMockResponse()));
 
         $requestHandler = $this->buildSearchRequestHandler();
         $requestHandler->handleRequest($event);
@@ -101,17 +107,25 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
     public function testAddsUserGroupHashForNavigation(): void
     {
+        $this->upsertSalesChannel();
+
         $customer = $this->createAndGetCustomer();
-        $this->salesChannelContext = $this->buildSalesChannelContext(
-            Defaults::SALES_CHANNEL,
+
+        $this->upsertSalesChannel(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'http://test.at',
+            $customer
+        );
+
+        $this->salesChannelContext = $this->buildSalesChannelContext(
+            Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             $customer
         );
 
         // Create a product, which will create some categories, which are assigned to it.
         $this->createTestProduct();
         $oneSubCategoryFilter = new Criteria();
-        $oneSubCategoryFilter->addFilter(new NotFilter(NotFilter::CONNECTION_OR, [
+        $oneSubCategoryFilter->addFilter(new NotFilter(MultiFilter::CONNECTION_OR, [
             new EqualsFilter('parentId', null),
         ]))->setLimit(1);
 
@@ -132,7 +146,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
 
         $this->apiClientMock->expects($this->once())
             ->method('send')
-            ->willReturn(new Xml21Response($this->getMockResponse()));
+            ->willReturn(new Json10Response($this->getMockResponse()));
 
         $requestHandler = $this->buildNavigationRequestHandler();
         $requestHandler->handleRequest($event);
@@ -155,13 +169,13 @@ class SearchNavigationRequestHandlerTest extends TestCase
     private function buildNavigationRequestHandler(): NavigationRequestHandler
     {
         return new NavigationRequestHandler(
+            $this->getContainer()->get('category.repository'),
             $this->getContainer()->get(ServiceConfigResource::class),
             $this->findologicRequestFactoryMock,
             $this->configMock,
             $this->apiConfig,
             $this->apiClientMock,
             $this->getContainer()->get(SortingHandlerService::class),
-            $this->getContainer()->get('category.repository')
         );
     }
 
@@ -180,7 +194,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
         ?Request $request = null,
         ?Criteria $criteria = null
     ): ProductSearchCriteriaEvent {
-        $salesChannelContext ??= $this->buildSalesChannelContext();
+        $salesChannelContext ??= $this->buildAndCreateSalesChannelContext();
         $request ??= new Request();
         $criteria ??= new Criteria();
 
@@ -192,7 +206,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
         ?Request $request = null,
         ?Criteria $criteria = null
     ): ProductListingCriteriaEvent {
-        $salesChannelContext ??= $this->buildSalesChannelContext();
+        $salesChannelContext ??= $this->buildAndCreateSalesChannelContext();
         $request ??= new Request();
         $criteria ??= new Criteria();
 

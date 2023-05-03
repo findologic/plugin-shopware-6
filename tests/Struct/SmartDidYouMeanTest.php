@@ -9,37 +9,41 @@ use PHPUnit\Framework\TestCase;
 
 class SmartDidYouMeanTest extends TestCase
 {
-    public function queryParameterProvider(): array
+    public static function queryParameterProvider(): array
     {
         return [
             'Query type is "did-you-mean"' => [
-                'didYouMeanQuery' => 'didYouMeanQuery',
-                'alternativeQuery' => 'alternativeQuery',
                 'originalQuery' => '',
-                'type' => '',
+                'correctedQuery' => null,
+                'didYouMeanQuery' => 'didYouMeanQuery',
+                'improvedQueryQuery' => null,
+                'type' => 'did-you-mean',
                 'controllerPath' => 'https://localhost/findologic',
-                'expectedLink' => 'https://localhost/findologic?search=alternativeQuery&forceOriginalQuery=1'
+                'expectedLink' => 'https://localhost/findologic?search=didYouMeanQuery&forceOriginalQuery=1'
             ],
             'Query type is "improved"' => [
+                'originalQuery' => '',
+                'correctedQuery' => null,
                 'didYouMeanQuery' => null,
-                'alternativeQuery' => 'alternativeQuery',
-                'originalQuery' => 'originalQuery',
+                'improvedQueryQuery' => 'improved',
                 'type' => 'improved',
                 'controllerPath' => 'https://localhost/findologic',
-                'expectedLink' => 'https://localhost/findologic?search=originalQuery&forceOriginalQuery=1'
+                'expectedLink' => 'https://localhost/findologic?search=improved&forceOriginalQuery=1'
             ],
             'Query type is "corrected"' => [
+                'originalQuery' => '',
+                'correctedQuery' => 'corrected',
                 'didYouMeanQuery' => null,
-                'alternativeQuery' => 'alternativeQuery',
-                'originalQuery' => 'originalQuery',
+                'improvedQueryQuery' => null,
                 'type' => 'corrected',
                 'controllerPath' => 'https://localhost/findologic',
                 'expectedLink' => null
             ],
             'Query type is "blubbergurken"' => [
+                'originalQuery' => '',
+                'correctedQuery' => null,
                 'didYouMeanQuery' => null,
-                'alternativeQuery' => 'alternativeQuery',
-                'originalQuery' => 'originalQuery',
+                'improvedQueryQuery' => null,
                 'type' => 'blubbergurken',
                 'controllerPath' => 'https://localhost/findologic',
                 'expectedLink' => null
@@ -51,25 +55,30 @@ class SmartDidYouMeanTest extends TestCase
      * @dataProvider queryParameterProvider
      */
     public function testParametersBasedOnQuery(
+        ?string $originalQuery,
+        ?string $correctedQuery,
         ?string $didYouMeanQuery,
-        string $alternativeQuery,
-        string $originalQuery,
+        ?string $improvedQueryQuery,
         string $type,
         string $controllerPath,
         ?string $expectedLink
     ): void {
         $smartDidYouMean = new SmartDidYouMean(
             $originalQuery,
-            $alternativeQuery,
+            $originalQuery,
+            $correctedQuery,
             $didYouMeanQuery,
-            $type,
+            $improvedQueryQuery,
             $controllerPath
         );
         $parameters = $smartDidYouMean->getVars();
 
         $this->assertNotEmpty($parameters);
         $this->assertSame($expectedLink, $parameters['link']);
-        $this->assertSame($alternativeQuery, $parameters['alternativeQuery']);
         $this->assertSame($originalQuery, $parameters['originalQuery']);
+        $this->assertSame($originalQuery, $parameters['effectiveQuery']);
+        $this->assertSame($correctedQuery ?? '', $parameters['correctedQuery']);
+        $this->assertSame($didYouMeanQuery ?? '', $parameters['didYouMeanQuery']);
+        $this->assertSame($improvedQueryQuery ?? '', $parameters['improvedQuery']);
     }
 }

@@ -1,0 +1,32 @@
+{
+  "request": {
+    "query": "ps4",
+    "first": 0,
+    "count": 24,
+    "serviceId": "4B6A0A6F1217DBF125A45FCDEED6F8F3",
+    "usergroup": null,
+    "order": {
+      "field": "salesfrequency",
+      "relevanceBased": true,
+      "direction": "DESC"
+    }
+  },
+  "result": {
+    "metadata": {
+      "landingpage": null,
+      "promotion": null,
+      "searchConcept": null,
+      "effectiveQuery": "ps4",
+      "totalResults": 1808,
+      "currencySymbol": "€"
+    },
+    "items": [],
+    "variant": {
+      "name": "sdym"
+    },
+    "filters": {
+      "main": [],
+      "other": []
+    }
+  }
+}
