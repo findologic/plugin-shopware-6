@@ -26,8 +26,7 @@
     "findologic/findologic-api": "^1.8",
     "findologic/shopware6-common": "^2.0",
     "vin-sw/shopware-sdk": "^1.7.3",
-    "composer/semver": "^3.3",
-    "shopware/core": "^6.5"
+    "composer/semver": "^3.3"
   },
   "replace": {
     "guzzlehttp/guzzle": "*"
