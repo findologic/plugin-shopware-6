@@ -1,3 +1,17 @@
+# 5.0.0
+
+- This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
+- Before upgrading, read our upgrade guide.
+- Be aware, that this version only supports the shop versions starting from v6.5.0
+- [SW-745] Switched from XML to JSON for internal API requests.
+- [SW-791] Template changes within SW 6.5 have been applied to extended template files.
+- [SW-793] Upgraded PHP code level to 8.1.
+- [SW-631] Variants and RRP are now exported as separate tags.
+- [SW-797] Support for variants within the product listing.
+- [SW-784] The internal test build was migrated to a Symfony Flex setup.
+- [SW-721] Code structure for internal parameters was improved.
+- [SW-795] Fixed a bug where products within a dynamic product group of another sales channel were exported.
+
 # 4.0.3
 
 * [SW-788] Fixed a bug where invalid filter values on navigation pages were not disabled
