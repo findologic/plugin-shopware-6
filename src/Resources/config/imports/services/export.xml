@@ -99,15 +99,6 @@
             <argument key="$shopwareVersion" type="string">%kernel.shopware_version%</argument>
         </service>
 
-        <service
-                id="FINDOLOGIC\FinSearch\Export\Adapters\KeywordsAdapter"
-                decorates="FINDOLOGIC\Shopware6Common\Export\Adapters\KeywordsAdapter"
-                public="true"
-                autowire="true"
-        >
-            <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
-        </service>
-
         <service id="FINDOLOGIC\FinSearch\Export\Adapters\SalesFrequencyAdapter" public="true" autowire="true">
             <argument key="$orderLineItemRepository" type="service" id="order_line_item.repository" />
             <argument key="$salesChannelContext" type="service" id="fin_search.sales_channel_context" />
