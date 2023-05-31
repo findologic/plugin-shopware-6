@@ -389,7 +389,7 @@ trait ProductHelper
 
     public function createCustomer(string $customerId, $customerGroup = null): void
     {
-        $password = 'foo';
+        $password = 'foofoofoo';
         $email = 'foo@bar.de';
         $addressId = Uuid::randomHex();
 
