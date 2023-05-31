@@ -1,7 +1,11 @@
+# 4.0.4
+
+* [SW-799] Fixed a bug where keywords from a different language were exported additionally.
+
 # 4.0.3
 
-* [SW-788] Fixed a bug where invalid filter values on navigation pages were not disabled
-* [SW-789] Fixed a bug that caused generic URLs to be exported for SEO Urls without a "/"
+* [SW-788] Fixed a bug where invalid filter values on navigation pages were not disabled.
+* [SW-789] Fixed a bug that caused generic URLs to be exported for SEO Urls without a "/".
 
 # 4.0.2
 

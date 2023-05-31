@@ -1,7 +1,11 @@
+# 4.0.4
+
+* [SW-799] Ein Problem wurde behoben, wodurch Keywords von der falschen Sprache zusätzlich exportiert wurden.
+
 # 4.0.3
 
-* [SW-788] Ein Problem wurde behoben, wodurch nicht verfügbare Filterwerte auf Kategorieseiten nicht deaktiviert wurden
-* [SW-789] Ein Problem wurde behoben, wodurch bei Produkten mit SEO URLs ohne "/" die generische URL exportiert wurde
+* [SW-788] Ein Problem wurde behoben, wodurch nicht verfügbare Filterwerte auf Kategorieseiten nicht deaktiviert wurden.
+* [SW-789] Ein Problem wurde behoben, wodurch bei Produkten mit SEO URLs ohne "/" die generische URL exportiert wurde.
 
 # 4.0.2
 
