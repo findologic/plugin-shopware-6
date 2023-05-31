@@ -67,6 +67,11 @@ jobs:
           coverage: xdebug
           tools: composer:v2
 
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
+            node-version: '16'
+
       - name: Install Shopware-CLI
         run: |
           curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
