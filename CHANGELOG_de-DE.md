@@ -1,3 +1,8 @@
+# 5.0.1
+
+* [SW-799] Ein Problem wurde behoben, wodurch Keywords von der falschen Sprache zusätzlich exportiert wurden.
+* Support für 6.5.1.x sichergestellt.
+
 # 5.0.0
 
 - Diese Version ist ein Major Release und enthält damit brechende Änderungen, wenn ein Erweiterungsplugin installiert ist.
@@ -11,6 +16,10 @@
 - [SW-784] Der interne Test build verwendet nun das Shopware Flex Setup.
 - [SW-721] Codestruktur für interne Parameter wurde verbessert.
 - [SW-795] Ein Problem wurde behoben, wodurch Produkte in Dynamic Product Groups eines anderen Channels angezeigt wurde.
+
+# 4.0.4
+
+* [SW-799] Ein Problem wurde behoben, wodurch Keywords von der falschen Sprache zusätzlich exportiert wurden.
 
 # 4.0.3
 

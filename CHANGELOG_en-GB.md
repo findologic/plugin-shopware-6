@@ -1,3 +1,8 @@
+# 5.0.1
+
+* [SW-799] Fixed a bug where keywords from a different language were exported additionally.
+* Add support for 6.5.1.x
+
 # 5.0.0
 
 - This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
@@ -11,6 +16,10 @@
 - [SW-784] The internal test build was migrated to a Symfony Flex setup.
 - [SW-721] Code structure for internal parameters was improved.
 - [SW-795] Fixed a bug where products within a dynamic product group of another sales channel were exported.
+
+# 4.0.4
+
+* [SW-799] Fixed a bug where keywords from a different language were exported additionally.
 
 # 4.0.3
 
