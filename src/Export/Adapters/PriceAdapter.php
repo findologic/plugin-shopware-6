@@ -13,7 +13,7 @@ use FINDOLOGIC\Shopware6Common\Export\Exceptions\Product\ProductHasNoPricesExcep
 use FINDOLOGIC\Shopware6Common\Export\ExportContext;
 use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Content\Product\SalesChannel\Price\ProductPriceCalculator;
+use Shopware\Core\Content\Product\SalesChannel\Price\AbstractProductPriceCalculator;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\Price as CurrencyPrice;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -25,7 +25,7 @@ class PriceAdapter extends CommonPriceAdapter
     use SupportsAdvancedPricing;
 
     public function __construct(
-        protected readonly ProductPriceCalculator $calculator,
+        protected readonly AbstractProductPriceCalculator $calculator,
         protected readonly CustomerGroupContextProvider $customerGroupContextProvider,
         ExportContext $exportContext,
         PluginConfig $pluginConfig,
