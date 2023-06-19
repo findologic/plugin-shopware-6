@@ -23,7 +23,7 @@
   "require": {
     "php": ">=8.1",
     "findologic/libflexport": "^3.0",
-    "findologic/findologic-api": "^1.8",
+    "findologic/findologic-api": "dev-SW-800_fix_version_conflict",
     "findologic/shopware6-common": "^2.0",
     "vin-sw/shopware-sdk": "^1.7.3",
     "composer/semver": "^3.3"
