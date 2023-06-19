@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9bf9adfbfb9c25bd63895bd779381629",
+    "content-hash": "292344be680ab002e73612b864c7985c",
     "packages": [
         {
             "name": "composer/semver",
@@ -89,16 +89,16 @@
         },
         {
             "name": "findologic/findologic-api",
-            "version": "dev-SW-800_fix_version_conflict",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/findologic-api.git",
-                "reference": "2a2304b1fbc2906036dc275573fcff488c3ee73f"
+                "reference": "a0c11a29450d46b873b3a769d11db41cee98eeab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/2a2304b1fbc2906036dc275573fcff488c3ee73f",
-                "reference": "2a2304b1fbc2906036dc275573fcff488c3ee73f",
+                "url": "https://api.github.com/repos/findologic/findologic-api/zipball/a0c11a29450d46b873b3a769d11db41cee98eeab",
+                "reference": "a0c11a29450d46b873b3a769d11db41cee98eeab",
                 "shasum": ""
             },
             "require": {
@@ -155,9 +155,9 @@
             "description": "Library for FINDOLOGIC API requests",
             "support": {
                 "issues": "https://github.com/findologic/findologic-api/issues",
-                "source": "https://github.com/findologic/findologic-api/tree/SW-800_fix_version_conflict"
+                "source": "https://github.com/findologic/findologic-api/tree/v2.0.0"
             },
-            "time": "2023-06-19T10:55:15+00:00"
+            "time": "2023-06-19T14:30:42+00:00"
         },
         {
             "name": "findologic/libflexport",
@@ -1905,9 +1905,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "findologic/findologic-api": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
