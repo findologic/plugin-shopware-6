@@ -73,6 +73,7 @@ jobs:
         run: |
           cd shopware
           composer require --dev symfony/test-pack
+          composer config minimum-stability dev
 
       - name: Install dependencies
         run: |
