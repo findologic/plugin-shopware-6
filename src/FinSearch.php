@@ -128,6 +128,11 @@ class FinSearch extends Plugin
 // phpcs:disable
 // If the file does not exist, the plugin was installed via composer
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    require_once __DIR__ . '/../vendor/autoload.php';
+    $loader = require_once __DIR__ . '/../vendor/autoload.php';
+
+    if ($loader instanceof ClassLoader) {
+        $loader->unregister();
+        $loader->register();
+    }
 }
 // phpcs:enable
