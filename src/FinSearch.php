@@ -61,6 +61,11 @@ class FinSearch extends Plugin
         }
     }
 
+    public function executeComposerCommands(): bool
+    {
+        return !file_exists(__DIR__ . '/../vendor/autoload.php');
+    }
+
     public function hasExtensionInstalled(): bool
     {
         $activePlugins = $this->container->getParameter('kernel.active_plugins');
@@ -131,11 +136,13 @@ class FinSearch extends Plugin
  *
  * @see https://github.com/shopware-blog/shopware-fastbill-connector/blob/development/src/FastBillConnector.php#L47
  */
-$loader = require_once __DIR__ . '/../vendor/autoload.php';
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    $loader = require_once __DIR__ . '/../vendor/autoload.php';
 
-// This is required, because FINDOLOGIC-API requires a later version of Guzzle than Shopware 6.
-if ($loader instanceof ClassLoader) {
-    $loader->unregister();
-    $loader->register();
+    // This is required, because FINDOLOGIC-API requires a later version of Guzzle than Shopware 6.
+    if ($loader instanceof ClassLoader) {
+        $loader->unregister();
+        $loader->register();
+    }
 }
 // phpcs:enable
