@@ -1,3 +1,7 @@
+# 5.0.2
+
+* [SW-800] Fixed conflicts within the composer installation.
+
 # 5.0.1
 
 * [SW-799] Fixed a bug where keywords from a different language were exported additionally.

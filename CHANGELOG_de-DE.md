@@ -1,3 +1,7 @@
+# 5.0.2
+
+* [SW-800] Konflikte bei der Installation mit Composer wurden behoben.
+
 # 5.0.1
 
 * [SW-799] Ein Problem wurde behoben, wodurch Keywords von der falschen Sprache zusätzlich exportiert wurden.
