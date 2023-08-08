@@ -63,7 +63,6 @@ use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\Page;
 use Shopware\Storefront\Pagelet\Header\HeaderPagelet;
-use SimpleXMLElement;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -647,7 +646,6 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         return new ProductListingFeaturesSubscriber(
             $shopwareProductListingFeaturesSubscriber,
             $findologicSearchService,
-            $this->compositeListingProcessorMock
         );
     }
 

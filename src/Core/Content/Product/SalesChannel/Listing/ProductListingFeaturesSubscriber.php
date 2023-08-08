@@ -10,7 +10,6 @@ use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSuggestCriteriaEvent;
-use Shopware\Core\Content\Product\SalesChannel\Listing\Processor\CompositeListingProcessor;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber
     as ShopwareProductListingFeaturesSubscriber;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -24,8 +23,7 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
 
     public function __construct(
         protected readonly ShopwareProductListingFeaturesSubscriber $decorated,
-        protected readonly FindologicSearchService $findologicSearchService,
-        protected readonly CompositeListingProcessor $processor
+        protected readonly FindologicSearchService $findologicSearchService
     ) {
     }
 
