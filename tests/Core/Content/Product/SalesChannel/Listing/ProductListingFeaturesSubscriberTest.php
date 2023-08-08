@@ -41,6 +41,7 @@ use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Content\Product\SalesChannel\Listing\Processor\CompositeListingProcessor;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber as
     ShopwareProductListingFeaturesSubscriber;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
@@ -102,6 +103,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
     private ApiClient|MockObject $apiClientMock;
 
     private EventDispatcherInterface|MockObject $eventDispatcherMock;
+
+    private CompositeListingProcessor|MockObject $compositeListingProcessorMock;
 
     private SalesChannelContext $salesChannelContext;
 
@@ -597,6 +600,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         $this->eventDispatcherMock = $this->getMockBuilder(EventDispatcherInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $this->compositeListingProcessorMock = new CompositeListingProcessor([]);
 
         $this->containerMock->expects($this->any())->method('get')->willReturnCallback(function ($name) {
             return match ($name) {
@@ -619,13 +623,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
         FindologicSearchService $findologicSearchService = null
     ): ProductListingFeaturesSubscriber {
         $shopwareProductListingFeaturesSubscriber = $overrides[ShopwareProductListingFeaturesSubscriber::class]
-            ?? new ShopwareProductListingFeaturesSubscriber(
-                $this->connectionMock,
-                $this->entityRepositoryMock,
-                $this->entityRepositoryMock,
-                $this->systemConfigServiceMock,
-                $this->eventDispatcherMock
-            );
+            ?? new ShopwareProductListingFeaturesSubscriber($this->compositeListingProcessorMock);
 
         $sortingService = new SortingService(
             $this->getContainer()->get('translator'),
@@ -648,7 +646,8 @@ class ProductListingFeaturesSubscriberTest extends TestCase
 
         return new ProductListingFeaturesSubscriber(
             $shopwareProductListingFeaturesSubscriber,
-            $findologicSearchService
+            $findologicSearchService,
+            $this->compositeListingProcessorMock
         );
     }
 
@@ -1090,7 +1089,7 @@ class ProductListingFeaturesSubscriberTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         // Event is dispatched exactly 4 times in this test
-        $decoratedSubscriberMock->expects($this->exactly(4))->method('handleListingRequest');
+        $decoratedSubscriberMock->expects($this->exactly(4))->method('prepare');
 
         $subscriber = $this->getProductListingFeaturesSubscriber(
             [ShopwareProductListingFeaturesSubscriber::class => $decoratedSubscriberMock],
