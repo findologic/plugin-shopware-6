@@ -6,11 +6,17 @@ namespace FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing;
 
 use FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
+use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
+use Shopware\Core\Content\Product\Events\ProductSearchResultEvent;
+use Shopware\Core\Content\Product\Events\ProductSuggestCriteriaEvent;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber
     as ShopwareProductListingFeaturesSubscriber;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+/**
+ * @deprecated tag:6.0.0 - Subscriber will be removed, because the parent class is deprecated since SW 6.5.3.0
+ */
 class ProductListingFeaturesSubscriber implements EventSubscriberInterface
 {
     protected bool $isListingRequestHandled = false;
@@ -23,13 +29,33 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
 
     public static function getSubscribedEvents(): array
     {
-        return ShopwareProductListingFeaturesSubscriber::getSubscribedEvents();
+        return [
+            ProductListingCriteriaEvent::class => [
+                ['handleListingRequest', 100],
+            ],
+            ProductSuggestCriteriaEvent::class => 'prepare',
+            ProductSearchCriteriaEvent::class => [
+                ['handleSearchRequest', 100],
+            ],
+            ProductListingResultEvent::class => 'process',
+            ProductSearchResultEvent::class => 'process',
+        ];
+    }
+
+    public function prepare(ProductListingCriteriaEvent $event): void
+    {
+        $this->decorated->prepare($event);
+    }
+
+    public function process(ProductListingResultEvent $event): void
+    {
+        $this->decorated->process($event);
     }
 
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
     {
         $limit = $event->getCriteria()->getLimit();
-        $this->decorated->handleListingRequest($event);
+        $this->decorated->prepare($event);
 
         if (!$this->shouldHandleListingRequest()) {
             return;
@@ -53,7 +79,7 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
     public function handleSearchRequest(ProductSearchCriteriaEvent $event): void
     {
         $limit = $event->getCriteria()->getLimit();
-        $this->decorated->handleSearchRequest($event);
+        $this->decorated->prepare($event);
 
         $limitOverride = $limit ?? $event->getCriteria()->getLimit();
 

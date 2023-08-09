@@ -74,7 +74,7 @@ corresponding configuration.
 #### Prerequisites
 
 * MySQL >= 8.0
-* PHP >= 7.4
+* PHP >= 8.1
 
 #### Setup
 
@@ -162,8 +162,6 @@ guide you on how you can customize certain entities, like attributes or properti
 
 ## Deployment and Release
 
-**Use PHP 7.4 to run the release script**
-
 1. Update the changelogs `CHANGELOG_en-GB.md` and `CHANGELOG_de-DE.md`.
 2. Ensure that all changes, including the changelog changes have been merged into the `develop` branch.
 3. Switch to the `develop` branch locally and pull the most recent changes.
@@ -181,22 +179,3 @@ is successful.
 Upload it to the folder `Development/Plugins/Shopware/Shopware 6 DI & API Plugin` and move the old
 version to `alte Versionen`.
 7. Notify everyone in the `#releases` Slack channel.
-
-## Test Shopware release candidates
-
-1. Access the application container
-  ```bash
-  ./psh.phar docker:ssh
-  ```
-2. Use the branch for the next release
-  ```bash
-  composer require shopware/platform:6.x.x.x-dev
-  ```
-3. Clear cache
-  ```bash
-  ./psh.phar cache
-  ```
-4. Execute install script
-  ```bash
-  ./psh.phar install
-  ```
