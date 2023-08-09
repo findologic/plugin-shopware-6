@@ -1,3 +1,8 @@
+# 5.1.0
+
+- Be aware, that this version only supports the shop versions starting from v6.5.3.0
+- [SW-802] Added support for versions 6.5.3.x and 6.5.4.x.
+
 # 5.0.2
 
 * [SW-800] Fixed conflicts within the composer installation.
