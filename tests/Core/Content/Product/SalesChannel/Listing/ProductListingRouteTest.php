@@ -164,7 +164,7 @@ class ProductListingRouteTest extends ProductRouteBase
     public function testOffsetIsResetBeforeDatabaseSearch(): void
     {
         $productRoute = $this->getRoute();
-        $criteria = new Criteria([1,2,3,4]);
+        $criteria = new Criteria(['1', '2', '3', '4']);
         $criteria->setOffset(24);
 
         $reflector = new ReflectionObject($productRoute);
