@@ -17,7 +17,7 @@ class ServiceConfigClient
     ) {
         if (!isset($this->client->getConfig()['base_uri'])) {
             $this->client = new Client(['base_uri' => BaseUrl::CDN]);
-        } else if ($this->client->getConfig()['base_uri'] != BaseUrl::CDN) {
+        } elseif ($this->client->getConfig()['base_uri'] != BaseUrl::CDN) {
             $this->client = new Client(['base_uri' => BaseUrl::CDN]);
         }
     }
