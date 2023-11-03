@@ -18,7 +18,7 @@
   "require": {
     "findologic/libflexport": "^2.8",
     "findologic/findologic-api": "^1.6",
-    "findologic/shopware6-common": "dev-SW-804_special_character_eszett_should_be_keep_v1",
+    "findologic/shopware6-common": "^1.0.2",
     "vin-sw/shopware-sdk": "^1.7.3",
     "composer/semver": "^3.3"
   },
