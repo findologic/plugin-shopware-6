@@ -1,0 +1,33 @@
+on:
+  workflow_call:
+    inputs:
+      php-version:
+        required: true
+        type: string
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    name: Server Setup
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql version: '8.0'
+          mysql database: shopware_test
+          mysql root password: root
+
+      - name: Setup PHP with Composer 2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php-version }}
+          extensions: dom, gd, mbstring, pdo_mysql, zip
+          coverage: xdebug
+          tools: composer:2.1.5
+
+      - name: Install Shopware-CLI
+        run: |
+          curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
+          sudo apt install shopware-cli
