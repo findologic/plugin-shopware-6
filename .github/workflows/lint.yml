@@ -69,6 +69,11 @@ jobs:
           coverage: xdebug
           tools: composer:2.1.5
 
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
       - name: Validate dependencies
         run: |
           cd plugin-shopware-6

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\Values;
 
+use FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler;
 use FINDOLOGIC\FinSearch\Findologic\Response\Xml21\Filter\TranslatedName;
 use Shopware\Core\Framework\Struct\Struct;
 
@@ -27,11 +28,11 @@ class FilterValue extends Struct
      */
     public function __construct(string $id, string $name, ?string $filterName = null)
     {
-        $this->id = $id;
-        $this->name = $name;
+        $this->id = str_replace(FilterHandler::FILTER_DELIMITER, FilterHandler::FILTER_DELIMITER_ENCODED, $id);
+        $this->name = str_replace(FilterHandler::FILTER_DELIMITER, FilterHandler::FILTER_DELIMITER_ENCODED, $name);
         $this->translated = new TranslatedName($name);
         if ($filterName !== null) {
-            $this->uuid = sprintf('%s%s%s', $filterName, self::DELIMITER, $id);
+            $this->uuid = sprintf('%s%s%s', $filterName, self::DELIMITER, $this->id);
         }
     }
 
