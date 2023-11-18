@@ -54,6 +54,19 @@ class ProductListingFeaturesSubscriber implements EventSubscriberInterface
 
     public function handleListingRequest(ProductListingCriteriaEvent $event): void
     {
+        /**
+         * Simplify the "cat" attribute of Request Query
+         * before Criteria gets Product Ids
+         * "a|a_b|a_b_c" => "a_b_c"
+         */
+        $query = $event->getRequest()->query;
+        if ($query->get("cat")) {
+            $lastSubCategory = strrchr($query->get("cat"), "|");
+            if ($lastSubCategory) {
+                $query->set("cat", substr($lastSubCategory, 1));
+            }
+        }
+
         $limit = $event->getCriteria()->getLimit();
         $this->decorated->prepare($event);
 
