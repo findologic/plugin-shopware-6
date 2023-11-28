@@ -56,6 +56,7 @@
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UrlAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\UserGroupsAdapter" public="true" autowire="true" />
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\VariantConfigurationAdapter" public="true" autowire="true" />
+        <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\OptionsAdapter" public="true" autowire="true" />
 
     </services>
 </container>
