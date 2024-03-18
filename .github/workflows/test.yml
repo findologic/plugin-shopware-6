@@ -28,10 +28,9 @@ jobs:
           mysql database: shopware_test
           mysql root password: root
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18.18.0
+          node-version: 18.18.0 # Last version with npm 9 (Shopware requirement)
 
       - uses: actions/checkout@v2
         with:
@@ -68,12 +67,12 @@ jobs:
       - name: Install administration dependencies
         run: |
           cd shopware/vendor/shopware/administration/Resources/app/administration
-          npm install -g npm@9
+          npm i
 
       - name: Install storefront dependencies
         run: |
           cd shopware/vendor/shopware/storefront/Resources/app/storefront
-          npm install -g npm@9
+          npm i
 
       - name: Install test dependencies for SW
         run: |
