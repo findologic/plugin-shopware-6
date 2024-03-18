@@ -28,10 +28,15 @@ jobs:
           mysql database: shopware_test
           mysql root password: root
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js and npm
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.18.0 # Last version with npm 9 (Shopware requirement)
-          npm-version: '9'
+          node-version: 18.18.0
+
+      - name: Use Node.js 18.18.0
+        run: |
+          npm install -g npm@9
+          nvm use 18.18.0
 
       - uses: actions/checkout@v2
         with:
