@@ -28,6 +28,10 @@ jobs:
           mysql database: shopware_test
           mysql root password: root
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.18.0 # Last version with npm 9 (Shopware requirement)
+
       - uses: actions/checkout@v2
         with:
           path: plugin-shopware-6
