@@ -34,6 +34,7 @@ class ProductSearcher extends AbstractProductSearcher
         ?string $productId = null
     ): ProductCollection {
         $criteria = $this->buildCriteria($limit, $offset, $productId);
+        $criteria->addAssociation('visibilities');
 
         $productResult = $this->productRepository->search(
             $criteria,
