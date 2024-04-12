@@ -612,35 +612,40 @@ class ProductSearcherTest extends TestCase
                 'firstVariantPrice' => 4,
                 'secondVariantPrice' => 0,
                 'thirdVariantPrice' => 9,
-                'cheapestPrice' => 4
+                'cheapestPrice' => 4,
+                'parentActive' => false
             ],
             'export cheapest variant' => [
                 'parentPrice' => 15,
                 'firstVariantPrice' => 2,
                 'secondVariantPrice' => 6,
                 'thirdVariantPrice' => 4,
-                'cheapestPrice' => 2
+                'cheapestPrice' => 2,
+                'parentActive' => false
             ],
             'export cheapest variant with parent price being cheaper' => [
                 'parentPrice' => 3,
                 'firstVariantPrice' => 10,
                 'secondVariantPrice' => 10,
                 'thirdVariantPrice' => 10,
-                'cheapest' => 3
+                'cheapest' => 3,
+                'parentActive' => false
             ],
             'export cheapest variant with all same prices' => [
                 'parentPrice' => 4,
                 'firstVariantPrice' => 4,
                 'secondVariantPrice' => 4,
                 'thirdVariantPrice' => 4,
-                'cheapestPrice' => 4
+                'cheapestPrice' => 4,
+                'parentActive' => false
             ],
             'export cheapest variant price with parent having 0' => [
                 'parentPrice' => 0,
                 'firstVariantPrice' => 4,
                 'secondVariantPrice' => 5,
                 'thirdVariantPrice' => 9,
-                'cheapestPrice' => 4
+                'cheapestPrice' => 4,
+                'parentActive' => false
             ]
         ];
     }
@@ -653,7 +658,8 @@ class ProductSearcherTest extends TestCase
         float $firstVariantPrice,
         float $secondVariantPrice,
         float $thirdVariantPrice,
-        float $cheapestPrice
+        float $cheapestPrice,
+        bool $parentActive
     ): void {
         $parentId = Uuid::randomHex();
         $expectedFirstVariantId = Uuid::randomHex();
@@ -675,7 +681,8 @@ class ProductSearcherTest extends TestCase
         $expectedMainVariantId = $parentId;
         if (
             $parentPrice === 0.0 ||
-            $cheapestPrice < $parentPrice
+            $cheapestPrice < $parentPrice ||
+            !$parentActive
         ) {
             $expectedMainVariantId = $expectedFirstVariantId;
         }
