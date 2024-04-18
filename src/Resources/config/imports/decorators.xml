@@ -5,18 +5,6 @@
 >
     <services>
         <service
-            id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
-            decorates="Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber"
-            public="true"
-        >
-            <argument
-                type="service"
-                id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\ProductListingFeaturesSubscriber.inner"
-            />
-            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Api\FindologicSearchService" />
-        </service>
-
-        <service
             id="FINDOLOGIC\FinSearch\Storefront\Controller\SearchController"
             decorates="Shopware\Storefront\Controller\SearchController"
             public="true"
@@ -64,6 +52,7 @@
             <argument type="service" id="sales_channel.product.repository" />
             <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition" />
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder" />
+            <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Listing\Processor\CompositeListingProcessor" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
         </service>
@@ -83,6 +72,7 @@
             <argument type="service" id="event_dispatcher" />
             <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition" />
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Search\RequestCriteriaBuilder" />
+            <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Listing\Processor\CompositeListingProcessor" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource" />
             <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
         </service>

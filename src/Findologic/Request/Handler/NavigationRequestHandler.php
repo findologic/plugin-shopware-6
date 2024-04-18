@@ -21,12 +21,9 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use FINDOLOGIC\Shopware6Common\Export\Utils\Utils as CommonUtils;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
-use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Exception\InconsistentCriteriaIdsException;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Event\ShopwareEvent;
-use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -52,17 +49,16 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
     }
 
     /**
-     * @throws MissingRequestParameterException
      * @throws InconsistentCriteriaIdsException
      * @throws CategoryNotFoundException
      */
-    public function handleRequest(ShopwareEvent|ProductListingCriteriaEvent $event): void
+    public function handleRequest(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
-        $originalCriteria = clone $event->getCriteria();
+        $originalCriteria = clone $criteria;
 
         try {
             /** @var Json10Response $response */
-            $response = $this->doRequest($event);
+            $response = $this->doRequest($request, $criteria, $context);
 
             $responseParser = ResponseParser::getInstance(
                 $response,
@@ -72,48 +68,41 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
             // Set default pagination here, otherwise it will throw a division by zero exception as we have already
             // overwritten the limit before reaching this point
-            $originalCriteria->setLimit($originalCriteria->getLimit() ?: Pagination::DEFAULT_LIMIT);
-            $this->assignCriteriaToEvent($event, $originalCriteria);
+            $criteria->setLimit($originalCriteria->getLimit() ?: Pagination::DEFAULT_LIMIT);
 
             return;
         }
 
-        $criteria = new Criteria(
+        $criteria->setIds(
             $responseParser->getProductIds() === [] ? null : $responseParser->getProductIds()
         );
-        $criteria->addExtensions($event->getCriteria()->getExtensions());
 
-        $this->setPromotionExtension($event, $responseParser);
+        $this->setPromotionExtension($context, $responseParser);
 
         $this->setPagination(
             $criteria,
-            $responseParser,
-            $originalCriteria->getLimit(),
-            $originalCriteria->getOffset()
+            $responseParser
         );
-
-        $this->assignCriteriaToEvent($event, $criteria);
     }
 
     /**
      * @throws CategoryNotFoundException
      * @throws InconsistentCriteriaIdsException
-     * @throws MissingRequestParameterException
      * @throws ServiceNotAliveException
      * @throws UnknownCategoryException
      */
-    public function doRequest(ShopwareEvent|ProductListingCriteriaEvent $event, ?int $limit = null): Response
-    {
+    public function doRequest(
+        Request $request,
+        Criteria $criteria,
+        SalesChannelContext $context,
+        ?int $limit = null
+    ): Response {
         // Prevent exception if someone really tried to order by score on a category page.
-        if ($event->getRequest()->query->get('sort') === 'score') {
-            $event->getCriteria()->resetSorting();
+        if ($request->query->get('sort') === 'score') {
+            $criteria->resetSorting();
         }
 
-        $request = $event->getRequest();
-
-        /** @var SalesChannelContext $salesChannelContext */
-        $salesChannelContext = $event->getSalesChannelContext();
-        $categoryPath = $this->fetchCategoryPath($request, $salesChannelContext);
+        $categoryPath = $this->fetchCategoryPath($request, $context);
 
         // If we can't fetch the category path, we let Shopware handle the request.
         if (empty($categoryPath)) {
@@ -123,12 +112,12 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         /** @var NavigationRequest $navigationRequest */
         $navigationRequest = $this->findologicRequestFactory->getInstance($request);
         $navigationRequest->setSelected('cat', $categoryPath);
-        $this->setUserGroup($salesChannelContext, $navigationRequest);
-        $this->setPaginationParams($event, $navigationRequest, $limit);
-        $this->sortingHandlerService->handle($navigationRequest, $event->getCriteria());
+        $this->setUserGroup($context, $navigationRequest);
+        $this->setPaginationParams($criteria, $navigationRequest, $limit);
+        $this->sortingHandlerService->handle($navigationRequest, $criteria);
 
-        if ($event->getCriteria()->hasExtension('flFilters')) {
-            $this->filterHandler->handleFilters($event, $navigationRequest);
+        if ($criteria->hasExtension('flFilters')) {
+            $this->filterHandler->handleFilters($request, $criteria, $navigationRequest);
         }
 
         return $this->sendRequest($navigationRequest);
@@ -137,7 +126,6 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
     /**
      * @throws CategoryNotFoundException
      * @throws InconsistentCriteriaIdsException
-     * @throws MissingRequestParameterException
      */
     public function fetchCategoryPath(Request $request, SalesChannelContext $salesChannelContext): ?string
     {

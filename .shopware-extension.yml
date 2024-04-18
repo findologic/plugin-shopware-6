@@ -9,7 +9,8 @@ build:
                     - release
                     - phpcs.xml
                     - phpunit.xml.dist
-                    - vendor/findologic/shopware6-common/.git
+                    - node_modules
+                    - vendor
                     - .eslintignore
                     - .eslintrc.js
                     - .eslintrc-administration.js

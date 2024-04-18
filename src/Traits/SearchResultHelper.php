@@ -55,13 +55,16 @@ trait SearchResultHelper
         SalesChannelContext $salesChannelContext,
         ?string $query = null
     ): EntitySearchResult {
+        $productCriteria = clone $criteria;
         if ($query !== null && count($criteria->getIds()) === 1) {
             $this->modifyCriteriaFromQuery($query, $criteria, $salesChannelContext);
         }
 
-        $result = $this->salesChannelProductRepository->search($criteria, $salesChannelContext);
+        $productCriteria->resetAggregations();
 
-        return $this->fixResultOrder($result, $criteria);
+        $result = $this->salesChannelProductRepository->search($productCriteria, $salesChannelContext);
+
+        return $this->fixResultOrder($result, $productCriteria);
     }
 
     /**

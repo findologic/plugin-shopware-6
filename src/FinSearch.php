@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch;
 
-use Composer\Autoload\ClassLoader;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
 use Doctrine\DBAL\Connection;
@@ -17,6 +16,13 @@ use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\Loader\DelegatingLoader;
+use Symfony\Component\Config\Loader\LoaderResolver;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\DirectoryLoader;
+use Symfony\Component\DependencyInjection\Loader\GlobFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 use function file_get_contents;
 use function json_decode;
@@ -63,7 +69,26 @@ class FinSearch extends Plugin
 
     public function executeComposerCommands(): bool
     {
-        return !file_exists(__DIR__ . '/../vendor/autoload.php');
+        return true;
+    }
+
+    public function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+
+        $locator = new FileLocator('Resources/config');
+
+        $resolver = new LoaderResolver([
+            new YamlFileLoader($container, $locator),
+            new GlobFileLoader($container, $locator),
+            new DirectoryLoader($container, $locator),
+        ]);
+
+        $configLoader = new DelegatingLoader($resolver);
+
+        $confDir = \rtrim($this->getPath(), '/') . '/Resources/config';
+
+        $configLoader->load($confDir . '/{packages}/*.yaml', 'glob');
     }
 
     public function hasExtensionInstalled(): bool
@@ -129,20 +154,3 @@ class FinSearch extends Plugin
         }
     }
 }
-
-// phpcs:disable
-/**
- * Shopware themselves use this method to autoload their libraries inside of plugins.
- *
- * @see https://github.com/shopware-blog/shopware-fastbill-connector/blob/development/src/FastBillConnector.php#L47
- */
-if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    $loader = require_once __DIR__ . '/../vendor/autoload.php';
-
-    // This is required, because FINDOLOGIC-API requires a later version of Guzzle than Shopware 6.
-    if ($loader instanceof ClassLoader) {
-        $loader->unregister();
-        $loader->register();
-    }
-}
-// phpcs:enable
