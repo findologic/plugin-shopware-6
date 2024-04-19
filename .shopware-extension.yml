@@ -9,15 +9,11 @@ build:
                     - release
                     - phpcs.xml
                     - phpunit.xml.dist
-                    - node_modules
-                    - vendor
+                    - vendor/findologic/shopware6-common/.git
                     - .eslintignore
                     - .eslintrc.js
                     - .eslintrc-administration.js
                     - .eslintrc-storefront.js
                     - Makefile
-                    - composer.lock
-                    - package.json
-                    - package-lock.json
                     - "*.zip"
                     - "*.phar"
