@@ -60,7 +60,9 @@ jobs:
           composer config minimum-stability dev
 
       - name: Add common repo
-        run: composer config repositories.findologic/shopware6-common git https://github.com/findologic/shopware6-common.git
+        run: |
+          cd shopware
+          composer config repositories.shopware6-common git https://github.com/findologic/shopware6-common.git
 
       - name: Install Shopware
         run: |
