@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch;
 
+use Composer\Autoload\ClassLoader;
 use Composer\Semver\Comparator;
 use Composer\Semver\Semver;
 use Doctrine\DBAL\Connection;
@@ -69,7 +70,7 @@ class FinSearch extends Plugin
 
     public function executeComposerCommands(): bool
     {
-        return true;
+        return !file_exists(__DIR__ . '/../vendor/autoload.php');
     }
 
     public function build(ContainerBuilder $container): void
@@ -154,3 +155,20 @@ class FinSearch extends Plugin
         }
     }
 }
+
+// phpcs:disable
+/**
+ * Shopware themselves use this method to autoload their libraries inside of plugins.
+ *
+ * @see https://github.com/shopware-blog/shopware-fastbill-connector/blob/development/src/FastBillConnector.php#L47
+ */
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    $loader = require_once __DIR__ . '/../vendor/autoload.php';
+
+    // This is required, because FINDOLOGIC-API requires a later version of Guzzle than Shopware 6.
+    if ($loader instanceof ClassLoader) {
+        $loader->unregister();
+        $loader->register();
+    }
+}
+// phpcs:enable
