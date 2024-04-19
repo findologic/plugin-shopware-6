@@ -73,15 +73,15 @@ jobs:
           cd shopware
           ./bin/console system:install --basic-setup
 
-      - name: Install administration dependencies
-        run: |
-          cd shopware/vendor/shopware/administration/Resources/app/administration
-          npm i
-
-      - name: Install storefront dependencies
-        run: |
-          cd shopware/vendor/shopware/storefront/Resources/app/storefront
-          npm i
+#      - name: Install administration dependencies
+#        run: |
+#          cd shopware/vendor/shopware/administration/Resources/app/administration
+#          npm i
+#
+#      - name: Install storefront dependencies
+#        run: |
+#          cd shopware/vendor/shopware/storefront/Resources/app/storefront
+#          npm i
 
       - name: Install test dependencies for SW
         run: |
@@ -92,15 +92,17 @@ jobs:
         run: |
           cd plugin-shopware-6
           composer install --no-interaction
-          cd src/Resources/app/storefront
-          npm ci
+#          cd src/Resources/app/storefront
+#          npm ci
 
       - name: Install plugin
         run: |
           mv plugin-shopware-6 shopware/custom/plugins
           cd shopware
           php bin/console plugin:refresh
-          php bin/console plugin:install --activate --clearCache FinSearch
+          php bin/console plugin:install FinSearch
+          php bin/console plugin:activate FinSearch
+          php bin/console clear:cache
 
       - name: Run PHPUnit test suite
         if: ${{ matrix.php-versions == '8.1' }} # Skip newer PHP versions once we can fix tests getting stuck
