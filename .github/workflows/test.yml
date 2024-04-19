@@ -96,16 +96,21 @@ jobs:
 #          npm ci
 
       - name: Install plugin
+        continue-on-error: true
         run: |
           mv plugin-shopware-6 shopware/custom/plugins
           cd shopware
           php bin/console plugin:refresh
           php bin/console plugin:install FinSearch
+          php bin/console clear:cache
+
+      - name: Activate plugin
+        run: |
+          cd shopware
           php bin/console plugin:activate FinSearch
           php bin/console clear:cache
 
       - name: Run PHPUnit test suite
-        if: ${{ matrix.php-versions == '8.1' }} # Skip newer PHP versions once we can fix tests getting stuck
         run: |
           cd shopware/custom/plugins/plugin-shopware-6
           SYMFONY_DEPRECATIONS_HELPER=disabled composer test
