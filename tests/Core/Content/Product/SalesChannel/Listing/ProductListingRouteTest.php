@@ -38,6 +38,7 @@ class ProductListingRouteTest extends ProductRouteBase
             $this->eventDispatcherMock,
             $this->productDefinition,
             $this->criteriaBuilder,
+            $this->listingProcessor,
             $this->serviceConfigResourceMock,
             $this->findologicConfigServiceMock,
             $this->configMock

@@ -56,6 +56,7 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->productRepositoryMock,
             $this->productDefinition,
             $this->criteriaBuilder,
+            $this->listingProcessor,
             $this->serviceConfigResourceMock,
             $this->findologicConfigServiceMock,
             $this->configMock
@@ -203,6 +204,7 @@ class ProductSearchRouteTest extends ProductRouteBase
                 $this->productRepositoryMock,
                 $this->productDefinition,
                 $this->criteriaBuilder,
+                $this->listingProcessor,
                 $this->serviceConfigResourceMock,
                 $this->findologicConfigServiceMock,
                 $this->configMock

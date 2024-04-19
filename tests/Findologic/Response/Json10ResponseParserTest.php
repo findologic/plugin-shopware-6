@@ -597,9 +597,8 @@ class Json10ResponseParserTest extends TestCase
             ->getMock();
 
         $salesChannelContextMock->expects($this->any())->method('getContext')->willReturn($contextMock);
-        $event = new ProductListingCriteriaEvent($request, new Criteria(), $salesChannelContextMock);
 
-        $queryInfoMessage = $responseParser->getQueryInfoMessage($event);
+        $queryInfoMessage = $responseParser->getQueryInfoMessage($request, $salesChannelContextMock);
         $this->assertInstanceOf($expectedInstance, $queryInfoMessage);
         $this->assertEquals($expectedVars, $queryInfoMessage->getVars());
     }

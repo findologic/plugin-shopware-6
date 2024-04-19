@@ -17,6 +17,7 @@ use Shopware\Core\Content\Category\CategoryDefinition;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
+use Shopware\Core\Content\Product\SalesChannel\Listing\Processor\CompositeListingProcessor;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
@@ -52,6 +53,8 @@ abstract class ProductRouteBase extends TestCase
 
     protected RequestCriteriaBuilder $criteriaBuilder;
 
+    protected CompositeListingProcessor $listingProcessor;
+
     protected SalesChannelRepository|MockObject $productRepositoryMock;
 
     protected EntityRepository|MockObject $categoryRepositoryMock;
@@ -77,6 +80,8 @@ abstract class ProductRouteBase extends TestCase
         $this->productDefinition = $this->getContainer()->get(ProductDefinition::class);
 
         $this->criteriaBuilder = $this->getContainer()->get(RequestCriteriaBuilder::class);
+
+        $this->listingProcessor = $this->getContainer()->get(CompositeListingProcessor::class);
 
         $this->productRepositoryMock = $this->getMockBuilder(SalesChannelRepository::class)
             ->disableOriginalConstructor()
@@ -130,6 +135,7 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $salesChannelMock->expects($this->any())->method('getNavigationCategoryId')->willReturn($categoryId);
+        $salesChannelMock->expects($this->any())->method('getLanguageId')->willReturn(Defaults::LANGUAGE_SYSTEM);
         $salesChannelMock->expects($this->any())->method('getId')->willReturn(Defaults::SALES_CHANNEL_TYPE_STOREFRONT);
 
         $salesChannelContextMock->expects($this->any())
@@ -147,6 +153,7 @@ abstract class ProductRouteBase extends TestCase
         $context->expects($this->any())
             ->method('addState')
             ->with(Criteria::STATE_ELASTICSEARCH_AWARE);
+        $context->expects($this->any())->method('getLanguageIdChain')->willReturn([Defaults::LANGUAGE_SYSTEM]);
 
         $findologicService = $this->getMockBuilder(FindologicService::class)
             ->disableOriginalConstructor()

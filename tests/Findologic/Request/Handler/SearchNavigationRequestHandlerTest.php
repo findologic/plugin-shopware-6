@@ -86,7 +86,6 @@ class SearchNavigationRequestHandlerTest extends TestCase
             Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             $customer
         );
-        $event = $this->buildSearchEvent($this->salesChannelContext);
 
         $expectedUserGroup = $this->salesChannelContext->getCustomer()->getGroupId();
 
@@ -100,7 +99,7 @@ class SearchNavigationRequestHandlerTest extends TestCase
             ->willReturn(new Json10Response($this->getMockResponse()));
 
         $requestHandler = $this->buildSearchRequestHandler();
-        $requestHandler->handleRequest($event);
+        $requestHandler->handleRequest(new Request(), new Criteria(), $this->salesChannelContext);
 
         $this->assertSame($expectedUserGroup, $searchRequest->getParams()['usergrouphash'][0]);
     }
@@ -132,11 +131,6 @@ class SearchNavigationRequestHandlerTest extends TestCase
         $categoryRepo = $this->getContainer()->get('category.repository');
         $category = $categoryRepo->search($oneSubCategoryFilter, Context::createDefaultContext())->first();
 
-        $event = $this->buildNavigationEvent(
-            $this->salesChannelContext,
-            new Request(['navigationId' => $category->getId()])
-        );
-
         $expectedUserGroup = $this->salesChannelContext->getCustomer()->getGroupId();
 
         $navigationRequest = new NavigationRequest();
@@ -149,7 +143,11 @@ class SearchNavigationRequestHandlerTest extends TestCase
             ->willReturn(new Json10Response($this->getMockResponse()));
 
         $requestHandler = $this->buildNavigationRequestHandler();
-        $requestHandler->handleRequest($event);
+        $requestHandler->handleRequest(
+            new Request(['navigationId' => $category->getId()]),
+            new Criteria(),
+            $this->salesChannelContext,
+        );
 
         $this->assertSame($expectedUserGroup, $navigationRequest->getParams()['usergrouphash'][0]);
     }

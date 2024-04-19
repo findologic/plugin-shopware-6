@@ -69,18 +69,11 @@ class SearchControllerTest extends TestCase
         $parser = new Json10ResponseParser($response);
         $filterExtension = $parser->getFiltersExtension();
 
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $request = new Request();
         $criteria = new Criteria();
         $criteria->setExtensions(['flAvailableFilters' => $filterExtension, 'flFilters' => $filterExtension]);
-        $eventMock->method('getRequest')->willReturn($request);
-        $eventMock->method('getCriteria')->willReturn($criteria);
 
         $filterHandler = new FilterHandler();
-        $filterResponse = $filterHandler->handleAvailableFilters($eventMock);
+        $filterResponse = $filterHandler->handleAvailableFilters($criteria);
         $expectedFilters = json_decode($this->getMockResponse($expectedResponse), true);
 
         $this->assertSame($filterResponse, $expectedFilters);
@@ -100,18 +93,11 @@ class SearchControllerTest extends TestCase
         $parser = new Json10ResponseParser($allFiltersResponse);
         $allFilters = $parser->getFiltersExtension();
 
-        $eventMock = $this->getMockBuilder(ProductSearchCriteriaEvent::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $request = new Request();
         $criteria = new Criteria();
         $criteria->setExtensions(['flAvailableFilters' => $availableFilters, 'flFilters' => $allFilters]);
-        $eventMock->method('getRequest')->willReturn($request);
-        $eventMock->method('getCriteria')->willReturn($criteria);
 
         $filterHandler = new FilterHandler();
-        $filterResponse = $filterHandler->handleAvailableFilters($eventMock);
+        $filterResponse = $filterHandler->handleAvailableFilters($criteria);
         $expectedFilters = [
             'properties' => [
                 'entities' => [
