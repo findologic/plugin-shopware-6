@@ -16,5 +16,8 @@ build:
                     - .eslintrc-administration.js
                     - .eslintrc-storefront.js
                     - Makefile
+                    - composer.lock
+                    - package.json
+                    - package-lock.json
                     - "*.zip"
                     - "*.phar"
