@@ -236,7 +236,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
-                "reference": "0679797f5c300ccc15577cd10c75c8b8f640728f"
+                "reference": "3c4edd3ad0539e8dff34856c387d971bc02f9df3"
             },
             "require": {
                 "findologic/libflexport": "^3.1",
@@ -250,7 +250,8 @@
                 "doctrine/annotations": "^1.13",
                 "ext-json": "*",
                 "friendsofphp/php-cs-fixer": "^3.11",
-                "phpunit/phpunit": "^9.5",
+                "mockery/mockery": "^1.6",
+                "phpunit/phpunit": "^11.1",
                 "symfony/cache": "*",
                 "symfony/routing": "*",
                 "symfony/translation": "*",
@@ -288,7 +289,7 @@
                 }
             ],
             "description": "Files shared among Shopware6 plugin and Shopware App",
-            "time": "2024-04-19T08:47:09+00:00"
+            "time": "2024-04-19T11:09:30+00:00"
         },
         {
             "name": "findologic/xml-export-schema",

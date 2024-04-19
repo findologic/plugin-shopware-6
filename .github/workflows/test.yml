@@ -56,6 +56,11 @@ jobs:
       - name: Create shop
         run: shopware-cli project create shopware ${{ matrix.shopware-versions }}
 
+      - name: Set minimum stability to dev
+        run: |
+          cd shopware
+          composer config minimum-stability dev
+
       - name: Install Shopware
         run: |
           cp plugin-shopware-6/.github/.env.local shopware
