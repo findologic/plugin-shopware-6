@@ -91,6 +91,10 @@
                         "label": "Price when buying one unit"
                     }
                 },
+                "domain": {
+                    "label": "Domain for generating product url",
+                    "helpText": "This domain is used for multi-domain sales channels, and the selected domain will be used as uri for product url"
+                },
                 "exportZeroPricedProducts": {
                     "label": "Export products without price",
                     "tooltipText": "If deactivated, products and variants with a price of 0 are excluded from the export. When parent products have a price of 0, variants with a price are still considered."

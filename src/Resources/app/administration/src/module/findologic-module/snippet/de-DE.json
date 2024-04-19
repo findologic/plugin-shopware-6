@@ -91,6 +91,10 @@
                         "label": "Preis beim Kauf von einer Einheit"
                     }
                 },
+                "domain": {
+                    "label": "Domäne für die Erzeugung der Produkturl.",
+                    "helpText": "Diese Domain wird für Multi-Domain-Verkaufskanäle verwendet, und die ausgewählte Domain wird als Uri für die Produkt-Url verwendet."
+                },
                 "exportZeroPricedProducts": {
                     "label": "Produkte ohne Preis exportieren",
                     "tooltipText": "Wenn deaktiviert, werden alle Produkte/Varianten mit einem Preis von 0 ausgeschlossen. Wenn das Hauptprodukt einen Preis von 0 hat, werden Varianten mit Preis trotzdem noch berücksichtigt."

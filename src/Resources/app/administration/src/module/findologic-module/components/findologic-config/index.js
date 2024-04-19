@@ -153,9 +153,6 @@ Component.register('findologic-config', {
         },
 
         domainCriteria() {
-            console.log(this.selectedLanguageId);
-            console.log(this.selectedSalesChannelId);
-            console.log(this);
             const criteria = new Criteria(1, 25);
             criteria.addFilter(Criteria.equals('salesChannelId', this.selectedSalesChannelId));
             criteria.addFilter(Criteria.equals('languageId', this.selectedLanguageId));
