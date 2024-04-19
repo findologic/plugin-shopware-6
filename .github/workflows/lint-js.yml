@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '8.1' ]
+        php-versions: [ '8.2' ]
         shopware-versions: [
-          '6.5.5.1',
+          '6.6.1.1',
         ]
 
     name: ESLint - ${{ matrix.shopware-versions }}
@@ -27,7 +27,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18.18.0 # Last version with npm 9 (Shopware requirement)
+          node-version: 20
 
       - uses: actions/checkout@v2
         with:

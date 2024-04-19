@@ -8,7 +8,7 @@ on:
 
 env:
   PLUGIN_NAME: FinSearch
-  PLUGIN_MIN_REQUIREMENT: ^6.5.3
+  PLUGIN_MIN_REQUIREMENT: ~6.6.0
   SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ secrets.ACCOUNT_USER }}
   SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ secrets.ACCOUNT_PASSWORD }}
   SHOPWARE_CLI_COMPANY_ID: 11618
@@ -23,7 +23,7 @@ jobs:
       - name: Setup PHP with Composer 2
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           extensions: mbstring, dom
           coverage: xdebug
           tools: composer:v2
@@ -57,7 +57,7 @@ jobs:
       - name: Setup PHP with Composer 2
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           extensions: mbstring, dom
           coverage: xdebug
           tools: composer:v2

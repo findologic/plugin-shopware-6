@@ -13,11 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '8.1', '8.2' ]
+        php-versions: [ '8.2' , '8.3']
         shopware-versions: [
-            '6.5.3.3',
-            '6.5.4.1',
-            '6.5.5.1',
+            '6.6.0.3',
+            '6.6.1.1',
         ]
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }} + JS)
@@ -30,7 +29,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18.18.0 # Last version with npm 9 (Shopware requirement)
+          node-version: 20
 
       - uses: actions/checkout@v2
         with:
