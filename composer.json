@@ -18,7 +18,7 @@
   "require": {
     "findologic/libflexport": "^2.8",
     "findologic/findologic-api": "^1.6",
-    "findologic/shopware6-common": "dev-SW-813_some_products_not_rendered_on_category_pages_v1",
+    "findologic/shopware6-common": "^1.0.3",
     "vin-sw/shopware-sdk": "^1.7.3",
     "composer/semver": "^3.3"
   },
