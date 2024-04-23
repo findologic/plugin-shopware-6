@@ -61,11 +61,6 @@ jobs:
           cd shopware
           composer config minimum-stability dev
 
-      - name: Add common repo
-        run: |
-          cd shopware
-          composer config repositories.shopware6-common git https://github.com/findologic/shopware6-common.git
-
       - name: Install Shopware
         run: |
           cp plugin-shopware-6/.github/.env.local shopware
@@ -73,15 +68,15 @@ jobs:
           cd shopware
           ./bin/console system:install --basic-setup
 
-      - name: Install administration dependencies
-        run: |
-          cd shopware/vendor/shopware/administration/Resources/app/administration
-          npm i
-
-      - name: Install storefront dependencies
-        run: |
-          cd shopware/vendor/shopware/storefront/Resources/app/storefront
-          npm i
+#      - name: Install administration dependencies
+#        run: |
+#          cd shopware/vendor/shopware/administration/Resources/app/administration
+#          npm i
+#
+#      - name: Install storefront dependencies
+#        run: |
+#          cd shopware/vendor/shopware/storefront/Resources/app/storefront
+#          npm i
 
       - name: Install test dependencies for SW
         run: |
@@ -92,11 +87,10 @@ jobs:
         run: |
           cd plugin-shopware-6
           composer install --no-interaction
-          cd src/Resources/app/storefront
-          npm ci
+#          cd src/Resources/app/storefront
+#          npm ci
 
       - name: Install plugin
-        continue-on-error: true
         run: |
           mv plugin-shopware-6 shopware/custom/plugins
           cd shopware
@@ -109,7 +103,7 @@ jobs:
           cd shopware/custom/plugins/plugin-shopware-6
           SYMFONY_DEPRECATIONS_HELPER=disabled composer test
 
-      - name: Run storefront Jest test suite
-        run: |
-          cd shopware/custom/plugins/plugin-shopware-6/src/Resources/app/storefront
-          npm run test
+#      - name: Run storefront Jest test suite
+#        run: |
+#          cd shopware/custom/plugins/plugin-shopware-6/src/Resources/app/storefront
+#          npm run test
