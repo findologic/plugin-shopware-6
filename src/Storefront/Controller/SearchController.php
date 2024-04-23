@@ -28,7 +28,7 @@ use Symfony\Component\Routing\Annotation\Route;
         '_routeScope' => ['storefront'],
     ],
 )]
-class SearchController extends StorefrontController
+class SearchController extends ShopwareSearchController
 {
     private SearchPageLoader $searchPageLoader;
 
