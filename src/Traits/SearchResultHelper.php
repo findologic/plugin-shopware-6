@@ -56,8 +56,8 @@ trait SearchResultHelper
         ?string $query = null
     ): EntitySearchResult {
         $productCriteria = clone $criteria;
-        if ($query !== null && count($criteria->getIds()) === 1) {
-            $this->modifyCriteriaFromQuery($query, $criteria, $salesChannelContext);
+        if ($query !== null && count($productCriteria->getIds()) === 1) {
+            $this->modifyCriteriaFromQuery($query, $productCriteria, $salesChannelContext);
         }
 
         $productCriteria->resetAggregations();

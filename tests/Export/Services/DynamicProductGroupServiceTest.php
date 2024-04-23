@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
+use Exception;
 use FINDOLOGIC\FinSearch\Export\Search\CategorySearcher;
 use FINDOLOGIC\FinSearch\Export\Services\DynamicProductGroupService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
@@ -135,14 +136,20 @@ class DynamicProductGroupServiceTest extends TestCase
             ->willReturnOnConsecutiveCalls(true, true, false);
         $cacheItemMock->expects($this->never())->method('set');
 
-        $this->cache->expects($this->exactly(3))
+        $matcher = $this->exactly(3);
+        $this->cache
+            ->expects($matcher)
             ->method('getItem')
-            ->withConsecutive(
-                [$this->getCacheKeyByType('streamId', $categoryOne->productStreamId)],
-                [$this->getCacheKeyByType('streamId', $categoryTwo->productStreamId)],
-                [$this->getCacheKeyByType('streamId', $unknownStreamId)],
-            )
-            ->willReturn($cacheItemMock);
+            ->willReturnCallback(function (string $key) use ($matcher, $cacheItemMock, $categoryOne, $categoryTwo, $unknownStreamId) {
+                match($matcher->numberOfInvocations()) {
+                    1 => $this->assertEquals($this->getCacheKeyByType('streamId', $categoryOne->productStreamId), $key),
+                    2 => $this->assertEquals($this->getCacheKeyByType('streamId', $categoryTwo->productStreamId), $key),
+                    3 => $this->assertEquals($this->getCacheKeyByType('streamId', $unknownStreamId), $key),
+                    default => throw new Exception('To many calls to the getItem function'),
+                };
+
+                return $cacheItemMock;
+            });
 
         $dynamicService = $this->getDynamicProductGroupService();
 
