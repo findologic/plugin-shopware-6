@@ -125,7 +125,7 @@ class FilterHandler
             return;
         }
 
-        if ($this->isRatingFilter($filterName)) {
+        if ($this->isRatingFilter($filterName) && !$this->isPropertyFilter($filterName, $filterValue)) {
             $searchNavigationRequest->addAttribute($filterName, $filterValue, 'min');
 
             return;
