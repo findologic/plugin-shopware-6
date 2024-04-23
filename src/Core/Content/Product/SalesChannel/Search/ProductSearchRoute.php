@@ -84,13 +84,14 @@ class ProductSearchRoute extends AbstractProductSearchRoute
             new ProductSearchCriteriaEvent($request, $criteria, $context)
         );
 
-        if (!$shouldHandleRequest) {
-            return $this->decorated->load($request, $context, $criteria);
-        }
-
         $query = $request->query->get('search');
-        $result = $this->doSearch($criteria, $context, $query);
-        $result = ProductListingResult::createFrom($result);
+
+        if (!$shouldHandleRequest) {
+            $result = $this->decorated->load($request, $context, $criteria)->getListingResult();
+        } else {
+            $result = $this->doSearch($criteria, $context, $query);
+            $result = ProductListingResult::createFrom($result);
+        }
         $result->addCurrentFilter('search', $query);
 
         $this->eventDispatcher->dispatch(
