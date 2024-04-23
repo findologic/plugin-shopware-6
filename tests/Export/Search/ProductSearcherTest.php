@@ -628,7 +628,7 @@ class ProductSearcherTest extends TestCase
                 'firstVariantPrice' => 10,
                 'secondVariantPrice' => 10,
                 'thirdVariantPrice' => 10,
-                'cheapest' => 3,
+                'cheapestPrice' => 3,
                 'parentActive' => false
             ],
             'export cheapest variant with all same prices' => [

@@ -22,14 +22,12 @@ class SortingServiceTest extends TestCase
     use SalesChannelHelper;
     use IntegrationTestBehaviour;
 
-    public function availableSortingOptionsProvider(): array
+    public static function availableSortingOptionsProvider(): array
     {
         $topsellerSorting = new ProductSortingEntity();
         $topsellerSorting->setId(Uuid::randomHex());
         $topsellerSorting->setActive(true);
-        $topsellerSorting->setTranslated([
-            'label' => $this->getContainer()->get('translator')->trans('filter.sortByScore')
-        ]);
+        $topsellerSorting->setTranslated(['label' => 'Topseller']);
         $topsellerSorting->setKey('product.sales');
         $topsellerSorting->setPriority(5);
         $topsellerSorting->setFields([

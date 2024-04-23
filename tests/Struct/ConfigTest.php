@@ -24,13 +24,12 @@ class ConfigTest extends TestCase
     use IntegrationTestBehaviour;
     use SalesChannelHelper;
 
-    public function configValuesProvider(): array
+    public static function configValuesProvider(): array
     {
         return [
             'All properties are accessed after initialization' => [
                 'data' => [
                     'active' => true,
-                    'shopkey' => $this->getShopkey(),
                     'activeOnCategoryPages' => true,
                     'crossSellingCategories' => [],
                     'searchResultContainer' => '.fl-result',
@@ -44,7 +43,6 @@ class ConfigTest extends TestCase
             'Integration type is null due to ClientException' => [
                 'data' => [
                     'active' => true,
-                    'shopkey' => $this->getShopkey(),
                     'activeOnCategoryPages' => true,
                     'crossSellingCategories' => [],
                     'searchResultContainer' => '.fl-result',
@@ -56,7 +54,15 @@ class ConfigTest extends TestCase
                 'exception' => new ClientException('some message', new Request('GET', 'some url'), new Response())
             ],
             'Without isStaging value' => [
-                'data' => [],
+                'data' => [
+                    'active' => true,
+                    'activeOnCategoryPages' => true,
+                    'crossSellingCategories' => [],
+                    'searchResultContainer' => '.fl-result',
+                    'navigationResultContainer' => '.fl-navigation-result',
+                    'integrationType' => 'API',
+                    'filterPosition' => FilterPosition::TOP
+                ],
                 'removeKeys' => ['isStaging'],
                 'exception' => null
             ],
@@ -73,6 +79,8 @@ class ConfigTest extends TestCase
         array $removeKeys,
         ?ClientException $exception
     ): void {
+        $data['shopkey'] = $this->getShopkey();
+
         /** @var FindologicConfigService|MockObject $configServiceMock */
         $configServiceMock = $this->getDefaultFindologicConfigServiceMock($data, $removeKeys);
 

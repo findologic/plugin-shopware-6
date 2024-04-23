@@ -57,34 +57,28 @@ class Json10ResponseParserTest extends TestCase
         $this->serviceConfigResource = $this->createMock(ServiceConfigResource::class);
     }
 
-    public function productIdsResponseProvider(): array
+    public static function productIdsResponseProvider(): array
     {
         return [
             'default mock ids' => [
-                'response' => new Json10Response($this->getMockResponse()),
+                'responseFile' => 'JSONResponse/demo.json',
                 'expectedIds' => [
                     '019111105-37900',
                     '029214085-37860'
                 ]
             ],
             'response without products' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithNoResults.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithNoResults.json',
                 'expectedIds' => []
             ],
             'response with one product' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithOneProduct.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithOneProduct.json',
                 'expectedIds' => [
                     '029214085-37860'
                 ]
             ],
             'response with many products' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithManyProducts.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithManyProducts.json',
                 'expectedIds' => [
                     '102',
                     '103',
@@ -128,7 +122,7 @@ class Json10ResponseParserTest extends TestCase
     /**
      * @dataProvider productIdsResponseProvider
      */
-    public function testProductIdsAreParsedAsExpected(Response $response, array $expectedIds): void
+    public function testProductIdsAreParsedAsExpected(string $responseFile, array $expectedIds): void
     {
         $configMock = $this->getMockBuilder(Config::class)
             ->disableOriginalConstructor()
@@ -137,6 +131,7 @@ class Json10ResponseParserTest extends TestCase
             ->method('useXmlVariants')
             ->willReturn(false);
 
+        $response = new Json10Response($this->getMockResponse($responseFile));
         $responseParser = new Json10ResponseParser($response, null, $configMock);
 
         $this->assertEquals($expectedIds, $responseParser->getProductIds());
@@ -201,7 +196,7 @@ class Json10ResponseParserTest extends TestCase
         $this->assertEquals('https://promotion.com/promotion.png', $promotion->getImage());
     }
 
-    public function filterResponseProvider(): array
+    public static function filterResponseProvider(): array
     {
         $expectedCategoryFilter = new CategoryFilter('cat', 'Kategorie');
         $expectedCategoryFilter->addValue(
@@ -287,9 +282,7 @@ class Json10ResponseParserTest extends TestCase
 
         return [
             'response including all filter types' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithAllFilterTypes.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithAllFilterTypes.json',
                 'expectedFilters' => [
                     'cat' => $expectedCategoryFilter,
                     'vendor' => $expectedVendorFilter,
@@ -300,21 +293,15 @@ class Json10ResponseParserTest extends TestCase
                 ]
             ],
             'response without results' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithNoResults.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithNoResults.json',
                 'expectedFilters' => []
             ],
             'response without results but with filters with no-filters-available-text' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithNoResultsButWithFilters.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithNoResultsButWithFilters.json',
                 'expectedFilters' => []
             ],
             'response with colors without image URLs' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithColorFiltersWithoutUrl.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithColorFiltersWithoutUrl.json',
                 'expectedFilters' => [
                     'Farbe' => (new ColorPickerFilter('Farbe', 'Farbe'))
                         ->addValue(
@@ -343,8 +330,9 @@ class Json10ResponseParserTest extends TestCase
     /**
      * @dataProvider filterResponseProvider
      */
-    public function testFiltersAreReturnedAsExpected(Json10Response $response, array $expectedFilters): void
+    public function testFiltersAreReturnedAsExpected(string $responseFile, array $expectedFilters): void
     {
+        $response = new Json10Response($this->getMockResponse($responseFile));
         $responseParser = new Json10ResponseParser($response);
 
         $filtersExtension = $responseParser->getFiltersExtension();
@@ -359,7 +347,7 @@ class Json10ResponseParserTest extends TestCase
             'No smart suggest blocks are sent and category filter is not in response' => [
                 'type' => 'cat',
                 'demoResponse' => 'demoResponseWithoutFilters.json',
-                'flBlocks' => [],
+                'smartSuggestBlocks' => [],
                 'expectedFilterName' => null,
                 'expectedInstanceOf' => CategoryFilter::class,
                 'isHidden' => null
@@ -367,7 +355,7 @@ class Json10ResponseParserTest extends TestCase
             'Smart suggest blocks are sent and category filter is not in response' => [
                 'type' => 'cat',
                 'demoResponse' => 'demoResponseWithoutFilters.json',
-                'flBlocks' => ['cat' => 'Category'],
+                'smartSuggestBlocks' => ['cat' => 'Category'],
                 'expectedFilterName' => 'Category',
                 'expectedInstanceOf' => CategoryFilter::class,
                 'isHidden' => true
@@ -375,7 +363,7 @@ class Json10ResponseParserTest extends TestCase
             'No smart suggest blocks are sent and category filter is available in response' => [
                 'type' => 'cat',
                 'demoResponse' => 'demoResponseWithCategoryFilter.json',
-                'flBlocks' => [],
+                'smartSuggestBlocks' => [],
                 'expectedFilterName' => 'Kategorie',
                 'expectedInstanceOf' => CategoryFilter::class,
                 'isHidden' => false
@@ -383,7 +371,7 @@ class Json10ResponseParserTest extends TestCase
             'No smart suggest blocks are sent and vendor filter is not in response' => [
                 'type' => 'vendor',
                 'demoResponse' => 'demoResponseWithoutFilters.json',
-                'flBlocks' => [],
+                'smartSuggestBlocks' => [],
                 'expectedFilterName' => null,
                 'expectedInstanceOf' => VendorImageFilter::class,
                 'isHidden' => null
@@ -391,7 +379,7 @@ class Json10ResponseParserTest extends TestCase
             'Smart suggest blocks are sent and vendor filter is not in response' => [
                 'type' => 'vendor',
                 'demoResponse' => 'demoResponseWithoutFilters.json',
-                'flBlocks' => ['vendor' => 'Manufacturer'],
+                'smartSuggestBlocks' => ['vendor' => 'Manufacturer'],
                 'expectedFilterName' => 'Manufacturer',
                 'expectedInstanceOf' => VendorImageFilter::class,
                 'isHidden' => true
@@ -399,7 +387,7 @@ class Json10ResponseParserTest extends TestCase
             'No smart suggest blocks are sent and vendor filter is available in response' => [
                 'type' => 'vendor',
                 'demoResponse' => 'demoResponseWithVendorFilter.json',
-                'flBlocks' => [],
+                'smartSuggestBlocks' => [],
                 'expectedFilterName' => 'Hersteller',
                 'expectedInstanceOf' => VendorImageFilter::class,
                 'isHidden' => false
@@ -407,7 +395,7 @@ class Json10ResponseParserTest extends TestCase
             'No smart suggest blocks are sent and text vendor filter is available in response' => [
                 'type' => 'vendor',
                 'demoResponse' => 'demoResponseWithTextVendorFilter.json',
-                'flBlocks' => [],
+                'smartSuggestBlocks' => [],
                 'expectedFilterName' => 'Hersteller',
                 'expectedInstanceOf' => LabelTextFilter::class,
                 'isHidden' => false
@@ -450,11 +438,10 @@ class Json10ResponseParserTest extends TestCase
         }
     }
 
-    public function paginationResponseProvider(): array
+    public static function paginationResponseProvider(): array
     {
         return [
             'first page pagination with default values' => [
-                'response' => new Json10Response($this->getMockResponse()),
                 'limit' => null,
                 'offset' => null,
                 'expectedTotal' => 1808,
@@ -462,7 +449,6 @@ class Json10ResponseParserTest extends TestCase
                 'expectedLimit' => 24
             ],
             'second page with override of user' => [
-                'response' => new Json10Response($this->getMockResponse()),
                 'limit' => 24,
                 'offset' => 24,
                 'expectedTotal' => 1808,
@@ -470,7 +456,6 @@ class Json10ResponseParserTest extends TestCase
                 'expectedLimit' => 24
             ],
             'third page with different limit' => [
-                'response' => new Json10Response($this->getMockResponse()),
                 'limit' => 100,
                 'offset' => 200,
                 'expectedTotal' => 1808,
@@ -484,14 +469,13 @@ class Json10ResponseParserTest extends TestCase
      * @dataProvider paginationResponseProvider
      */
     public function testPaginationExtensionIsReturnedAsExpected(
-        Json10Response $response,
         ?int $limit,
         ?int $offset,
         int $expectedTotal,
         int $expectedOffset,
         int $expectedLimit
     ): void {
-        $responseParser = new Json10ResponseParser($response);
+        $responseParser = new Json10ResponseParser(new Json10Response($this->getMockResponse()));
 
         $pagination = $responseParser->getPaginationExtension($limit, $offset);
 
@@ -500,11 +484,11 @@ class Json10ResponseParserTest extends TestCase
         $this->assertEquals($expectedLimit, $pagination->getLimit());
     }
 
-    public function queryInfoMessageResponseProvider(): array
+    public static function queryInfoMessageResponseProvider(): array
     {
         return [
             'alternative query is used' => [
-                'response' => new Json10Response($this->getMockResponse()),
+                'responseFile' => 'JSONResponse/demo.json',
                 'request' => new Request(),
                 'expectedInstance' => SearchTermQueryInfoMessage::class,
                 'expectedVars' => [
@@ -513,9 +497,7 @@ class Json10ResponseParserTest extends TestCase
                 ]
             ],
             'no search query but selected category' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithoutQuery.json',
                 'request' => new Request(['cat' => 'Shoes & More']),
                 'expectedInstance' => CategoryInfoMessage::class,
                 'expectedVars' => [
@@ -525,9 +507,7 @@ class Json10ResponseParserTest extends TestCase
                 ]
             ],
             'no search query but selected vendor' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithoutQuery.json',
                 'request' => new Request(['vendor' => 'vendor>Blubbergurken inc.']),
                 'expectedInstance' => VendorInfoMessage::class,
                 'expectedVars' => [
@@ -537,9 +517,7 @@ class Json10ResponseParserTest extends TestCase
                 ]
             ],
             'no search query but 2 selected vendors' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithoutQuery.json',
                 'request' => new Request(['vendor' => 'vendor>Blubbergurken inc.|vendor>Blubbergurken Limited']),
                 'expectedInstance' => DefaultInfoMessage::class,
                 'expectedVars' => [
@@ -547,9 +525,7 @@ class Json10ResponseParserTest extends TestCase
                 ]
             ],
             'no query and no selected filters' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithoutQuery.json',
                 'request' => new Request(),
                 'expectedInstance' => DefaultInfoMessage::class,
                 'expectedVars' => [
@@ -557,9 +533,7 @@ class Json10ResponseParserTest extends TestCase
                 ]
             ],
             'shopping guide query is used' => [
-                'response' => new Json10Response(
-                    $this->getMockResponse('JSONResponse/demoResponseWithoutQuery.json')
-                ),
+                'responseFile' => 'JSONResponse/demoResponseWithoutQuery.json',
                 'request' => new Request(['wizard' => 'FindologicGuide']),
                 'expectedInstance' => ShoppingGuideInfoMessage::class,
                 'expectedVars' => [
@@ -574,12 +548,14 @@ class Json10ResponseParserTest extends TestCase
      * @dataProvider queryInfoMessageResponseProvider
      */
     public function testQueryInfoMessageExtensionIsReturnedAsExpected(
-        Json10Response $response,
+        string $responseFile,
         Request $request,
         string $expectedInstance,
         array $expectedVars
     ): void {
-        $responseParser = new Json10ResponseParser($response);
+        $responseParser = new Json10ResponseParser(
+            new Json10Response($this->getMockResponse($responseFile))
+        );
 
         $contextMock = $this->getMockBuilder(Context::class)
             ->onlyMethods(['getExtension'])
