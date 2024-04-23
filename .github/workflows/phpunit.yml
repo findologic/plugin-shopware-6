@@ -4,8 +4,8 @@ name: PHPUnit
 on:
   push:
     branches:
-      - main
       - develop
+      - v4
   pull_request:
 
 jobs:
