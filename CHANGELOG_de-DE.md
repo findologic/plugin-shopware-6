@@ -1,3 +1,9 @@
+# 4.0.5
+
+* [SW-804] Ein Problem wurde behoben, wodurch es zu Fehlern bei Filternamen mit "ß" kam.
+* [SW-809] Ein Problem wurde behoben, wobei bei selektiertem Bewertungs-Filter als "Text" oder "Dropdown" keine Produkte angezeigt wurden.
+* [SW-813] Ein Problem wurde behoben, wobei Hauptprodukte ohne Sichtbarkeit exportiert wurden.
+
 # 4.0.4
 
 * [SW-799] Ein Problem wurde behoben, wodurch Keywords von der falschen Sprache zusätzlich exportiert wurden.

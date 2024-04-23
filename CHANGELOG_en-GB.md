@@ -1,3 +1,9 @@
+# 4.0.5
+
+* [SW-804] Fixed a bug for filter names containing the "ß" character.
+* [SW-809] Fixed a bug where the rating filter did not work when configured as "Text" or "Dropdown".
+* [SW-813] Fixed a bug that lead to invisible main products in the export.
+
 # 4.0.4
 
 * [SW-799] Fixed a bug where keywords from a different language were exported additionally.
