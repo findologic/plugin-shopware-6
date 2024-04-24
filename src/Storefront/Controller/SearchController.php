@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class SearchController extends StorefrontController
+class SearchController extends ShopwareSearchController
 {
     private SearchPageLoader $searchPageLoader;
 
@@ -67,6 +67,18 @@ class SearchController extends StorefrontController
      */
     public function search(SalesChannelContext $context, Request $request): Response
     {
+        $this->config->initializeBySalesChannel($context);
+        if (
+            !Utils::shouldHandleRequest(
+                $request,
+                $context->getContext(),
+                $this->serviceConfigResource,
+                $this->config
+            )
+        ) {
+            return $this->decorated->search($context, $request);
+        }
+
         if ($redirectResponse = $this->handleFindologicSearchParams($request)) {
             return $redirectResponse;
         }

@@ -1,7 +1,16 @@
+# 5.1.1
+
+* [SW-804] Ein Problem wurde behoben, wodurch es zu Fehlern bei Filternamen mit "ß" kam.
+* [SW-809] Ein Problem wurde behoben, wobei bei selektiertem Bewertungs-Filter als "Text" oder "Dropdown" keine Produkte angezeigt wurden.
+* [SW-811] Ein Problem wurde behoben, das zu einem Exportfehler mit XML Varianten führte.
+* [SW-812] Ein Problem wurde behoben, wodurch die Suche nicht funktionierte, wenn die Suche in der Pluginkonfiguration deaktiviert wurde.
+* [SW-813] Ein Problem wurde behoben, wobei Hauptprodukte ohne Sichtbarkeit exportiert wurden.
+* [SW-814] Kompatibilität mit Shopware Advanced Search hergestellt.
+
 # 5.1.0
 
-- Achtung, diese Version unterstützt nur noch Shop Versionen ab v6.5.3.0!
-- [SW-802] Support für Versionen 6.5.3.x und 6.5.4.x hinzugefügt.
+* Achtung, diese Version unterstützt nur noch Shop Versionen ab v6.5.3.0!
+* [SW-802] Support für Versionen 6.5.3.x und 6.5.4.x hinzugefügt.
 
 # 5.0.2
 
@@ -25,6 +34,12 @@
 - [SW-784] Der interne Test build verwendet nun das Shopware Flex Setup.
 - [SW-721] Codestruktur für interne Parameter wurde verbessert.
 - [SW-795] Ein Problem wurde behoben, wodurch Produkte in Dynamic Product Groups eines anderen Channels angezeigt wurde.
+
+# 4.0.5
+
+* [SW-804] Ein Problem wurde behoben, wodurch es zu Fehlern bei Filternamen mit "ß" kam.
+* [SW-809] Ein Problem wurde behoben, wobei bei selektiertem Bewertungs-Filter als "Text" oder "Dropdown" keine Produkte angezeigt wurden.
+* [SW-813] Ein Problem wurde behoben, wobei Hauptprodukte ohne Sichtbarkeit exportiert wurden.
 
 # 4.0.4
 
