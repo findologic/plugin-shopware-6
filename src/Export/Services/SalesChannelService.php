@@ -41,6 +41,7 @@ class SalesChannelService
             (new Criteria())->addFilter(new EqualsFilter('configurationKey', 'FinSearch.config.shopkey')),
             $currentContext->getContext()
         );
+        $currencyId = $this->findologicConfigService->getDomainCurrencyId($currentContext);
 
         /** @var FinSearchConfigEntity $systemConfigEntity */
         foreach ($systemConfigEntities as $systemConfigEntity) {
@@ -51,7 +52,7 @@ class SalesChannelService
                     [
                         SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId(),
                         SalesChannelContextService::CUSTOMER_ID => $customerId,
-                        SalesChannelContextService::CURRENCY_ID => $this->findologicConfigService->getDomainCurrencyId($currentContext),
+                        SalesChannelContextService::CURRENCY_ID => $currencyId,
                     ]
                 );
             }
