@@ -11,8 +11,6 @@ use FINDOLOGIC\FinSearch\Struct\FindologicService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\CategoryHelper;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use InvalidArgumentException;
-use Mockery;
-use Mockery\MockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Category\CategoryDefinition;
@@ -55,7 +53,7 @@ abstract class ProductRouteBase extends TestCase
 
     protected RequestCriteriaBuilder $criteriaBuilder;
 
-    protected CompositeListingProcessor|MockInterface $listingProcessor;
+    protected CompositeListingProcessor $listingProcessor;
 
     protected SalesChannelRepository|MockObject $productRepositoryMock;
 
@@ -83,8 +81,7 @@ abstract class ProductRouteBase extends TestCase
 
         $this->criteriaBuilder = $this->getContainer()->get(RequestCriteriaBuilder::class);
 
-        $this->listingProcessor = Mockery::mock('overload:' . CompositeListingProcessor::class);
-        $this->listingProcessor->shouldReceive('prepare', 'process');
+        $this->listingProcessor = $this->getContainer()->get(CompositeListingProcessor::class);
 
         $this->productRepositoryMock = $this->getMockBuilder(SalesChannelRepository::class)
             ->disableOriginalConstructor()
@@ -118,11 +115,6 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->configMock->expects($this->any())->method('isInitialized')->willReturn(true);
-    }
-
-    public function tearDown(): void
-    {
-        Mockery::close();
     }
 
     abstract protected function getRoute(): AbstractProductListingRoute|AbstractProductSearchRoute;
@@ -236,6 +228,9 @@ abstract class ProductRouteBase extends TestCase
         $salesChannelContextMock = $this->getMockedSalesChannelContext(false);
         $request = Request::create('http://your-shop.de/some-category');
         $request->setSession($this->getSessionMock());
+
+        // The processors could require some specific data within the mock
+        $this->listingProcessor = new CompositeListingProcessor([]);
 
         $productRoute = $this->getRoute();
 

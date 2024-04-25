@@ -62,8 +62,7 @@
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.5",
     "monolog/monolog": "^3.3.1",
-    "bramus/monolog-colored-line-formatter": "^3.0",
-    "mockery/mockery": "^1.6"
+    "bramus/monolog-colored-line-formatter": "^3.0"
   },
   "scripts": {
     "lint": "./vendor/bin/phpcs --standard=phpcs.xml .",

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests;
 
-use Mockery;
 use PHPUnit\Framework\TestCase as PhpUnitTestCase;
 use Shopware\Core\Kernel;
 
