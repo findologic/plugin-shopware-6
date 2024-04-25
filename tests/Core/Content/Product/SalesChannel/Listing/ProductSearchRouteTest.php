@@ -178,7 +178,7 @@ class ProductSearchRouteTest extends ProductRouteBase
                 ->expects($matcher)
                 ->method('search')
                 ->willReturnCallback(function (Criteria $criteria) use ($matcher, $variantCriteria, $variantSearchResult, $newCriteria) {
-                    match($matcher->numberOfInvocations()) {
+                    match ($matcher->numberOfInvocations()) {
                         1 => $this->assertEquals($variantCriteria, $criteria),
                         2 => $this->assertEquals($newCriteria, $criteria),
                         default => throw new Exception('To many calls to the search function'),

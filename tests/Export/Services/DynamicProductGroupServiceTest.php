@@ -141,7 +141,7 @@ class DynamicProductGroupServiceTest extends TestCase
             ->expects($matcher)
             ->method('getItem')
             ->willReturnCallback(function (string $key) use ($matcher, $cacheItemMock, $categoryOne, $categoryTwo, $unknownStreamId) {
-                match($matcher->numberOfInvocations()) {
+                match ($matcher->numberOfInvocations()) {
                     1 => $this->assertEquals($this->getCacheKeyByType('streamId', $categoryOne->productStreamId), $key),
                     2 => $this->assertEquals($this->getCacheKeyByType('streamId', $categoryTwo->productStreamId), $key),
                     3 => $this->assertEquals($this->getCacheKeyByType('streamId', $unknownStreamId), $key),
