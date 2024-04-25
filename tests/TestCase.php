@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests;
 
+use Mockery;
 use PHPUnit\Framework\TestCase as PhpUnitTestCase;
 use Shopware\Core\Kernel;
 
@@ -17,6 +18,8 @@ class TestCase extends PhpUnitTestCase
 
     protected function tearDown(): void
     {
+        Mockery::close();
+
         parent::tearDown();
         Kernel::getConnection()->rollBack();
     }

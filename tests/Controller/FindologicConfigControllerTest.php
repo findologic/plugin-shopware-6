@@ -55,13 +55,7 @@ class FindologicConfigControllerTest extends TestCase
     {
         /** @var Connection $connection */
         $connection = $this->getContainer()->get(Connection::class);
-        if (method_exists($connection, 'executeStatement')) {
-            // Symfony >= 5
-            $connection->executeStatement('DELETE FROM finsearch_config');
-        } else {
-            // Symfony 4
-            $connection->exec('DELETE FROM finsearch_config');
-        }
+        $connection->executeStatement('DELETE FROM finsearch_config');
 
         $url = '/api/_action/finsearch/batch';
         if (defined('\Shopware\Core\PlatformRequest::API_VERSION')) {
