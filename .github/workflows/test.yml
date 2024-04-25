@@ -17,7 +17,10 @@ jobs:
         shopware-versions: [
             '6.5.3.3',
             '6.5.4.1',
-            '6.5.5.1',
+            '6.5.5.2',
+            '6.5.6.1',
+            '6.5.7.4',
+            '6.5.8.9',
         ]
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }} + JS)
