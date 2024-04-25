@@ -168,7 +168,10 @@ class ExportControllerTest extends TestCase
 
         $response = $this->sendExportRequest();
 
-        $expectedShopwareVersion = sprintf('Shopware/%s', Kernel::SHOPWARE_FALLBACK_VERSION);
+        $expectedShopwareVersion = sprintf(
+            'Shopware/%s',
+            $this->getContainer()->getParameter('kernel.shopware_version')
+        );
         $expectedPluginVersion = sprintf('Plugin-Shopware-6/%s', $this->parsePluginVersion());
         $expectedExtensionPluginVersion = 'none';
 
