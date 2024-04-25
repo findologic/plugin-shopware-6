@@ -84,6 +84,7 @@ abstract class ProductRouteBase extends TestCase
         $this->criteriaBuilder = $this->getContainer()->get(RequestCriteriaBuilder::class);
 
         $this->listingProcessor = Mockery::mock('overload:' . CompositeListingProcessor::class);
+        $this->listingProcessor->shouldReceive('prepare', 'process');
 
         $this->productRepositoryMock = $this->getMockBuilder(SalesChannelRepository::class)
             ->disableOriginalConstructor()
@@ -117,6 +118,11 @@ abstract class ProductRouteBase extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->configMock->expects($this->any())->method('isInitialized')->willReturn(true);
+    }
+
+    public function tearDown(): void
+    {
+        Mockery::close();
     }
 
     abstract protected function getRoute(): AbstractProductListingRoute|AbstractProductSearchRoute;
@@ -234,7 +240,6 @@ abstract class ProductRouteBase extends TestCase
         $productRoute = $this->getRoute();
 
         $this->getOriginal()->expects($this->once())->method('load');
-        $this->listingProcessor->shouldReceive('prepare', 'process');
 
         $this->call($productRoute, $request, $salesChannelContextMock);
     }

@@ -18,8 +18,6 @@ class TestCase extends PhpUnitTestCase
 
     protected function tearDown(): void
     {
-        Mockery::close();
-
         parent::tearDown();
         Kernel::getConnection()->rollBack();
     }
