@@ -157,7 +157,10 @@ class FrontendSubscriberTest extends TestCase
                     case 'flPageInformation':
                         $this->assertInstanceOf(PageInformation::class, $extension);
                         $this->assertSame($expectedPageInformation['isSearchPage'], $extension->getIsSearchPage());
-                        $this->assertSame($expectedPageInformation['isNavigationPage'], $extension->getIsNavigationPage());
+                        $this->assertSame(
+                            $expectedPageInformation['isNavigationPage'],
+                            $extension->getIsNavigationPage()
+                        );
                         break;
                     default:
                         throw new OriginalInvalidArgumentException("Unexpected extension name: $name");

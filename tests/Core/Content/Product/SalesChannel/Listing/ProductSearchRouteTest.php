@@ -177,7 +177,12 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->productRepositoryMock
                 ->expects($matcher)
                 ->method('search')
-                ->willReturnCallback(function (Criteria $criteria) use ($matcher, $variantCriteria, $variantSearchResult, $newCriteria) {
+                ->willReturnCallback(function (Criteria $criteria) use (
+                    $matcher,
+                    $variantCriteria,
+                    $variantSearchResult,
+                    $newCriteria
+                ) {
                     match ($matcher->numberOfInvocations()) {
                         1 => $this->assertEquals($variantCriteria, $criteria),
                         2 => $this->assertEquals($newCriteria, $criteria),
@@ -190,7 +195,13 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->productRepositoryMock
                 ->expects($matcher)
                 ->method('search')
-                ->willReturnCallback(function (Criteria $criteria) use ($matcher, $variantCriteria, $variantSearchResult, $newCriteria, $searchResult) {
+                ->willReturnCallback(function (Criteria $criteria) use (
+                    $matcher,
+                    $variantCriteria,
+                    $variantSearchResult,
+                    $newCriteria,
+                    $searchResult
+                ) {
                     switch ($matcher->numberOfInvocations()) {
                         case 1:
                             $this->assertEquals($variantCriteria, $criteria);
