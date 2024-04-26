@@ -93,6 +93,9 @@ jobs:
           ./bin/build-administration.sh
           ./bin/build-storefront.sh
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Run ESLint
         run: |
           cd shopware/custom/plugins/plugin-shopware-6
