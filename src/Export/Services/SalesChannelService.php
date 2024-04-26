@@ -68,14 +68,6 @@ class SalesChannelService
         $parsedUrl = parse_url($domain->getUrl());
         $host = $parsedUrl['host'] . (isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '');
 
-        $serverVariables = array_merge($originalRequest->server->all(), [
-            'REQUEST_URI' => $parsedUrl['path'] ?? '/',
-            'SERVER_NAME' => $host,
-            'HTTP_HOST' => $host,
-        ]);
-        unset($serverVariables['HTTP_FORWARDED']);
-        unset($serverVariables['HTTP_X_FORWARDED_FOR']);
-
         // There is no Request::setUrl(), therefore we need to duplicate the current request object.
         // @see https://github.com/symfony/symfony/issues/14575#issuecomment-102942494
         $request = $originalRequest->duplicate(
@@ -84,7 +76,10 @@ class SalesChannelService
             null,
             null,
             null,
-            $serverVariables,
+            array_merge($originalRequest->server->all(), [
+                'REQUEST_URI' => $parsedUrl['path'] ?? '/',
+                'SERVER_NAME' => $host,
+            ]),
         );
 
         return $this->requestTransformer->transform($request);
