@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '8.2' , '8.3']
+        php-versions: [ '8.2' , '8.3' ]
         shopware-versions: [
             '6.6.0.3',
             '6.6.1.1',
@@ -68,15 +68,15 @@ jobs:
           cd shopware
           ./bin/console system:install --basic-setup
 
-#      - name: Install administration dependencies
-#        run: |
-#          cd shopware/vendor/shopware/administration/Resources/app/administration
-#          npm i
-#
-#      - name: Install storefront dependencies
-#        run: |
-#          cd shopware/vendor/shopware/storefront/Resources/app/storefront
-#          npm i
+      - name: Install administration dependencies
+        run: |
+          cd shopware/vendor/shopware/administration/Resources/app/administration
+          npm i
+
+      - name: Install storefront dependencies
+        run: |
+          cd shopware/vendor/shopware/storefront/Resources/app/storefront
+          npm i
 
       - name: Install test dependencies for SW
         run: |
@@ -88,8 +88,8 @@ jobs:
         run: |
           cd plugin-shopware-6
           composer install --no-interaction
-#          cd src/Resources/app/storefront
-#          npm ci
+          cd src/Resources/app/storefront
+          npm ci
 
       - name: Install plugin
         run: |
@@ -104,7 +104,7 @@ jobs:
           cd shopware/custom/plugins/plugin-shopware-6
           SYMFONY_DEPRECATIONS_HELPER=disabled composer test
 
-#      - name: Run storefront Jest test suite
-#        run: |
-#          cd shopware/custom/plugins/plugin-shopware-6/src/Resources/app/storefront
-#          npm run test
+      - name: Run storefront Jest test suite
+        run: |
+          cd shopware/custom/plugins/plugin-shopware-6/src/Resources/app/storefront
+          npm run test
