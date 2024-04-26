@@ -66,16 +66,6 @@ jobs:
           cd shopware
           ./bin/console system:install --basic-setup
 
-      - name: Install administration dependencies
-        run: |
-          cd shopware/vendor/shopware/administration/Resources/app/administration
-          npm i
-
-      - name: Install storefront dependencies
-        run: |
-          cd shopware/vendor/shopware/storefront/Resources/app/storefront
-          npm i
-
       - name: Install dependencies
         run: |
           cd plugin-shopware-6
@@ -93,8 +83,15 @@ jobs:
           ./bin/build-administration.sh
           ./bin/build-storefront.sh
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      - name: Install administration dependencies
+        run: |
+          cd shopware/vendor/shopware/administration/Resources/app/administration
+          npm i
+
+      - name: Install storefront dependencies
+        run: |
+          cd shopware/vendor/shopware/storefront/Resources/app/storefront
+          npm i
 
       - name: Run ESLint
         run: |
