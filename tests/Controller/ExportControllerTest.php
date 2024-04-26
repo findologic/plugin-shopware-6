@@ -168,7 +168,10 @@ class ExportControllerTest extends TestCase
 
         $response = $this->sendExportRequest();
 
-        $expectedShopwareVersion = sprintf('Shopware/%s', Kernel::SHOPWARE_FALLBACK_VERSION);
+        $expectedShopwareVersion = sprintf(
+            'Shopware/%s',
+            $this->getContainer()->getParameter('kernel.shopware_version')
+        );
         $expectedPluginVersion = sprintf('Plugin-Shopware-6/%s', $this->parsePluginVersion());
         $expectedExtensionPluginVersion = 'none';
 
@@ -311,7 +314,7 @@ class ExportControllerTest extends TestCase
                         'currencyId' => $currencies->first()->getId(),
                         'snippetSetId' =>
                             $this->salesChannelContext->getSalesChannel()->getDomains()->first()->getSnippetSetId(),
-                        'url' => 'http://cool-url.com/german'
+                        'url' => 'http://localhost/german'
                     ]
                 ]
             ],
