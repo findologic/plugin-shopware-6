@@ -66,7 +66,6 @@ class SalesChannelService
         $domain = $this->getSalesChannelDomain($salesChannelContext);
 
         $parsedUrl = parse_url($domain->getUrl());
-        $host = $parsedUrl['host'] . (isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '');
 
         // There is no Request::setUrl(), therefore we need to duplicate the current request object.
         // @see https://github.com/symfony/symfony/issues/14575#issuecomment-102942494
@@ -78,7 +77,7 @@ class SalesChannelService
             null,
             array_merge($originalRequest->server->all(), [
                 'REQUEST_URI' => $parsedUrl['path'] ?? '/',
-                'SERVER_NAME' => $host,
+                'HTTP_HOST' => $parsedUrl['host'] . (isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : ''),
             ]),
         );
 
