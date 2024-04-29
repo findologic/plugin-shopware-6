@@ -12,7 +12,7 @@
             {% set sidebar = block.sectionPosition == 'sidebar' %}
         {% endif %}
 
-        <div class="cms-element-sidebar-filter {{ filterColumns }}">
+        <div class="cms-element-sidebar-filter">
             {% block element_product_listing_filter_button %}
                 {{ parent() }}
             {% endblock %}

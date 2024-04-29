@@ -1,17 +1,8 @@
-/** Import JavaScript plugin classes */
-import FilterCategorySelect from './js/filter-category-select.plugin';
-import FilterPropertySelect from './js/filter-property-select.plugin';
-import FilterSliderRange from './js/filter-slider-range.plugin';
-import FlListingPlugin from './js/listing/listing.plugin';
+window.PluginManager.register('FilterCategorySelect', () => import('./js/filter-category-select.plugin'), '[data-filter-category-select]');
+window.PluginManager.register('FilterSliderRange', () => import('./js/filter-slider-range.plugin'), '[data-filter-slider-range]');
 
-/** Register plugins in the plugin manager */
-const PluginManager = window.PluginManager;
-
-PluginManager.register('FilterCategorySelect', FilterCategorySelect, '[data-filter-category-select]');
-PluginManager.register('FilterSliderRange', FilterSliderRange, '[data-filter-slider-range]');
-
-PluginManager.override('Listing', FlListingPlugin, '[data-listing]');
-PluginManager.override('FilterPropertySelect', FilterPropertySelect, '[data-filter-property-select]');
+window.PluginManager.override('Listing', () => import('./js/listing/listing.plugin'), '[data-listing]');
+window.PluginManager.override('FilterPropertySelect', () => import('./js/filter-property-select.plugin'), '[data-filter-property-select]');
 
 if (module.hot) {
     module.hot.accept();
