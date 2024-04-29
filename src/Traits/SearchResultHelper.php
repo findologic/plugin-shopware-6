@@ -55,12 +55,11 @@ trait SearchResultHelper
         SalesChannelContext $salesChannelContext,
         ?string $query = null
     ): EntitySearchResult {
-        $productCriteria = clone $criteria;
+        $productCriteria = $this->cleanDatabaseCriteria($criteria);
+
         if ($query !== null && count($productCriteria->getIds()) === 1) {
             $this->modifyCriteriaFromQuery($query, $productCriteria, $salesChannelContext);
         }
-
-        $productCriteria->resetAggregations();
 
         $result = $this->salesChannelProductRepository->search($productCriteria, $salesChannelContext);
 
@@ -146,5 +145,17 @@ trait SearchResultHelper
         if ($product) {
             $criteria->setIds([$product->getId()]);
         }
+    }
+
+    private function cleanDatabaseCriteria(Criteria $criteria): Criteria
+    {
+        $productCriteria = clone $criteria;
+        $productCriteria->setOffset(0);
+        $productCriteria->resetQueries();
+        $productCriteria->resetFilters();
+        $productCriteria->resetSorting();
+        $productCriteria->resetAggregations();
+
+        return $productCriteria;
     }
 }
