@@ -73,9 +73,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
             return;
         }
 
-        $criteria->setIds(
-            $responseParser->getProductIds() === [] ? null : $responseParser->getProductIds()
-        );
+        $criteria->setIds($responseParser->getProductIds());
 
         $this->setPromotionExtension($context, $responseParser);
 
