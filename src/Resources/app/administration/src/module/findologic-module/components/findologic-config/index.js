@@ -52,7 +52,7 @@ Component.register('findologic-config', {
         },
     },
 
-    emits: ['input'],
+    emits: ['update:value'],
 
     data() {
         return {
@@ -67,7 +67,7 @@ Component.register('findologic-config', {
                 return this.value;
             },
             set(config) {
-                this.$emit('input', config);
+                this.$emit('update:value', config);
             },
         },
         /**
