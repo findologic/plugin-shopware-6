@@ -36,7 +36,7 @@ jobs:
           path: plugin-shopware-6
 
       - name: Setup PHP with Composer 2
-        uses: shivammathur/setup-php@2.30.4
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: dom, gd, mbstring, pdo_mysql, zip
@@ -48,10 +48,8 @@ jobs:
           cd plugin-shopware-6
           composer validate
 
-      - name: Install Shopware-CLI
-        run: |
-          curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
-          sudo apt install shopware-cli
+      - name: Install shopware-cli
+        uses: FriendsOfShopware/shopware-cli-action@v1
 
       - name: Create shop
         run: shopware-cli project create shopware ${{ matrix.shopware-versions }}
