@@ -48,6 +48,9 @@ jobs:
           cd plugin-shopware-6
           composer validate
 
+      - name: Refresh keys
+        run: apt-key adv --refresh-keys --keyserver keyserver.ubuntu.com
+
       - name: Install Shopware-CLI
         run: |
           curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
