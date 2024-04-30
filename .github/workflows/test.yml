@@ -48,8 +48,13 @@ jobs:
           cd plugin-shopware-6
           composer validate
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      - name: Remove outdated GPG key
+        run: sudo apt-key del 4F4EA0AAE5267A6C
+
+      - name: Add new GPG key
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
+          sudo apt update
 
       - name: Install Shopware-CLI
         run: |
