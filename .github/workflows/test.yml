@@ -49,7 +49,7 @@ jobs:
           composer validate
 
       - name: Refresh keys
-        run: apt-key adv --refresh-keys --keyserver keyserver.ubuntu.com
+        run: sudo apt-key adv --refresh-keys --keyserver keyserver.ubuntu.com
 
       - name: Install Shopware-CLI
         run: |
