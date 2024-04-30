@@ -53,7 +53,9 @@ jobs:
 
       - name: Add new GPG key
         run: |
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/ondrej-php.gpg --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
+          sudo add-apt-repository --remove ppa:ondrej/php
+          echo "deb [signed-by=/usr/share/keyrings/ondrej-php.gpg] http://ppa.launchpad.net/ondrej/php/ubuntu jammy main" | sudo tee /etc/apt/sources.list.d/ondrej-php.list
           sudo apt update
 
       - name: Install Shopware-CLI
