@@ -1,4 +1,6 @@
 build:
+    shopwareVersionConstraint: "~6.6.0"
+
     zip:
         pack:
             excludes:
