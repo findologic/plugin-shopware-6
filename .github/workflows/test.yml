@@ -13,14 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '8.1', '8.2' ]
+        php-versions: [ '8.2' , '8.3' ]
         shopware-versions: [
-            '6.5.3.3',
-            '6.5.4.1',
-            '6.5.5.2',
-            '6.5.6.1',
-            '6.5.7.4',
-            '6.5.8.9',
+            '6.6.0.3',
+            '6.6.1.2',
+            '6.6.2.0',
         ]
 
     name: Shopware ${{ matrix.shopware-versions }} Test (PHP ${{ matrix.php-versions }} + JS)
@@ -33,7 +30,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18.18.0 # Last version with npm 9 (Shopware requirement)
+          node-version: 20
 
       - uses: actions/checkout@v2
         with:
@@ -52,13 +49,16 @@ jobs:
           cd plugin-shopware-6
           composer validate
 
-      - name: Install Shopware-CLI
-        run: |
-          curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
-          sudo apt install shopware-cli
+      - name: Install shopware-cli
+        uses: FriendsOfShopware/shopware-cli-action@v1
 
       - name: Create shop
         run: shopware-cli project create shopware ${{ matrix.shopware-versions }}
+
+      - name: Set minimum stability to dev
+        run: |
+          cd shopware
+          composer config minimum-stability dev
 
       - name: Install Shopware
         run: |
@@ -81,6 +81,7 @@ jobs:
         run: |
           cd shopware
           composer require --dev symfony/test-pack
+          composer require phpunit/phpunit "^10.5" --dev --with-all-dependencies
 
       - name: Install dependencies
         run: |
@@ -95,9 +96,9 @@ jobs:
           cd shopware
           php bin/console plugin:refresh
           php bin/console plugin:install --activate --clearCache FinSearch
+          php bin/console cache:clear
 
       - name: Run PHPUnit test suite
-        if: ${{ matrix.php-versions == '8.1' }} # Skip newer PHP versions once we can fix tests getting stuck
         run: |
           cd shopware/custom/plugins/plugin-shopware-6
           SYMFONY_DEPRECATIONS_HELPER=disabled composer test

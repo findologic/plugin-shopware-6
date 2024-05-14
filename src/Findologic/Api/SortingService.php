@@ -9,6 +9,7 @@ use FINDOLOGIC\FinSearch\Findologic\Request\Handler\SearchNavigationRequestHandl
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingCollection;
 use Shopware\Core\Content\Product\SalesChannel\Sorting\ProductSortingEntity;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -22,18 +23,18 @@ class SortingService
     }
 
     public function handleRequest(
-        ProductListingCriteriaEvent $event,
+        Criteria $criteria,
         SearchNavigationRequestHandler $requestHandler
     ): void {
         if ($requestHandler instanceof NavigationRequestHandler) {
-            $this->addTopResultSorting($event);
+            $this->addTopResultSorting($criteria);
         }
     }
 
-    protected function addTopResultSorting(ProductListingCriteriaEvent $event): void
+    protected function addTopResultSorting(Criteria $criteria): void
     {
         /** @var ProductSortingCollection $availableSortings */
-        $availableSortings = $event->getCriteria()->getExtension('sortings') ?? new ProductSortingCollection();
+        $availableSortings = $criteria->getExtension('sortings') ?? new ProductSortingCollection();
         if ($this->hasTopSellerSorting($availableSortings)) {
             return;
         }
@@ -55,7 +56,7 @@ class SortingService
 
         $availableSortings->add($sortByScore);
 
-        $event->getCriteria()->addExtension('sortings', $availableSortings);
+        $criteria->addExtension('sortings', $availableSortings);
     }
 
     protected function hasTopSellerSorting(ProductSortingCollection $sortings): bool

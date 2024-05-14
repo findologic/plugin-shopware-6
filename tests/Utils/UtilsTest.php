@@ -21,7 +21,7 @@ class UtilsTest extends TestCase
 {
     use IntegrationTestBehaviour;
 
-    public function findologicActiveProvider(): array
+    public static function findologicActiveProvider(): array
     {
         return [
             'Plugin is inactive' => [

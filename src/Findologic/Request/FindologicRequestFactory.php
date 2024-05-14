@@ -121,7 +121,7 @@ abstract class FindologicRequestFactory
             $ipAddress = 'UNKNOWN';
         }
 
-        return implode(',', array_unique(array_map('trim', explode(',', $ipAddress))));
+        return array_unique(array_map('trim', explode(',', $ipAddress)))[0];
     }
 
     /**

@@ -181,6 +181,16 @@ class Utils
         return false;
     }
 
+    public static function isSearchPage(Request $request): bool
+    {
+        return str_contains($request->getRequestUri(), '/search');
+    }
+
+    public static function isNavigationPage(Request $request): bool
+    {
+        return $request->attributes->has('navigationId');
+    }
+
     public static function isFindologicEnabled(SalesChannelContext $context): bool
     {
         /** @var FindologicService $findologicService */

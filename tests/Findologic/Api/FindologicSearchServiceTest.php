@@ -135,8 +135,6 @@ class FindologicSearchServiceTest extends TestCase
         $request->query->set('findologic', $stagingParam);
         $request->setSession($sessionMock);
 
-        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $this->buildAndCreateSalesChannelContext());
-
         $serviceConfigResourceMock = $this->getMockBuilder(ServiceConfigResource::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -171,7 +169,7 @@ class FindologicSearchServiceTest extends TestCase
 
         $reflector = new ReflectionObject($findologicSearchService);
         $method = $reflector->getMethod('allowRequest');
-        $isEnabled = $method->invoke($findologicSearchService, $event);
+        $isEnabled = $method->invoke($findologicSearchService, $request, $this->buildAndCreateSalesChannelContext());
         $this->assertSame($isFindologicEnabled, $isEnabled);
     }
 
@@ -219,7 +217,7 @@ class FindologicSearchServiceTest extends TestCase
 
         $event = new ProductSearchCriteriaEvent($request, new Criteria(), $salesChannelContext);
 
-        $findologicSearchService->doNavigation($event);
+        $findologicSearchService->doNavigation($request, new Criteria(), $salesChannelContext);
 
         $this->assertFalse($findologicService->getEnabled());
         $this->assertTrue($findologicService->getSmartSuggestEnabled()); // State of SS shouldn't be changed.

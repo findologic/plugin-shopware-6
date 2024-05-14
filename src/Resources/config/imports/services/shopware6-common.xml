@@ -29,8 +29,7 @@
         <!-- Adapters -->
 
         <service id="FINDOLOGIC\Shopware6Common\Export\Adapters\ExportItemAdapter" public="true" autowire="true">
-            <argument key="$logger" type="service" id="FINDOLOGIC\FinSearch\Logger\PluginLogger" />
-            <tag name="monolog.logger" channel="file" />
+            <argument key="$logger" type="service" id="monolog.logger.findologic_finsearch" />
             <argument key="$eventDispatcher" type="service" id="event_dispatcher" />
         </service>
 

@@ -69,7 +69,7 @@ class FilterHandlerTest extends TestCase
 
         $eventMock->method('getRequest')->willReturn($request);
         $eventMock->method('getCriteria')->willReturn($criteria);
-        $filterHandler->handleFilters($eventMock, $searchNavigationRequest);
+        $filterHandler->handleFilters($request, $criteria, $searchNavigationRequest);
         $result = $searchNavigationRequest->getParams();
         $this->assertArrayHasKey('attrib', $result);
         $this->assertArrayHasKey($filterName, $result['attrib']);
@@ -115,7 +115,7 @@ class FilterHandlerTest extends TestCase
         $eventMock->method('getRequest')->willReturn($request);
         $eventMock->method('getCriteria')->willReturn($criteria);
 
-        $filterHandler->handleFilters($eventMock, $searchNavigationRequest);
+        $filterHandler->handleFilters($request, $criteria, $searchNavigationRequest);
         $result = $searchNavigationRequest->getParams();
         $this->assertEmpty($result);
     }
@@ -151,7 +151,7 @@ class FilterHandlerTest extends TestCase
         $eventMock->method('getRequest')->willReturn($request);
         $eventMock->method('getCriteria')->willReturn($criteria);
 
-        $filterHandler->handleFilters($eventMock, $searchNavigationRequest);
+        $filterHandler->handleFilters($request, $criteria, $searchNavigationRequest);
         $result = $searchNavigationRequest->getParams();
         $this->assertEquals([
             'string' => [
