@@ -55,13 +55,15 @@ trait SearchResultHelper
         SalesChannelContext $salesChannelContext,
         ?string $query = null
     ): EntitySearchResult {
-        if ($query !== null && count($criteria->getIds()) === 1) {
-            $this->modifyCriteriaFromQuery($query, $criteria, $salesChannelContext);
+        $productCriteria = $this->cleanDatabaseCriteria($criteria);
+
+        if ($query !== null && count($productCriteria->getIds()) === 1) {
+            $this->modifyCriteriaFromQuery($query, $productCriteria, $salesChannelContext);
         }
 
-        $result = $this->salesChannelProductRepository->search($criteria, $salesChannelContext);
+        $result = $this->salesChannelProductRepository->search($productCriteria, $salesChannelContext);
 
-        return $this->fixResultOrder($result, $criteria);
+        return $this->fixResultOrder($result, $productCriteria);
     }
 
     /**
@@ -143,5 +145,17 @@ trait SearchResultHelper
         if ($product) {
             $criteria->setIds([$product->getId()]);
         }
+    }
+
+    private function cleanDatabaseCriteria(Criteria $criteria): Criteria
+    {
+        $productCriteria = clone $criteria;
+        $productCriteria->setOffset(0);
+        $productCriteria->resetQueries();
+        $productCriteria->resetFilters();
+        $productCriteria->resetSorting();
+        $productCriteria->resetAggregations();
+
+        return $productCriteria;
     }
 }

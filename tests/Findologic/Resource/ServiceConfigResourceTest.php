@@ -29,19 +29,19 @@ class ServiceConfigResourceTest extends TestCase
     {
         return [
             'Direct Integration is enabled' => [
-                'directionIntegration' => ['enabled' => true],
+                'directIntegration' => ['enabled' => true],
                 'isStagingShop' => false
             ],
             'Direct Integration is disabled' => [
-                'directionIntegration' => ['enabled' => false],
+                'directIntegration' => ['enabled' => false],
                 'isStagingShop' => false
             ],
             'Shop is staging' => [
-                'directionIntegration' => ['enabled' => true],
+                'directIntegration' => ['enabled' => true],
                 'isStagingShop' => true
             ],
             'Shop is live' => [
-                'directionIntegration' => ['enabled' => true],
+                'directIntegration' => ['enabled' => true],
                 'isStagingShop' => false
             ]
         ];
@@ -92,9 +92,9 @@ class ServiceConfigResourceTest extends TestCase
     {
         return [
             'Direct Integration is enabled and Shop is live' => [
-                'directionIntegration' => ['enabled' => true],
+                'directIntegration' => ['enabled' => true],
                 'isStagingShop' => false,
-                'blocks' => [
+                'smartSuggestBlocks' => [
                     'cat' => 'Kategorie',
                     'vendor' => 'Hersteller'
                 ]

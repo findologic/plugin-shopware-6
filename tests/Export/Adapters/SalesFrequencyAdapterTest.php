@@ -130,7 +130,7 @@ class SalesFrequencyAdapterTest extends TestCase
                 'orderDateTime' => (new DateTimeImmutable())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
                 'expectedSalesFrequency' => 1
             ],
-            'Product with no orders' => ['orderDate' => null, 'expectedSalesFrequency' => 0],
+            'Product with no orders' => ['orderDateTime' => null, 'expectedSalesFrequency' => 0],
             'Product with order older than 30 days' => [
                 'orderDateTime' => (new DateTimeImmutable('2020-01-01'))->format(Defaults::STORAGE_DATE_TIME_FORMAT),
                 'expectedSalesFrequency' => 0

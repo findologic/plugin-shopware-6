@@ -13,10 +13,12 @@ use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityD
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchResultEvent;
 use Shopware\Core\Content\Product\ProductDefinition;
+use Shopware\Core\Content\Product\SalesChannel\Listing\Processor\CompositeListingProcessor;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
 use Shopware\Core\Content\Product\SalesChannel\Search\AbstractProductSearchRoute;
 use Shopware\Core\Content\Product\SalesChannel\Search\ProductSearchRouteResponse;
+use Shopware\Core\Content\Product\SalesChannel\Search\ResolvedCriteriaProductSearchRoute;
 use Shopware\Core\Content\Product\SearchKeyword\ProductSearchBuilderInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
@@ -37,6 +39,7 @@ class ProductSearchRoute extends AbstractProductSearchRoute
         private readonly SalesChannelRepository $salesChannelProductRepository,
         private readonly ProductDefinition $definition,
         private readonly RequestCriteriaBuilder $criteriaBuilder,
+        private readonly CompositeListingProcessor $listingProcessor,
         private readonly ServiceConfigResource $serviceConfigResource,
         private readonly FindologicConfigService $findologicConfigService,
         private ?Config $config = null
@@ -71,6 +74,10 @@ class ProductSearchRoute extends AbstractProductSearchRoute
             $this->config
         );
 
+        if (!$request->get('order')) {
+            $request->request->set('order', ResolvedCriteriaProductSearchRoute::DEFAULT_SEARCH_SORT);
+        }
+
         $criteria->addFilter(
             new ProductAvailableFilter(
                 $context->getSalesChannel()->getId(),
@@ -80,25 +87,22 @@ class ProductSearchRoute extends AbstractProductSearchRoute
 
         $this->searchBuilder->build($request, $criteria, $context);
 
-        $this->eventDispatcher->dispatch(
-            new ProductSearchCriteriaEvent($request, $criteria, $context)
-        );
+        $this->listingProcessor->prepare($request, $criteria, $context);
 
         $query = $request->query->get('search');
 
-        if (!$shouldHandleRequest) {
-            $result = $this->decorated->load($request, $context, $criteria)->getListingResult();
-        } else {
+        if ($shouldHandleRequest) {
             $result = $this->doSearch($criteria, $context, $query);
-            $result = ProductListingResult::createFrom($result);
+            $productListing = ProductListingResult::createFrom($result);
+        } else {
+            $productListing = $this->decorated->load($request, $context, $criteria)->getListingResult();
         }
-        $result->addCurrentFilter('search', $query);
 
-        $this->eventDispatcher->dispatch(
-            new ProductSearchResultEvent($request, $result, $context)
-        );
+        $productListing->addCurrentFilter('search', $query);
 
-        return new ProductSearchRouteResponse($result);
+        $this->listingProcessor->process($request, $productListing, $context);
+
+        return new ProductSearchRouteResponse($productListing);
     }
 
     protected function doSearch(

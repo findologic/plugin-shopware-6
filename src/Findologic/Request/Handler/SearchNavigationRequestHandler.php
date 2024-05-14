@@ -19,18 +19,10 @@ use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class SearchNavigationRequestHandler
 {
-    /**
-     * Contains criteria variable keys, which have been added in newer Shopware versions.
-     * If they're not set (e.g. an older Shopware version), these values will be set to null by default.
-     */
-    private const NEW_CRITERIA_VARS = [
-        'includes',
-        'title',
-    ];
-
     public function __construct(
         protected readonly ServiceConfigResource $serviceConfigResource,
         protected readonly FindologicRequestFactory $findologicRequestFactory,
@@ -43,14 +35,19 @@ abstract class SearchNavigationRequestHandler
         $this->filterHandler = $filterHandler ?? new FilterHandler();
     }
 
-    abstract public function handleRequest(ShopwareEvent $event): void;
+    abstract public function handleRequest(Request $request, Criteria $criteria, SalesChannelContext $context): void;
 
     /**
      * Sends a request to the FINDOLOGIC service based on the given event and the responsible request handler.
      *
      * @param int|null $limit limited amount of products
      */
-    abstract public function doRequest(ShopwareEvent $event, ?int $limit = null): Response;
+    abstract public function doRequest(
+        Request $request,
+        Criteria $criteria,
+        SalesChannelContext $context,
+        ?int $limit = null
+    ): Response;
 
     /**
      * @throws ServiceNotAliveException
@@ -61,53 +58,33 @@ abstract class SearchNavigationRequestHandler
     }
 
     protected function setPaginationParams(
-        ShopwareEvent|ProductSearchCriteriaEvent $event,
+        Criteria $criteria,
         SearchNavigationRequest $request,
         ?int $limit,
     ): void {
-        $request->setFirst($event->getCriteria()->getOffset());
-        $request->setCount($limit ?? $event->getCriteria()->getLimit());
-    }
-
-    protected function assignCriteriaToEvent(ShopwareEvent|ProductListingCriteriaEvent $event, Criteria $criteria): void
-    {
-        $vars = $criteria->getVars();
-
-        if (!empty($vars)) {
-            $vars['limit'] = $event->getCriteria()->getLimit();
-
-            // Set criteria default vars to allow compatibility with older Shopware versions.
-            foreach (self::NEW_CRITERIA_VARS as $varName) {
-                if (!array_key_exists($varName, $vars)) {
-                    $vars[$varName] = null;
-                }
-            }
-        }
-
-        $event->getCriteria()->assign($vars);
+        $request->setFirst($criteria->getOffset());
+        $request->setCount($limit ?? $criteria->getLimit());
     }
 
     protected function setPagination(
         Criteria $criteria,
         ResponseParser $responseParser,
-        ?int $limit,
-        ?int $offset
     ): void {
-        $pagination = $responseParser->getPaginationExtension($limit, $offset);
+        $pagination = $responseParser->getPaginationExtension($criteria->getLimit(), $criteria->getOffset());
         $criteria->addExtension('flPagination', $pagination);
     }
 
-    protected function setQueryInfoMessage(ShopwareEvent $event, QueryInfoMessage $queryInfoMessage): void
+    protected function setQueryInfoMessage(SalesChannelContext $context, QueryInfoMessage $queryInfoMessage): void
     {
-        $event->getContext()->addExtension('flQueryInfoMessage', $queryInfoMessage);
+        $context->getContext()->addExtension('flQueryInfoMessage', $queryInfoMessage);
     }
 
     protected function setPromotionExtension(
-        ShopwareEvent|ProductSearchCriteriaEvent $event,
+        SalesChannelContext $context,
         ResponseParser $responseParser
     ): void {
         if ($promotion = $responseParser->getPromotionExtension()) {
-            $event->getContext()->addExtension('flPromotion', $promotion);
+            $context->getContext()->addExtension('flPromotion', $promotion);
         }
     }
 
@@ -115,7 +92,7 @@ abstract class SearchNavigationRequestHandler
         SalesChannelContext $salesChannelContext,
         SearchNavigationRequest $request
     ): void {
-        $group = $salesChannelContext->getCurrentCustomerGroup() ?? $salesChannelContext->getFallbackCustomerGroup();
+        $group = $salesChannelContext->getCurrentCustomerGroup();
         if (!$group?->getId()) {
             return;
         }

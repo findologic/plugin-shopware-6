@@ -79,6 +79,13 @@
 
         <service id="FINDOLOGIC\FinSearch\Findologic\Request\Handler\FilterHandler" />
 
+        <service
+            id="FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Listing\Processor\FindologicListingProcessor"
+            autowire="true"
+        >
+            <tag name="shopware.listing.processor"/>
+        </service>
+
         <!-- Administration -->
 
         <service id="FINDOLOGIC\FinSearch\Controller\FindologicConfigController">

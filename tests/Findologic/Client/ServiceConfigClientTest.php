@@ -18,23 +18,23 @@ class ServiceConfigClientTest extends TestCase
 {
     use ConfigHelper;
 
-    public function responseDataProvider(): array
+    public static function responseDataProvider(): array
     {
         return [
-            'Response is successful' => [200, $this->getConfig(false)],
-            'Response is not successful' => [404],
+            'Response is successful' => [200, true],
+            'Response is not successful' => [404, false],
         ];
     }
 
     /**
      * @dataProvider responseDataProvider
      */
-    public function testConfigUrlAndValues(int $responseCode, ?string $body = null): void
+    public function testConfigUrlAndValues(int $responseCode, bool $hasBody): void
     {
         $shopkey = $this->getShopkey();
 
         // Create a mock and queue one response with the config json file
-        $mock = new MockHandler([new Response($responseCode, [], $body)]);
+        $mock = new MockHandler([new Response($responseCode, [], $hasBody ? $this->getConfig(false) : null)]);
         $handler = HandlerStack::create($mock);
 
         $client = new Client(['handler' => $handler]);

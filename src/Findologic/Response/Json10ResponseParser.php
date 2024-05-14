@@ -28,6 +28,7 @@ use FINDOLOGIC\FinSearch\Struct\QueryInfoMessage\VendorInfoMessage;
 use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use GuzzleHttp\Client;
 use Shopware\Core\Framework\Event\ShopwareEvent;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
 class Json10ResponseParser extends ResponseParser
@@ -106,14 +107,14 @@ class Json10ResponseParser extends ResponseParser
         return new Pagination($limit, $offset, $this->response->getResult()->getMetadata()->getTotalResults());
     }
 
-    public function getQueryInfoMessage(ShopwareEvent $event): QueryInfoMessage
+    public function getQueryInfoMessage(Request $request, SalesChannelContext $context): QueryInfoMessage
     {
         $queryString = $this->response->getRequest()->getQuery() ?? '';
-        $params = $event->getRequest()->query->all();
+        $params = $request->query->all();
 
         if ($this->hasAlternativeQuery($queryString)) {
             /** @var SmartDidYouMean $smartDidYouMean */
-            $smartDidYouMean = $event->getContext()->getExtension('flSmartDidYouMean');
+            $smartDidYouMean = $context->getExtension('flSmartDidYouMean');
 
             return $this->buildSearchTermQueryInfoMessage($smartDidYouMean->getEffectiveQuery());
         }

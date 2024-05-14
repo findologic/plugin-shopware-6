@@ -45,6 +45,7 @@ use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupCollection;
 use Vin\ShopwareSdk\Data\Entity\CustomerGroup\CustomerGroupEntity;
 use Vin\ShopwareSdk\Data\Entity\SalesChannel\SalesChannelEntity;
 
+#[Route(defaults: ['_routeScope' => ['storefront']])]
 class ExportController extends AbstractController
 {
     protected OffsetExportConfiguration $exportConfig;
@@ -81,15 +82,13 @@ class ExportController extends AbstractController
     ) {
     }
 
-    /**
-     * @Route(
-     *     "/findologic",
-     *     name="frontend.findologic.export",
-     *     options={"seo"="false"},
-     *     methods={"GET"},
-     *     defaults={"_routeScope"={"storefront"}}
-     * )
-     */
+    #[Route(
+        path: '/findologic',
+        name: 'frontend.findologic.export',
+        options: ['seo' => false],
+        defaults: ['_routeScope' => ['storefront']],
+        methods: ['GET'],
+    )]
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
         $errorResponse = $this->initialize($request, $context) ?? $this->validateDynamicGroupPrecondition($request);
@@ -100,15 +99,13 @@ class ExportController extends AbstractController
         return $this->doExport();
     }
 
-    /**
-     * @Route(
-     *     "/findologic/dynamic-product-groups",
-     *     name="frontend.findologic.export.dynamic_product_groups",
-     *     options={"seo"="false"},
-     *     methods={"GET"},
-     *     defaults={"_routeScope"={"storefront"}}
-     * )
-     */
+    #[Route(
+        path: '/findologic/dynamic-product-groups',
+        name: 'frontend.findologic.export.dynamic_product_groups',
+        options: ['seo' => false],
+        defaults: ['_routeScope' => ['storefront']],
+        methods: ['GET']
+    )]
     public function exportProductGroup(Request $request, ?SalesChannelContext $context): Response
     {
         $this->initialize($request, $context);
@@ -281,7 +278,7 @@ class ExportController extends AbstractController
 
     protected function validateExportConfiguration(): array
     {
-        $validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
+        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
         $violations = $validator->validate($this->exportConfig);
 
         $messages = [];

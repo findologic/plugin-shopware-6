@@ -18,15 +18,13 @@ class ProductDebugController extends ExportController
 
     private ProductDebugService $productDebugService;
 
-    /**
-     * @Route(
-     *     "/findologic/debug",
-     *     name="frontend.findologic.debug",
-     *     options={"seo"="false"},
-     *     methods={"GET"},
-     *     defaults={"_routeScope"={"storefront"}}
-     * )
-     */
+    #[Route(
+        path: '/findologic/debug',
+        name: 'frontend.findologic.debug',
+        options: ['seo' => false],
+        defaults: ['_routeScope' => ['storefront']],
+        methods: ['GET'],
+    )]
     public function export(Request $request, ?SalesChannelContext $context): Response
     {
         return parent::export($request, $context);

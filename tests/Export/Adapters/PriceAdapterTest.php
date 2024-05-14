@@ -41,31 +41,29 @@ class PriceAdapterTest extends TestCase
         $this->getContainer()->set('fin_search.sales_channel_context', $this->salesChannelContext);
     }
 
-    public function advancedPricesTestProvider(): array
+    public static function advancedPricesTestProvider(): array
     {
         $grossCustomerGroupId = Uuid::randomHex();
         $netCustomerGroupId = Uuid::randomHex();
 
-        $groupsData = $this->getAdvancedPricesTestGroupData(
+        $groupsData = [
             [
-                [
-                    'groupId' => $netCustomerGroupId,
-                    'displayGross' => false,
-                    'prices' => [
-                        ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 6, 'net' => 5],
-                        ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 2,'net' => 1]
-                    ]
-                ],
-                [
-                    'groupId' => $grossCustomerGroupId,
-                    'displayGross' => true,
-                    'prices' => [
-                        ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 4, 'net' => 3],
-                        ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 8, 'net' => 2],
-                    ]
+                'groupId' => $netCustomerGroupId,
+                'displayGross' => false,
+                'prices' => [
+                    ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 6, 'net' => 5],
+                    ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 2,'net' => 1]
+                ]
+            ],
+            [
+                'groupId' => $grossCustomerGroupId,
+                'displayGross' => true,
+                'prices' => [
+                    ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 4, 'net' => 3],
+                    ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 8, 'net' => 2],
                 ]
             ]
-        );
+        ];
 
         return [
             'Test cheapest advanced price configuration' => [
@@ -93,23 +91,21 @@ class PriceAdapterTest extends TestCase
                 ]
             ],
             'Test unit config and no prices for gross customer' => [
-                'groupsData' => $this->getAdvancedPricesTestGroupData(
+                'groupsData' => [
                     [
-                        [
-                            'groupId' => $netCustomerGroupId,
-                            'displayGross' => false,
-                            'prices' => [
-                                ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 6, 'net' => 5],
-                                ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 2,'net' => 1]
-                            ]
-                        ],
-                        [
-                            'groupId' => $grossCustomerGroupId,
-                            'displayGross' => true,
-                            'prices' => []
+                        'groupId' => $netCustomerGroupId,
+                        'displayGross' => false,
+                        'prices' => [
+                            ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 6, 'net' => 5],
+                            ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 2,'net' => 1]
                         ]
+                    ],
+                    [
+                        'groupId' => $grossCustomerGroupId,
+                        'displayGross' => true,
+                        'prices' => []
                     ]
-                ),
+                ],
                 'advancedPricingConfig' => AdvancedPricing::UNIT,
                 'expectedPrices' => [
                     $netCustomerGroupId => 5,
@@ -117,23 +113,21 @@ class PriceAdapterTest extends TestCase
                 ]
             ],
             'Test unit config and no advanced prices for net customer' => [
-                'groupsData' => $this->getAdvancedPricesTestGroupData(
+                'groupsData' => [
                     [
-                        [
-                            'groupId' => $netCustomerGroupId,
-                            'displayGross' => false,
-                            'prices' => []
-                        ],
-                        [
-                            'groupId' => $grossCustomerGroupId,
-                            'displayGross' => true,
-                            'prices' => [
-                                ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 4, 'net' => 3],
-                                ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 8, 'net' => 2],
-                            ]
+                        'groupId' => $netCustomerGroupId,
+                        'displayGross' => false,
+                        'prices' => []
+                    ],
+                    [
+                        'groupId' => $grossCustomerGroupId,
+                        'displayGross' => true,
+                        'prices' => [
+                            ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 4, 'net' => 3],
+                            ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 8, 'net' => 2],
                         ]
                     ]
-                ),
+                ],
                 'advancedPricingConfig' => AdvancedPricing::UNIT,
                 'expectedPrices' => [
                     $netCustomerGroupId => 10,
@@ -141,23 +135,21 @@ class PriceAdapterTest extends TestCase
                 ]
             ],
             'Test unit config and no advanced prices for gross customer' => [
-                'groupsData' => $this->getAdvancedPricesTestGroupData(
+                'groupsData' => [
                     [
-                        [
-                            'groupId' => $netCustomerGroupId,
-                            'displayGross' => false,
-                            'prices' => [
-                                ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 4, 'net' => 3],
-                                ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 8, 'net' => 2],
-                            ]
-                        ],
-                        [
-                            'groupId' => $grossCustomerGroupId,
-                            'displayGross' => true,
-                            'prices' => []
+                        'groupId' => $netCustomerGroupId,
+                        'displayGross' => false,
+                        'prices' => [
+                            ['qtyMin' => 1, 'qtyMax' => 10, 'gross' => 4, 'net' => 3],
+                            ['qtyMin' => 11, 'qtyMax' => 20, 'gross' => 8, 'net' => 2],
                         ]
+                    ],
+                    [
+                        'groupId' => $grossCustomerGroupId,
+                        'displayGross' => true,
+                        'prices' => []
                     ]
-                ),
+                ],
                 'advancedPricingConfig' => AdvancedPricing::UNIT,
                 'expectedPrices' => [
                     $netCustomerGroupId => 3,
@@ -165,12 +157,10 @@ class PriceAdapterTest extends TestCase
                 ]
             ],
             'Test unit config and no advanced prices' => [
-                'groupsData' => $this->getAdvancedPricesTestGroupData(
-                    [
-                        ['groupId' => $netCustomerGroupId, 'displayGross' => false, 'prices' => []],
-                        ['groupId' => $grossCustomerGroupId, 'displayGross' => true, 'prices' => []]
-                    ]
-                ),
+                'groupsData' => [
+                    ['groupId' => $netCustomerGroupId, 'displayGross' => false, 'prices' => []],
+                    ['groupId' => $grossCustomerGroupId, 'displayGross' => true, 'prices' => []]
+                ],
                 'advancedPricingConfig' => AdvancedPricing::UNIT,
                 'expectedPrices' => [
                     $netCustomerGroupId => 10,
@@ -188,10 +178,7 @@ class PriceAdapterTest extends TestCase
         AdvancedPricing $advancedPricingConfig,
         array $expectedPrices
     ): void {
-        if (Utils::versionLowerThan('6.4.9.0')) {
-            $this->markTestSkipped('Advanced price calculation by Product entity exists in newer Shopware versions');
-        }
-
+        $groupsData = $this->getAdvancedPricesTestGroupData($groupsData);
         $customerGroups = $this->generateCustomers($groupsData);
         $exportContext = $this->getExportContext(
             $this->salesChannelContext,
