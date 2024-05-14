@@ -1,5 +1,5 @@
 {% block findologic_credentials %}
-    <sw-container slot="grid" rows="auto auto">
+    <sw-container rows="auto auto">
         <sw-card-section>
             <sw-card
                 class="sw-card--grid"
@@ -11,32 +11,32 @@
                         {% block findologic_credentials_settings %}
                             <div class="findologic-settings-credentials-fields">
                                 <sw-text-field
-                                        v-model="actualConfigData['FinSearch.config.shopkey']"
-                                        :label="$tc('findologic.settingForm.config.shopkey.label')"
-                                        :helpText="$tc('findologic.settingForm.config.shopkey.tooltipText')"
-                                        :required="true"
-                                        :error="shopkeyErrorState"
+                                    v-model:value="actualConfigData['FinSearch.config.shopkey']"
+                                    :label="$tc('findologic.settingForm.config.shopkey.label')"
+                                    :helpText="$tc('findologic.settingForm.config.shopkey.tooltipText')"
+                                    :required="true"
+                                    :error="shopkeyErrorState"
                                 >
                                 </sw-text-field>
                                 <sw-switch-field
-                                        v-model="actualConfigData['FinSearch.config.active']"
-                                        :label="$tc('findologic.settingForm.config.active.label')"
-                                        :helpText="$tc('findologic.settingForm.config.active.tooltipText')"
+                                    v-model:value="actualConfigData['FinSearch.config.active']"
+                                    :label="$tc('findologic.settingForm.config.active.label')"
+                                    :helpText="$tc('findologic.settingForm.config.active.tooltipText')"
                                 >
                                 </sw-switch-field>
                                 <sw-button
-                                        v-show="showTestButton"
-                                        @click="openSalesChannelUrl"
+                                    v-show="showTestButton"
+                                    @click="openSalesChannelUrl"
                                 >
                                     {{ $tc('findologic.settingForm.testButton') }}
                                 </sw-button>
                                 <span class="divider"></span>
                                 <sw-text-field
-                                        v-model="actualConfigData['FinSearch.config.integrationType']"
-                                        ref="integrationType"
-                                        :label="$tc('findologic.settingForm.config.integrationType.label')"
-                                        :helpText="$tc('findologic.settingForm.config.integrationType.tooltipText')"
-                                        :disabled="true"
+                                    v-model:value="actualConfigData['FinSearch.config.integrationType']"
+                                    ref="integrationType"
+                                    :label="$tc('findologic.settingForm.config.integrationType.label')"
+                                    :helpText="$tc('findologic.settingForm.config.integrationType.tooltipText')"
+                                    :disabled="true"
                                 >
                                 </sw-text-field>
                             </div>
@@ -54,7 +54,7 @@
                 <sw-container>
                     <div class="findologic-settings-credentials-fields">
                         <sw-switch-field
-                            v-model="actualConfigData['FinSearch.config.exportZeroPricedProducts']"
+                            v-model:value="actualConfigData['FinSearch.config.exportZeroPricedProducts']"
                             :label="$tc('findologic.settingForm.config.exportZeroPricedProducts.label')"
                             :helpText="$tc('findologic.settingForm.config.exportZeroPricedProducts.tooltipText')"
                         >
@@ -62,7 +62,7 @@
 
                         <div style="display: flex; justify-content: space-between">
                             <sw-switch-field
-                                v-model="actualConfigData['FinSearch.config.useXmlVariants']"
+                                v-model:value="actualConfigData['FinSearch.config.useXmlVariants']"
                                 :label="$tc('findologic.settingForm.config.useXmlVariants.label')"
                                 :helpText="$tc('findologic.settingForm.config.useXmlVariants.tooltip')"
                             >
@@ -77,17 +77,17 @@
                         </div>
 
                         <sw-single-select
-                            v-model="actualConfigData['FinSearch.config.advancedPricing']"
+                            v-model:value="actualConfigData['FinSearch.config.advancedPricing']"
                             :options="advancedPricingOptions"
                             :label="$tc('findologic.settingForm.config.advancedPricing.label')"
                             :placeholder="$tc('findologic.settingForm.config.advancedPricing.off.label')"
                             :helpText="$tc('findologic.settingForm.config.advancedPricing.tooltipText')"
-                            @change="onAdvancedPricingChange"
+                            @update:value="onAdvancedPricingChange"
                         >
                         </sw-single-select>
 
                         <sw-single-select
-                            v-model="actualConfigData['FinSearch.config.mainVariant']"
+                            v-model:value="actualConfigData['FinSearch.config.mainVariant']"
                             :options="mainVariantOptions"
                             :label="$tc('findologic.settingForm.config.mainVariant.label')"
                             :placeholder="$tc('findologic.settingForm.config.mainVariant.default.label')"
@@ -116,17 +116,17 @@
                 <sw-container>
                     <div class="findologic-settings-credentials-fields">
                         <sw-text-field
-                                v-model="actualConfigData['FinSearch.config.searchResultContainer']"
-                                :label="$tc('findologic.settingForm.config.searchResultContainer.label')"
-                                :helpText="$tc('findologic.settingForm.config.searchResultContainer.tooltipText')"
-                                :placeholder="$tc('findologic.settingForm.config.searchResultContainer.placeholder')"
+                            v-model:value="actualConfigData['FinSearch.config.searchResultContainer']"
+                            :label="$tc('findologic.settingForm.config.searchResultContainer.label')"
+                            :helpText="$tc('findologic.settingForm.config.searchResultContainer.tooltipText')"
+                            :placeholder="$tc('findologic.settingForm.config.searchResultContainer.placeholder')"
                         >
                         </sw-text-field>
                         <sw-text-field
-                                v-model="actualConfigData['FinSearch.config.navigationResultContainer']"
-                                :label="$tc('findologic.settingForm.config.navigationResultContainer.label')"
-                                :helpText="$tc('findologic.settingForm.config.navigationResultContainer.tooltipText')"
-                                :placeholder="$tc('findologic.settingForm.config.navigationResultContainer.placeholder')"
+                            v-model:value="actualConfigData['FinSearch.config.navigationResultContainer']"
+                            :label="$tc('findologic.settingForm.config.navigationResultContainer.label')"
+                            :helpText="$tc('findologic.settingForm.config.navigationResultContainer.tooltipText')"
+                            :placeholder="$tc('findologic.settingForm.config.navigationResultContainer.placeholder')"
                         >
                         </sw-text-field>
                     </div>
@@ -144,16 +144,16 @@
 
                         {% block findologic_credentials_settings_search_filter_position_container %}
                             <sw-switch-field
-                                v-model="actualConfigData['FinSearch.config.activeOnCategoryPages']"
+                                v-model:value="actualConfigData['FinSearch.config.activeOnCategoryPages']"
                                 :label="$tc('findologic.settingForm.config.activeOnCategoryPages.label')"
                                 :helpText="$tc('findologic.settingForm.config.activeOnCategoryPages.tooltipText')"
                             >
                             </sw-switch-field>
                             <sw-single-select
-                                    v-model="actualConfigData['FinSearch.config.filterPosition']"
-                                    :options="filterPositionOptions"
-                                    :label="$tc('findologic.settingForm.config.filterPosition.label')"
-                                    :helpText="$tc('findologic.settingForm.config.filterPosition.tooltipText')">
+                                v-model:value="actualConfigData['FinSearch.config.filterPosition']"
+                                :options="filterPositionOptions"
+                                :label="$tc('findologic.settingForm.config.filterPosition.label')"
+                                :helpText="$tc('findologic.settingForm.config.filterPosition.tooltipText')">
                             </sw-single-select>
                         {% endblock %}
                     </div>
