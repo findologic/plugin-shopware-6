@@ -284,7 +284,7 @@ class FindologicConfigService
     public function getDomainCurrencyId(SalesChannelContext $context, $channelId = null, $languageId = null): ?string
     {
         if ($domains = $context->getSalesChannel()->getDomains()) {
-            $domainId = (string) $this->get(self::DOMAIN_ID, $channelId, $languageId);;
+            $domainId = (string) $this->get(self::DOMAIN_ID, $channelId, $languageId);
             $domain = $domains->has($domainId) ? $domains->get($domainId) : $domains->first();
 
             return $domain->getCurrencyId();
