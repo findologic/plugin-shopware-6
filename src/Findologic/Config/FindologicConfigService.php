@@ -281,19 +281,10 @@ class FindologicConfigService
         return $configValues;
     }
 
-    public function getDomainId($channelId = null, $languageId = null): ?string
-    {
-        $domainId = $this->get(self::DOMAIN_ID, $channelId, $languageId);
-        return is_string($domainId) ? $domainId : null;
-    }
-
-    public function getDomainCurrencyId(SalesChannelContext $context): ?string
+    public function getDomainCurrencyId(SalesChannelContext $context, $channelId = null, $languageId = null): ?string
     {
         if ($domains = $context->getSalesChannel()->getDomains()) {
-            $domainId = (string) $this->getDomainId(
-                $context->getSalesChannelId(),
-                $context->getLanguageId(),
-            );
+            $domainId = (string) $this->get(self::DOMAIN_ID, $channelId, $languageId);;
             $domain = $domains->has($domainId) ? $domains->get($domainId) : $domains->first();
 
             return $domain->getCurrencyId();

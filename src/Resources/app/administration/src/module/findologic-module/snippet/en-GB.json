@@ -92,8 +92,8 @@
                     }
                 },
                 "domain": {
-                    "label": "Domain for generating product url",
-                    "helpText": "This domain is used for multi-domain sales channels, and the selected domain will be used as uri for product url"
+                    "label": "Domain for currency",
+                    "helpText": "This domain is used for multi-domain sales channels, and the currency will be used from the selected domain"
                 },
                 "exportZeroPricedProducts": {
                     "label": "Export products without price",
