@@ -83,6 +83,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
         );
         $criteria->addExtensions($event->getCriteria()->getExtensions());
 
+        // Test comment.
         $this->setPromotionExtension($event, $responseParser);
 
         $this->setPagination(
