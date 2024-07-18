@@ -75,6 +75,7 @@ class NavigationRequestHandler extends SearchNavigationRequestHandler
 
         $criteria->setIds($responseParser->getProductIds());
 
+        // Test comment.
         $this->setPromotionExtension($context, $responseParser);
 
         $this->setPagination(
