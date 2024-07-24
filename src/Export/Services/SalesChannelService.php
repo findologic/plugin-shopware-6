@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Export\Services;
 
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Findologic\Config\FinSearchConfigEntity;
 use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -22,7 +23,8 @@ class SalesChannelService
     public function __construct(
         private readonly EntityRepository $findologicConfigRepository,
         private readonly AbstractSalesChannelContextFactory $salesChannelContextFactory,
-        private readonly RequestTransformerInterface $requestTransformer
+        private readonly RequestTransformerInterface $requestTransformer,
+        private readonly FindologicConfigService $findologicConfigService,
     ) {
     }
 
@@ -48,7 +50,12 @@ class SalesChannelService
                     $systemConfigEntity->getSalesChannelId(),
                     [
                         SalesChannelContextService::LANGUAGE_ID => $systemConfigEntity->getLanguageId(),
-                        SalesChannelContextService::CUSTOMER_ID => $customerId
+                        SalesChannelContextService::CUSTOMER_ID => $customerId,
+                        SalesChannelContextService::CURRENCY_ID => $this->findologicConfigService->getDomainCurrencyId(
+                            $currentContext,
+                            $systemConfigEntity->getSalesChannelId(),
+                            $systemConfigEntity->getLanguageId(),
+                        ),
                     ]
                 );
             }
