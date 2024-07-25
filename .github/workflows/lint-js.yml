@@ -3,7 +3,7 @@ name: Lint JS
 on:
   push:
     branches:
-      - master
+      - develop
   pull_request:
 
 jobs:
@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '8.1' ]
+        php-versions: [ '8.2' ]
         shopware-versions: [
-          '6.5.5.1',
+          '6.6.2.0',
         ]
 
     name: ESLint - ${{ matrix.shopware-versions }}
@@ -24,6 +24,10 @@ jobs:
           mysql version: '8.0'
           mysql database: shopware_test
           mysql root password: root
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - uses: actions/checkout@v2
         with:
@@ -50,22 +54,17 @@ jobs:
       - name: Create shop
         run: shopware-cli project create shopware ${{ matrix.shopware-versions }}
 
+      - name: Set minimum stability to dev
+        run: |
+          cd shopware
+          composer config minimum-stability dev
+
       - name: Install Shopware
         run: |
           cp plugin-shopware-6/.github/.env.local shopware
           cp plugin-shopware-6/.github/.env.test shopware
           cd shopware
           ./bin/console system:install --basic-setup
-
-      - name: Install administration dependencies
-        run: |
-          cd shopware/vendor/shopware/administration/Resources/app/administration
-          npm i
-
-      - name: Install storefront dependencies
-        run: |
-          cd shopware/vendor/shopware/storefront/Resources/app/storefront
-          npm i
 
       - name: Install dependencies
         run: |
@@ -83,6 +82,16 @@ jobs:
           php bin/console plugin:install --activate --clearCache FinSearch
           ./bin/build-administration.sh
           ./bin/build-storefront.sh
+
+      - name: Install administration dependencies
+        run: |
+          cd shopware/vendor/shopware/administration/Resources/app/administration
+          npm i
+
+      - name: Install storefront dependencies
+        run: |
+          cd shopware/vendor/shopware/storefront/Resources/app/storefront
+          npm i
 
       - name: Run ESLint
         run: |

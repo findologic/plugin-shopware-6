@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FINDOLOGIC\FinSearch\Tests\Core\Content\Product\SalesChannel\Listing;
 
+use Exception;
 use FINDOLOGIC\FinSearch\Core\Content\Product\SalesChannel\Search\ProductSearchRoute;
 use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ProductHelper;
@@ -56,6 +57,7 @@ class ProductSearchRouteTest extends ProductRouteBase
             $this->productRepositoryMock,
             $this->productDefinition,
             $this->criteriaBuilder,
+            $this->listingProcessor,
             $this->serviceConfigResourceMock,
             $this->findologicConfigServiceMock,
             $this->configMock
@@ -170,16 +172,47 @@ class ProductSearchRouteTest extends ProductRouteBase
             );
         }
 
+        $matcher = $this->exactly(2);
         if ($variant) {
-            $this->productRepositoryMock->method('search')->withConsecutive(
-                [$variantCriteria, $this->salesChannelContext],
-                [$newCriteria, $this->salesChannelContext]
-            )->willReturn($variantSearchResult);
+            $this->productRepositoryMock
+                ->expects($matcher)
+                ->method('search')
+                ->willReturnCallback(function (Criteria $criteria) use (
+                    $matcher,
+                    $variantCriteria,
+                    $variantSearchResult,
+                    $newCriteria
+                ) {
+                    match ($matcher->numberOfInvocations()) {
+                        1 => $this->assertEquals($variantCriteria, $criteria),
+                        2 => $this->assertEquals($newCriteria, $criteria),
+                        default => throw new Exception('To many calls to the search function'),
+                    };
+
+                    return $variantSearchResult;
+                });
         } else {
-            $this->productRepositoryMock->method('search')->withConsecutive(
-                [$variantCriteria, $this->salesChannelContext],
-                [$newCriteria, $this->salesChannelContext]
-            )->willReturnOnConsecutiveCalls($variantSearchResult, $searchResult);
+            $this->productRepositoryMock
+                ->expects($matcher)
+                ->method('search')
+                ->willReturnCallback(function (Criteria $criteria) use (
+                    $matcher,
+                    $variantCriteria,
+                    $variantSearchResult,
+                    $newCriteria,
+                    $searchResult
+                ) {
+                    switch ($matcher->numberOfInvocations()) {
+                        case 1:
+                            $this->assertEquals($variantCriteria, $criteria);
+                            return $variantSearchResult;
+                        case 2:
+                            $this->assertEquals($newCriteria, $criteria);
+                            return $searchResult;
+                        default:
+                            throw new Exception('To many calls to the search function');
+                    }
+                });
         }
 
         $route = $this->getRoute();
@@ -203,6 +236,7 @@ class ProductSearchRouteTest extends ProductRouteBase
                 $this->productRepositoryMock,
                 $this->productDefinition,
                 $this->criteriaBuilder,
+                $this->listingProcessor,
                 $this->serviceConfigResourceMock,
                 $this->findologicConfigServiceMock,
                 $this->configMock

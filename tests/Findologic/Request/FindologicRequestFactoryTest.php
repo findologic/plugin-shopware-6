@@ -39,12 +39,12 @@ class FindologicRequestFactoryTest extends TestCase
             'Different IPs separated by comma' => [
                 'HTTP_CLIENT_IP',
                 '192.168.0.1,10.10.0.200',
-                '192.168.0.1,10.10.0.200'
+                '192.168.0.1'
             ],
             'Different IPs separated by comma and space' => [
                 'HTTP_CLIENT_IP',
                 '192.168.0.1, 10.10.0.200',
-                '192.168.0.1,10.10.0.200'
+                '192.168.0.1'
             ]
         ];
     }
@@ -52,27 +52,27 @@ class FindologicRequestFactoryTest extends TestCase
     public static function reverseProxyIpAddressProvider(): array
     {
         return [
-            'Single IP' => [
+            '(Proxy) Single IP' => [
                 'HTTP_X_FORWARDED_FOR',
                 '192.168.0.1',
                 '192.168.0.1'
             ],
-            'Same IP twice separated by comma' => [
+            '(Proxy) Same IP twice separated by comma' => [
                 'HTTP_X_FORWARDED_FOR',
                 '192.168.0.1,192.168.0.1',
                 '192.168.0.1'
             ],
-            'Same IP twice separated by comma and space' => [
+            '(Proxy) Same IP twice separated by comma and space' => [
                 'HTTP_X_FORWARDED_FOR',
                 '192.168.0.1, 192.168.0.1',
                 '192.168.0.1'
             ],
-            'Different IPs separated by comma' => [
+            '(Proxy) Different IPs separated by comma' => [
                 'HTTP_X_FORWARDED_FOR',
                 '192.168.0.1,10.10.0.200',
                 '192.168.0.1'
             ],
-            'Different IPs separated by comma and space' => [
+            '(Proxy) Different IPs separated by comma and space' => [
                 'HTTP_X_FORWARDED_FOR',
                 '192.168.0.1, 10.10.0.200',
                 '192.168.0.1'

@@ -41,7 +41,7 @@ class FinSearchTest extends TestCase
     /**
      * @dataProvider compatibleVersionsProvider
      */
-    public function testPluginIsAlwaysCompatibleOnDev(array $shopwareVersions)
+    public function testPluginIsAlwaysCompatibleOnDev(array $shopwareVersions, bool $isCompatible)
     {
         $installContext = $this->getMockBuilder(InstallContext::class)->disableOriginalConstructor()->getMock();
         foreach ($shopwareVersions as $version) {

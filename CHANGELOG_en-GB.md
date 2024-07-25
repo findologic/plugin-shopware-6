@@ -1,7 +1,23 @@
+# 6.0.0
+
+- This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
+- Be aware, that this version only supports the shop versions starting from v6.6.0
+- [ADS-4501] Adapted usage of removed classes.
+- [ADS-4489] Upgrade administration to Vue3 and adapt storefront for async loading.
+
+# 5.1.1
+
+* [SW-804] Fixed a bug for filter names containing the "ß" character.
+* [SW-809] Fixed a bug where the rating filter did not work when configured as "Text" or "Dropdown".
+* [SW-811] Fixed a bug that lead to an export error when using XML variants.
+* [SW-812] Fixed a bug that lead to a broken search when Findologic is not enabled within the plugin configuration.
+* [SW-813] Fixed a bug that lead to invisible main products in the export.
+* [SW-814] Fixed a compatibility issue with the Shopware Advanced Search.
+
 # 5.1.0
 
-- Be aware, that this version only supports the shop versions starting from v6.5.3.0
-- [SW-802] Added support for versions 6.5.3.x and 6.5.4.x.
+* Be aware, that this version only supports the shop versions starting from v6.5.3.0
+* [SW-802] Added support for versions 6.5.3.x and 6.5.4.x.
 
 # 5.0.2
 
@@ -25,6 +41,12 @@
 - [SW-784] The internal test build was migrated to a Symfony Flex setup.
 - [SW-721] Code structure for internal parameters was improved.
 - [SW-795] Fixed a bug where products within a dynamic product group of another sales channel were exported.
+
+# 4.0.5
+
+* [SW-804] Fixed a bug for filter names containing the "ß" character.
+* [SW-809] Fixed a bug where the rating filter did not work when configured as "Text" or "Dropdown".
+* [SW-813] Fixed a bug that lead to invisible main products in the export.
 
 # 4.0.4
 

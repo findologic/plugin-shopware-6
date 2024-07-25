@@ -12,10 +12,9 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Category\CategoryDefinition;
 use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
-use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
-use Shopware\Core\Content\Product\Events\ProductListingResultEvent;
 use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Content\Product\SalesChannel\Listing\AbstractProductListingRoute;
+use Shopware\Core\Content\Product\SalesChannel\Listing\Processor\CompositeListingProcessor;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingResult;
 use Shopware\Core\Content\Product\SalesChannel\Listing\ProductListingRouteResponse;
 use Shopware\Core\Content\Product\SalesChannel\ProductAvailableFilter;
@@ -42,6 +41,7 @@ class ProductListingRoute extends AbstractProductListingRoute
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly ProductDefinition $definition,
         private readonly RequestCriteriaBuilder $criteriaBuilder,
+        private readonly CompositeListingProcessor $listingProcessor,
         private readonly ServiceConfigResource $serviceConfigResource,
         private readonly FindologicConfigService $findologicConfigService,
         private ?Config $config = null
@@ -98,24 +98,15 @@ class ProductListingRoute extends AbstractProductListingRoute
 
         $streamId = $this->extendCriteria($context, $criteria, $category);
 
-        $this->eventDispatcher->dispatch(
-            new ProductListingCriteriaEvent($request, $criteria, $context)
-        );
+        $this->listingProcessor->prepare($request, $criteria, $context);
 
         $result = $this->doSearch($criteria, $context);
 
         $productListing = ProductListingResult::createFrom($result);
         $productListing->addCurrentFilter('navigationId', $categoryId);
+        $productListing->setStreamId($streamId);
 
-        // Getter and setter for the stream id were only added in 6.4.0.0
-        // This was added by SW to adapt the cache key
-        if (method_exists($productListing, 'setStreamId')) {
-            $productListing->setStreamId($streamId);
-        }
-
-        $this->eventDispatcher->dispatch(
-            new ProductListingResultEvent($request, $productListing, $context)
-        );
+        $this->listingProcessor->process($request, $productListing, $context);
 
         return new ProductListingRouteResponse($productListing);
     }

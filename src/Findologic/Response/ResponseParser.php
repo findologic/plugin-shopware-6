@@ -17,6 +17,7 @@ use FINDOLOGIC\FinSearch\Struct\SmartDidYouMean;
 use GuzzleHttp\Client;
 use InvalidArgumentException;
 use Shopware\Core\Framework\Event\ShopwareEvent;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 
 abstract class ResponseParser
@@ -51,7 +52,7 @@ abstract class ResponseParser
 
     abstract public function getPaginationExtension(?int $limit, ?int $offset): Pagination;
 
-    abstract public function getQueryInfoMessage(ShopwareEvent $event): QueryInfoMessage;
+    abstract public function getQueryInfoMessage(Request $request, SalesChannelContext $context): QueryInfoMessage;
 
     /**
      * It must be possible to select a category or vendor filter from the Smart Suggest even if that filter is disabled

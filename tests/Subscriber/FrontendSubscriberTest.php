@@ -14,6 +14,7 @@ use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\CategoryHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\MockObject\MockObject;
+use InvalidArgumentException as OriginalInvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\InvalidArgumentException;
 use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
@@ -143,59 +144,28 @@ class FrontendSubscriberTest extends TestCase
 
         $headerPageletMock->expects($this->any())
             ->method('addExtension')
-            ->withConsecutive([
-                $this->callback(
-                    function (string $name) {
-                        $this->assertEquals('flConfig', $name);
-
-                        return true;
-                    }
-                ),
-                $this->callback(
-                    function (Config $config) use ($shopkey) {
-                        $this->assertSame($shopkey, $config->getShopkey());
-
-                        return true;
-                    }
-                )
-            ], [
-                $this->callback(
-                    function (string $name) {
-                        $this->assertEquals('flSnippet', $name);
-
-                        return true;
-                    }
-                ),
-                $this->callback(
-                    function (Snippet $snippet) use ($shopkey) {
-                        $this->assertSame($shopkey, $snippet->getShopkey());
-
-                        return true;
-                    }
-                )
-            ], [
-                $this->callback(
-                    function (string $name) {
-                        $this->assertEquals('flPageInformation', $name);
-
-                        return true;
-                    }
-                ),
-                $this->callback(
-                    function (PageInformation $pageInformation) use ($expectedPageInformation) {
-                        $this->assertSame(
-                            $expectedPageInformation['isSearchPage'],
-                            $pageInformation->getIsSearchPage()
-                        );
+            ->willReturnCallback(function ($name, $extension) use ($shopkey, $expectedPageInformation) {
+                switch ($name) {
+                    case 'flConfig':
+                        $this->assertInstanceOf(Config::class, $extension);
+                        $this->assertSame($shopkey, $extension->getShopkey());
+                        break;
+                    case 'flSnippet':
+                        $this->assertInstanceOf(Snippet::class, $extension);
+                        $this->assertSame($shopkey, $extension->getShopkey());
+                        break;
+                    case 'flPageInformation':
+                        $this->assertInstanceOf(PageInformation::class, $extension);
+                        $this->assertSame($expectedPageInformation['isSearchPage'], $extension->getIsSearchPage());
                         $this->assertSame(
                             $expectedPageInformation['isNavigationPage'],
-                            $pageInformation->getIsNavigationPage()
+                            $extension->getIsNavigationPage()
                         );
-
-                        return true;
-                    }
-                ),
-            ]);
+                        break;
+                    default:
+                        throw new OriginalInvalidArgumentException("Unexpected extension name: $name");
+                }
+            });
 
         $salesChannelContext = $this->buildAndCreateSalesChannelContext();
         $headerPageletLoadedEventMock->expects($this->exactly(3))->method('getPagelet')

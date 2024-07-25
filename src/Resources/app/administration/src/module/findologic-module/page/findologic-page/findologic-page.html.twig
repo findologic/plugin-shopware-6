@@ -1,27 +1,27 @@
 {% block findologic %}
     <sw-page class="findologic">
         {% block findologic_header %}
-            <template slot="smart-bar-header">
+            <template #smart-bar-header>
                 <h2>
                     {{ $tc($route.meta.$module.title) }}
-                    <sw-icon name="small-arrow-medium-right" small></sw-icon>
+                    <sw-icon name="regular-chevron-right" size="8"></sw-icon>
                     {{ $tc('findologic.header') }}
                 </h2>
             </template>
         {% endblock %}
 
         {% block findologic_actions %}
-            <template slot="smart-bar-actions">
+            <template #smart-bar-actions>
                 {% block findologic_actions_save %}
                     <sw-button
-                            class="sw-settings-login-registration__save-action"
-                            :isLoading="isLoading"
-                            :disabled="isLoading"
-                            variant="primary"
-                            :title="$tc('global.default.save')"
-                            :aria-label="$tc('global.default.save')"
-                            v-model="isSaveSuccessful"
-                            @click="onSave"
+                        class="sw-settings-login-registration__save-action"
+                        :isLoading="isLoading"
+                        :disabled="isLoading"
+                        variant="primary"
+                        :title="$tc('global.default.save')"
+                        :aria-label="$tc('global.default.save')"
+                        v-model:value="isSaveSuccessful"
+                        @click="onSave"
                     >
                         {{ $tc('global.default.save') }}
                     </sw-button>
@@ -39,7 +39,7 @@
         {% endblock %}
 
         {% block findologic_content %}
-            <template slot="content">
+            <template #content>
                 {% block findologic_content_card %}
                     <sw-card-view>
                         {% block findologic_content_card_channel_config %}
@@ -54,8 +54,8 @@
                                                 :placeholder="$tc('sw-sales-channel-switch.labelDefaultOption')"
                                                 :searchPlaceholder="$tc('sw-sales-channel-switch.placeholderSelect')"
                                                 :resetOption="$tc('sw-sales-channel-switch.labelDefaultOption')"
-                                                @change="onSelectedSalesChannel"
-                                                v-model="selectedSalesChannelId"
+                                                @update:value="onSelectedSalesChannel"
+                                                v-model:value="selectedSalesChannelId"
                                                 entity="sales_channel">
                                             <template #labelProperty="{item, labelProperty}">
                                                 <span v-if="item.translated">{{ item.translated[labelProperty] }}</span>
@@ -70,8 +70,8 @@
                                                 :placeholder="$tc('findologic.selectSalesChannel')"
                                                 :disabled="!selectedSalesChannelId"
                                                 required
-                                                v-model="selectedLanguageId"
-                                                @change="onSelectedLanguage">
+                                                v-model:value="selectedLanguageId"
+                                                @update:value="onSelectedLanguage">
                                         </sw-single-select>
 
                                     {% endblock %}
@@ -80,7 +80,7 @@
                                 {% block findologic_content_card_channel_config_credentials_card %}
                                     <findologic-config
                                             v-if="actualConfigData"
-                                            v-model="actualConfigData"
+                                            v-model:value="actualConfigData"
                                             :isActive="isActive"
                                             :shopkeyAvailable="shopkeyAvailable"
                                             :isValidShopkey="isValidShopkey"

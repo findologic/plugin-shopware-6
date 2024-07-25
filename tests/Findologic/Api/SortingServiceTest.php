@@ -22,14 +22,12 @@ class SortingServiceTest extends TestCase
     use SalesChannelHelper;
     use IntegrationTestBehaviour;
 
-    public function availableSortingOptionsProvider(): array
+    public static function availableSortingOptionsProvider(): array
     {
         $topsellerSorting = new ProductSortingEntity();
         $topsellerSorting->setId(Uuid::randomHex());
         $topsellerSorting->setActive(true);
-        $topsellerSorting->setTranslated([
-            'label' => $this->getContainer()->get('translator')->trans('filter.sortByScore')
-        ]);
+        $topsellerSorting->setTranslated(['label' => 'Topseller']);
         $topsellerSorting->setKey('product.sales');
         $topsellerSorting->setPriority(5);
         $topsellerSorting->setFields([
@@ -61,19 +59,15 @@ class SortingServiceTest extends TestCase
         array $expectedSortings
     ): void {
         $sortingService = $this->buildSortingService();
-        $event = new ProductListingCriteriaEvent(
-            new Request(),
-            new Criteria(),
-            $this->buildAndCreateSalesChannelContext()
-        );
         $searchRequestHandlerMock = $this->getMockBuilder(NavigationRequestHandler::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $event->getCriteria()->addExtension('sortings', $sortings);
-        $sortingService->handleRequest($event, $searchRequestHandlerMock);
+        $criteria = new Criteria();
+        $criteria->addExtension('sortings', $sortings);
+        $sortingService->handleRequest($criteria, $searchRequestHandlerMock);
 
-        $actualSortings = $event->getCriteria()->getExtension('sortings')->getElements();
+        $actualSortings = $criteria->getExtension('sortings')->getElements();
         $this->assertCount(count($expectedSortings), $actualSortings);
     }
 

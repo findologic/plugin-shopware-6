@@ -15,6 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 use function in_array;
 
+#[Route(defaults: ['_routeScope' => ['api']])]
 class FindologicConfigController extends AbstractController
 {
     public function __construct(
@@ -23,20 +24,16 @@ class FindologicConfigController extends AbstractController
     ) {
     }
 
-    /**
-     * @Route(
-     *     "/api/_action/finsearch",
-     *     name="api.action.finsearch",
-     *     methods={"GET"},
-     *     defaults={"_routeScope"={"api"}}
-     * )
-     * @Route(
-     *     "/api/v{version}/_action/finsearch",
-     *     name="api.action.finsearch.legacy",
-     *     methods={"GET"},
-     *     defaults={"_routeScope"={"api"}}
-     * )
-     */
+    #[Route(
+        path: '/api/_action/finsearch',
+        name: 'api.action.finsearch',
+        methods: ['GET'],
+    )]
+    #[Route(
+        path: '/api/v{version}/_action/finsearch',
+        name: 'api.action.finsearch.legacy',
+        methods: ['GET'],
+    )]
     public function getConfigurationValues(Request $request): JsonResponse
     {
         $languageId = $request->query->get('languageId');
@@ -53,20 +50,16 @@ class FindologicConfigController extends AbstractController
         return new JsonResponse($json, 200, [], true);
     }
 
-    /**
-     * @Route(
-     *     "/api/_action/finsearch",
-     *     name="api.action.finsearch.save",
-     *     methods={"POST"},
-     *     defaults={"_routeScope"={"api"}}
-     * )
-     * @Route(
-     *     "/api/v{version}/_action/finsearch",
-     *     name="api.action.finsearch.legacy.save",
-     *     methods={"POST"},
-     *     defaults={"_routeScope"={"api"}}
-     * )
-     */
+    #[Route(
+        path: '/api/_action/finsearch',
+        name: 'api.action.finsearch.save',
+        methods: ['POST'],
+    )]
+    #[Route(
+        path: '/api/v{version}/_action/finsearch',
+        name: 'api.action.finsearch.legacy.save',
+        methods: ['POST'],
+    )]
     public function saveConfiguration(Request $request): Response
     {
         $salesChannelId = $request->query->get('salesChannelId');
@@ -77,19 +70,16 @@ class FindologicConfigController extends AbstractController
         return new Response('', Response::HTTP_NO_CONTENT);
     }
 
-    /**
-     * @Route(
-     *     "/api/_action/finsearch/batch",
-     *     name="api.action.finsearch.save.batch",
-     *     methods={"POST"},
-     *     defaults={"_routeScope"={"api"}}
-     * )
-     * @Route(
-     *     "/api/v{version}/_action/finsearch/batch",
-     *     name="api.action.finsearch.legacy.save.batch",
-     *     methods={"POST"}
-     * )
-     */
+    #[Route(
+        path: '/api/_action/finsearch/batch',
+        name: 'api.action.finsearch.save.batch',
+        methods: ['POST'],
+    )]
+    #[Route(
+        path: '/api/v{version}/_action/finsearch/batch',
+        name: 'api.action.finsearch.legacy.save.batch',
+        methods: ['POST'],
+    )]
     public function batchSaveConfiguration(Request $request): Response
     {
         $allShopkeys = [];

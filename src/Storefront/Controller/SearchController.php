@@ -12,9 +12,7 @@ use FINDOLOGIC\FinSearch\Storefront\Page\Search\SearchPageLoader as FindologicSe
 use FINDOLOGIC\FinSearch\Struct\Config;
 use FINDOLOGIC\FinSearch\Struct\LandingPage;
 use FINDOLOGIC\FinSearch\Utils\Utils;
-use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\Routing\Exception\MissingRequestParameterException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\SearchController as ShopwareSearchController;
 use Shopware\Storefront\Controller\StorefrontController;
@@ -25,7 +23,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class SearchController extends StorefrontController
+#[Route(
+    defaults: [
+        '_routeScope' => ['storefront'],
+    ],
+)]
+class SearchController extends ShopwareSearchController
 {
     private SearchPageLoader $searchPageLoader;
 
@@ -54,19 +57,28 @@ class SearchController extends StorefrontController
         return $searchPageLoader;
     }
 
-    /**
-     * @Route(
-     *     "/search",
-     *     name="frontend.search.page",
-     *     methods={"GET"},
-     *     defaults={
-     *          "_routeScope"={"storefront"},
-     *          "_httpCache"=true
-     *     }
-     * )
-     */
+    #[Route(
+        path: '/search',
+        name: 'frontend.search.page',
+        defaults: [
+            '_httpCache' => true,
+        ],
+        methods: ['GET'],
+    )]
     public function search(SalesChannelContext $context, Request $request): Response
     {
+        $this->config->initializeBySalesChannel($context);
+        if (
+            !Utils::shouldHandleRequest(
+                $request,
+                $context->getContext(),
+                $this->serviceConfigResource,
+                $this->config
+            )
+        ) {
+            return $this->decorated->search($context, $request);
+        }
+
         if ($redirectResponse = $this->handleFindologicSearchParams($request)) {
             return $redirectResponse;
         }
@@ -90,79 +102,43 @@ class SearchController extends StorefrontController
         return null;
     }
 
-    /**
-     * @Route(
-     *     "/suggest",
-     *     name="frontend.search.suggest",
-     *     methods={"GET"},
-     *     defaults={
-     *          "_routeScope"={"storefront"},
-     *          "XmlHttpRequest"=true,
-     *          "_httpCache"=true
-     *     }
-     * )
-     */
+    #[Route(
+        path: '/suggest',
+        name: 'frontend.search.suggest',
+        defaults: [
+            'XmlHttpRequest' => true,
+            '_httpCache' => true,
+        ],
+        methods: ['GET'],
+    )]
     public function suggest(SalesChannelContext $context, Request $request): Response
     {
         return $this->decorated->suggest($context, $request);
     }
 
-    /**
-     * Route to load the listing filters
-     *
-     * @Route(
-     *     "/widgets/search/{search}",
-     *     name="widgets.search.pagelet",
-     *     methods={"GET", "POST"},
-     *     defaults={
-     *          "_routeScope"={"storefront"},
-     *          "XmlHttpRequest"=true,
-     *          "_httpCache"=true
-     *     }
-     * )
-     *
-     * @throws MissingRequestParameterException
-     */
-    public function pagelet(Request $request, SalesChannelContext $context): Response
-    {
-        return $this->decorated->pagelet($request, $context);
-    }
-
-    /**
-     * Route to load the listing filters
-     *
-     * @Route(
-     *     "/widgets/search",
-     *     name="widgets.search.pagelet.v2",
-     *     methods={"GET", "POST"},
-     *     defaults={
-     *          "_routeScope"={"storefront"},
-     *          "XmlHttpRequest"=true,
-     *          "_httpCache"=true
-     *     }
-     * )
-     *
-     * @throws MissingRequestParameterException
-     */
+    #[Route(
+        path: '/widgets/search',
+        name: 'widgets.search.pagelet.v2',
+        defaults: [
+            'XmlHttpRequest' => true,
+            '_httpCache' => true,
+        ],
+        methods: ['GET', 'POST'],
+    )]
     public function ajax(Request $request, SalesChannelContext $context): Response
     {
         return $this->decorated->ajax($request, $context);
     }
 
-    /**
-     * Route to load the listing filters
-     *
-     * @Route(
-     *     "/widgets/search/filter",
-     *     name="widgets.search.filter",
-     *     methods={"GET", "POST"},
-     *     defaults={
-     *          "_routeScope"={"storefront"},
-     *          "XmlHttpRequest"=true,
-     *          "_httpCache"=true
-     *     }
-     * )
-     */
+    #[Route(
+        path: '/widgets/search/filter',
+        name: 'widgets.search.filter',
+        defaults: [
+            'XmlHttpRequest' => true,
+            '_httpCache' => true,
+        ],
+        methods: ['GET', 'POST'],
+    )]
     public function filter(Request $request, SalesChannelContext $salesChannelContext): Response
     {
         $this->config->initializeBySalesChannel($salesChannelContext);
@@ -177,11 +153,11 @@ class SearchController extends StorefrontController
             return $this->decorated->filter($request, $salesChannelContext);
         }
 
-        $event = new ProductSearchCriteriaEvent($request, new Criteria(), $salesChannelContext);
-        $this->findologicSearchService->doFilter($event);
+        $criteria = new Criteria();
+        $this->findologicSearchService->doFilter($request, $criteria, $salesChannelContext);
 
-        $result = $this->filterHandler->handleAvailableFilters($event);
-        if (!$event->getCriteria()->hasExtension('flAvailableFilters')) {
+        $result = $this->filterHandler->handleAvailableFilters($criteria);
+        if (!$criteria->hasExtension('flAvailableFilters')) {
             return $this->decorated->filter($request, $salesChannelContext);
         }
 

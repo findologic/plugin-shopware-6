@@ -83,6 +83,15 @@ trait SalesChannelHelper
             Context::createDefaultContext()
         )->firstId();
 
+        $domainCriteria = new Criteria();
+        $domainCriteria->addFilter(
+            new EqualsFilter('url', $url)
+        );
+        $domainId = $this->getContainer()->get('sales_channel_domain.repository')->searchIds(
+            $domainCriteria,
+            Context::createDefaultContext()
+        )->firstId();
+
         $catCriteria = new Criteria();
         $catCriteria->addFilter(
             new EqualsFilter('parentId', null)
@@ -103,12 +112,14 @@ trait SalesChannelHelper
             'navigationCategoryId' => $navigationCategoryId,
             'accessKey' => 'KEY',
             'domains' => [
-                [
-                    'url' => $url,
-                    'currencyId' => $currencyId,
-                    'languageId' => $languageId,
-                    'snippetSetId' => $snippetSet
-                ]
+                $domainId
+                    ? [ 'id' => $domainId ]
+                    : [
+                        'url' => $url,
+                        'currencyId' => $currencyId,
+                        'languageId' => $languageId,
+                        'snippetSetId' => $snippetSet
+                    ]
             ],
             'typeId' => Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
             'translations' => [

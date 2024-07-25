@@ -42,6 +42,10 @@
       .sub-items {
         position: relative;
 
+        .sub-item {
+          position: relative;
+        }
+
         &.show-category-list-item {
           margin: 6px 0;
           max-height: 500rem;
