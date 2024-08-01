@@ -1,3 +1,10 @@
+# 6.0.0
+
+- Diese Version ist ein Major Release und enthält damit brechende Änderungen, wenn ein Erweiterungsplugin installiert ist.
+- Achtung, diese Version unterstützt nur noch Shop Versionen ab v6.6.0!
+- [ADS-4501] Verwendung von entfernter Klassen wurde angepasst.
+- [ADS-4489] Update der Administration Logik auf Vue3 und Anpassung der Storefront für asynchrones Laden.
+
 # 5.1.1
 
 * [SW-804] Ein Problem wurde behoben, wodurch es zu Fehlern bei Filternamen mit "ß" kam.

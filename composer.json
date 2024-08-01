@@ -1,7 +1,7 @@
 {
   "name": "findologic/plugin-shopware-6",
   "description": "Findologic plugin for Shopware 6",
-  "version": "5.1.1",
+  "version": "6.0.0",
   "license": "GPL-3.0-or-later",
   "type": "shopware-platform-plugin",
   "authors": [
@@ -17,15 +17,15 @@
   ],
   "config": {
     "platform": {
-      "php": "8.1"
+      "php": "8.2"
     }
   },
   "require": {
-    "php": ">=8.1",
-    "findologic/libflexport": "^3.0",
+    "php": ">=8.2",
+    "findologic/libflexport": "^3.1",
     "findologic/findologic-api": "^2.0",
-    "findologic/shopware6-common": "^2.0.3",
-    "vin-sw/shopware-sdk": "^1.7.3",
+    "findologic/shopware6-common": "^3.0",
+    "vin-sw/shopware-sdk": "^2.0",
     "composer/semver": "^3.3"
   },
   "extra": {

@@ -44,11 +44,12 @@ class ResponseParserTest extends TestCase
         ResponseParser::getInstance($response);
     }
 
-    public function supportedResponseInstanceProvider(): array
+    public static function supportedResponseInstanceProvider(): array
     {
         return [
             'XML 2.1 response' => [
-                'response' => new Json10Response($this->getMockResponse()),
+                'responseClass' => Json10Response::class,
+                'responseFile' => 'JSONResponse/demo.json',
                 'expectedParser' => Json10ResponseParser::class
             ],
         ];
@@ -58,10 +59,13 @@ class ResponseParserTest extends TestCase
      * @dataProvider supportedResponseInstanceProvider
      */
     public function testExpectedResponseParserIsReturnedForSupportedResponseInstances(
-        Response $response,
+        string $responseClass,
+        string $responseFile,
         string $expectedParser
     ): void {
-        $parser = ResponseParser::getInstance($response);
+        $parser = ResponseParser::getInstance(
+            new $responseClass($this->getMockResponse($responseFile))
+        );
 
         $this->assertInstanceOf($expectedParser, $parser);
     }

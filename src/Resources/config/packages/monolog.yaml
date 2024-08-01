@@ -1,0 +1,9 @@
+monolog:
+  channels: ['findologic_finsearch']
+
+  handlers:
+    finSearchHandler:
+      type: rotating_file
+      path: "%kernel.logs_dir%/findologic_finsearch_%kernel.environment%.log"
+      level: info
+      channels: [ "findologic_finsearch" ]

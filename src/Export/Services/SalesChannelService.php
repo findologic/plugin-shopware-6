@@ -85,7 +85,7 @@ class SalesChannelService
             array_merge($originalRequest->server->all(), [
                 'REQUEST_URI' => $parsedUrl['path'] ?? '/',
                 'HTTP_HOST' => $parsedUrl['host'] . (isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : ''),
-            ])
+            ]),
         );
 
         return $this->requestTransformer->transform($request);

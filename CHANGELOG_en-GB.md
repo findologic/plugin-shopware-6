@@ -1,3 +1,10 @@
+# 6.0.0
+
+- This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
+- Be aware, that this version only supports the shop versions starting from v6.6.0
+- [ADS-4501] Adapted usage of removed classes.
+- [ADS-4489] Upgrade administration to Vue3 and adapt storefront for async loading.
+
 # 5.1.1
 
 * [SW-804] Fixed a bug for filter names containing the "ß" character.

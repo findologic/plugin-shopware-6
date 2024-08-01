@@ -25,7 +25,10 @@ use FINDOLOGIC\FinSearch\Utils\Utils;
 use Shopware\Core\Content\Product\Events\ProductListingCriteriaEvent;
 use Shopware\Core\Content\Product\Events\ProductSearchCriteriaEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\ShopwareEvent;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\HttpFoundation\Request;
 
 class FindologicSearchService
 {
@@ -46,54 +49,64 @@ class FindologicSearchService
     ) {
     }
 
-    public function doSearch(ProductSearchCriteriaEvent $event, ?int $limitOverride = null): void
-    {
-        $limit = $limitOverride ?? $event->getCriteria()->getLimit();
+    public function doSearch(
+        Request $request,
+        Criteria $criteria,
+        SalesChannelContext $context,
+        ?int $limitOverride = null
+    ): void {
+        $limit = $limitOverride ?? $criteria->getLimit();
 
-        if ($this->allowRequest($event)) {
+        if ($this->allowRequest($request, $context)) {
             $searchRequestHandler = $this->buildSearchRequestHandler();
 
-            $this->handleRequest($event, $searchRequestHandler, $limit);
+            $this->handleRequest($request, $criteria, $context, $searchRequestHandler, $limit);
         }
     }
 
-    public function doNavigation(ProductListingCriteriaEvent $event, ?int $limitOverride = null): void
-    {
-        $limit = $limitOverride ?? $event->getCriteria()->getLimit();
+    public function doNavigation(
+        Request $request,
+        Criteria $criteria,
+        SalesChannelContext $context,
+        ?int $limitOverride = null
+    ): void {
+        $limit = $limitOverride ?? $criteria->getLimit();
 
-        if ($this->allowRequest($event)) {
+        if ($this->allowRequest($request, $context)) {
             $navigationRequestHandler = $this->buildNavigationRequestHandler();
-            if (!$this->isCategoryPage($navigationRequestHandler, $event)) {
-                $this->disableFindologicService($event);
+            if (!$this->isCategoryPage($navigationRequestHandler, $request, $context)) {
+                $this->disableFindologicService($context);
 
                 return;
             }
 
-            $this->handleRequest($event, $navigationRequestHandler, $limit);
+            $this->handleRequest($request, $criteria, $context, $navigationRequestHandler, $limit);
         }
     }
 
     protected function handleRequest(
-        ProductListingCriteriaEvent $event,
+        Request $request,
+        Criteria $criteria,
+        SalesChannelContext $context,
         SearchNavigationRequestHandler $requestHandler,
-        ?int $limit
+        ?int $limit,
     ): void {
-        $event->getCriteria()->setLimit($limit);
-        $event->getCriteria()->setOffset($this->paginationService->getRequestOffset($event->getRequest(), $limit));
+        $criteria->setLimit($limit);
+        $criteria->setOffset($this->paginationService->getRequestOffset($request, $limit));
 
         $this->apiConfig->setServiceId($this->pluginConfig->getShopkey());
-        $this->handleFilters($event, $requestHandler);
-        $requestHandler->handleRequest($event);
+        $this->handleFilters($request, $criteria, $context, $requestHandler);
+        $requestHandler->handleRequest($request, $criteria, $context);
 
-        $this->setSystemAwareExtension($event);
+        $this->setSystemAwareExtension($context);
 
-        $this->sortingService->handleRequest($event, $requestHandler);
+        $this->sortingService->handleRequest($criteria, $requestHandler);
     }
 
-    protected function allowRequest(ProductListingCriteriaEvent $event): bool
+    protected function allowRequest(Request $request, SalesChannelContext $context): bool
     {
         if (!$this->pluginConfig->isInitialized()) {
-            $this->pluginConfig->initializeBySalesChannel($event->getSalesChannelContext());
+            $this->pluginConfig->initializeBySalesChannel($context);
 
             if ($this->pluginConfig->getShopkey()) {
                 $this->apiConfig->setServiceId($this->pluginConfig->getShopkey());
@@ -101,26 +114,28 @@ class FindologicSearchService
         }
 
         return Utils::shouldHandleRequest(
-            $event->getRequest(),
-            $event->getContext(),
+            $request,
+            $context->getContext(),
             $this->serviceConfigResource,
             $this->pluginConfig,
-            !($event instanceof ProductSearchCriteriaEvent)
+            Utils::isNavigationPage($request)
         );
     }
 
     protected function handleFilters(
-        ProductListingCriteriaEvent $event,
+        Request $request,
+        Criteria $criteria,
+        SalesChannelContext $context,
         SearchNavigationRequestHandler $requestHandler
     ): void {
         try {
-            $response = $requestHandler->doRequest($event, self::FILTER_REQUEST_LIMIT);
-            $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
+            $response = $requestHandler->doRequest($request, $criteria, $context, self::FILTER_REQUEST_LIMIT);
+            $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $request);
 
-            $event->getCriteria()->addExtension('flFilters', $filtersWithSmartSuggestBlocks);
+            $criteria->addExtension('flFilters', $filtersWithSmartSuggestBlocks);
         } catch (ServiceNotAliveException | UnknownCategoryException $e) {
             /** @var FindologicService $findologicService */
-            $findologicService = $event->getContext()->getExtension('findologicService');
+            $findologicService = $context->getContext()->getExtension('findologicService');
             $findologicService->disable();
             $findologicService->disableSmartSuggest();
         }
@@ -151,67 +166,64 @@ class FindologicSearchService
         );
     }
 
-    protected function setSystemAwareExtension(ShopwareEvent $event): void
+    protected function setSystemAwareExtension(SalesChannelContext $context): void
     {
-        $event->getContext()->addExtension(SystemAware::IDENTIFIER, $this->systemAware);
+        $context->getContext()->addExtension(SystemAware::IDENTIFIER, $this->systemAware);
     }
 
-    protected function isCategoryPage(NavigationRequestHandler $handler, ProductListingCriteriaEvent $event): bool
-    {
-        $isCategoryPage = $handler->fetchCategoryPath(
-            $event->getRequest(),
-            $event->getSalesChannelContext()
-        );
+    protected function isCategoryPage(
+        NavigationRequestHandler $handler,
+        Request $request,
+        SalesChannelContext $context
+    ): bool {
+        $isCategoryPage = $handler->fetchCategoryPath($request, $context);
 
         return !empty($isCategoryPage);
     }
 
-    protected function disableFindologicService(ProductListingCriteriaEvent $event): void
+    protected function disableFindologicService(SalesChannelContext $context): void
     {
         /** @var FindologicService|null $findologicService */
-        $findologicService = $event->getContext()->getExtension('findologicService');
+        $findologicService = $context->getContext()->getExtension('findologicService');
         if (!$findologicService) {
             $findologicService = new FindologicService();
-            $event->getContext()->addExtension('findologicService', $findologicService);
+            $context->getContext()->addExtension('findologicService', $findologicService);
         }
 
         $findologicService->disable();
     }
 
-    public function doFilter(ProductListingCriteriaEvent $event): void
+    public function doFilter(Request $request, Criteria $criteria, SalesChannelContext $context): void
     {
-        if (!$this->allowRequest($event)) {
+        if (!$this->allowRequest($request, $context)) {
             return;
         }
 
         $handler = $this->buildNavigationRequestHandler();
-        if (!$event instanceof ProductSearchCriteriaEvent && !$this->isCategoryPage($handler, $event)) {
-            $this->disableFindologicService($event);
-            return;
-        }
-
-        if (!$this->isCategoryPage($handler, $event)) {
+        if (!$this->isCategoryPage($handler, $request, $context)) {
             $handler = $this->buildSearchRequestHandler();
         }
 
-        $this->handleFilters($event, $handler);
-        $this->handleSelectableFilters($event, $handler, self::FILTER_REQUEST_LIMIT);
+        $this->handleFilters($request, $criteria, $context, $handler);
+        $this->handleSelectableFilters($request, $criteria, $context, $handler, self::FILTER_REQUEST_LIMIT);
     }
 
     protected function handleSelectableFilters(
-        ProductListingCriteriaEvent $event,
+        Request $request,
+        Criteria $criteria,
+        SalesChannelContext $context,
         SearchNavigationRequestHandler $requestHandler,
         ?int $limit
     ): void {
-        $response = $requestHandler->doRequest($event, $limit);
-        $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $event);
+        $response = $requestHandler->doRequest($request, $criteria, $context, $limit);
+        $filtersWithSmartSuggestBlocks = $this->parseFiltersFromResponse($response, $request);
 
-        $event->getCriteria()->addExtension('flAvailableFilters', $filtersWithSmartSuggestBlocks);
+        $criteria->addExtension('flAvailableFilters', $filtersWithSmartSuggestBlocks);
     }
 
     protected function parseFiltersFromResponse(
         Response $response,
-        ProductListingCriteriaEvent $event
+        Request $request,
     ): FiltersExtension {
         $responseParser = ResponseParser::getInstance(
             $response,
@@ -223,7 +235,7 @@ class FindologicSearchService
         return $responseParser->getFiltersWithSmartSuggestBlocks(
             $filters,
             $this->serviceConfigResource->getSmartSuggestBlocks($this->pluginConfig->getShopkey()),
-            $event->getRequest()->query->all()
+            $request->query->all()
         );
     }
 }
