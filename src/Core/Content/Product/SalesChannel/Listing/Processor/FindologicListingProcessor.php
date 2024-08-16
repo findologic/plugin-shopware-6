@@ -40,7 +40,8 @@ class FindologicListingProcessor extends AbstractListingProcessor
         if (Utils::isSearchPage($request)) {
             if (
                 Utils::shouldHandleRequest(
-                    $request, $context->getContext(),
+                    $request,
+                    $context->getContext(),
                     $this->serviceConfigResource,
                     $this->config
                 )
@@ -50,7 +51,8 @@ class FindologicListingProcessor extends AbstractListingProcessor
         } elseif (Utils::isNavigationPage($request)) {
             if (
                 Utils::shouldHandleRequest(
-                    $request, $context->getContext(),
+                    $request,
+                    $context->getContext(),
                     $this->serviceConfigResource,
                     $this->config,
                     true
