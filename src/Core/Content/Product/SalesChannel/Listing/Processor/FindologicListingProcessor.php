@@ -37,10 +37,25 @@ class FindologicListingProcessor extends AbstractListingProcessor
             $this->config->initializeBySalesChannel($context);
         }
 
-        if (Utils::shouldHandleRequest($request, $context->getContext(), $this->serviceConfigResource, $this->config)) {
-            if (Utils::isSearchPage($request)) {
+        if (Utils::isSearchPage($request)) {
+            if (
+                Utils::shouldHandleRequest(
+                    $request, $context->getContext(),
+                    $this->serviceConfigResource,
+                    $this->config
+                )
+            ) {
                 $this->findologicSearchService->doSearch($request, $criteria, $context);
-            } elseif (Utils::isNavigationPage($request)) {
+            }
+        } elseif (Utils::isNavigationPage($request)) {
+            if (
+                Utils::shouldHandleRequest(
+                    $request, $context->getContext(),
+                    $this->serviceConfigResource,
+                    $this->config,
+                    true
+                )
+            ) {
                 $this->findologicSearchService->doNavigation($request, $criteria, $context);
             }
         }
