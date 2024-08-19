@@ -38,28 +38,24 @@ class FindologicListingProcessor extends AbstractListingProcessor
         }
 
         if (Utils::isSearchPage($request)) {
-            if (
-                Utils::shouldHandleRequest(
-                    $request,
-                    $context->getContext(),
-                    $this->serviceConfigResource,
-                    $this->config
-                )
-            ) {
+            if ($this->shouldHandleRequest($request, $context)) {
                 $this->findologicSearchService->doSearch($request, $criteria, $context);
             }
         } elseif (Utils::isNavigationPage($request)) {
-            if (
-                Utils::shouldHandleRequest(
-                    $request,
-                    $context->getContext(),
-                    $this->serviceConfigResource,
-                    $this->config,
-                    true
-                )
-            ) {
+            if ($this->shouldHandleRequest($request, $context, true)) {
                 $this->findologicSearchService->doNavigation($request, $criteria, $context);
             }
         }
+    }
+
+    private function shouldHandleRequest($request, $context, $isNavigation = false): bool
+    {
+        return Utils::shouldHandleRequest(
+            $request,
+            $context->getContext(),
+            $this->serviceConfigResource,
+            $this->config,
+            $isNavigation
+        );
     }
 }
