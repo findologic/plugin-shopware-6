@@ -40,6 +40,8 @@ class SalesChannelService
             $currentContext->getContext()
         );
 
+        $salesChannelContext = null;
+
         /** @var FinSearchConfigEntity $systemConfigEntity */
         foreach ($systemConfigEntities as $systemConfigEntity) {
             if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
