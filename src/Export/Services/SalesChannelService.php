@@ -40,10 +40,12 @@ class SalesChannelService
             $currentContext->getContext()
         );
 
+        $salesChannelContext = null;
+
         /** @var FinSearchConfigEntity $systemConfigEntity */
         foreach ($systemConfigEntities as $systemConfigEntity) {
             if ($systemConfigEntity->getConfigurationValue() === $shopkey) {
-                return $this->salesChannelContextFactory->create(
+                $salesChannelContext = $this->salesChannelContextFactory->create(
                     $currentContext->getToken(),
                     $systemConfigEntity->getSalesChannelId(),
                     [
@@ -51,10 +53,11 @@ class SalesChannelService
                         SalesChannelContextService::CUSTOMER_ID => $customerId
                     ]
                 );
+                $salesChannelContext->getSalesChannel()->setLanguageId($salesChannelContext->getLanguageId());
             }
         }
 
-        return null;
+        return $salesChannelContext;
     }
 
     /**
