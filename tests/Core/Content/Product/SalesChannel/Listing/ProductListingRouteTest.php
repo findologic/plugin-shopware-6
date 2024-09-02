@@ -129,6 +129,7 @@ class ProductListingRouteTest extends ProductRouteBase
 
         $categoryId = Uuid::randomHex();
         $streamId = Uuid::randomHex();
+        var_dump($categoryId, $streamId);
 
         $salesChannelContextMock = $this->getMockedSalesChannelContext(true, '1');
         $request = Request::create('http://your-shop.de/some-category');
