@@ -183,7 +183,7 @@ abstract class ProductRouteBase extends TestCase
         $category = $this->createTestCategory([
             'id' => $categoryId ?? Uuid::randomHex()
         ]);
-        var_dump($categoryId, Uuid::randomHex());
+
         $supportsProductStreams = defined(
             '\Shopware\Core\Content\Category\CategoryDefinition::PRODUCT_ASSIGNMENT_TYPE_PRODUCT_STREAM'
         );
