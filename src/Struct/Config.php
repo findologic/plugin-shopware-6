@@ -156,7 +156,7 @@ class Config extends Struct
         $salesChannelId = $salesChannel->getId();
         $languageId = $salesChannelContext->getLanguageId();
 
-        var_dump($languageId , $salesChannel->getLanguageId() );
+        var_dump($languageId , $salesChannel->getLanguageId());
 
         $this->active = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.active', false);
         $this->shopkey = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.shopkey');
