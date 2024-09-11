@@ -37,7 +37,7 @@ class ServiceConfigClientTest extends TestCase
         $mock = new MockHandler([new Response($responseCode, [], $hasBody ? $this->getConfig(false) : null)]);
         $handler = HandlerStack::create($mock);
 
-        $client = new Client(['handler' => $handler]);
+        $client = new Client(['base_uri' => $handler]);
         $serviceConfigClient = new ServiceConfigClient($shopkey, $client);
 
         try {
