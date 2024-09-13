@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Findologic\Client;
 
 use Exception;
+use FINDOLOGIC\FinSearch\Findologic\BaseUrl;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClient;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use GuzzleHttp\Client;
@@ -37,7 +38,7 @@ class ServiceConfigClientTest extends TestCase
         $mock = new MockHandler([new Response($responseCode, [], $hasBody ? $this->getConfig(false) : null)]);
         $handler = HandlerStack::create($mock);
 
-        $client = new Client(['base_uri' => $handler]);
+        $client = new Client(['handler' => $handler]);
         $serviceConfigClient = new ServiceConfigClient($shopkey, $client);
 
         try {

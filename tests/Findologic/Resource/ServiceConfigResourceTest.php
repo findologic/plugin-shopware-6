@@ -6,6 +6,7 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Resource;
 
 use DateTime;
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
+use FINDOLOGIC\FinSearch\Findologic\BaseUrl;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Findologic\Resource\ServiceConfigResource;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
@@ -143,7 +144,7 @@ class ServiceConfigResourceTest extends TestCase
         ]);
         $handler = HandlerStack::create($mock);
 
-        $client = new Client(['base_uri' => $handler]);
+        $client = new Client(['handler' => $handler]);
 
         $serviceConfigResource = new ServiceConfigResource(
             $cachePoolMock,
@@ -230,7 +231,7 @@ class ServiceConfigResourceTest extends TestCase
         ]);
         $handler = HandlerStack::create($mock);
 
-        $client = new Client(['base_uri' => $handler]);
+        $client = new Client(['handler' => $handler]);
 
         $serviceConfigResource = new ServiceConfigResource(
             $cachePoolMock,
@@ -246,7 +247,7 @@ class ServiceConfigResourceTest extends TestCase
         $apiShopkey = 'D5EF9A190C9714C8F1E73EEF0FAFBBC9';
         $diShopkey = '74B87337454200D4D33F80C4663DC5E5';
 
-        $client = new Client(['base_uri' => $this->getMockHandler([
+        $client = new Client(['handler' => $this->getMockHandler([
             new Response(200, [], $this->getConfig(false)),
             new Response(200, [], $this->getConfig(false, 'api_config.json')),
         ])]);
