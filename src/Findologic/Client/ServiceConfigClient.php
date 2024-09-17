@@ -27,8 +27,15 @@ class ServiceConfigClient
 
     private function isBaseUriDifferent(): bool
     {
-        $currentBaseUri = $this->client->getConfig()['base_uri'] ?? null;
-        return $currentBaseUri !== BaseUrl::CDN;
+        if (isset($this->client->getConfig()['base_uri'])) {
+            $scheme = $this->client->getConfig()['base_uri']->getScheme();
+            $host = $this->client->getConfig()['base_uri']->getHost();
+            $currentBaseUrl = $scheme . '://' . $host;
+
+            return $currentBaseUrl !== BaseUrl::CDN;
+        }
+
+        return false;
     }
 
     /**
