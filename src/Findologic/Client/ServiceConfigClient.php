@@ -20,12 +20,12 @@ class ServiceConfigClient
 
     private function initializeClient(): void
     {
-        if (!$this->client || $this->isBaseUriDifferent()) {
+        if (!$this->client || $this->isBaseUrlDifferent()) {
             $this->client = new Client(['base_uri' => BaseUrl::CDN]);
         }
     }
 
-    private function isBaseUriDifferent(): bool
+    private function isBaseUrlDifferent(): bool
     {
         if (isset($this->client->getConfig()['base_uri'])) {
             $scheme = $this->client->getConfig()['base_uri']->getScheme();
