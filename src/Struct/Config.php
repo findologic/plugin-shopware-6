@@ -152,8 +152,11 @@ class Config extends Struct
      */
     public function initializeBySalesChannel(SalesChannelContext $salesChannelContext): void
     {
-        $salesChannelId = $salesChannelContext->getSalesChannel()->getId();
-        $languageId = $salesChannelContext->getLanguageId();
+        $salesChannel = $salesChannelContext->getSalesChannel();
+        $salesChannelId = $salesChannel->getId();
+        if (!$languageId = $salesChannelContext->getLanguageId()) {
+            $languageId = $salesChannel->getId();
+        }
 
         $this->active = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.active', false);
         $this->shopkey = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.shopkey');
