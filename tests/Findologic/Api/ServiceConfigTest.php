@@ -6,7 +6,6 @@ namespace FINDOLOGIC\FinSearch\Tests\Findologic\Api;
 
 use DateTime;
 use FINDOLOGIC\FinSearch\Findologic\Api\ServiceConfig;
-use FINDOLOGIC\FinSearch\Findologic\BaseUrl;
 use FINDOLOGIC\FinSearch\Findologic\Client\ServiceConfigClientFactory;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\ConfigHelper;
 use GuzzleHttp\Client;
