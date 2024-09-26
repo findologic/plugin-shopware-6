@@ -24,7 +24,7 @@
     "php": ">=8.2",
     "findologic/libflexport": "^3.1",
     "findologic/findologic-api": "^2.0",
-    "findologic/shopware6-common": "^3.0",
+    "findologic/shopware6-common": "dev-SW-815_variant_product_is_exported_instead_of_the_main_product_although_configured",
     "vin-sw/shopware-sdk": "^2.0",
     "composer/semver": "^3.3"
   },
