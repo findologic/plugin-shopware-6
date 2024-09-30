@@ -15,7 +15,27 @@ class ServiceConfigClient
         private readonly string $shopkey,
         private ?Client $client = null
     ) {
-        $this->client = $client ?? new Client(['base_uri' => BaseUrl::CDN]);
+        $this->initializeClient();
+    }
+
+    private function initializeClient(): void
+    {
+        if (!$this->client || $this->isBaseUrlDifferent()) {
+            $this->client = new Client(['base_uri' => BaseUrl::CDN]);
+        }
+    }
+
+    private function isBaseUrlDifferent(): bool
+    {
+        if (isset($this->client->getConfig()['base_uri'])) {
+            $scheme = $this->client->getConfig()['base_uri']->getScheme();
+            $host = $this->client->getConfig()['base_uri']->getHost();
+            $currentBaseUrl = $scheme . '://' . $host;
+
+            return $currentBaseUrl !== BaseUrl::CDN;
+        }
+
+        return false;
     }
 
     /**
