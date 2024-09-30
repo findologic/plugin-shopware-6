@@ -154,7 +154,9 @@ class Config extends Struct
     {
         $salesChannel = $salesChannelContext->getSalesChannel();
         $salesChannelId = $salesChannel->getId();
-        $languageId = $salesChannel->getLanguageId();
+        if (!$languageId = $salesChannelContext->getLanguageId()) {
+            $languageId = $salesChannel->getId();
+        }
 
         $this->active = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.active', false);
         $this->shopkey = $this->getConfig($salesChannelId, $languageId, 'FinSearch.config.shopkey');
