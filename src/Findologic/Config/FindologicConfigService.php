@@ -15,6 +15,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Uuid\Exception\InvalidUuidException;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\Exception\InvalidDomainException;
 use Shopware\Core\System\SystemConfig\Exception\InvalidKeyException;
 use Shopware\Core\System\SystemConfig\Exception\InvalidSettingValueException;
@@ -27,6 +28,8 @@ use function is_array;
 
 class FindologicConfigService
 {
+    public const DOMAIN_ID = 'FinSearch.config.domain';
+
     private array $configs = [];
 
     public function __construct(
@@ -276,5 +279,17 @@ class FindologicConfigService
         }
 
         return $configValues;
+    }
+
+    public function getDomainCurrencyId(SalesChannelContext $context, $channelId = null, $languageId = null): ?string
+    {
+        if ($domains = $context->getSalesChannel()->getDomains()) {
+            $domainId = (string) $this->get(self::DOMAIN_ID, $channelId, $languageId);
+            $domain = $domains->has($domainId) ? $domains->get($domainId) : $domains->first();
+
+            return $domain->getCurrencyId();
+        }
+
+        return null;
     }
 }

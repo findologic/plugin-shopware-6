@@ -104,6 +104,17 @@
                             @selection-remove="onCategoryRemove"
                         >
                         </sw-category-tree-field>
+
+                        <sw-entity-single-select
+                                :label="$tc('findologic.settingForm.config.domain.label')"
+                                :helpText="$tc('findologic.settingForm.config.domain.helpText')"
+                                labelProperty="url"
+                                valueProperty="id"
+                                :criteria="domainCriteria"
+                                show-clearable-button
+                                entity="sales_channel_domain"
+                                v-model="actualConfigData['FinSearch.config.domain']">
+                        </sw-entity-single-select>
                     </div>
                 </sw-container>
             </sw-card>
