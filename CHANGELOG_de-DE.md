@@ -1,3 +1,10 @@
+# 6.0.1
+* [SW-807] Überprüfungen für den Client hinzugefügt und neuen Client erstellt, wenn die base_uri nicht von Findologic stammt oder der Client nicht gesetzt ist.
+* [SW-810] Sales Channel Logik für Language-ID angepasst.
+* [SW-778] Erlaubt das Pipe-Zeichen im Namen der Property Values.
+* [SW-817] Bugfix: Pagination in Kategorien.
+* [SW-805] Bugfix: Falsche Preise wurden exportiert.
+
 # 6.0.0
 
 - Diese Version ist ein Major Release und enthält damit brechende Änderungen, wenn ein Erweiterungsplugin installiert ist.

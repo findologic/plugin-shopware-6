@@ -1,3 +1,10 @@
+# 6.0.1
+* [SW-807] Added checks for Client and create new if client base_uri not from Findologic or client is not set 
+* [SW-810] Adapted sales channel logic for language id 
+* [SW-778] Allow the pipe character in property values name 
+* [SW-817] Bug fix pagination in categories 
+* [SW-805] Bug fix wrong prices are exported 
+
 # 6.0.0
 
 - This version is a major release, which may cause breaking changes, in case you have installed an extension plugin.
