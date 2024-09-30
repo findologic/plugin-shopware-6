@@ -48,6 +48,7 @@
             <argument type="service" id="finsearch_config.repository" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextFactory" />
             <argument type="service" id="Shopware\Core\Framework\Routing\RequestTransformerInterface" />
+            <argument type="service" id="FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService" />
         </service>
 
         <service id="FINDOLOGIC\FinSearch\Export\Search\ProductCriteriaBuilder" public="true" autowire="true" />
