@@ -37,6 +37,12 @@ class FilterHandler
     ): void {
         $request = $event->getRequest();
         $selectedFilters = $request->query->all();
+        if (isset($selectedFilters['cat'])) {
+            $lastSubCategory = strrchr($selectedFilters['cat'], "|");
+            if ($lastSubCategory) {
+                $selectedFilters['cat'] = substr($lastSubCategory, 1);
+            }
+        }
         $availableFilterNames = $this->fetchAvailableFilterNames($event);
 
         if ($selectedFilters) {
