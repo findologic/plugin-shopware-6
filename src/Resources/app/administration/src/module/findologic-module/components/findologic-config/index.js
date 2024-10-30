@@ -30,6 +30,11 @@ Component.register('findologic-config', {
             required: false,
             default: null,
         },
+        selectedLanguageId: {
+            type: String,
+            required: false,
+            default: null,
+        },
         isStagingShop: {
             type: Boolean,
             required: true,
@@ -143,6 +148,14 @@ Component.register('findologic-config', {
         selectedCategoriesCriteria() {
             const criteria = new Criteria(null, null);
             criteria.addFilter(Criteria.equalsAny('id', this.actualConfigData['FinSearch.config.crossSellingCategories']));
+
+            return criteria;
+        },
+
+        domainCriteria() {
+            const criteria = new Criteria(1, 25);
+            criteria.addFilter(Criteria.equals('salesChannelId', this.selectedSalesChannelId));
+            criteria.addFilter(Criteria.equals('languageId', this.selectedLanguageId));
 
             return criteria;
         },

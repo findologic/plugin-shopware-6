@@ -91,6 +91,10 @@
                         "label": "Preis beim Kauf von einer Einheit"
                     }
                 },
+                "domain": {
+                    "label": "Domain für Währung",
+                    "helpText": "Diese Domain wird für Multi-Domain-Verkaufskanäle verwendet, und die Währung wird aus der ausgewählten Domain verwendet"
+                },
                 "exportZeroPricedProducts": {
                     "label": "Produkte ohne Preis exportieren",
                     "tooltipText": "Wenn deaktiviert, werden alle Produkte/Varianten mit einem Preis von 0 ausgeschlossen. Wenn das Hauptprodukt einen Preis von 0 hat, werden Varianten mit Preis trotzdem noch berücksichtigt."

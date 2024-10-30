@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FINDOLOGIC\FinSearch\Tests\Export;
 
 use FINDOLOGIC\FinSearch\Export\Services\SalesChannelService;
+use FINDOLOGIC\FinSearch\Findologic\Config\FindologicConfigService;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\PluginConfigHelper;
 use FINDOLOGIC\FinSearch\Tests\Traits\DataHelpers\SalesChannelHelper;
 use PHPUnit\Framework\TestCase;
@@ -51,7 +52,8 @@ class SalesChannelServiceTest extends TestCase
         return new SalesChannelService(
             $configRepository,
             $this->getContainer()->get(SalesChannelContextFactory::class),
-            $this->getContainer()->get(RequestTransformerInterface::class)
+            $this->getContainer()->get(RequestTransformerInterface::class),
+            $this->getContainer()->get(FindologicConfigService::class)
         );
     }
 
