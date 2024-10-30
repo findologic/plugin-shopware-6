@@ -39,6 +39,12 @@ class FilterHandler
         SearchNavigationRequest $searchNavigationRequest
     ): void {
         $selectedFilters = $request->query->all();
+        if (isset($selectedFilters['cat'])) {
+            $lastSubCategory = strrchr($selectedFilters['cat'], "|");
+            if ($lastSubCategory) {
+                $selectedFilters['cat'] = substr($lastSubCategory, 1);
+            }
+        }
         $availableFilterNames = $this->fetchAvailableFilterNames($criteria);
 
         if ($selectedFilters) {
