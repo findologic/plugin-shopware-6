@@ -23,6 +23,7 @@ trait SalesChannelHelper
         string $salesChannelId = Defaults::SALES_CHANNEL_TYPE_STOREFRONT,
         ?CustomerEntity $customerEntity = null,
         string $languageId = Defaults::LANGUAGE_SYSTEM,
+        string $currencyId = Defaults::CURRENCY,
     ): SalesChannelContext {
         /** @var SalesChannelContextFactory $salesChannelContextFactory */
         $salesChannelContextFactory = $this->getContainer()->get(SalesChannelContextFactory::class);
@@ -30,7 +31,7 @@ trait SalesChannelHelper
         return $salesChannelContextFactory->create(
             Uuid::randomHex(),
             $salesChannelId,
-            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId)
+            $this->buildSalesChannelContextFactoryOptions($customerEntity, $languageId, $currencyId)
         );
     }
 
@@ -143,7 +144,8 @@ trait SalesChannelHelper
 
     private function buildSalesChannelContextFactoryOptions(
         ?CustomerEntity $customerEntity,
-        ?string $languageId
+        ?string $languageId,
+        ?string $currencyId
     ): array {
         $options = [];
         if ($customerEntity) {
@@ -151,6 +153,9 @@ trait SalesChannelHelper
         }
         if ($languageId) {
             $options[SalesChannelContextService::LANGUAGE_ID] = $languageId;
+        }
+        if ($currencyId) {
+            $options[SalesChannelContextService::CURRENCY_ID] = $currencyId;
         }
 
         return $options;

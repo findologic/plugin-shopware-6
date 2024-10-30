@@ -1,3 +1,9 @@
+# 5.1.2
+* [SW-807] Added checks for Client and create new if client base_uri not from Findologic or client is not set 
+* [SW-810] Adapted sales channel logic for language id
+* [SW-778] Allowing the pipe character in property values name
+* [SW-805] Fixed a bug where wrong prices have been exported 
+
 # 5.1.1
 
 * [SW-804] Fixed a bug for filter names containing the "ß" character.
