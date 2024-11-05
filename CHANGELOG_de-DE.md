@@ -1,3 +1,8 @@
+# 6.0.2
+* [SW-815] Ein Fehler wurde behoben, bei dem das Varianten-Produkt exportiert wurde, anstelle des Hauptprodukts, obwohl es so konfiguriert war.
+* [SW-801] Unterstützung hinzugefügt, um Varianten mit unterschiedlichen Attributwerten zu exportieren.
+* [SSP-150] Ein Fehler wurde behoben, bei dem der Kategoriefilter auf Navigationsseiten nicht funktionierte.
+
 # 6.0.1
 * [SW-807] Überprüfungen für den Client hinzugefügt und neuen Client erstellt, wenn die base_uri nicht von Findologic stammt oder der Client nicht gesetzt ist.
 * [SW-810] Sales Channel Logik für Language-ID angepasst.
