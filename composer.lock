@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "033111762f634d4fd50e4047c7decb9c",
+    "content-hash": "2576c967ba4a9be32da97705f42e0b5f",
     "packages": [
         {
             "name": "composer/semver",
@@ -232,7 +232,7 @@
         },
         {
             "name": "findologic/shopware6-common",
-            "version": "3.0.1",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/findologic/shopware6-common.git",
