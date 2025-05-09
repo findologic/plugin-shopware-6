@@ -1,3 +1,6 @@
+# 6.0.3
+* Repository Dependencies updated
+
 # 6.0.2
 * [SW-815] Fixed a bug where the Variant-Product has been exported instead of the Main Product although it was configured
 * [SW-801] Added support to export Variants with different attribute values
