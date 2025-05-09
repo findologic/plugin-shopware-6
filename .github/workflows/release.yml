@@ -38,12 +38,19 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer install
+          composer install --no-dev --prefer-dist
           composer require shopware/core "${{ env.PLUGIN_MIN_REQUIREMENT }}" --no-update
 
-      - name: Remove disallowed files from plugin
+      - name: Remove disallowed files
         run: |
-          find . -type f \( -name ".eslintrc.js" -o -name ".editorconfig" -o -name ".gitignore" \) ! -path "./.gitignore" -delete    
+          find . -type f \( \
+            -name ".eslintrc.js" -o \
+            -name ".editorconfig" -o \
+            -name ".gitignore" -o \
+            -name ".phpcs.xml" -o \
+            -name ".phpunit.xml.dist" \
+          \) ! -path "./.gitignore" -delete
+          rm -rf tests vendor/bin vendor/squizlabs
 
       - name: Validate plugin files
         run: shopware-cli extension validate $(pwd)
