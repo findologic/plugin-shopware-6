@@ -1,5 +1,3 @@
-# Automatically uploads the pushed plugin version to the Shopware Store.
-
 name: Shopware Store Release
 on:
   push:
@@ -25,7 +23,6 @@ jobs:
         with:
           php-version: '8.2'
           extensions: mbstring, dom
-          coverage: xdebug
           tools: composer:v2
 
       - name: Install Shopware-CLI
@@ -33,24 +30,28 @@ jobs:
           curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
           sudo apt install shopware-cli
 
-      - name: Validate dependencies
+      - name: Validate composer.json
         run: composer validate
 
-      - name: Install dependencies
+      - name: Remove vendor to ensure clean install
+        run: rm -rf vendor
+
+      - name: Install only production dependencies
         run: |
           composer install --no-dev --prefer-dist
           composer require shopware/core "${{ env.PLUGIN_MIN_REQUIREMENT }}" --no-update
 
-      - name: Remove disallowed files
+      - name: Final cleanup of disallowed files
         run: |
+          rm -rf tests vendor/bin vendor/squizlabs
           find . -type f \( \
+            -name ".phpcs.xml" -o \
+            -name ".phpunit.xml.dist" -o \
             -name ".eslintrc.js" -o \
             -name ".editorconfig" -o \
             -name ".gitignore" -o \
-            -name ".phpcs.xml" -o \
-            -name ".phpunit.xml.dist" \
+            -name "*.php3" \
           \) ! -path "./.gitignore" -delete
-          rm -rf tests vendor/bin vendor/squizlabs
 
       - name: Validate plugin files
         run: shopware-cli extension validate $(pwd)
@@ -70,7 +71,6 @@ jobs:
         with:
           php-version: '8.2'
           extensions: mbstring, dom
-          coverage: xdebug
           tools: composer:v2
 
       - name: Install Shopware-CLI
@@ -78,13 +78,28 @@ jobs:
           curl -1sLf "https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh" | sudo -E bash
           sudo apt install shopware-cli
 
-      - name: Validate dependencies
+      - name: Validate composer.json
         run: composer validate
 
-      - name: Install dependencies
+      - name: Remove vendor to ensure clean install
+        run: rm -rf vendor
+
+      - name: Install only production dependencies
         run: |
-          composer install
+          composer install --no-dev --prefer-dist
           composer require shopware/core "${{ env.PLUGIN_MIN_REQUIREMENT }}" --no-update
+
+      - name: Final cleanup of disallowed files
+        run: |
+          rm -rf tests vendor/bin vendor/squizlabs
+          find . -type f \( \
+            -name ".phpcs.xml" -o \
+            -name ".phpunit.xml.dist" -o \
+            -name ".eslintrc.js" -o \
+            -name ".editorconfig" -o \
+            -name ".gitignore" -o \
+            -name "*.php3" \
+          \) ! -path "./.gitignore" -delete
 
       - name: Get version
         id: get_version
