@@ -42,7 +42,7 @@ jobs:
           composer require shopware/core "${{ env.PLUGIN_MIN_REQUIREMENT }}" --no-update
 
       - name: Remove disallowed files from plugin
-        run: find plugin-shopware6 -type f \( -name ".eslintrc.js" -o -name ".editorconfig" -o -name ".gitignore" \) ! -path "./.gitignore" -delete
+        run: find plugin-shopware6 -type f \( -name ".eslintrc.js" -o -name ".editorconfig" -o -name ".gitignore" \) ! -path "plugin-shopware6/.gitignore" -delete
 
       - name: Validate plugin files
         run: shopware-cli extension validate $(pwd)
