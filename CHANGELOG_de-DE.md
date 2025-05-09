@@ -1,3 +1,6 @@
+# 5.1.4
+* Repository dependency update
+
 # 5.1.3
 * [SW-815] Ein Fehler wurde behoben, bei dem das Varianten-Produkt exportiert wurde, anstelle des Hauptprodukts, obwohl es so konfiguriert war.
 * [SW-801] Unterstützung hinzugefügt, um Varianten mit unterschiedlichen Attributwerten zu exportieren.
