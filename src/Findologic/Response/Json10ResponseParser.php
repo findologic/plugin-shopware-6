@@ -114,7 +114,7 @@ class Json10ResponseParser extends ResponseParser
 
         if ($this->hasAlternativeQuery($queryString)) {
             /** @var SmartDidYouMean $smartDidYouMean */
-            $smartDidYouMean = $context->getExtension('flSmartDidYouMean');
+            $smartDidYouMean = $context->getContext()->getExtension('flSmartDidYouMean');
 
             return $this->buildSearchTermQueryInfoMessage($smartDidYouMean->getEffectiveQuery());
         }
