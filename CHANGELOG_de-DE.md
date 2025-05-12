@@ -1,3 +1,6 @@
+# 6.0.4
+* [SSP-345] Ein Fehler wurde behoben bei dem spezifische Search Queries zu einem Error geführt haben.
+
 # 6.0.3
 * Repository Dependencies updated
 

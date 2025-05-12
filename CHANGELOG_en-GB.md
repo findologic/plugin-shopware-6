@@ -1,5 +1,8 @@
+# 6.0.4
+* [SSP-345] A bug got fix where specific Search Queries led to an Error.
+
 # 6.0.3
-* Repository Dependencies updated
+* Repository Dependencies updated**
 
 # 6.0.2
 * [SW-815] Fixed a bug where the Variant-Product has been exported instead of the Main Product although it was configured
